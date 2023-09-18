@@ -130,7 +130,7 @@ In another example, we will show you how to sponsor transactions with a paymaste
 
 ### Step 3: Generate the callData
 
-The [callData](https://eips.ethereum.org/EIPS/eip-4337#specification) contain the instructions to send our transaction on-chain. This user operation will make a transfer of 5 [wei](https://ethereum.org/en/developers/docs/intro-to-ether/#denominations) to a random address
+We will be constructing the callData using [createSendEthCallData](../abstractionkit/accounts/#createcalldata), which returns the instructions to send our transaction on-chain. This user operation will make a transfer of 5 wei to a random address
 
 ```ts title="index.ts"
 //send 5 wei to 0x1a02592A3484c2077d2E5D24482497F85e1980C6
