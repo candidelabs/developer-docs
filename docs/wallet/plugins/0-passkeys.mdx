@@ -237,7 +237,7 @@ let smartAccount = SafeAccount.initializeNewAccount(
 
 #### Existing account
 
-- Add a Passkeys owner to an existing account using [`addOwnerWithThreshold`](/wallet/abstractionkit/safe-account-v3/#createaddownerwiththresholdmetatransactions)
+- Add a Passkeys owner to an existing account using [`createAddOwnerWithThresholdMetaTransactions`](/wallet/abstractionkit/safe-account-v3/#createaddownerwiththresholdmetatransactions)
 
 ```ts
 import { MetaTransaction } from "abstractionkit"
@@ -245,6 +245,7 @@ import { MetaTransaction } from "abstractionkit"
 const addPasskeysOwner: MetaTransaction = await smartAccount.createAddOwnerWithThresholdMetaTransactions(
     webauthPublicKey, // the x and y webAuthn publickey
     1, // threshold
+    { nodeRpcUrl: RPC_URL }
 );
 ```
 
@@ -257,6 +258,7 @@ const swapOwnerWithPasskeys: MetaTransaction = await smartAccount.createSwapOwne
     nodeUrl, 
     webauthPublicKey, // the x and y webAuthn publickey
     oldOwnerPublicKey, // the old owner to replace
+    { nodeRpcUrl: RPC_URL }
 );
 ```
 
