@@ -245,7 +245,7 @@ import { MetaTransaction } from "abstractionkit"
 const addPasskeysOwner: MetaTransaction = await smartAccount.createAddOwnerWithThresholdMetaTransactions(
     webauthPublicKey, // the x and y webAuthn publickey
     1, // threshold
-    { nodeRpcUrl: RPC_URL }
+    { nodeRpcUrl: nodeUrl }
 );
 ```
 
@@ -258,7 +258,6 @@ const swapOwnerWithPasskeys: MetaTransaction = await smartAccount.createSwapOwne
     nodeUrl, 
     webauthPublicKey, // the x and y webAuthn publickey
     oldOwnerPublicKey, // the old owner to replace
-    { nodeRpcUrl: RPC_URL }
 );
 ```
 
