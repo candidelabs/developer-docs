@@ -1,5 +1,70 @@
 import { stateOverrideSetType } from "./userOperation";
 
+export const sponsorMetaData = [
+  {
+    key: "name",
+    type: "string",
+    description: "Name of Sponsor who is sponsoring the Gas Policy",
+  },
+  {
+    key: "description",
+    type: "string",
+    description: "A short description of the sponsor",
+  },
+  {
+    key: "url",
+    type: "string",
+    description: "Website of the Sponsor",
+  },
+  {
+    key: "icons",
+    type: "string[]",
+    description:
+      "Logos or Icons that the Sponsor is using to promote their Gas Policy",
+  },
+];
+
+export const sponsorMetaDataType = [
+  {
+    key: "sponsorMetadata",
+    description: "Information about the Gas Policy Sponsor",
+    type: sponsorMetaData,
+  },
+];
+
+export const sponsorData7677 = [
+  {
+    key: "name",
+    type: "string",
+    description: "Name of Sponsor who is sponsoring the Gas Policy",
+  },
+  {
+    key: "description",
+    type: "string",
+    description: "A short description of the sponsor",
+  },
+  {
+    key: "url",
+    type: "string",
+    description: "Website of the Sponsor",
+  },
+  {
+    key: "icon",
+    type: "string",
+    description:
+      "Logo of the Sponsor to promote their Gas Policy",
+  },
+];
+
+export const sponsorDataType7677 = [
+  {
+    key: "sponsor",
+    description: "Information about the Gas Policy Sponsor",
+    type: sponsorData7677,
+  },
+];
+
+
 // Paymaster V2
 export const pm_supportedEntryPointReturnParam = [
   {
@@ -33,6 +98,67 @@ export const pm_sponsorUserOperationReturnParamsV06V02 = [
     description:
       "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)",
   },
+  ...sponsorMetaDataType,
+];
+
+export const pm_getPaymasterStubDataReturnParamsV06 = [
+  {
+    key: "paymasterAndData",
+    type: "string",
+    description:
+      "Paymaster address and data required to pass paymaster contract validation",
+  },
+  {
+    key: "preVerificationGas",
+    type: "string",
+    description:
+      "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata",
+  },
+  {
+    key: "maxFeePerGas",
+    type: "string",
+    description: "Maximum fee per gas (similar to EIP-1559 max_fee_per_gas)",
+  },
+  {
+    key: "maxPriorityFeePerGas",
+    type: "string",
+    description:
+      "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)",
+  },
+  {
+    key: "isFinal",
+    type: "boolean",
+    description:
+      "Indicates that the caller does not need to call pm_getPaymasterData",
+  },
+  ...sponsorDataType7677,
+];
+
+export const pm_getPaymasterDataReturnParamsV06 = [
+  {
+    key: "paymasterAndData",
+    type: "string",
+    description:
+      "Paymaster address and data required to pass paymaster contract validation",
+  },
+  {
+    key: "preVerificationGas",
+    type: "string",
+    description:
+      "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata",
+  },
+  {
+    key: "maxFeePerGas",
+    type: "string",
+    description: "Maximum fee per gas (similar to EIP-1559 max_fee_per_gas)",
+  },
+  {
+    key: "maxPriorityFeePerGas",
+    type: "string",
+    description:
+      "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)",
+  },
+  ...sponsorDataType7677,
 ];
 
 export const tokensParamatersV2 = [
@@ -193,38 +319,6 @@ export const pm_sponsorUserOperationReturnParamsV06 = [
   },
 ];
 
-export const sponsorMetaData = [
-  {
-    key: "name",
-    type: "string",
-    description: "Name of Sponsor who is sponsoring the Gas Policy",
-  },
-  {
-    key: "description",
-    type: "string",
-    description: "A short description of the sponsor",
-  },
-  {
-    key: "url",
-    type: "string",
-    description: "Website of the Sponsor",
-  },
-  {
-    key: "icons",
-    type: "string[]",
-    description:
-      "Logos or Icons that the Sponsor is using to promote their Gas Policy",
-  },
-];
-
-export const sponsorMetaDataType = [
-  {
-    key: "sponsorMetadata",
-    description: "Information about the Gas Policy Sponsor",
-    type: sponsorMetaData,
-  },
-];
-
 // Entrypoint Version 0.7
 
 export const paymasterMetadataReturnParametersV07 = [
@@ -303,6 +397,112 @@ export const getPaymasterMetaDataReturn = [
 ];
 
 export const pm_sponsorUserOperationReturnParamsV07 = [
+  {
+    key: "paymaster",
+    type: "string",
+    description:
+      "Address of paymaster contract, (or empty, if account pays for itself)",
+  },
+  {
+    key: "paymasterVerificationGasLimit",
+    type: "string",
+    description:
+      "The amount of gas to allocate for the paymaster post-operation code",
+  },
+  {
+    key: "paymasterPostOpGasLimit",
+    type: "string",
+    description:
+      "The amount of gas to allocate for the paymaster post-operation code",
+  },
+  {
+    key: "paymasterData",
+    type: "string",
+    description: "Data for paymaster (only if paymaster exists)",
+  },
+  {
+    key: "callGasLimit",
+    type: "string",
+    description: "The amount of gas to allocate the main execution call",
+  },
+  {
+    key: "verificationGasLimit",
+    type: "string",
+    description: "The amount of gas to allocate for the verification step",
+  },
+  {
+    key: "preVerificationGas",
+    type: "string",
+    description: "Extra gas to pay the bunder",
+  },
+  {
+    key: "maxFeePerGas",
+    type: "string",
+    description: "Maximum fee per gas (similar to EIP-1559 max_fee_per_gas)",
+  },
+  {
+    key: "maxPriorityFeePerGas",
+    type: "string",
+    description:
+      "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)",
+  },
+  ...sponsorMetaDataType,
+];
+
+export const pm_getPaymasterStubDataReturnV07 = [
+  {
+    key: "paymaster",
+    type: "string",
+    description:
+      "Address of paymaster contract, (or empty, if account pays for itself)",
+  },
+  {
+    key: "paymasterVerificationGasLimit",
+    type: "string",
+    description:
+      "The amount of gas to allocate for the paymaster post-operation code",
+  },
+  {
+    key: "paymasterPostOpGasLimit",
+    type: "string",
+    description:
+      "The amount of gas to allocate for the paymaster post-operation code",
+  },
+  {
+    key: "paymasterData",
+    type: "string",
+    description: "Data for paymaster (only if paymaster exists)",
+  },
+  {
+    key: "callGasLimit",
+    type: "string",
+    description: "The amount of gas to allocate the main execution call",
+  },
+  {
+    key: "verificationGasLimit",
+    type: "string",
+    description: "The amount of gas to allocate for the verification step",
+  },
+  {
+    key: "preVerificationGas",
+    type: "string",
+    description: "Extra gas to pay the bunder",
+  },
+  {
+    key: "maxFeePerGas",
+    type: "string",
+    description: "Maximum fee per gas (similar to EIP-1559 max_fee_per_gas)",
+  },
+  {
+    key: "maxPriorityFeePerGas",
+    type: "string",
+    description:
+      "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)",
+  },
+  ...sponsorDataType7677,
+];
+
+export const pm_getPaymasterDataReturnV07 = [
   {
     key: "paymaster",
     type: "string",
