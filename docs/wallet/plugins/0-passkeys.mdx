@@ -400,6 +400,25 @@ const isSignatureValid: boolean =
 
 ## Additional Notes
 
+### WebAuthn / Passkeys API
+
+The WebAuthn API is a web standard that enables passwordless authentication, allowing users to sign in to websites and applications using biometric factors (e.g., fingerprint, face recognition) or security keys. 
+This API is supported by most major browsers, including Google Chrome, Mozilla Firefox, Microsoft Edge, Apple Safari, Brave, and Opera. For more information 
+on the browser support and requirements, Mozilla has created great [documentation on WebAuthn](https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API).
+
+#### Web-based:
+In the guides above, we showed how to implement and call the WebAuthn API directly using the built-in Navigator API. However, you can also use helper or higher-level libraries to simplify the integration process:
+
+- **WebAuthnP256 (Viem ox)**: This library provides a higher level abstraction over the WebAuthn API.
+  - [Web reference](https://gist.github.com/thomas779/9bcee2b20f0abc1712c434e2a5063856) by Thomas, founder of Backpack.Network, for using [`WebAuthnP256`](https://oxlib.sh/api/WebAuthnP256) and `abstractionkit`.
+
+#### React Native:
+For React Native applications, teams have used the following libraries to integrate the WebAuthn/Passkeys functionality:
+
+- [**react-native-passkey**](https://www.npmjs.com/package/react-native-passkey): This library provides a React Native wrapper around the platform-specific WebAuthn/Passkeys APIs.
+- [**cbor-web**](https://www.npmjs.com/package/cbor-web): This library is used in conjunction with `react-native-passkey` to handle the CBOR (Concise Binary Object Representation) data format used by the WebAuthn API.
+  - [**React Native demo**](https://github.com/candidelabs/passkeys-react-native-demo) by Adrian, the lead developer from Unit-e, using `abstractionkit`, `react-native-passkey`, and `cbor-web`.
+
 ### Security Consideration
 It’s important to consider a [multisig setup](#multisig) or the [recovery module](/wallet/plugins/recovery-with-guardians/) when using Passkeys. 
 In this demo, we demonstrated a simple setup by creating a 1/1 Safe with a passkey as the only signer. 
