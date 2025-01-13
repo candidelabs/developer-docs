@@ -184,8 +184,16 @@ const sidebars = {
       className: "category-not-collapsible",
       label: "EIP-7702",
       items: [
-        "experimental/7702/overview",
-        "experimental/7702/delegation"
+        {
+          type: "doc",
+          id: "experimental/7702/overview",
+          label: "Overview"
+        },
+        {
+          type: "doc",
+          id: "experimental/7702/delegation",
+          label: "Delegation"
+        },
       ],
     }
   ]

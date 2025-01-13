@@ -1,5 +1,5 @@
 ---
-title: Overview
+title: EIP-7702 Overview
 description: Add a new tx type that permanently sets the code for an EOA
 keywords: [EIP-7702, Externally Owned Accounts, EOAs, smart contract wallets, Ethereum, ERC-4337, batching, sponsorship, privilege de-escalation]
 ---
@@ -11,25 +11,25 @@ the deployment of code directly at their address. This improvement allows EOAs t
 
 ## Key Features
 
-1. **Batching**:  
+### Batching
    This feature allows users to execute multiple operations in a single atomic transaction. A common use case is the combination of an ERC-20 approval 
    followed by the spending of that approval. Currently, this workflow requires two separate transactions in decentralized exchanges (DEXes). 
    Advanced batching scenarios may involve dependencies, where the output of one operation serves as the input for another, streamlining complex workflows.
 
-2. **Gas Sponsorship**:  
+### Gas Sponsorship
    EIP-7702 enables one account (Account X) to pay for transactions on behalf of another account (Account Y). This can facilitate various use cases, such as:
    - Account X receiving payment in a different ERC-20 token for the transaction service.
    - Application operators covering transaction costs for their users, thereby improving user experience by eliminating the need for users to 
      hold native tokens for transaction fees.
 
-3. **Privilege De-escalation**:  
+### Privilege De-escalation
    Users can create sub-keys with specific permissions that are more limited than the global access of the main account. This feature improves 
    security and control over account operations. Examples of privilege de-escalation include:
    - Granting permission to spend ERC-20 tokens while restricting access to ETH.
    - Allowing a sub-key to spend only up to 1% of the total balance per day.
    - Limiting interactions to specific applications, thereby reducing the risk of unauthorized access.
 
-## Forward-compatibility with Account Abstraction
+### Forward-compatibility with Account Abstraction
 
 This EIP is designed to be very forward-compatible with endgame account abstraction, without over-enshrining any fine-grained details of ERC-4337 or RIP-7560.
 
@@ -42,7 +42,7 @@ Specifically:
     - It allows EOAs to function like smart contracts, enabling them to be included in ERC-4337 bundles while remaining compatible with the existing EntryPoint.
 
 
-### References
+## References
 
 - EIP: https://eips.ethereum.org/EIPS/eip-7702
 - Discussions: https://ethereum-magicians.org/t/eip-set-eoa-account-code-for-one-transaction/19923
