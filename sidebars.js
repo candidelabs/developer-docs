@@ -196,6 +196,49 @@ const sidebars = {
         },
       ],
     }
+  ],
+  instaGasSidebar: [
+    {
+      type: "category",
+      collapsible: false,
+      className: "category-not-collapsible",
+      label: "Quickstart",
+      items: [
+        {
+          type: "doc",
+          id: "instagas/overview",
+          label: "Overview"
+        },
+        {
+          type: "doc",
+          id: "instagas/gas-policies",
+          label: "Gas Policies"
+        },
+      ],
+    },
+    {
+      type: "category",
+      collapsible: false,
+      className: "category-not-collapsible",
+      label: "Explainer",
+      items: [
+        {
+          type: "doc",
+          id: "instagas/introduction",
+          label: "Introduction"
+        },
+        {
+          type: "doc",
+          id: "instagas/usecases",
+          label: "Usecases"
+        },
+        {
+          type: "doc",
+          id: "instagas/architecture",
+          label: "Architecture"
+        },
+      ],
+    }
   ]
 };
 

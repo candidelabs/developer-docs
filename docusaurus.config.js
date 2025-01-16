@@ -131,16 +131,16 @@ const config = {
             position: 'left',
             label: 'API',
           },
+          /*{
+            to: '/instagas/overview',
+            position: 'left',
+            label: 'InstaGas',
+          },*/
           {
             to: '/experimental/7702/overview',
             position: 'left',
             label: 'Experimental',
           },
-          // {
-          //   to: '/dapps/getting-started',
-          //   position: 'left',
-          //   label: 'Dapps',
-          // },
           {
             to: 'https://dashboard.candide.dev',
             position: 'right',

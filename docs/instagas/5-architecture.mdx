@@ -1,0 +1,59 @@
+---
+title: InstaGas Architecture | Gas Sponsorship for any dApp 
+description: InstaGas is a paymaster that enables gas sponsorship through customizable Gas Policies, supporting ERC-20 token payments as a fallback. It's future-ready, compatible with EIP-7702 and RIP-7560.
+keywords: [gas sponsorship, paymaster, eip-7702, erc-4337, gas station, gas policies, gas abstraction]
+---
+
+# InstaGas Architecture
+
+## Universal
+✅ ERC-4337 ✅ EIP-7702 ✅ RIP-7560
+
+InstaGas is an ERC-4337 compliant paymaster that works seamlessly with any Bundler or any Account Abstraction SDK. It supports gas sponsorship through customizable Gas Policies and can also handle gas payments in ERC-20 tokens as a fallback option. 
+
+Future-ready, as it is compatible with [EIP-7702](/experimental/7702/overview) - the proposal that extends Externally Owned Accounts (EOA) functionality to include features 
+from smart wallets, such as transaction batching and gas sponsorship. Furthermore, it is also compatible with 
+[RIP-7560](https://github.com/ethereum/RIPs/blob/master/RIPS/rip-7560.md), the Native Account Abstraction proposal.
+
+## Gas Policies
+
+A Gas Policy is a set of customizable rules designed to sponsor gas for targeted actions. 
+
+A Gas Policy can be configured as public, allowing it to be used by anyone calling the [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation) endpoint, 
+or as private, accessible only through a unique policy ID. 
+
+Gas Policies are set up for a defined time period and can include various rule types. These include account-based rules, which set limits per account, access-based rules that whitelist specific accounts, domains, or IP addresses, and transaction-based rules, which customize policies based on the dApp's contract, callable methods, input parameters, and transaction limits.
+
+The steps to set up a Gas Policy are as follows:
+
+1. Sign up on the [dashboard](https:dashboard.candide.dev)  
+2. Create a new Gas Policy on a specific network
+3. Configure the policy rules  
+4. Fund the policy and activate it
+
+
+![instagas-flow](/img/instagas-flow.svg)
+
+## Smart Wallets
+
+User Operations are transactions specific to Smart Wallets. The smart wallet client constructs the User Operation based on calldata provided by the dApp, 
+either through the Ethereum browser provider, a WalletConnect connection, or an internally integrated dApp. The client then sends a request with 
+the User Operation to InstaGas API to determine if a matching gas policy exists. If a policy is found, the Paymaster returns a valid sponsorship signature. 
+If no match is found, the client defaults to offering the end-user ERC-20 token options for paying gas.
+
+## Paymaster Verifier
+
+The traditional Paymaster design sponsors gas indiscriminately, allowing anyone with access to the API key or a private sponsorship id on the client side 
+to consume gas with minimal verification. This exposes both the Paymaster provider and its customers, who set up the endpoint, to draining attacks. We consider the use of 
+rules and policies enforced by a Paymaster Verifier a more secure solution. The verifier checks all applicable gas policies against the submitted User Operation, 
+offering protection against malicious actors attempting to exploit policies that were not intended or properly configured for specific use cases. 
+This ensures that gas policies are enforced as intended.
+
+## Paymaster Contract
+
+A Paymaster holds both a deposit and a stake within the global ERC-4337 EntryPoint contract. The deposit, used to cover gas fees, is distinct from the stake, 
+which is locked to ensure security. The EntryPoint can withdraw from the Paymaster's deposit if it determines that the Paymaster has sufficient ETH to cover 
+the gas for the operation via the handleOps method. It then calls `validatePaymasterUserOp` on the Paymaster contract to confirm the Paymaster's willingness to 
+sponsor the operation. If `validatePaymasterUserOp` returns a 'context', the EntryPoint’s `handleOps` method subsequently calls `postOp` on the Paymaster after executing 
+the main operation. The stake serves as protection against malicious Paymasters, ensuring that if a Paymaster behaves maliciously or attempts to launch 
+a denial-of-service (DoS) attack on the system, its stake can be slashed as a penalty.

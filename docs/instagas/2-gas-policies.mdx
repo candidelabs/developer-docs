@@ -1,0 +1,86 @@
+---
+title: InstaGas Gas Policies
+description: A No-Code Gas Sponsorship Paymaster for dapps to define gas policies to directly sponsor gas for Smart Wallets end-users
+keywords: [InstaGas, gas policy, gas sponsorship, smart contracts, eip-7702]
+---
+
+# InstaGas Policies Rules Overview
+
+InstaGas provides a set of rules to customize gas policies for dApps. These rules are categorized into four main sections: 
+- [General Rules](/instagas/gas-policies/#general-rules)
+- [Account Rules](/instagas/gas-policies/#account-rules)
+- [Access Rules](/instagas/gas-policies/#access-rules) 
+- [Transaction Rules](/instagas/gas-policies/#transaction-rules)
+
+## General Rules
+
+- **Effective Date Range**: Specify the date range when the gas policy should be active. This setting is ignored if the policy is inactive.
+- **Active State**: Toggle to activate or deactivate the policy at any given moment.
+- **Private or Public**: Choose between public and private gas policies:
+  - **Public Gas Policies**: Set up by dApps for consumption by wallets without requiring a sponsorship policy ID.
+  - **Private Gas Policies**: Set up by wallets, requiring a sponsorship policy ID, and used when no public gas policy matches the transaction.
+
+<img src="/img/instagas/instagas-general-rules.png" width="1200px" />
+
+
+## Account Rules
+
+- **Total Max per Account**: Set an account spending limit.
+    - Example: "Every account has a total sponsorship gas limit of 0.5 ETH."
+- **Max per UserOperation**: Limit the transaction sponsorship.
+    - Example: "Every user operation can be sponsored for gas up to 0.0001 ETH."
+- **Rate Limit Per Account**: Define a rate and period. 
+    - Example: "Every account is allowed x sponsorships per y days."
+
+<img src="/img/instagas/instagas-account-rules.png" width="900" />
+
+
+## Access Rules
+
+- **Account Whitelist**: Create an allow list of accounts that can benefit from the gas policy. If empty, all accounts are allowed. 
+    - Example: "Only sponsor transactions that have `0xabcd...` as the sender."
+- **Domains Whitelist**: Create an allow list of origins that can benefit from the gas policy. If empty, all origins are allowed. 
+    - Example: "Only sponsor transactions that were originated from `app.uniswap.com`."
+- **IP Whitelists**: Create an allow list of IPs that can benefit from the gas policy. If empty, all IPs are allowed. 
+    - Example: "Only sponsor transactions that were originated from `148.156.123.63`."
+
+<img src="/img/instagas/instagas-access-rules.png" width="900" />
+
+## Transaction Rules
+
+Transaction rules limit gas sponsorship to specific smart contract interactions, callable methods, input parameters, and their respective constraints.
+
+- **Contract Address**: Limit gas sponsorship to a specific smart contract address.
+    - Example: "Only sponsor transactions that interacts with the smart contract address `0x123`."
+- **Method**: Limit gas sponsorship to a specific callable method on the smart contract.
+    - Example: "Only sponsor gas when the transaction calls the method `swap` on the smart contract.
+- **Parameters Constraints**: Limit gas sponsorship to certain parameters and contrains on the selected method.
+    - Example: "Only sponsor gas when the minimum amount of `tokenIn` in the selected method is greater than or equal to 1 ETH"
+- **Batch Transaction**: Design rules to sponsor a batch of transactions, such as an ERC-20 token approval followed by a deposit to a contract. 
+    - Example: "Only sponsor if the transaction calls the `approval` of the erc-20 token to your contracts as well as the `deposit` transaction.
+
+<img src="/img/instagas/instagas-transaction-rules.png" width="900" />
+
+
+
+### Example: Uniswap Swap Transaction
+
+When you want to make a swap on Uniswap, you can make a call to the `swap` function with specific parameters. For instance:
+
+`swap(400, usdt, weth)`
+
+In this example:
+
+* `swap` is the function being called, which initiates the swap transaction.
+* `(400, usdt, weth)` are the parameters being passed to the `swap` function, which specify the details of the swap:
+	+ `400` is the amount of tokens to be swapped.
+	+ `usdt` is the token being swapped (in this case, USDT).
+	+ `weth` is the token being swapped for (in this case, WETH).
+
+For each function, you can specify a list of parameters, and each parameter can have a constraint. For example, you can assign constraints to the parameters in the `swap` function as follows:
+
+* `amount`: greater than 350 (e.g., `amount > 350`)
+* `tokenIn`: equal to USDT (e.g., `tokenIn == usdt`)
+* `tokenOut`: equal to WETH (e.g., `tokenOut == weth`)
+
+By specifying these constraints, you can control the behavior of the swap transaction and ensure that it is executed according to your requirements. For instance, you can ensure that the swap transaction only occurs if the amount being swapped is greater than 350, and if the tokens being swapped are USDT and WETH.
