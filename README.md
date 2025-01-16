@@ -2,7 +2,7 @@
 
 ![Alt text](./static/img/posters/atelier-meta-web.png "Candide Atelier Logo")
 
-This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
+This website is built using [Docusaurus 3](https://docusaurus.io/), a modern static website generator.
 
 ### Installation
 
