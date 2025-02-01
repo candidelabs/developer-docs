@@ -114,7 +114,7 @@ const config = {
           'summary_large_image',
       },
       {
-        name: 'keywords', 
+        name: 'keywords',
         content:
           'account abstraction, erc-4337, bundler, paymaster, Smart Wallet, gas sponsorship',
       },
@@ -184,19 +184,19 @@ const config = {
         trailingSlash: true,
         // // Optional: Specify domains where the navigation should occur through window.location instead on history.push. Useful when our Algolia config crawls multiple documentation sites and we want to navigate with window.location.href to them.
         // externalUrlRegex: 'external\\.com|domain\\.com',
-  
+
         // // Optional: Replace parts of the item URLs from Algolia. Useful when using the same search index for multiple deployments using a different baseUrl. You can use regexp or string in the `from` param. For example: localhost:3000 vs myCompany.com/docs
         // replaceSearchResultPathname: {
         //   from: '/docs/', // or as RegExp: /\/docs\//
         //   to: '/',
         // },
-  
+
         // // Optional: Algolia search parameters
         // searchParameters: {},
-  
+
         // // Optional: path for search page that enabled by default (`false` to disable it)
         // searchPagePath: 'search',
-  
+
         // //... other Algolia params
       },
       footer: {
@@ -223,19 +223,23 @@ const config = {
             ],
           },
           {
-            "title": "Support",
+            "title": "Contact & Support",
             "items": [
               {
                 "label": "Discord",
                 "href": "https://discord.gg/8q2H6BEJuf"
               },
               {
-                "label": "Twitter",
-                "href": "https://twitter.com/candidelabs"
+                "label": "Telegram",
+                "href": "https://t.me/heymarcopolo"
               },
               {
                 "label": "team@candidelabs.com",
                 "href": "mailto:team@candidelabs.com"
+              },
+              {
+                "label": "Twitter",
+                "href": "https://twitter.com/candidelabs"
               },
             ]
           },
