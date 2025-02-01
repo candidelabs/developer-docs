@@ -112,6 +112,24 @@ const sidebars = {
     },
     {
       type: "category",
+      label: "Safe Recovery Service",
+      className: "category-not-collapsible",
+      collapsible: false,
+      items: [
+        {
+          type: "doc",
+          id: "wallet/recovery/overview",
+          label: "Recovery Service Overview"
+        },
+        {
+          type: "doc",
+          id: "wallet/recovery/api-methods",
+          label: "Recovery Service API"
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "Bundler (self-host)",
       collapsed: true,
       items: ["wallet/bundler/erc-4337-intro", "wallet/bundler/installation"],

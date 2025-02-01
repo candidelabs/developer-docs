@@ -1,0 +1,72 @@
+---
+title: Safe Recovery Service
+description: An overview of Candide's Safe Recovery Service and how it works. Features signature aggregation, gas sponsorship, recovery request monitoring, signature storage, and auto-execution.
+keywords: [safe recovery, social recovery, smart wallet, email recovery, guardian recovery]
+---
+
+## Overview
+
+A UX and a security service for Safe [Recovery Contracts](https://github.com/candidelabs/candide-contracts), 
+streamlining the recovery process for account owners and their designated recovery contacts.
+
+## Who is this for
+
+Wallets applications integrating Candide's Social Recovery Module, and want to offer a seamless and secure recovery experience for their end-users.
+
+## Features
+
+### Signature Aggregation and Storage
+Guardians signatures can be sent to the service to allow off-chain collection. The service can then automatically execute the recovery confirmation and finalization
+once all required signatures have been collected.
+
+### Automatic Execution
+The service offers automatic execuction options to minimize UX friction and increase privacy for recovery contacts / guardians. 
+It can be configured to automatically execute:
+
+1. The confirmation recovery transaction after the signature threshold is met, eliminating the need for guardians to cover gas costs.
+2. The finalization transaction after the grace period ends, avoding recovery contacts to return back to complete the process.
+
+### Gas Sponsorship Relayer
+It includes a gas sponsorship relayer, which cover the gas costs for both confirmation and finilization
+
+### Alerts and Notifications
+Account owners can subscribe to receive notifications via email or SMS when a recovery request is initiated, whether onchain or through the service, ensuring they stay informed during a recovery process.
+The service keeps track of transactions sent via the *Safe Recovery Module* and uses events and tracing to index transactions to send timely alerts.  
+
+### A Communication System
+It provides a communication system using emojis that enables guardians to verify and approve legitimate recovery requests, effectively preventing social phishing 
+attempts by malicious actors who may try to manipulate the recovery process.
+
+## How it works
+
+```mermaid
+flowchart TD
+    A[Start] --> B[Listen for recovery requests from guardians]
+    B --> C{Recovery request received?}
+    C -->|No| B
+    C -->|Yes| D[Store recovery request]
+    D --> E[Return request for guardians to sign]
+    E --> F[Collect and store guardian signatures]
+    F --> G{All signatures collected?}
+    G -->|No| F
+    G -->|Yes| H[Execute recovery request]
+    H --> I[Wait for grace period to end]
+    I --> J{Grace period ended?}
+    J -->|No| I
+    J -->|Yes| K[Finalize recovery request]
+    K --> L[End]
+    
+    R{Check alert subscription}
+    R -->|Email| S[Send email alert]
+    R -->|SMS| T[Send SMS alert]
+    
+    C -->|Yes| R
+```
+
+## Reference Links
+
+- [Recovery explainer](/blog/making-accounts-recoverable)
+- [Module SDK](/wallet/plugins/recovery-with-guardians)
+- [Module contracts and audits](https://github.com/candidelabs/candide-contracts)
+- [Source code](https://github.com/candidelabs/safe-recovery-service)
+
