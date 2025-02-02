@@ -41,12 +41,32 @@ const recoveryRequestSchema = [
     },
     {
         key: "executeData",
-        type: "json",
+        type: [
+            {
+                key: "sponsored",
+                type: "boolean",
+                description: "If the recovery execution tx is gas-sponsored or not",
+            }, {
+                key: "transactionHash",
+                type: "string",
+                description: "The transaction hash of the recovery execution",
+            },
+        ],
         description: "The hash of the executed transaction",
     },
     {
         key: "finalizeData",
-        type: "json",
+        type: [
+            {
+                key: "sponsored",
+                type: "boolean",
+                description: "If the recovery finilization tx after the grace period ends is gas-sponsored or not",
+            }, {
+                key: "transactionHash",
+                type: "string",
+                description: "The transaction hash of the finilization execution",
+            },
+        ],
         description: "The hash of the finalized transaction",
     },
     {
@@ -157,16 +177,10 @@ export const postRecoveriesSign = [
     },
 ];
 
-const postRecoveriesSignResponseType = [{
-    key: "value",
-    type: "true",
-    description: "true = signature is valid",
-}]
-
 export const postRecoveriesSignResponse = [{
     key: "status",
-    type: postRecoveriesSignResponseType,
-    description: "Returns an object with true value if the signature is valid. Else returns standard error",
+    type: "true",
+    description: "true = signature is valid",
 }];
 
 export const postRecoveriesExecuteById = [

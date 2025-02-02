@@ -42,7 +42,7 @@ Creates a new recovery request by a guardian with a lost signer of a Safe accoun
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key \
+  https://api.candide.dev/recoveries/$version/$network/$your_api_key/create \
   -H 'Content-Type: application/json' \
   -d '{
         "account": "0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba",
@@ -70,8 +70,14 @@ curl -X POST \
     "newThreshold": 2,
     "nonce": "1234567890",
     "signatures": [],
-    "executeTransactionHash": "",
-    "finalizeTransactionHash": "",
+    "executeData": {
+        "sponsored": true,
+        "transactionHash": "",
+    },
+    "finalizeData": {
+        "sponsored": true,
+        "transactionHash": "", 
+    },
     "status": "PENDING",
     "discoverable": true,
     "createdAt": "2023-04-18T12:34:56.789Z",
@@ -97,7 +103,7 @@ Fetches recovery requests created by guardians of the Safe accounts by the safe 
 
 ```json
 curl -X GET \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key \
+  https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetchByAddress \
   -H 'Content-Type: application/json' \
   -d '{
         "account": "0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba",
@@ -122,8 +128,14 @@ curl -X GET \
         "newThreshold": 2,
         "nonce": "1234567890",
         "signatures": [],
-        "executeTransactionHash": "",
-        "finalizeTransactionHash": "",
+        "executeData": {
+            "sponsored": true,
+            "transactionHash": "", 
+        },
+        "finalizeData": {
+            "sponsored": true,
+            "transactionHash": "", 
+        },
         "status": "PENDING",
         "discoverable": true,
         "createdAt": "2023-04-18T12:34:56.789Z",
@@ -141,8 +153,14 @@ curl -X GET \
         "newThreshold": 2,
         "nonce": "1234567890",
         "signatures": [],
-        "executeTransactionHash": "",
-        "finalizeTransactionHash": "",
+        "executeData": {
+            "sponsored": true,
+            "transactionHash": "", 
+        },
+        "finalizeData": {
+            "sponsored": true,
+            "transactionHash": "", 
+        },
         "status": "PENDING",
         "discoverable": true,
         "createdAt": "2023-04-18T12:34:56.789Z",
@@ -169,7 +187,7 @@ Fetch a recovery request by ID
 
 ```json
 curl -X GET \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/123456 \
+  https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetchById \
   -H 'Content-Type: application/json'
 ```
 
@@ -189,8 +207,14 @@ curl -X GET \
     "newThreshold": 2,
     "nonce": "1234567890",
     "signatures": [],
-    "executeTransactionHash": "",
-    "finalizeTransactionHash": "",
+    "executeData": {
+        "sponsored": true,
+        "transactionHash": "", 
+    },
+    "finalizeData": {
+        "sponsored": true,
+        "transactionHash": "", 
+    },
     "status": "PENDING",
     "discoverable": true,
     "createdAt": "2023-04-18T12:34:56.789Z",
@@ -214,7 +238,7 @@ Collects a guardian siganture to store for later confirmation and finilization
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key \
+  https://api.candide.dev/recoveries/$version/$network/$your_api_key/sign \
   -H 'Content-Type: application/json' \
   -d '{
         "id": 123456789,
@@ -242,7 +266,7 @@ curl -X POST \
 </Tabs>
 
 ## Execute a recovery by ID
-#### `POST /recoveries/execute/{id}`
+#### `POST /recoveries/execute`
 Execute a recovery request by ID
 
 <Tabs>
@@ -250,7 +274,7 @@ Execute a recovery request by ID
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/execute/123456 \
+  https://api.candide.dev/recoveries/$version/$network/$your_api_key/execute \
   -H 'Content-Type: application/json' \
 ```
 
@@ -273,7 +297,7 @@ curl -X POST \
 </Tabs>
 
 ## Finalize recovery by ID
-#### `POST /recoveries/finalize/{id}`
+#### `POST /recoveries/finalize`
 Finalize a recovery request by ID
 
 <Tabs>
@@ -281,7 +305,7 @@ Finalize a recovery request by ID
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/123456 \
+  https://api.candide.dev/recoveries/$version/$network/$your_api_key/finalize \
   -H 'Content-Type: application/json' \
 ```
 
@@ -311,7 +335,7 @@ Subscribes to any recovery attempt to a safe account, whether through the backen
 
 ```json
 curl -X GET \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key \
+  https://api.candide.dev/recoveries/$version/$network/$your_api_key/subscribe \
   -H 'Content-Type: application/json' \
   -d '{
         "account": "0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba",
