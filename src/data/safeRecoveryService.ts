@@ -52,7 +52,7 @@ const recoveryRequestSchema = [
                 description: "The transaction hash of the recovery execution",
             },
         ],
-        description: "The hash of the executed transaction",
+        description: "An object field representing the finilization recovery transaction",
     },
     {
         key: "finalizeData",
@@ -67,7 +67,7 @@ const recoveryRequestSchema = [
                 description: "The transaction hash of the finilization execution",
             },
         ],
-        description: "The hash of the finalized transaction",
+        description: "An object field representing the finilization recovery transaction",
     },
     {
         key: "status",
