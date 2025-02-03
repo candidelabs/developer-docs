@@ -6,14 +6,18 @@ keywords: [safe recovery, social recovery, smart wallet, email recovery, guardia
 
 ## Overview
 
-A UX and a security service for Safe [Recovery Contracts](https://github.com/candidelabs/candide-contracts), 
-streamlining the recovery process for account owners and their designated recovery contacts.
+A UX and a security service for Safe Account Recovery, streamlining the recovery process for account owners and their designated recovery contacts.
 
 ## Who is this for
 
-Wallets applications integrating Candide's Social Recovery Module, and want to offer a seamless and secure recovery experience for their end-users.
+Wallets applications integrating Candide's [Social Recovery Module](https://github.com/candidelabs/candide-contracts), and want to offer a seamless and secure recovery experience for their end-users.
 
 ## Features
+
+### Authentication-Based Recovery Guardian 
+
+A secure and user-friendly solution that uses email and phone verification to facilitate account recovery. Can be used as a default recovery method or 
+combined with other guardians (such as hardware wallets or trusted contacts) to create a customized recovery threshold.
 
 ### Signature Aggregation and Storage
 Guardians signatures can be sent to the service to allow off-chain collection. The service can then automatically execute the recovery confirmation and finalization
