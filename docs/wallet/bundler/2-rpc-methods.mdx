@@ -565,6 +565,104 @@ Example respone for an `Included` status
 }
 ```
 
+## EIP-7702
+
+**Holesky Bundler URL**: https://holesky.voltaire.candidewallet.com/rpc
+
+EIP-7702 support is added with the upcoming EntryPoint V0.8 Release. The main ERC-4337 RPC call are `eth_estimateUserOperationGas` and `eth_sendUserOperation`, 
+which takes a UserOperation structure. 
+
+In order to support EIP-7702, we add a new json element named `eip7702Auth`, to hold the eip-7702 auth tuple items. The recovered address MUST be the sender of this UserOperation.
+
+:::note
+Candide released its EIP-7002 Bundler support on Holesky Network on EntryPoint v0.7 as an experimental release, until the official deployment and audits of EntryPoint v0.8 and Pectra upgrade are completed
+:::
+
+
+### eth_estimateUserOperationGas
+
+NOTE: With used with `estimateUserOperation`, the signature is not checked, and the UserOperation is processed as if the signature is valid
+
+#### Example Request
+```json
+{
+  jsonrpc: "2.0",
+  id: 1,
+  method: "eth_estimateUserOperationGas",
+  "params": [
+  [{
+      'sender': '0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31',
+      'nonce': '0x13',
+      'callData': '0x34fcd5be00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000001000000000000000000000000009a7af758ae5d7b6aae84fe4c5ba67c041dfe53360000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000246a627842000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31000000000000000000000000000000000000000000000000000000000000000000000000000000009a7af758ae5d7b6aae84fe4c5ba67c041dfe53360000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000246a627842000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d3100000000000000000000000000000000000000000000000000000000',
+      'callGasLimit': '0x0',
+      'verificationGasLimit': '0x0',
+      'preVerificationGas': '0x0',
+      'maxFeePerGas': '0x0',
+      'maxPriorityFeePerGas': '0x0',
+      'signature': '0xd2614025fc173b86704caf37b2fb447f7618101a0d31f5f304c777024cef38a060a29ee43fcf0c46f9107d4f670b8a85c2c017a1fe9e4af891f24f0be6ba5d671c',
+      'factory': None,
+      'factoryData': None,
+      'paymaster': None,
+      'paymasterVerificationGasLimit': None,
+      'paymasterPostOpGasLimit': None,
+      'paymasterData': None,
+      // highlight-start
+      'eip7702auth': {
+        'chainId': '0x4268',
+        'address': '0x6C193e88c2C6ACB0897d162E9496156BfFF73C0F',
+        'nonce': '0x0f',
+        'yParity': '0x00',
+        'r': '0xf37fca7f67bc0b336adfeefe42a8856ca1e6dee48b1ce7748a4044acfe283b01',
+        's': '0x60ab7d22e278dc43b0b37afada54666c0bf9e0beb9f0cd0159de007d127f3406'
+      }
+      // highlight-end
+  },
+    '0x0000000071727De22E5E9d8BAf0edAc6f37da032'
+  ]
+}
+```
+
+### eth_sendUserOperation
+
+#### Example Request
+```json
+{
+    jsonrpc: "2.0",
+    id: 1,
+    method: "eth_sendUserOperation",
+    "params": [
+      {
+        'sender': '0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31',
+        'nonce': '0x13',
+        'callData': '0x34fcd5be00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000001000000000000000000000000009a7af758ae5d7b6aae84fe4c5ba67c041dfe53360000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000246a627842000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31000000000000000000000000000000000000000000000000000000000000000000000000000000009a7af758ae5d7b6aae84fe4c5ba67c041dfe53360000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000246a627842000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d3100000000000000000000000000000000000000000000000000000000',
+        'callGasLimit': '0x2c3d',
+        'verificationGasLimit': '0x15881',
+        'preVerificationGas': '0xb7f8',
+        'maxFeePerGas': '0x2c05b3',
+        'maxPriorityFeePerGas': '0x2c05a2',
+        'signature': '0x62f5051e378470492a7598d33de0b89e51bbf938ac51a863d0444b926df69d872d0a1ef3ee586bba984e6f290b34ab60b6eda7fb21a99aa84248eb4cfa979c891b',
+        'factory': None,
+        'factoryData': None,
+        'paymaster': None,
+        'paymasterVerificationGasLimit': None,
+        'paymasterPostOpGasLimit': None,
+        'paymasterData': None,
+        // highlight-start
+        'eip7702auth': {
+          'chainId': '0x4268',
+          'address': '0x6C193e88c2C6ACB0897d162E9496156BfFF73C0F',
+          'nonce': '0x0f',
+          'yParity': '0x00',
+          'r': '0xf37fca7f67bc0b336adfeefe42a8856ca1e6dee48b1ce7748a4044acfe283b01',
+          's': '0x60ab7d22e278dc43b0b37afada54666c0bf9e0beb9f0cd0159de007d127f3406'
+        }
+        // highlight-end
+      },
+      '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+    ]
+}
+```
+
 
 
 
