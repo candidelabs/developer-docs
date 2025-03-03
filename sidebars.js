@@ -153,6 +153,19 @@ const sidebars = {
     },
     {
       type: "category",
+      label: "EIP-7702",
+      collapsible: false,
+      className: "category-not-collapsible",
+      items: [
+        {
+          type: "doc",
+          id: "wallet/guides/getting-started-eip-7702",
+          label: "EIP-7702 Quickstart"
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "Plugins",
       collapsible: false,
       className: "category-not-collapsible",
@@ -204,12 +217,12 @@ const sidebars = {
       items: [
         {
           type: "doc",
-          id: "experimental/7702/overview",
+          id: "account-abstraction/7702/overview",
           label: "Overview"
         },
         {
           type: "doc",
-          id: "experimental/7702/delegation",
+          id: "account-abstraction/7702/delegation",
           label: "Delegation"
         },
       ],

@@ -142,11 +142,6 @@ const config = {
             label: 'InstaGas',
           },*/
           {
-            to: '/experimental/7702/overview',
-            position: 'left',
-            label: 'Experimental',
-          },
-          {
             to: 'https://dashboard.candide.dev',
             position: 'right',
             label: 'Dashboard↗',
