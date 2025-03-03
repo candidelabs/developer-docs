@@ -152,6 +152,11 @@ const config = {
             label: 'Blog↗',
           },
           {
+            to: 'https://t.me/heymarcopolo',
+            position: 'right',
+            label: 'Contact us↗',
+          },
+          {
             to: '/blog',
             position: 'right',
             label: 'Releases',
