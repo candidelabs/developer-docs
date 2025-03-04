@@ -119,12 +119,17 @@ const sidebars = {
         {
           type: "doc",
           id: "wallet/recovery/overview",
-          label: "Recovery Service Overview"
+          label: "Overview"
         },
         {
           type: "doc",
-          id: "wallet/recovery/api-methods",
-          label: "Recovery Service API"
+          id: "wallet/recovery/ux-api",
+          label: "Recovery UX API"
+        },
+        {
+          type: "doc",
+          id: "wallet/recovery/auth-api",
+          label: "Email/SMS Recovery API"
         },
       ],
     },

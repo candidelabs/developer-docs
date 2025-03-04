@@ -25,7 +25,7 @@ import {
     postAlertSubscribeResponse,
 } from "/src/data/safeRecoveryService";
 
-# Safe Recovery Service API
+# Safe Recovery UX API
 
 Safe Recovery Service follows RESTful API standard. It uses standard HTTP methods (GET, POST, ..) to perform CRUD (Create, Read, Update, Delete) 
 operations on our resources, and return error responses in a consistent and predictable format.
@@ -323,42 +323,6 @@ curl -X POST \
 </TabItem>
 <TabItem value="response" label="Response">
     <DataTable items={postRecoveriesFinalizeByIdResponse} / >
-</TabItem>
-</Tabs>
-
-## Subscribe to Recovery Requests
-#### `POST /alerts/subscribe`
-Subscribes to any recovery attempt to a safe account, whether through the backend or onchain
-
-<Tabs>
-<TabItem value="example-request" label="Example Request">
-
-```json
-curl -X GET \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/subscribe \
-  -H 'Content-Type: application/json' \
-  -d '{
-        "account": "0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba",
-        "email": "vitalik@protonmail.com",
-        "signature": "0x12212312312432152452344444444444444444422222222222222223344444444444444",
-    }'
-```
-
-</TabItem>
-<TabItem value="example-response" label="Example Response">
-
-```json
-{
-    "success": "true"
-}
-```
-</TabItem>
-
-<TabItem value="request" label="Request Body">
-    <DataTable items={postAlertSubscribe} / >
-</TabItem>
-<TabItem value="response" label="Response">
-    <DataTable items={postAlertSubscribeResponse} / >
 </TabItem>
 </Tabs>
 
