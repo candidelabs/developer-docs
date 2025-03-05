@@ -609,11 +609,11 @@ NOTE: With used with `estimateUserOperation`, the signature is not checked, and 
       // highlight-start
       'eip7702auth': {
         'chainId': '0x4268',
-        'address': '0x6C193e88c2C6ACB0897d162E9496156BfFF73C0F',
-        'nonce': '0x0f',
+        'address': '0x6C193e88c2C6ACB0897d162E9496156BfFF73C0F', // must be valid delegation address for simulation
+        'nonce': '0x0f', 
         'yParity': '0x00',
-        'r': '0xf37fca7f67bc0b336adfeefe42a8856ca1e6dee48b1ce7748a4044acfe283b01',
-        's': '0x60ab7d22e278dc43b0b37afada54666c0bf9e0beb9f0cd0159de007d127f3406'
+        'r': '0xf37fca7f67bc0b336adfeefe42a8856ca1e6dee48b1ce7748a4044acfe283b01', // can pass a dummy signature during estimates
+        's': '0x60ab7d22e278dc43b0b37afada54666c0bf9e0beb9f0cd0159de007d127f3406' // can pass a dummy signature during estimates
       }
       // highlight-end
   },
