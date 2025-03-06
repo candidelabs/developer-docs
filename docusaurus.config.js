@@ -99,14 +99,14 @@ const config = {
         respectPrefersColorScheme: false,
       },
       image: 'img/posters/atelier-meta.png',
-      // announcementBar: {
-      //   id: 'abstractionkit_v0.2',
-      //   content:
-      //     'Create Recurring Transfers, offer DCA and Subscriptions with the new Safe Allowance Module  <button><a target="_blank" rel="noopener noreferrer" href="/blog/safe-allowance">Read The Release</a></button>',
-      //   backgroundColor: '#f0f6ff',
-      //   textColor: '#000000',
-      //   isCloseable: true, 
-      // },
+      announcementBar: {
+        id: 'instagas',
+        content:
+          'Introducing InstaGas: a unified platform for Dapps to abstract gas in a few clicks, no code required  <button><a href="/instagas/overview/">Learn more</a></button>',
+        backgroundColor: '#f0f6ff',
+        textColor: '#000000',
+        isCloseable: true, 
+      },
       metadata: [{
         name:
           'twitter:card',
@@ -136,11 +136,11 @@ const config = {
             position: 'left',
             label: 'API',
           },
-          /*{
+          {
             to: '/instagas/overview',
             position: 'left',
             label: 'InstaGas',
-          },*/
+          },
           {
             to: 'https://dashboard.candide.dev',
             position: 'right',

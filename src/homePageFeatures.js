@@ -3,7 +3,7 @@ export default [
     title: 'AbstractionKit',
     rows: [
       {
-        title: 'Guides',
+        title: 'SDK Guides',
         description: 'Step by step guides on how to create, customize and offer Smart Wallets for your users',
         to: './wallet/atelier-intro'
       },
@@ -14,16 +14,16 @@ export default [
       },
     ],
   },
-  /* {
+  {
     title: 'InstaGas',
     rows: [
       {
-        title: 'Getting Started',
-        description: 'No-Code Gas Sponsorship for dApps on over 10+ chains with a setup time in minutes, not months',
+        title: 'Gas Policies Guides',
+        description: 'No-Code Gas Sponsorship for Dapps on over 10+ chains with a setup time in minutes',
         to: './instagas/overview',
       },
     ],
-  },  */
+  },
   {
     title: 'Infra API',
     rows: [
