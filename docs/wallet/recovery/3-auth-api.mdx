@@ -52,8 +52,8 @@ curl -X POST \
    "chainId": 1,
    "channel":"email",
    "target":"user@example.com",
-   "timestamp": 1739024754,
-   "signature": "sign(chainId, channel, target, timestamp)"
+   "message": "siwe(chainId, statement(channel, target))",
+   "signature": "sign(message)"
 }'
 ```
 
@@ -73,8 +73,15 @@ curl -X POST \
 -   `chainId`: The chain id in which your account resides (for multi-chain wallets, users will need to register per chain)
 -   `channel`: Either `"email"` or `"sms"` (defines the authentication type).
 -   `target`: The email or phone number for authentication.
--   `timestamp`: timestamp at signature
+-   `message`: SIWE (EIP-4361) message statement. Statement: 
+
+```
+I authorize Safe Recovery Service to sign a recovery request for my account after I authenticate using {{target}} via {{channel}}
+```
+
 -   `signature`: signature proving the request is initiated from the account
+
+See example guide how to construct the message and signature using Sign in With Ethereum (SIWE)
 
 ## Registration: Submits confirmation using OTP
 Submits the receive OTP code to confirm ownership of the target channel 
@@ -117,15 +124,11 @@ Fetch the registration of the protected smart account
 <TabItem value="example-request" label="Example Request">
 
 ```json
-curl -X GET \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/auth/registrations \
-  -H 'Content-Type: application/json' \
-  -d '{
-   "account":"0x...",
-   "chainId": 1,
-   "timestamp": 1739024754,
-   "signature": "sign(chainId, timestamp)"
-}'
+curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/auth/registrations" \
+   --data-urlencode "account=0x...",
+   --data-urlencode "chainId=0x1",
+   --data-urlencode "message=siwe(chainId, statement)",
+   --data-urlencode "signature=sign(message)"
 ```
 
 </TabItem>
@@ -147,8 +150,15 @@ curl -X GET \
 
 -   `account`: The safe account address.
 -   `chainId`: The chain id in which your account resides.
--   `timestamp`: timestamp at signature
+-   `message`: SIWE (EIP-4361) message statement. Statement: 
+
+```
+I request to retrieve all authentication methods currently registered to my account with Safe Recovery Service
+```
+
 -   `signature`: signature proving the request is initiated from the account
+
+See example guide how to construct the message and signature using Sign in With Ethereum (SIWE)
 
 ## Registration: Delete
 Deletes a registration
@@ -163,7 +173,7 @@ curl -X POST \
   -H 'Content-Type: application/json' \
   -d '{
    "registrationId":"unique-registration-id",
-   "timestamp": 1739024754,
+   "message": "siwe(chainId, statement(registrationId))",
    "signature": "sign(registrationId, timestamp)"
 }'
 ```
@@ -180,8 +190,15 @@ curl -X POST \
 </Tabs>
 
 -   `registrationId`: The registration id.
--   `timestamp`: timestamp at signature
+-   `message`: SIWE (EIP-4361) message statement. Statement: 
+
+```
+I request to remove the authentication method with registration ID {{id}} from my account on Safe Recovery Service
+```
+
 -   `signature`: signature proving the request is initiated from the account
+
+See example guide how to construct the message and signature using Sign in With Ethereum (SIWE)
 
 ## Recovery: Request to recover an account
 Request a siganture from the service to recover an account given the new owners and threshold 
@@ -277,8 +294,8 @@ curl -X POST \
   "chainId": 1,
   "channel": "email",
   "target": "user@example.com",
-  "timestamp": 1739024754,
-  "signature": "sign(channel, target, timestamp)"
+  "message": "siwe(chainId, statement(channel, target))",
+  "signature": "sign(message)"
 }'
 ```
 
@@ -297,8 +314,15 @@ curl -X POST \
 -   `chainId`: The chain id in which the account resides (this is used to verify the signature field only, the alert will trigger for any action for this account across any chain)
 -   `channel`: Either `"email"` or `"sms"` (defines the delievery channel).
 -   `target`: The email or phone number for authentication.
--   `timestamp`: timestamp at signature
+-   `message`: SIWE (EIP-4361) message statement. Statement: 
+
+```
+I agree to receive Social Recovery Module alert notifications for my account address on all supported chains sent to {{target}}
+```
+
 -   `signature`: signature proving the request is initiated from the account
+
+See example guide how to construct the message and signature using Sign in With Ethereum (SIWE)
 
 ## Alerts: Activate subscripton to recovery requests
 #### `POST /alerts/activate`
@@ -339,15 +363,11 @@ Fetches active alerts subscriptions for an account.
 <TabItem value="example-request" label="Example Request">
 
 ```json
-curl -X GET \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/subscriptions \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "account": "0x...",
-  "chainId": 1,
-  "timestamp": 1739024754,
-  "signature": "sign(identifier with timestamp)",
-}'
+curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/subscriptions" \
+   --data-urlencode "account=0x...",
+   --data-urlencode "chainId=0x1",
+   --data-urlencode "message=siwe(chainId, statement)",
+   --data-urlencode "signature=sign(message)"
 ```
 
 </TabItem>
@@ -369,8 +389,15 @@ curl -X GET \
 
 -   `account`: The smart account address.
 -   `chainId`: The chain id in which the account resides (this is used to verify the signature field only, the alerts are global for this account accross all supported chains that have alerts enabled)
--   `timestamp`: timestamp at signature.
--   `signature`: signature proving the request is initiated from the account.
+-   `message`: SIWE (EIP-4361) message statement. Statement: 
+
+```
+I request to retrieve all Social Recovery Module alert subscriptions linked to my account
+```
+
+-   `signature`: signature proving the request is initiated from the account
+
+See example guide how to construct the message and signature using Sign in With Ethereum (SIWE)
 
 ## Alerts: Unsubscribe
 Unsubscribes from an active alerts subscription.
@@ -399,5 +426,83 @@ curl -X GET \
 </TabItem>
 </Tabs>
 
--   `subscriptionId`: The unique ID received in the subscription response.
+- `subscriptionId`: The unique ID received in the subscription response.
 
+## How to Sign Messages (SIWE EIP-4361)
+
+<Tabs>
+<TabItem value="SIWE">
+
+```typescript
+import { SiweMessage } from "siwe";
+import { hexlify, randomBytes } from "ethers";
+
+import { personalSign, getMessageHashForSafe } from "./safe-utils"
+
+function generateSIWEMessageSignaturePair(safeAccountAddress: string, statement: string, chainId: string): [string, string] {
+  const siweMessage = new SiweMessage({
+    version: "1",
+    address: ethers.getAddress(accountAddress),
+    domain: "service://safe-recovery-safeAccountAddress",
+    uri: "service://safe-recovery-service",
+    statement,
+    chainId: Number(chainId),
+    nonce: hexlify(randomBytes(24)),
+  });
+  const message = siweMessage.prepareMessage();
+  const signature = personalSign(safeAccountAddress, message, BigInt(chainId));
+  return [message, signature];
+}
+```
+
+</TabItem>
+
+<TabItem value="safe-utils">
+```typescript
+import { hashMessage, Wallet } from "ethers";
+
+export function getMessageHashForSafe(safeAccountAddress: string, message: string, chainId: BigInt) {
+    const SAFE_MSG_TYPEHASH = "0x60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca";
+    const DOMAIN_SEPARATOR_TYPEHASH = "0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218";
+    const domainSeparator = ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(
+        ["bytes32", "uint256", "address"],
+        [DOMAIN_SEPARATOR_TYPEHASH, chainId, safeAccountAddress]
+    ));
+    const encodedMessage = ethers.AbiCoder.defaultAbiCoder().encode(
+        ["bytes32", "bytes32"],
+        [SAFE_MSG_TYPEHASH, ethers.keccak256(message)]
+    );
+    const messageHash = ethers.keccak256(ethers.solidityPacked(
+        ["bytes1", "bytes1", "bytes32", "bytes32",],
+        [Uint8Array.from([0x19]), Uint8Array.from([0x01]), domainSeparator, ethers.keccak256(encodedMessage)]
+    ));
+    return messageHash;
+}
+
+export function personalSign(safeAccountAddress: string, message: string, chainId: BigInt){
+  const hash = hashMessage(message);
+	const safeMessageHash = await getMessageHashForSafe(safeAccountAddress, message, chainId);
+  const signer = new Wallet(process.env.privateKey)
+  return signer.signingKey.sign(messageHash).serialized;
+}
+```
+</TabItem>
+
+<TabItem value="example of what users will see">
+
+```
+service://safe-recovery-service wants you to sign in with your Ethereum account:
+0x13D6D891307758afc45EE42C90bFE7636C32088b
+
+I request to retrieve all Social Recovery Module alert subscriptions linked to my account
+
+URI: service://safe-recovery-service
+Version: 1
+Chain ID: 11155420
+Nonce: 0x95e25544f0f05b90c12b92d5a0d29666b99c77a47b00e854
+Issued At: 2025-03-13T15:47:08.746Z
+```
+
+</TabItem>
+
+</Tabs>

@@ -102,14 +102,10 @@ Fetches recovery requests created by guardians of the Safe accounts by the safe 
 <TabItem value="example-request" label="Example Request">
 
 ```json
-curl -X GET \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetchByAddress \
-  -H 'Content-Type: application/json' \
-  -d '{
-        "account": "0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba",
-        "chainId": 1,
-        "nonce": 2,
-    }'
+curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetchByAddress" \
+  --data-urlencode "account=0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba" \
+  --data-urlencode "chainId=11155111" \
+  --data-urlencode "nonce=0x1"
 ```
 
 </TabItem>
@@ -186,9 +182,8 @@ Fetch a recovery request by ID
 <TabItem value="example-request" label="Example Request">
 
 ```json
-curl -X GET \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetchById \
-  -H 'Content-Type: application/json'
+curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetchById" \
+  --data-urlencode "id=0x123"
 ```
 
 </TabItem>
@@ -276,6 +271,9 @@ Execute a recovery request by ID
 curl -X POST \
   https://api.candide.dev/recoveries/$version/$network/$your_api_key/execute \
   -H 'Content-Type: application/json' \
+  -d '{
+        "id": 123456789,
+      }'
 ```
 
 </TabItem>
@@ -307,6 +305,9 @@ Finalize a recovery request by ID
 curl -X POST \
   https://api.candide.dev/recoveries/$version/$network/$your_api_key/finalize \
   -H 'Content-Type: application/json' \
+  -d '{
+        "id": 123456789,
+      }'
 ```
 
 </TabItem>
