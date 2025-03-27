@@ -13,11 +13,6 @@ EIP-7702 upgrades current Ethereum External Owned Accounts (EOAs) by upgrading t
 - **Permissions**: grant specific, limited access to third-parties, enabling use cases like recurring payments
 - **Forward compatibility with end-game AA**: Remains compatible with ERC-4337 and future native account abstraction.
 
-While EIP-7702 brings significant improvements to Ethereum EOA wallets, it's essential to understand the full picture:
-
-- **Private key access remains**: The original key will always maintain admin access to the upgraded account, limiting the security benefits an EOA wallet can offer.    
-- **Portability limitations**: Upgraded EOAs to Smart Accounts are tied to a specific wallet, and transferring to a new wallet will be a security-critical operation, unless all wallets adopt the same smart contracts (which is unlikely).
-
 To learn more about EIP-7702, visit the dedicated [7702 Overview](/account-abstraction/7702/overview).
 
 In this example, you will learn how to upgrade an EOA to a Smart Account to leverage features such as batching and gas sponsorship
@@ -25,7 +20,7 @@ In this example, you will learn how to upgrade an EOA to a Smart Account to leve
 ## Prerequisites
 
 - Node and a package manager (yarn or npm)
-- Holesky ETH from Faucets. Shoot us on [discord](https://discord.gg/7Xb6ECfNFZ) if you need some
+- Sepolia ETH from Faucets. Shoot us on [discord](https://discord.gg/7Xb6ECfNFZ) if you need some
 
 Here's the [complete code](https://github.com/candidelabs/abstractionkit/tree/experimental7702/examples/SimpleAccount/UpgradeEOAto7702SimpleAccountAndSendTransaction) for you to reference if you prefer to run directly.
 
@@ -43,11 +38,11 @@ yarn init
 2. Install required dependencies
 
 ```bash
-yarn add abstractionkit@0.2.14 dotenv
+yarn add abstractionkit@0.2.15 dotenv
 ```
 
 :::note
-```abstractionkit@0.2.14``` is experimental version release with EIP-7702 before the official upgrade in Pectra.
+```abstractionkit@0.2.15``` is experimental version release with EIP-7702 support before the official upgrade with Pectra.
 :::
 
 3. Configure Environment Variables
@@ -55,9 +50,9 @@ yarn add abstractionkit@0.2.14 dotenv
 - Create a `.env` file and add the following environment variables with your own values 
 
 ```bash title=".env"
-CHAIN_ID=17000
-JSON_RPC_NODE_PROVIDER=https://ethereum-holesky-rpc.publicnode.com
-BUNDLER_URL=https://holesky.voltaire.candidewallet.com/rpc
+CHAIN_ID=11155111
+JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
+BUNDLER_URL=https://sepolia.voltaire.candidewallet.com/rpc
 
 #EOA public & private key
 PRIVATE_KEY=PRIVATE_KEY
@@ -109,8 +104,8 @@ main();
 
 ## Step 3: Generate Account Address
 
-To generate an account address, we will be using [Simple7702Account](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/accounts/Simple7702Account.sol), 
-a minimal account that features batching and gas sponsorship.
+To generate an account address, we will be using [Simple7702Account](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/accounts/Simple7702Account.sol),
+a fully audited minimalist smart contract account that can be safely authorized by any EOA. It adds full support for major smart account features like batching and gas sponsorship.
 
 ```ts title="index.ts"
 import { Simple7702Account } from "abstractionkit";
@@ -169,7 +164,7 @@ const transaction2: MetaTransaction = {
 ## Step 4: Create UserOperation
 Now the fun part. Call `createUserOperation`, which will:
 
-1. Compute the r and s values for the `eip7702auth`. These values are part of signature authorization tuple needed to upgrade the EOA
+1. Compute the r and s values for the `eip7702Auth`. These values are part of signature authorization tuple needed to upgrade the EOA
 2. Determine the nonce and fetch the gas prices from the provided node rpc
 3. Estimate gas limits from the provided bundler
 
@@ -192,9 +187,9 @@ let userOperation = await smartAccount.createUserOperation(
     jsonRpcNodeProvider,
     bundlerUrl,
     {
-        eoaDelegatorPrivateKey, // needed to comupte the r, s signature values of the eip7702auth
-        eoaDelegatorChainId: chainId, // chainId at which the account will be upgraded, needed for the eip7702auth
-        // maxPriorityFeePerGas: 0x4b02333en, // uncomment to override the gas prices if holeskey is unstable  
+        eip7702Auth:{
+            chainId, // chainId at which the account will be upgraded
+        }
     }
 );
 
@@ -203,7 +198,20 @@ console.log("This useroperation may cost upto : " + cost + " wei")
 console.log("Please fund the sender account : " + userOperation.sender +" with more than " + cost + " wei")
 ```
 
-## Step 5: Sign and Submit
+## Step 5: Sign the Delegate Authorization
+
+Sign the `eip7702Auth` tuple to delegate the authorization to the smart account. This is only called once, during the upgrade transaction of the EOA.
+
+```ts
+userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
+    BigInt(userOperation.eip7702Auth.chainId),
+    userOperation.eip7702Auth.address,
+    BigInt(userOperation.eip7702Auth.nonce),
+    eoaDelegatorPrivateKey
+)
+```
+
+## Step 6: Sign and Submit
 
 1. Call `signUserOperation`, which will create a signature for the private key provided of the owner of the EOA.
 
@@ -257,21 +265,21 @@ Useroperation sent. Waiting to be included ......
 Useroperation receipt received.
 {
   userOpHash: '0x89a5111d40c4ca45977a28419a08ca33e496a88e973bc995ec6a5a28da564cb5',
-  entryPoint: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+  entryPoint: '0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108',
   sender: '0xbdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31',
   nonce: 0n,
   paymaster: '0x0000000000000000000000000000000000000000',
   actualGasCost: 243581295447n,
   actualGasUsed: 84429n,
   success: true,
-  logs: '[{"address":"0x0000000071727de22e5e9d8baf0edac6f37da032","topics":["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f","0x89a5111d40c4ca45977a28419a08ca33e496a88e973bc995ec6a5a28da564cb5","0x000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31","0x0000000000000000000000000000000000000000000000000000000000000000"],"data":"0x0000000000000000000000000000000000000000000000000000000000000015000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000038b6939b5700000000000000000000000000000000000000000000000000000000000149cd","blockHash":"0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c","blockNumber":"0x347611","blockTimestamp":"0x67c57b18","transactionHash":"0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a","transactionIndex":"0x8","logIndex":"0x3e","removed":false}]',
+  logs: '[{"address":"0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108","topics":["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f","0x89a5111d40c4ca45977a28419a08ca33e496a88e973bc995ec6a5a28da564cb5","0x000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31","0x0000000000000000000000000000000000000000000000000000000000000000"],"data":"0x0000000000000000000000000000000000000000000000000000000000000015000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000038b6939b5700000000000000000000000000000000000000000000000000000000000149cd","blockHash":"0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c","blockNumber":"0x347611","blockTimestamp":"0x67c57b18","transactionHash":"0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a","transactionIndex":"0x8","logIndex":"0x3e","removed":false}]',
   receipt: {
     blockHash: '0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c',
     blockNumber: 3438097n,
     from: '0x6eb0296e64fb8d9d946c7b819e4ff55c7167b0ce',
     cumulativeGasUsed: 884430n,
     gasUsed: 96887n,
-    logs: '[{"address":"0x0000000071727de22e5e9d8baf0edac6f37da032","topics":["0x2da466a7b24304f47e87fa2e1e5a81b9831ce54fec19055ce277ca2f39ba42c4","0x000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31"],"data":"0x000000000000000000000000000000000000000000000000000000627c080142","blockHash":"0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c","blockNumber":"0x347611","blockTimestamp":"0x67c57b18","transactionHash":"0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a","transactionIndex":"0x8","logIndex":"0x3c","removed":false},{"address":"0x0000000071727de22e5e9d8baf0edac6f37da032","topics":["0xbb47ee3e183a558b1a2ff0874b079f3fc5478b7454eacf2bfc5af2ff5878f972"],"data":"0x","blockHash":"0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c","blockNumber":"0x347611","blockTimestamp":"0x67c57b18","transactionHash":"0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a","transactionIndex":"0x8","logIndex":"0x3d","removed":false},{"address":"0x0000000071727de22e5e9d8baf0edac6f37da032","topics":["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f","0x89a5111d40c4ca45977a28419a08ca33e496a88e973bc995ec6a5a28da564cb5","0x000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31","0x0000000000000000000000000000000000000000000000000000000000000000"],"data":"0x0000000000000000000000000000000000000000000000000000000000000015000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000038b6939b5700000000000000000000000000000000000000000000000000000000000149cd","blockHash":"0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c","blockNumber":"0x347611","blockTimestamp":"0x67c57b18","transactionHash":"0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a","transactionIndex":"0x8","logIndex":"0x3e","removed":false}]',
+    logs: '[{"address":"0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108","topics":["0x2da466a7b24304f47e87fa2e1e5a81b9831ce54fec19055ce277ca2f39ba42c4","0x000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31"],"data":"0x000000000000000000000000000000000000000000000000000000627c080142","blockHash":"0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c","blockNumber":"0x347611","blockTimestamp":"0x67c57b18","transactionHash":"0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a","transactionIndex":"0x8","logIndex":"0x3c","removed":false},{"address":"0x0000000071727de22e5e9d8baf0edac6f37da032","topics":["0xbb47ee3e183a558b1a2ff0874b079f3fc5478b7454eacf2bfc5af2ff5878f972"],"data":"0x","blockHash":"0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c","blockNumber":"0x347611","blockTimestamp":"0x67c57b18","transactionHash":"0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a","transactionIndex":"0x8","logIndex":"0x3d","removed":false},{"address":"0x0000000071727de22e5e9d8baf0edac6f37da032","topics":["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f","0x89a5111d40c4ca45977a28419a08ca33e496a88e973bc995ec6a5a28da564cb5","0x000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31","0x0000000000000000000000000000000000000000000000000000000000000000"],"data":"0x0000000000000000000000000000000000000000000000000000000000000015000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000038b6939b5700000000000000000000000000000000000000000000000000000000000149cd","blockHash":"0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c","blockNumber":"0x347611","blockTimestamp":"0x67c57b18","transactionHash":"0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a","transactionIndex":"0x8","logIndex":"0x3e","removed":false}]',
     logsBloom: '0x00000000000000000000000000000400000000000000000000000000000000000008000000000000000800010000000000000000000000000000020000000000000000000000000000000000000000000040000000000000000000000000200000000000020801000000000000000800000000000000000000000000000200000000000000000000000000000000000000000000000000008000000000000000000000000000000000400000000800000000000000000000000002000000000000000000000000410001000000000000000000000000000000000000000020000040000000000000000000000000000000000000000000000000000000000000',
     transactionHash: '0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a',
     transactionIndex: 8n,
@@ -299,6 +307,7 @@ import {
     getFunctionSelector,
     createCallData,
     sendJsonRpcRequest,
+    createAndSignEip7702DelegationAuthorization,
 } from "abstractionkit";
 
 async function main(): Promise<void> {
@@ -356,11 +365,18 @@ async function main(): Promise<void> {
         jsonRpcNodeProvider, //the node rpc is used to fetch the current nonce and fetch gas prices.
         bundlerUrl, //the bundler rpc is used to estimate the gas limits.
         {
-            eoaDelegatorPrivateKey, // needed to comupte the r, s values of the eip7702auth
-            eoaDelegatorChainId: chainId, // chainId at which the account will be upgraded
-            // maxPriorityFeePerGas: 0x4b02333en, // uncomment to override the gas prices if holeskey is unstable  
+            eip7702Auth:{
+                chainId // chainId at which the account will be upgraded
+            }
         }
     );
+
+    userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
+        BigInt(userOperation.eip7702Auth.chainId),
+        userOperation.eip7702Auth.address,
+        BigInt(userOperation.eip7702Auth.nonce),
+        eoaDelegatorPrivateKey
+    )
 
     userOperation.signature = smartAccount.signUserOperation(
         userOperation,

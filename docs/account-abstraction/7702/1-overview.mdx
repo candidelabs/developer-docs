@@ -41,8 +41,14 @@ Specifically:
     - It does not require adding any new opcodes that would become unnecessary in a future without Externally Owned Accounts (EOAs).
     - It allows EOAs to function like smart contracts, enabling them to be included in ERC-4337 bundles while remaining compatible with the existing EntryPoint.
 
+## Limitation
+While EIP-7702 brings significant improvements to Ethereum EOA wallets, it's essential to understand the full picture:
+
+- **Private key access remains**: The original key will always maintain admin access to the upgraded account, limiting the security benefits an EOA wallet can offer.    
+- **Portability limitations**: Upgraded EOAs to Smart Accounts are tied to a specific wallet, and transferring to a new wallet will be a security-critical operation, unless all wallets adopt the same smart contracts (which is unlikely).
 
 ## References
 
 - EIP: https://eips.ethereum.org/EIPS/eip-7702
 - Discussions: https://ethereum-magicians.org/t/eip-set-eoa-account-code-for-one-transaction/19923
+- [Getting Started with EIP-7702](/wallet/guides/getting-started-eip-7702/)

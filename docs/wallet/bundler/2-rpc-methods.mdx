@@ -8,7 +8,351 @@ import TabItem from "@theme/TabItem";
 
 # Bundler API
 
-Bundler exposes standard ERC-4337 and EIP-7702 JSON-RPC API
+Bundler exposes standard ERC-4337 JSON-RPC API
+
+## EntryPoint v0.8
+
+EIP-7702 support is added with with EntryPoint v0.8. The main ERC-4337 RPC call are `eth_estimateUserOperationGas` and `eth_sendUserOperation`, 
+which takes a UserOperation structure. In order to support EIP-7702, a new json element named `eip7702Auth`, to hold the eip-7702 auth tuple items. 
+The recovered address MUST be the sender of this UserOperation.
+
+### eth_sendUserOperation
+
+`eth_sendUserOperation` asks the bundler to sign and submit a User Operation. 
+
+Highlighed code is relevant to 
+Wallets upgrading EOAs to Smart Accounts using EIP-7702. This is an optional field, and teams building smart wallets without EIP-7702 can ignore this field.  
+
+#### Example Request
+```json
+{
+    jsonrpc: "2.0",
+    id: 1,
+    method: "eth_sendUserOperation",
+    "params": [
+      {
+        'sender': '0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31',
+        'nonce': '0x13',
+        'callData': '0x34fcd5be00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000001000000000000000000000000009a7af758ae5d7b6aae84fe4c5ba67c041dfe53360000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000246a627842000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31000000000000000000000000000000000000000000000000000000000000000000000000000000009a7af758ae5d7b6aae84fe4c5ba67c041dfe53360000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000246a627842000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d3100000000000000000000000000000000000000000000000000000000',
+        'callGasLimit': '0x2c3d',
+        'verificationGasLimit': '0x15881',
+        'preVerificationGas': '0xb7f8',
+        'maxFeePerGas': '0x2c05b3',
+        'maxPriorityFeePerGas': '0x2c05a2',
+        'signature': '0x62f5051e378470492a7598d33de0b89e51bbf938ac51a863d0444b926df69d872d0a1ef3ee586bba984e6f290b34ab60b6eda7fb21a99aa84248eb4cfa979c891b',
+        'factory': None,
+        'factoryData': None,
+        'paymaster': None,
+        'paymasterVerificationGasLimit': None,
+        'paymasterPostOpGasLimit': None,
+        'paymasterData': None,
+        // highlight-start
+        'eip7702auth': {
+          'chainId': '0x4268',
+          'address': '0x6C193e88c2C6ACB0897d162E9496156BfFF73C0F',
+          'nonce': '0x0f',
+          'yParity': '0x00',
+          'r': '0xf37fca7f67bc0b336adfeefe42a8856ca1e6dee48b1ce7748a4044acfe283b01',
+          's': '0x60ab7d22e278dc43b0b37afada54666c0bf9e0beb9f0cd0159de007d127f3406'
+        }
+        // highlight-end
+      },
+      '0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108',
+    ]
+}
+```
+
+
+#### Response
+It returns the hash of the User Operation. In case of an error, it returns the error message.
+
+<Tabs>
+  <TabItem value="success" label="success">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": "0x1234...5678" // UserOpHash
+}
+```
+
+  </TabItem>
+  <TabItem value="error" label="example error">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "message": "AA21 didn't pay prefund",
+    "code": -32500
+  }
+}
+```
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "message": "paymaster stake too low",
+    "data": {
+      "paymaster": "0x123456789012345678901234567890123456790",
+      "minimumStake": "0xde0b6b3a7640000",
+      "minimumUnstakeDelay": "0x15180"
+    },
+    "code": -32504
+  }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+### eth_estimateUserOperationGas
+`eth_estimateUserOperationGas` generates and returns an estimate of how much gas is necessary to allow the transaction to complete, given a `UserOperation`.
+
+The signature field is ignored by the wallet, so that the operation will not require the user’s approval. Still, it might require putting a “semi-valid” signature (e.g. a signature in the right length)
+
+#### Example Request
+```json
+{
+  jsonrpc: "2.0",
+  id: 1,
+  method: "eth_estimateUserOperationGas",
+  "params": [
+  [
+   {
+      sender, // address
+      nonce, // uint256
+      factory, // address
+      factoryData, // bytes
+      callData, // bytes
+      callGasLimit, // uint256
+      verificationGasLimit, // uint256
+      preVerificationGas, // uint256
+      maxFeePerGas, // uint256
+      maxPriorityFeePerGas, // uint256
+      paymaster, // address
+      paymasterVerificationGasLimit, // uint256
+      paymasterPostOpGasLimit, // uint256
+      paymasterData, // bytes
+      signature // bytes
+      // highlight-start
+      'eip7702auth': {
+        'chainId': '0x4268',
+        'address': '0x6C193e88c2C6ACB0897d162E9496156BfFF73C0F', // must be valid delegation address for simulation
+        'nonce': '0x0f', 
+        'yParity': '0x00',
+        'r': '0xf37fca7f67bc0b336adfeefe42a8856ca1e6dee48b1ce7748a4044acfe283b01', // can pass a dummy signature during estimates
+        's': '0x60ab7d22e278dc43b0b37afada54666c0bf9e0beb9f0cd0159de007d127f3406' // can pass a dummy signature during estimates
+      }
+    // highlight-end
+    }
+    '0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108'
+  ]
+}
+```
+
+#### Response
+It returns estimates for a UserOperation Gas parameters for: 
+
+- `preVerificationGas`
+- `verificationGasLimit`
+- `paymasterVerificationGasLimit` (if the UserOperation defines a Paymaster address)
+- `callGasLimit`
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": {
+        callGasLimit, // uint256
+        preVerificationGas, // uint256
+        paymasterVerificationGasLimit, // uint256
+        verificationGas, // uint256
+    },
+}
+```
+
+### eth_getUserOperationByHash
+
+`eth_getUserOperationByHash` returns a UserOperation by its hash returned from `eth_sendUserOperation`
+
+#### Request
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "eth_getUserOperationByHash",
+  "params": ["0x123..456"] // userop hash
+}
+```
+
+#### Response
+If the userOp is included in a block: returns a full userOp, with the addition of `entryPoint`, `blockNumber`, `blockHash` and `transactionHash`.
+
+Other status can be one of the following:
+
+| **UserOp Status**    | **Response**                                                 |
+| --------------       | -----------------------------------------------------------     |
+| Pending in mempool   | Returns only the `userOp` + `entrypoint`                      |
+| Submitted            | Returns the `userop` + ``entrypoint`` + `transactionHash`       |
+| Included             | Returns `userOp`+ `entrypoint` + `transactionHash` + `blockNumber` + `blockHash` |
+| Error                | Returns standard error code and message                                                     |
+| Other                | Returns `null`                                                    |
+
+<Tabs>
+  <TabItem value="success" label="success">
+
+Example respone for an Included status
+```ts
+{
+  userOpHash: '0x1acede61123ab7116eb29c797aeaec3c03615c37732ba66428524aebdb4b4514',
+  entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+  sender: '0xb8741a449d50ed0dcfe395287f85be152884c8d9',
+  nonce: 0n,
+  paymaster: '0x3fe285dcd76bcce4ac92d38a6f2f8e964041e020',
+  actualGasCost: 8078496n,
+  actualGasUsed: 504906n,
+  success: true,
+  logs: '[{"address":"0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000007b44a0000000000000000000000000000000000000000000000000000000000007b44a","logIndex":"0x9a","removed":false,"topics":["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f","0x1acede61123ab7116eb29c797aeaec3c03615c37732ba66428524aebdb4b4514","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9","0x0000000000000000000000003fe285dcd76bcce4ac92d38a6f2f8e964041e020"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"}]',
+  receipt: {
+    blockHash: '0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c',
+    blockNumber: 10419807n,
+    from: '0x3cfdc212769c890907bce93d3d8c2c53de6a7a89',
+    cumulativeGasUsed: 6978990n,
+    gasUsed: 507053n,
+    logs: '[{"address":"0xb8741a449d50ed0dcfe395287f85be152884c8d9","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x","logIndex":"0x90","removed":false,"topics":["0xecdf3a3effea5783a3c4c2140e677577666428d44ed9d474a0b3a4c9943f8440","0x000000000000000000000000a581c4a4db7175302464ff3c06380bc3270b4037"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0xb8741a449d50ed0dcfe395287f85be152884c8d9","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000010000000000000000000000008ecd4ec46d4d2a6b64fe960b3d64e8b94b2234eb000000000000000000000000a581c4a4db7175302464ff3c06380bc3270b40370000000000000000000000000000000000000000000000000000000000000001000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31","logIndex":"0x91","removed":false,"topics":["0x141df868a6331af528e38c83b7aa03edc19be66e37ae67f9285bf4f8e3c6a1a8","0x0000000000000000000000004e1dcf7ad4e460cfd30791ccc4f9c8a4f820ec67"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0x4e1dcf7ad4e460cfd30791ccc4f9c8a4f820ec67","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x00000000000000000000000029fcb43b46531bca003ddc8fcb67ffe91900c762","logIndex":"0x92","removed":false,"topics":["0x4f51faf6c4561ff95f067657e43439f0f856d97c04d9ec9070a6199ad418e235","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x0000000000000000000000004e1dcf7ad4e460cfd30791ccc4f9c8a4f820ec670000000000000000000000003fe285dcd76bcce4ac92d38a6f2f8e964041e020","logIndex":"0x93","removed":false,"topics":["0xd51a9c61267aa6196961883ecf5ff2da6619c37dac0fa92122513fb32c032d2d","0x1acede61123ab7116eb29c797aeaec3c03615c37732ba66428524aebdb4b4514","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x","logIndex":"0x94","removed":false,"topics":["0xbb47ee3e183a558b1a2ff0874b079f3fc5478b7454eacf2bfc5af2ff5878f972"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0xb8741a449d50ed0dcfe395287f85be152884c8d9","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x000000000000000000000000a581c4a4db7175302464ff3c06380bc3270b403700000000000000000000000038869bf66a61cf6bdb996a6ae40d5853fd43b526000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000001048d80ff0a000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000b200d9de104e3386d9a45a61bce269c43e48b534e4e7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041249c58b00d9de104e3386d9a45a61bce269c43e48b534e4e7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041249c58b000000000000000000000000000000000000000000000000000000000000000000000000000000000000","logIndex":"0x95","removed":false,"topics":["0xb648d3644f584ed1c2232d53c46d87e693586486ad0d1175f8656013110b714e"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0xd9de104e3386d9a45a61bce269c43e48b534e4e7","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x","logIndex":"0x96","removed":false,"topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0x0000000000000000000000000000000000000000000000000000000000000000","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9","0x0000000000000000000000000000000000000000000000000000000000000056"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0xd9de104e3386d9a45a61bce269c43e48b534e4e7","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x","logIndex":"0x97","removed":false,"topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0x0000000000000000000000000000000000000000000000000000000000000000","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9","0x0000000000000000000000000000000000000000000000000000000000000057"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0xb8741a449d50ed0dcfe395287f85be152884c8d9","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x","logIndex":"0x98","removed":false,"topics":["0x6895c13664aa4f67288b25d7a21d7aaa34916e355fb9b6fae0a139a9085becb8","0x000000000000000000000000a581c4a4db7175302464ff3c06380bc3270b4037"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0x3fe285dcd76bcce4ac92d38a6f2f8e964041e020","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x0000000000000000000000000000000000000000000000000000000000000000","logIndex":"0x99","removed":false,"topics":["0xa050a122b4c0e369e3385eb6b7cccd8019638b2764de67bec0af99130ddf8471","0x1acede61123ab7116eb29c797aeaec3c03615c37732ba66428524aebdb4b4514","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9","0x0000000000000000000000000000000000000000000000000000000000000000"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000007b44a0000000000000000000000000000000000000000000000000000000000007b44a","logIndex":"0x9a","removed":false,"topics":["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f","0x1acede61123ab7116eb29c797aeaec3c03615c37732ba66428524aebdb4b4514","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9","0x0000000000000000000000003fe285dcd76bcce4ac92d38a6f2f8e964041e020"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"}]',
+    logsBloom: '0x0000040000009000000000000000010080000000000000000000000000000000000800000000000000020001000004040010000000000000800002000000000000001000000000000000000c0002000000000000010000080040000000000000020000000a0000000500002000000800008000000100000000000014000000000800010020000200008000000040000000000200000400000000000000000000000004000000000000500000000004000210000000000000000002001000000020200082000000000001000008000000000000002060000000100000000026000000082000010000000000000008100220000000000000000000000010000200',
+    transactionHash: '0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa',
+    transactionIndex: 29n,
+    effectiveGasPrice: 16n
+  }
+}
+```
+
+  </TabItem>
+  <TabItem value="error" label="error">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "error": {
+      "code": -000000,
+      "message": "AAxx error message"
+  }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+
+### eth_getUserOperationReceipt
+
+`eth_getUserOperationReceipt` returns the receipt of a UserOperation by its hash returned from `eth_sendUserOperation`. Returns `null` in case the UserOperation is not yet included in a block.
+
+#### Request
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "eth_getUserOperationReceipt",
+  "params": [userOpHash]
+}
+```
+
+#### Response
+
+<Tabs>
+  <TabItem value="success" label="success">
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": {
+        userOpHash,
+        sender,
+        nonce,
+        paymaster,
+        actualGasCost, // actual (gas price * gas used) of the user operation
+        actualGasUsed, // actual gas used of the user operation
+        success, // user operation revert status
+        reason, // If reverted, user operation revert reason
+        logs,
+        receipt, // The TransactionReceipt object. Note that the returned TransactionReceipt is for the entire bundle, not only for this UserOperation
+    }
+}
+```
+
+  </TabItem>
+  <TabItem value="error" label="error">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "error": {
+      "code": -000000,
+      "message": "AAxx error message"
+  }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+### eth_chainId
+
+`eth_chainId` returns the chain ID of the current network
+
+#### Request
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "eth_chainId",
+  "params": []
+}
+```
+
+#### Response
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": "0x1", // Chain ID
+}
+```
+
+### eth_supportedEntryPoints
+
+`eth_supportedEntryPoints` returns an array of the entryPoint addresses supported by the bundler. A Bundler can support multiple entrypoints.
+
+#### Request
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "eth_supportedEntryPoints",
+  "params": []
+}
+```
+
+#### Response
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    "0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108",
+    "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+  ]
+}
+``` 
 
 ## EntryPoint v0.7
 
@@ -560,89 +904,6 @@ Example respone for an `Included` status
   "result": ["0x00...", "0x01..."],
 }
 ```
-
-## EIP-7702
-
-**Holesky Bundler URL**: https://holesky.voltaire.candidewallet.com/rpc
-
-EIP-7702 support is added with the upcoming EntryPoint V0.8 Release. The main ERC-4337 RPC call are `eth_estimateUserOperationGas` and `eth_sendUserOperation`, 
-which takes a UserOperation structure. 
-
-In order to support EIP-7702, we add a new json element named `eip7702Auth`, to hold the eip-7702 auth tuple items. The recovered address MUST be the sender of this UserOperation.
-
-
-### eth_estimateUserOperationGas
-
-NOTE: With used with `estimateUserOperation`, the signature is not checked, and the UserOperation is processed as if the signature is valid
-
-#### Example Request
-```json
-{
-  jsonrpc: "2.0",
-  id: 1,
-  method: "eth_estimateUserOperationGas",
-  "params": [
-  [
-    // highlight-start
-    'eip7702auth': {
-      'chainId': '0x4268',
-      'address': '0x6C193e88c2C6ACB0897d162E9496156BfFF73C0F', // must be valid delegation address for simulation
-      'nonce': '0x0f', 
-      'yParity': '0x00',
-      'r': '0xf37fca7f67bc0b336adfeefe42a8856ca1e6dee48b1ce7748a4044acfe283b01', // can pass a dummy signature during estimates
-      's': '0x60ab7d22e278dc43b0b37afada54666c0bf9e0beb9f0cd0159de007d127f3406' // can pass a dummy signature during estimates
-    }
-    // highlight-end
-    {
-      'sender': '0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31',
-       "...": "..." // all other userop params
-  },
-    '0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108'
-  ]
-}
-```
-
-### eth_sendUserOperation
-
-#### Example Request
-```json
-{
-    jsonrpc: "2.0",
-    id: 1,
-    method: "eth_sendUserOperation",
-    "params": [
-      {
-        'sender': '0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31',
-        'nonce': '0x13',
-        'callData': '0x34fcd5be00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000001000000000000000000000000009a7af758ae5d7b6aae84fe4c5ba67c041dfe53360000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000246a627842000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31000000000000000000000000000000000000000000000000000000000000000000000000000000009a7af758ae5d7b6aae84fe4c5ba67c041dfe53360000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000246a627842000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d3100000000000000000000000000000000000000000000000000000000',
-        'callGasLimit': '0x2c3d',
-        'verificationGasLimit': '0x15881',
-        'preVerificationGas': '0xb7f8',
-        'maxFeePerGas': '0x2c05b3',
-        'maxPriorityFeePerGas': '0x2c05a2',
-        'signature': '0x62f5051e378470492a7598d33de0b89e51bbf938ac51a863d0444b926df69d872d0a1ef3ee586bba984e6f290b34ab60b6eda7fb21a99aa84248eb4cfa979c891b',
-        'factory': None,
-        'factoryData': None,
-        'paymaster': None,
-        'paymasterVerificationGasLimit': None,
-        'paymasterPostOpGasLimit': None,
-        'paymasterData': None,
-        // highlight-start
-        'eip7702auth': {
-          'chainId': '0x4268',
-          'address': '0x6C193e88c2C6ACB0897d162E9496156BfFF73C0F',
-          'nonce': '0x0f',
-          'yParity': '0x00',
-          'r': '0xf37fca7f67bc0b336adfeefe42a8856ca1e6dee48b1ce7748a4044acfe283b01',
-          's': '0x60ab7d22e278dc43b0b37afada54666c0bf9e0beb9f0cd0159de007d127f3406'
-        }
-        // highlight-end
-      },
-      '0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108',
-    ]
-}
-```
-
 
 
 
