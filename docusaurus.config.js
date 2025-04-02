@@ -106,7 +106,7 @@ const config = {
       announcementBar: {
         id: 'instagas',
         content:
-          'Introducing InstaGas: a unified platform for Dapps to abstract gas in a few clicks, no code required  <button><a href="/instagas/overview/">Learn more</a></button>',
+          'Now supported: Upgrade EOAs to Smart Accounts with EIP-7702 <button><a href="/blog/eip-7702-support/">Read the Release</a></button>',
         backgroundColor: '#f0f6ff',
         textColor: '#000000',
         isCloseable: true, 

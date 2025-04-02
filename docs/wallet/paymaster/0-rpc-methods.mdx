@@ -24,10 +24,746 @@ import {
   pm_getPaymasterDataReturnParamsV06,
 } from "/src/data/paymaster"
 
-
 # Paymaster API V3 RPC Methods
 
 JSON-RPC API reference for Candide's Paymaster V3 service. Visit the [dashboard](https://dashboard.candide.dev) to get an API key for Candide's Paymaster.
+
+## Entrypoint V0.8
+
+EIP-7702 support is added with with EntryPoint v0.8. You can use the Paymaster API to offer gas sponsorship to endusers through a full gas policies or offering to pay gas in erc-20 tokens. 
+The Paymaster API for Entrypoint v0.8 is fully backword compatible and has no breaking changes from Entrypoint v0.7
+
+### pm_supportedERC20Tokens
+
+Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
+
+#### Invocation
+
+```json
+{ "method": "pm_supportedERC20Tokens", "params": [entrypoint: string] }
+```
+
+#### Return
+
+```json
+{ 
+  "result": {
+    paymasterMetadata: {
+      name: string,
+      description: string,
+      icons: string[],
+      address: string,
+      sponsoredEventTopic: string,
+      dummyPaymasterAndData: {
+        paymaster: string,
+        paymasterData: string,
+        paymasterVerificationGasLimit: string,
+        paymasterPostOpGasLimit: string
+      },
+    },
+    tokens: [{
+      name: string,
+      symbol: string,
+      address: string,
+      decimals: number,
+      exchangeRate: string,
+    }]
+  } 
+}
+```
+
+<Tabs>
+<TabItem value="request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "pm_supportedERC20Tokens",
+  "params": ["0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108"]
+}
+```
+
+</TabItem>
+<TabItem value="response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": {
+    "paymasterMetadata": {
+      "name": "Candide Paymaster",
+      "description": "Candide Paymaster a fast, secure and feature-rich 4337 Paymaster",
+      "icons": [],
+      "address": "0x7e3393ebA62DA6f555a5341E079e0F6585CE8c56",
+      "sponsoredEventTopic": "0x13..fa1",
+      "dummyPaymasterAndData": {
+        "paymaster": "0x...",
+        "paymasterData": "0x...",
+        "paymasterVerificationGasLimit": "0x...",
+        "paymasterPostOpGasLimit": "0x..."
+      }
+    },
+    "tokens": [{
+      "name": "Maker DAI",
+      "symbol": "DAI",
+      "address": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
+      "decimal": "0x12",
+      "exchangeRate": "0x0ddeb609310c89b1"
+    }]
+  }
+}
+```
+
+</TabItem>
+
+<TabItem value="response type" label="Response Types">
+
+<table>
+  <thead>
+    <th align="left">Paramater</th>
+    <th align="left">Type</th>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="left">paymasterMetadata</td>
+      <td align="left">
+        <p>Object</p>
+        <DataTable items={paymasterMetadataReturnParametersV07} />
+      </td>
+    </tr>
+    <tr>
+      <td align="left">tokens</td>
+      <td align="left">
+        <p>Object[]</p>
+        <DataTable items={tokensParamatersV3} />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</TabItem>
+</Tabs>
+
+### pm_sponsorUserOperation
+
+Sends a UserOperation to a paymaster for off-chain verification. If approved, it will return the `paymasterData`. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
+
+- **ERC-20s Gas Payments**: No gas overrides are returned
+- **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
+
+Supports two types of Gas Policies:
+
+- **Public Gas Policies**: These are gas policies provided by third parties, which do not require a sponsorship policy ID.
+- **Private Gas Policies**: These require a sponsorship policy ID and can be used if no public gas policy matches the user operation.
+
+If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error with the reason.
+
+#### Invocation
+
+```json
+{ "method": "pm_sponsorUserOperation", "params": [userOperation: object, entrypoint: string, context: object] }
+```
+
+#### Return
+
+```json
+{
+  "result": {
+    paymaster: string,
+    paymasterData: string,
+    paymasterVerificationGasLimit: string,
+    paymasterPostOpGasLimit: string,
+    callGasLimit?: string,
+    verificationGasLimit?: string,
+    preVerificationGas?: string,
+    maxFeePerGas?: string,
+    maxPriorityFeePerGas?: string,
+    sponsorMetadata?: {
+      name: string,
+      description: string,
+      url: string,
+      icons: string[],
+    }
+  } 
+}
+```
+
+<Tabs>
+<TabItem value="request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "pm_sponsorUserOperation",
+    "params": [
+    {
+      "sender": "0x2c298CcaFF..c236fCC66dB2",
+      "nonce": "0x17",
+      "factory": "0x..",
+      "factoryData": "0xf3....0000",
+      "callData": "0xf3....0000",
+      "callGasLimit": "0x12a87",
+      "verificationGasLimit": "0x1a332",
+      "preVerificationGas": "0xe95c",
+      "maxFeePerGas": "0x5f4ecdc0",
+      "maxPriorityFeePerGas": "0x59682f00",
+      "paymaster": "0x..",
+      "paymasterVerificationGasLimit": "0x..",
+      "paymasterPostOpGasLimit": "0x..",
+      "paymasterAndData": "0x",
+      "signature": "0x",
+    },
+    "0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108",
+    { "sponsorshipPolicyId" : "1234" } // sponsorshipPolicyId key value field is optional if using a private gas policy.
+  ]
+}
+```
+
+</TabItem>
+<TabItem value="response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": {
+    "paymaster": "0x..",
+    "paymasterData": "0x..",
+    "paymasterVerificationGasLimit": "0x..",
+    "paymasterPostOpGasLimit": "0x..",
+    "callGasLimit": "0x...",
+    "verificationGasLimit": "0x...",
+    "preVerificationGas": "0x..",
+    "maxFeePerGas": "0x..",
+    "maxPriorityFeePerGas": "0x..",
+    "sponsorMetadata": {
+      "name": "Aave",
+      "description": "Open Source Liquidity Protocol",
+      "url": "https://app.aave.com/",
+      "icons": ["https://aave.com/aave-2030-header.svg"],
+    }
+  }
+}
+```
+
+</TabItem>
+
+<TabItem value="request type" label="Request Types">
+
+<table>
+  <thead>
+    <th align="left">Paramater</th>
+    <th align="left">Type</th>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="left">userOperation</td>
+      <td align="left">
+        <p>Object</p>
+        <DataTable items={userOperationParamV07} />
+      </td>
+    </tr>
+    <tr>
+      <td align="left">entrypoint</td>
+      <td align="left">
+        <table>
+          <thead>
+            <th align="left">Type</th>
+            <th align="left">Description</th>
+          </thead>
+          <tr>
+            <td>
+              <code>string</code>
+            </td>
+            <td>Entrypoint address</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td align="left">context</td>
+      <td align="left">
+        <p>Object: This argument contains information about the specific paymaster
+        implementation you are using. If use paying gas in ERC-20 Tokens, pass the token address.</p>
+        <DataTable items={candidePaymasterContext} />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</TabItem>
+
+<TabItem value="response type" label="Response Type">
+  <DataTable items={pm_sponsorUserOperationReturnParamsV07} />
+</TabItem>
+
+</Tabs>
+
+### pm_supportedEntryPoints
+
+Returns the entryPoint addresses supported by the paymaster.
+
+#### Invocation
+
+```json
+{ "method": "pm_supportedEntryPoints", "params": [] }
+```
+
+#### Return
+
+```json
+{ "result": string[] }
+```
+
+<Tabs>
+<TabItem value="example request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "pm_supportedEntryPoints",
+  "params": []
+}
+```
+
+</TabItem>
+
+<TabItem value="example response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": ["0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789", "0x0000000071727de22e5e9d8baf0edac6f37da032", "0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108"] // Entrypoint addresses
+}
+```
+
+</TabItem>
+
+<TabItem value="response type" label="Response Type">
+  <DataTable items={pm_supportedEntryPointsReturnParams} />
+  </TabItem> 
+</Tabs>
+
+### pm_chainId
+
+Get Chain ID asks the paymaster service to return the chain_id it currently supports
+
+#### Invocation
+
+```json
+{ "method": "pm_chainId", "params": [] }
+```
+
+#### Return
+
+```json
+{ "result": number }
+```
+
+<Tabs>
+<TabItem value="example request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "pm_chainId",
+  "params": []
+}
+```
+
+</TabItem>
+
+<TabItem value="example response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": 1
+}
+```
+
+</TabItem>
+
+<TabItem value="response type" label="Response Type">
+  <table>
+    <thead>
+      <th align="left">Paramater</th>
+      <th align="left">Type</th>
+      <th align="left">Description</th>
+    </thead>
+    <tbody>
+      <tr>
+        <td align="left">chainId</td>
+        <td align="left">
+          <code>
+            <font color="#e25894">number</font>
+          </code>
+        </td>
+        <td align="left">
+          Chain ID that the paymaster supports
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</TabItem>
+</Tabs>
+
+### pm_getPaymasterStubData
+
+[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivilant to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation).
+It can return `isFinal: true` if the stub data is sufficient and no further data is needed.
+
+:::warning Review
+ERC-7677 is currently under review, and this method is subject to breaking changes based on the evolving specifications of the EIP.
+:::
+
+It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
+
+- **ERC-20s Gas Payments**: No gas overrides are returned
+- **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
+
+Supports two types of Gas Policies:
+
+- **Public Gas Policies**: These are gas policies provided by third parties, which do not require a sponsorship policy ID.
+- **Private Gas Policies**: These require a sponsorship policy ID and can be used if no public gas policy matches the user operation.
+
+If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error with the reason
+
+#### Invocation
+
+```json
+{ "method": "pm_getPaymasterStubData", "params": [userOperation: object, entrypoint: string, chainId: string, context: object] }
+```
+
+#### Return
+
+```json
+{
+  "result": {
+    paymaster: string,
+    paymasterData: string,
+    paymasterVerificationGasLimit: string,
+    paymasterPostOpGasLimit: string,
+    callGasLimit?: string,
+    verificationGasLimit?: string,
+    preVerificationGas?: string,
+    maxFeePerGas?: string,
+    maxPriorityFeePerGas?: string,
+    sponsor?: {
+      name: string,
+      description: string,
+      url: string,
+      icons: string[],
+    }
+  } 
+}
+```
+
+<Tabs>
+<TabItem value="request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "pm_getPaymasterStubData",
+    "params": [
+    {
+      "sender": "0x2c298CcaFF..c236fCC66dB2",
+      "nonce": "0x17",
+      "factory": "0x..",
+      "factoryData": "0xf3....0000",
+      "callData": "0xf3....0000",
+      "callGasLimit": "0x12a87",
+      "verificationGasLimit": "0x1a332",
+      "preVerificationGas": "0xe95c",
+      "maxFeePerGas": "0x5f4ecdc0",
+      "maxPriorityFeePerGas": "0x59682f00",
+      "paymaster": "0x..",
+      "paymasterVerificationGasLimit": "0x..",
+      "paymasterPostOpGasLimit": "0x..",
+      "paymasterAndData": "0x",
+      "signature": "0x",
+    },
+    "0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108",
+    "0x01",
+    { "sponsorshipPolicyId" : "1234" } // sponsorshipPolicyId key value field is optional if using a private gas policy.
+  ]
+}
+```
+
+</TabItem>
+<TabItem value="response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": {
+    "paymaster": "0x..",
+    "paymasterData": "0x..",
+    "paymasterVerificationGasLimit": "0x..",
+    "paymasterPostOpGasLimit": "0x..",
+    "callGasLimit": "0x...",
+    "verificationGasLimit": "0x...",
+    "preVerificationGas": "0x..",
+    "maxFeePerGas": "0x..",
+    "maxPriorityFeePerGas": "0x..",
+    "sponsor": {
+      "name": "Aave",
+      "description": "Open Source Liquidity Protocol",
+      "url": "https://app.aave.com/",
+      "icons": ["https://aave.com/aave-2030-header.svg"],
+    },
+    "isFinal": true,
+  }
+}
+```
+
+</TabItem>
+
+<TabItem value="request type" label="Request Types">
+
+<table>
+  <thead>
+    <th align="left">Paramater</th>
+    <th align="left">Type</th>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="left">userOperation</td>
+      <td align="left">
+        <p>Object</p>
+        <DataTable items={userOperationParamV07} />
+      </td>
+    </tr>
+    <tr>
+      <td align="left">entrypoint</td>
+      <td align="left">
+        <table>
+          <thead>
+            <th align="left">Type</th>
+            <th align="left">Description</th>
+          </thead>
+          <tr>
+            <td>
+              <code>string</code>
+            </td>
+            <td>Entrypoint address</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td align="left">chainId</td>
+      <td align="left">
+        <table>
+          <thead>
+            <th align="left">Type</th>
+            <th align="left">Description</th>
+          </thead>
+          <tr>
+            <td>
+              <code>string</code>
+            </td>
+            <td>Chain ID in hex string</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td align="left">context</td>
+      <td align="left">
+        <p>Object: This argument contains information about the specific paymaster
+        implementation you are using. If use paying gas in ERC-20 Tokens, pass the token address.</p>
+        <DataTable items={candidePaymasterContext} />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</TabItem>
+
+<TabItem value="response type" label="Response Type">
+  <DataTable items={pm_getPaymasterStubDataReturnV07} />
+</TabItem>
+
+</Tabs>
+
+### pm_getPaymasterData
+
+[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivilant to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation).
+
+:::warning Review
+ERC-7677 is currently under review, and this method is subject to breaking changes based on the evolving specifications of the EIP.
+:::
+
+It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
+
+- **ERC-20s Gas Payments**: No gas overrides are returned
+- **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
+
+Supports two types of Gas Policies:
+
+- **Public Gas Policies**: These are gas policies provided by third parties, which do not require a sponsorship policy ID.
+- **Private Gas Policies**: These require a sponsorship policy ID and can be used if no public gas policy matches the user operation.
+
+If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error with the reason
+
+#### Invocation
+
+```json
+{ "method": "pm_getPaymasterData", "params": [userOperation: object, entrypoint: string, chainId: string, context: object] }
+```
+
+#### Return
+
+```json
+{
+  "result": {
+    paymaster: string,
+    paymasterData: string,
+    paymasterVerificationGasLimit: string,
+    paymasterPostOpGasLimit: string,
+    callGasLimit?: string,
+    verificationGasLimit?: string,
+    preVerificationGas?: string,
+    maxFeePerGas?: string,
+    maxPriorityFeePerGas?: string,
+  } 
+}
+```
+
+<Tabs>
+<TabItem value="request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "pm_getPaymasterData",
+    "params": [
+    {
+      "sender": "0x2c298CcaFF..c236fCC66dB2",
+      "nonce": "0x17",
+      "factory": "0x..",
+      "factoryData": "0xf3....0000",
+      "callData": "0xf3....0000",
+      "callGasLimit": "0x12a87",
+      "verificationGasLimit": "0x1a332",
+      "preVerificationGas": "0xe95c",
+      "maxFeePerGas": "0x5f4ecdc0",
+      "maxPriorityFeePerGas": "0x59682f00",
+      "paymaster": "0x..",
+      "paymasterVerificationGasLimit": "0x..",
+      "paymasterPostOpGasLimit": "0x..",
+      "paymasterAndData": "0x",
+      "signature": "0x",
+    },
+    "0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108",
+    "0x01",
+    { "sponsorshipPolicyId" : "1234" } // sponsorshipPolicyId key value field is optional if using a private gas policy.
+  ]
+}
+```
+
+</TabItem>
+<TabItem value="response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": {
+    "paymaster": "0x..",
+    "paymasterData": "0x..",
+    "paymasterVerificationGasLimit": "0x..",
+    "paymasterPostOpGasLimit": "0x..",
+    "callGasLimit": "0x...",
+    "verificationGasLimit": "0x...",
+    "preVerificationGas": "0x..",
+    "maxFeePerGas": "0x..",
+    "maxPriorityFeePerGas": "0x..",
+  }
+}
+```
+
+</TabItem>
+
+<TabItem value="request type" label="Request Types">
+
+<table>
+  <thead>
+    <th align="left">Paramater</th>
+    <th align="left">Type</th>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="left">userOperation</td>
+      <td align="left">
+        <p>Object</p>
+        <DataTable items={userOperationParamV07} />
+      </td>
+    </tr>
+    <tr>
+      <td align="left">entrypoint</td>
+      <td align="left">
+        <table>
+          <thead>
+            <th align="left">Type</th>
+            <th align="left">Description</th>
+          </thead>
+          <tr>
+            <td>
+              <code>string</code>
+            </td>
+            <td>Entrypoint address</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+        <tr>
+      <td align="left">chainId</td>
+      <td align="left">
+        <table>
+          <thead>
+            <th align="left">Type</th>
+            <th align="left">Description</th>
+          </thead>
+          <tr>
+            <td>
+              <code>string</code>
+            </td>
+            <td>Chain ID in hex string</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td align="left">context</td>
+      <td align="left">
+        <p>Object: This argument contains information about the specific paymaster
+        implementation you are using. If use paying gas in ERC-20 Tokens, pass the token address.</p>
+        <DataTable items={candidePaymasterContext} />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</TabItem>
+
+<TabItem value="response type" label="Response Type">
+  <DataTable items={pm_getPaymasterDataReturnV07} />
+</TabItem>
+
+</Tabs>
 
 ## Entrypoint V0.7
 

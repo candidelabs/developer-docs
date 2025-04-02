@@ -19,8 +19,8 @@ In this example, you will learn how to upgrade an EOA to a Smart Account to leve
 
 ## Prerequisites
 
+- Sepolia Bundler and Paymaster endpoints from the [Dashboard](https://dashboard.candide.dev)
 - Node and a package manager (yarn or npm)
-- Sepolia ETH from Faucets. Shoot us on [discord](https://discord.gg/7Xb6ECfNFZ) if you need some
 
 Here's the [complete code](https://github.com/candidelabs/abstractionkit/tree/experimental7702/examples/SimpleAccount/UpgradeEOAto7702SimpleAccountAndSendTransaction) for you to reference if you prefer to run directly.
 
@@ -38,11 +38,11 @@ yarn init
 2. Install required dependencies
 
 ```bash
-yarn add abstractionkit@0.2.15 dotenv
+yarn add abstractionkit@0.2.16 dotenv ethers
 ```
 
 :::note
-```abstractionkit@0.2.15``` is experimental version release with EIP-7702 support before the official upgrade with Pectra.
+```abstractionkit@0.2.16``` is the version release with EIP-7702 support before the official upgrade with Pectra.
 :::
 
 3. Configure Environment Variables
@@ -52,11 +52,8 @@ yarn add abstractionkit@0.2.15 dotenv
 ```bash title=".env"
 CHAIN_ID=11155111
 JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
-BUNDLER_URL=https://sepolia.voltaire.candidewallet.com/rpc
-
-#EOA public & private key
-PRIVATE_KEY=PRIVATE_KEY
-PUBLIC_ADDRESS=PUBLIC_KEY
+BUNDLER_URL=https://api.candide.dev/bundler/v3/sepolia/APY_KEY
+PAYMASTER_URL=https://api.candide.dev/paymaster/v3/sepolia/APY_KEY
 ```
 
 4. Create a empty file and a function to run our script
@@ -69,48 +66,18 @@ async function main(): Promise<void> {
 main();
 ```
 
-## Step 2: Fund your EOA
-
-Let's open up `index.ts`
- 
-We will need to fund the account with native tokens to execute the authorization tx, also know as the delegation to the smart account. 
-We will write some simple checks to verify balance of the EOA before continuing to the next steps.
-
-```ts title="index.ts"
-import * as dotenv from "dotenv";
-import { sendJsonRpcRequest } from "abstractionkit";
-  
-async function main(): Promise<void> {
-  //get values from .env
-  dotenv.config();
-  const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string;
-  const eoaDelegatorPublicKey = process.env.PUBLIC_ADDRESS as string;
-
-  const balance = await sendJsonRpcRequest(
-      jsonRpcNodeProvider,
-      "eth_getBalance",
-      [eoaDelegatorPublicKey, "latest",]
-  ) as string; 
-
-  if (BigInt(balance) === 0n) {
-      console.log("Please fund the EOA Address with a sufficient balance of the native token to proceed");
-      console.log("Address: ", eoaDelegatorPublicKey);
-      return;
-  }
-}
-
-main();
-```
-
-## Step 3: Generate Account Address
+## Step 2: Generate Account Address
 
 To generate an account address, we will be using [Simple7702Account](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/accounts/Simple7702Account.sol),
 a fully audited minimalist smart contract account that can be safely authorized by any EOA. It adds full support for major smart account features like batching and gas sponsorship.
 
 ```ts title="index.ts"
 import { Simple7702Account } from "abstractionkit";
+import { Wallet } from "ethers";
 
-const smartAccount = new Simple7702Account(eoaDelegatorPublicKey);
+const eoaDelegator = Wallet.createRandom();
+
+const smartAccount = new Simple7702Account(eoaDelegator.address);
 
 console.log("Account address(sender) : " + smartAccount.accountAddress);
 ```
@@ -128,7 +95,7 @@ If everything worked, you will get the calculate address of the smart account in
 Account address(sender): 0x32afdcfa1e3bfe70d03ecb55b5c8045c26515c9d
 </details>
 
-## Step 3: Generate the callData
+## Step 3: Generate callData for minting NFTs
 
 Not only we can upgrade the EOA to a smart account, we will also be demonstrating how to execute minting two NFTs, all in the same transaction.  
 
@@ -161,10 +128,11 @@ const transaction2: MetaTransaction = {
 }
 ```
 
-## Step 4: Create UserOperation
+## Step 3: Create UserOperation
 Now the fun part. Call `createUserOperation`, which will:
 
-1. Compute the r and s values for the `eip7702Auth`. These values are part of signature authorization tuple needed to upgrade the EOA
+1. Compute the r and s values for the `eip7702Auth`. These values are part of signature authorization tuple needed to upgrade the EOA. 
+This is only used once, during the upgrade transaction of the EOA.
 2. Determine the nonce and fetch the gas prices from the provided node rpc
 3. Estimate gas limits from the provided bundler
 
@@ -186,11 +154,13 @@ let userOperation = await smartAccount.createUserOperation(
     [transaction1, transaction2],
     jsonRpcNodeProvider,
     bundlerUrl,
+    // highlight-start
     {
         eip7702Auth:{
             chainId, // chainId at which the account will be upgraded
         }
     }
+    // highlight-end
 );
 
 const cost = calculateUserOperationMaxGasCost(userOperation)
@@ -198,9 +168,9 @@ console.log("This useroperation may cost upto : " + cost + " wei")
 console.log("Please fund the sender account : " + userOperation.sender +" with more than " + cost + " wei")
 ```
 
-## Step 5: Sign the Delegate Authorization
+## Step 4: Sign the Delegate Authorization
 
-Sign the `eip7702Auth` tuple to delegate the authorization to the smart account. This is only called once, during the upgrade transaction of the EOA.
+Sign the `eip7702Auth` tuple to delegate the authorization to the smart account. Again, this is only called once, during the upgrade transaction of the EOA.
 
 ```ts
 userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
@@ -209,6 +179,25 @@ userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
     BigInt(userOperation.eip7702Auth.nonce),
     eoaDelegatorPrivateKey
 )
+```
+
+## Step 5: Get Paymaster data
+
+Optionally sponsor gas for your user transaction or offer them to pay [gas in erc-20 tokens](/wallet/guides/pay-gas-in-erc20/#step-5-get-paymaster-data) 
+
+```ts
+import { CandidePaymaster } from "abstractionkit";
+
+const paymasterUrl = process.env.PAYMASTER_URL as string;
+
+const paymaster = new CandidePaymaster(paymasterUrl)
+
+let [paymasterUserOperation, _sponsorMetadata] = await paymaster.createSponsorPaymasterUserOperation(
+    userOperation, 
+    bundlerUrl, 
+);
+
+userOperation = paymasterUserOperation; 
 ```
 
 ## Step 6: Sign and Submit
@@ -220,7 +209,7 @@ const privateKey = process.env.PRIVATE_KEY as string;
 
 userOperation.signature = smartAccount.signUserOperation(
     userOperation,
-    eoaDelegatorPrivateKey,
+    eoaDelegator.privateKey,
     chainId,
 );
 ```
@@ -293,8 +282,6 @@ EOA upgraded to a Smart Account and minted two Nfts! The transaction hash is : 0
 
 You can lookup the hash on explorers that supports user operations like [Blockscout](https://www.blockscout.com/).
 
-In the next guides, we will show how to use sponsored gas policies using paymasters.
-
 ## Full Example
 Below is the complete example code that you can copy directly to implement the functionality described in the tutorial.
 <details>
@@ -306,9 +293,10 @@ import {
     Simple7702Account,
     getFunctionSelector,
     createCallData,
-    sendJsonRpcRequest,
     createAndSignEip7702DelegationAuthorization,
+    CandidePaymaster,
 } from "abstractionkit";
+import { Wallet } from 'ethers';
 
 async function main(): Promise<void> {
     //get values from .env
@@ -316,25 +304,15 @@ async function main(): Promise<void> {
     const chainId = BigInt(process.env.CHAIN_ID as string)
     const bundlerUrl = process.env.BUNDLER_URL as string
     const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string;
+    
+    const eoaDelegator = Wallet.createRandom();
+    const eoaDelegatorPublicAddress = eoaDelegator.address;
+    const eoaDelegatorPrivateKey = eoaDelegator.privateKey;
+    const paymasterUrl = process.env.PAYMASTER_URL as string;
 
-    const eoaDelegatorPublicKey = process.env.PUBLIC_ADDRESS as string;
-    const eoaDelegatorPrivateKey = process.env.PRIVATE_KEY as string;
-
-    // check balance of EOA before executing the upgrade userOp
-    const balance = await sendJsonRpcRequest(
-        jsonRpcNodeProvider,
-        "eth_getBalance",
-        [eoaDelegatorPublicKey, "latest",]
-    ) as string; 
-
-    if (BigInt(balance) === 0n) {
-        console.log("Please fund the EOA Address with a sufficient balance of the native token to proceed");
-        console.log("Address: ", eoaDelegatorPublicKey);
-        return;
-    }
 
     // initiate the smart account
-    const smartAccount = new Simple7702Account(eoaDelegatorPublicKey);
+    const smartAccount = new Simple7702Account(eoaDelegatorPublicAddress);
 
     // We will be mitting two random NFTs in a single txs
     const nftContractAddress = "0x9a7af758aE5d7B6aAE84fe4C5Ba67c041dFE5336";
@@ -366,11 +344,11 @@ async function main(): Promise<void> {
         bundlerUrl, //the bundler rpc is used to estimate the gas limits.
         {
             eip7702Auth:{
-                chainId // chainId at which the account will be upgraded
+                chainId: chainId, // chainId at which the account will be upgraded
             }
         }
     );
-
+    
     userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
         BigInt(userOperation.eip7702Auth.chainId),
         userOperation.eip7702Auth.address,
@@ -378,18 +356,26 @@ async function main(): Promise<void> {
         eoaDelegatorPrivateKey
     )
 
+    
+    let paymaster: CandidePaymaster = new CandidePaymaster(
+        paymasterUrl
+    )
+
+    let [paymasterUserOperation, _sponsorMetadata] = await paymaster.createSponsorPaymasterUserOperation(
+        userOperation, bundlerUrl) // sponsorshipPolicyId will have no effect if empty
+    userOperation = paymasterUserOperation; 
+
     userOperation.signature = smartAccount.signUserOperation(
         userOperation,
         eoaDelegatorPrivateKey,
         chainId,
     );
-
-    console.log("userOperation: ", userOperation)
-
+    
     let sendUserOperationResponse = await smartAccount.sendUserOperation(
         userOperation, bundlerUrl
     );
 
+    console.log("userOperation: ", userOperation)
     console.log("userOp sent! Waiting for inclusion...");
     console.log("userOp Hash: ", sendUserOperationResponse.userOperationHash);
 
