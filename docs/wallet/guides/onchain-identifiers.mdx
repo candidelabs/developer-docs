@@ -1,215 +1,96 @@
 ---
-title: Onchain Identifiers - How to Track User Operation
+title: Onchain Tracking
 description: Learn how to add an onchain Identifier to all your ERC-4337 Safe transactions, allowing to track them on-chain
 keywords: [Identifier, on-chain]
 ---
 
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
+# Onchain Tracking - Adding an identifier to your Safes Accounts 
 
-# Onchain Identifiers - How to track User Operation
+This guide explains how to add an on-chain identifier to your Safe Accounts, allowing you to track and recognize your Safe transactions 
+from other wallets, tracking your user adoption.
 
-Learn how to add an onchain Identifier to all your Safe transactions, allowing to track them on-chain.
-
-## Overview 
-<Tabs>
-<TabItem value="ethers" label="ethers">
+## Generate an on-chain identifier  
 
 ```ts
-import { hexlify,concat, toUtf8Bytes } from "ethers";
+import { SafeAccountV0_3_0 } from "abstractionkit"
 
-const onchainIdentifier = hexlify(toUtf8Bytes("WALLET_NAME")).padEnd(34, "0");
-
-const identifiedCallData = concat([
-    callData,
-    onchainIdentifier,
-]);
+const smartAccount = SafeAccountV0_3_0.initializeNewAccount(
+    [ownerPublicAddress],
+    //highlight-start
+    { onChainIdentifierParams: { project: "PROJECT_NAME" } }
+    //highlight-end
+)
 ```
 
-</TabItem>
-<TabItem value="viem" label="viem">
+In this example, we initialize a new Safe account and include an `onChainIdentifierParams` object with a project property set to "PROJECT_NAME". 
+This will add a unique identifier to all transactions made with this Safe account, allowing you to easily track and recognize them among other Safe 
+wallet transactions.
+
+## Getting the on-chain identifier
 
 ```ts
-import { toHex, concat } from "viem";
-
-const onchainIdentifier = toHex('WALLET_NAME', { size: 16 });
-
-const identifiedCallData = concat([
-    callData as `0x${string}`,
-    onchainIdentifier
-]);
+const onchainIdentifier = smartAccount.onChainIdentifier
 ```
 
-</TabItem>
-</Tabs>
+The `onChainIdentifier` property of the smartAccount object will contain the generated identifier, as well as other useful information of the tooling you've used.
 
-## Implementation Example
+You can see how we generate the identifier by seeing the source code of [generateOnChainIdentifier](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccount.ts#L2819)
+method. 
 
-We will be constructing a calldata to mint 1 NFT. We will be adding the onchain Identifiers to the calldata. 
-
-```ts title="index.ts"
-import {
-  MetaTransaction,
-  getFunctionSelector,
-  createCallData,
-} from "abstractionkit";
-import { hexlify,concat, toUtf8Bytes } from "ethers";
-
-const onchainIdentifier = hexlify(toUtf8Bytes("WALLET_NAME")).padEnd(34, "0");
-
-const nftContractAddress = "0x9a7af758aE5d7B6aAE84fe4C5Ba67c041dFE5336";
-const mintFunctionSignature =  'mint(address)';
-const mintFunctionSelector =  getFunctionSelector(mintFunctionSignature);
-const mintTransactionCallData = createCallData(
-  mintFunctionSelector, 
-  ["address"], 
-  [smartAccount.accountAddress]
-);
-
-const indentifiedCallData = concat([mintTransactionCallData, onchainIdentifier]);
-
-const transaction : MetaTransaction ={
-    to: nftContractAddress, 
-    value: 0n,
-    data: indentifiedCallData,
-};
-```
-
-Now it’s possible to track all the transactions including your identifier.
-
-## Full Example
-Below is the complete example code that you can copy directly to implement the functionality described in the tutorial. 
-The example uses a token paymaster to pay gas. 
 <details>
-<summary>index.js</summary>
+<summary>What's the format of the identifier?</summary>
 
-```ts
-import * as dotenv from 'dotenv'
+The identifiers used to track Safe deployments are 50 bytes in length and follow the format below:
 
-import {
-    SafeAccountV0_2_0 as SafeAccount,
-    MetaTransaction,
-    CandidePaymaster,
-    getFunctionSelector,
-    createCallData,
-} from "abstractionkit";
+`5afe` `00` `6363643438383836663461336661366162653539` `646561` `393238` `653366`
 
-import { hexlify,concat, toUtf8Bytes } from "ethers";
+Check the last 50 bytes of the data field in this [example transaction](https://sepolia.etherscan.io/tx/0xe0192eedd1fc2d06be0561d57380d610dd6d162af0f3cfbd6c08f9062d738761)
+to see how the identifier appears after the transaction is executed.
 
-async function main(): Promise<void> {
-    //get values from .env
-    dotenv.config()
-    const chainId = BigInt(process.env.CHAIN_ID as string)
-    const bundlerUrl = process.env.BUNDLER_URL as string
-    const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string
-    const ownerPublicAddress = process.env.PUBLIC_ADDRESS as string
-    const ownerPrivateKey = process.env.PRIVATE_KEY as string
-    const paymasterRPC = process.env.PAYMASTER_RPC as string;
-    const paymasterTokenAddress = process.env.PAYMASTER_TOKEN_ADDRESS as string;
-    
-    //initializeNewAccount only needed when the smart account
-    //have not been deployed yet for its first useroperation.
-    //You can store the accountAddress to use it to initialize 
-    //the SafeAccount object for the following useroperations
-    let smartAccount = SafeAccount.initializeNewAccount(
-        [ownerPublicAddress],
-    )
+#### Prefix hash
 
-    //After the account contract is deployed, no need to call initializeNewAccount
-    //let smartAccount = new SafeAccount(accountAddress)
+- Type: 2 bytes
+- Example: 5afe
 
-    console.log("Account address(sender) : " + smartAccount.accountAddress);
+Static prefix to identify the Safe on-chain identifier.
 
-    const onchainIdentifier = hexlify(toUtf8Bytes("WALLET_NAME")).padEnd(34, "0");
+#### Version hash
 
-    //create two meta transaction to mint two NFTs
-    //you can use favorite method (like ethers.js) to construct the call data 
-    const nftContractAddress = "0x9a7af758aE5d7B6aAE84fe4C5Ba67c041dFE5336";
-    const mintFunctionSignature =  'mint(address)';
-    const mintFunctionSelector =  getFunctionSelector(mintFunctionSignature);
-    const mintTransactionCallData = createCallData(
-        mintFunctionSelector, 
-        ["address"],
-        [smartAccount.accountAddress]
-    );
+- Type: 1 byte
+- Example: 00
 
-    const identifiedCallData = concat([
-		mintTransactionCallData,
-		onchainIdentifier,
-	]);
+Version number of the Safe on-chain identifier format.
+#### Project hash
 
-    const transaction :MetaTransaction ={
-        to: nftContractAddress,
-        value: 0n,
-        data: identifiedCallData,
-    }
+- Type: 20 bytes
+- Example: 6363643438383836663461336661366162653539
 
-    //createUserOperation will determine the nonce, fetch the gas prices,
-    //estimate gas limits and return a useroperation to be signed.
-    //you can override all these values using the overrides parameter.
-    let userOperation = await smartAccount.createUserOperation(
-		[transaction],
-        jsonRpcNodeProvider, //the node rpc is used to fetch the current nonce and fetch gas prices.
-        bundlerUrl, //the bundler rpc is used to estimate the gas limits.
-	)
+Truncated hash of the project's name (for example, "Gnosis", "CoW Swap").
+#### Platform hash
 
-    let paymaster: CandidePaymaster = new CandidePaymaster(
-        paymasterRPC,
-    )
+- Type: 3 bytes
+- Example: 646561
 
-    userOperation = await paymaster.createTokenPaymasterUserOperation(
-        smartAccount,
-        userOperation,
-        paymasterTokenAddress,
-        bundlerUrl,
-    )
+Truncated hash of the platform's name (for example, "Web", "Mobile", "Safe App", "Widget").
+#### Tool hash
 
-    const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
-        userOperation,
-        paymasterTokenAddress
-    )
-    console.log("This useroperation may cost upto : " + cost + " wei in CTT token")
-    console.log(
-        "Please fund the sender account : " + 
-        userOperation.sender +
-        " with more than "+ cost + " wei CTT token"
-    )
-    console.log("This example uses a Candide token paymaster.")
-    console.log("Please visit https://dashboard.candide.dev/ to get a token paymaster url.")
-    console.log("Please visit our Discord to get some CTT token for testing")
+- Type: 3 bytes
+- Example: 393238
 
-    //Safe is a multisig that can have multiple owners/signers
-    //signUserOperation will create a signature for the provided
-    //privateKeys
-    userOperation.signature = smartAccount.signUserOperation(
-		userOperation,
-        [ownerPrivateKey],
-        chainId,
-	)
-    console.log(userOperation)
+Truncated hash of the tool's name (for example, "protocol-kit", "relay-kit", or any custom tool built by projects).
+#### Tool version hash
 
-    //use the bundler rpc to send a useroperation
-    //sendUserOperation will return a SendUseroperationResponse object
-    //that can be awaited for the useroperation to be included onchain
-    const sendUserOperationResponse = await smartAccount.sendUserOperation(
-        userOperation, bundlerUrl
-    )
+- Type: 3 bytes
+- Example: 653366
 
-    console.log("Useroperation sent. Waiting to be included ......")
-    //included will return a UserOperationReceiptResult when 
-    //useroperation is included onchain
-    let userOperationReceiptResult = await sendUserOperationResponse.included()
-
-    console.log("Useroperation receipt received.")
-    console.log(userOperationReceiptResult)
-    if(userOperationReceiptResult.success){
-        console.log("Two Nfts were minted. The transaction hash is : " + userOperationReceiptResult.receipt.transactionHash)
-    }else{
-        console.log("Useroperation execution failed")
-    }
-}
-
-main()
-```
+Truncated hash of the tool's version (for example, "1.0.0", "1.0.1").
 
 </details>
+
+## Submission Form
+
+The Safe Team aim to understand better and recognise key contributors who are driving the adoption of smart accounts within the Ecosystem. 
+By submitting your on-chain identifiers through the provided form, you will help Safe accurately attribute activity.
+
+You can fill out the form by clicking [this link](https://forms.gle/NYkorYebc6Fz1fMW6)
+

@@ -154,6 +154,7 @@ const sidebars = {
         "wallet/guides/authentication",
         "wallet/guides/multisig",
         "wallet/guides/signing",
+        "wallet/guides/onchain-identifiers",
       ],
     },
     {
