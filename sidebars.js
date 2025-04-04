@@ -198,6 +198,7 @@ const sidebars = {
             "wallet/abstractionkit/safe-account-v2",
           ],
         },
+        "wallet/abstractionkit/simple-7702-account",
         "wallet/abstractionkit/bundler",
         "wallet/abstractionkit/paymaster",
         "wallet/abstractionkit/utilities",

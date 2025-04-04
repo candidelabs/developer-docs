@@ -1,0 +1,45 @@
+---
+title: Simple 7702 Account
+description: Learn how to upgrade EOAs to Smart Accounts with fully audited Smart Contracts
+image: /img/posters/abstractionkit-meta.png
+keywords: [safe-account, "4337", sdk, account-abstraction, gnosis-safe]
+---
+import CardList from "/src/components/CardList";
+
+The `Simple7702Account` is a fully audited minimalist smart contract account that can be safely authorized by any EOA. It adds full support for 
+major smart account features like batching and gas sponsorship.
+
+The following ERCs are supported:
+
+- ERC-165
+- ERC-721
+- ERC-1155
+- ERC-1271
+- ERC-4337 v0.8
+
+## Smart Contracts and Audits
+
+The contracts have been developed by the Ethereum Foundation Account Abstraction Team, and have been audited by Spearbit. 
+
+- [Smart Contracts](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/accounts/Simple7702Account.sol)
+- [Release](https://github.com/eth-infinitism/account-abstraction/releases/tag/v0.8.0)
+- [Audit](https://github.com/eth-infinitism/account-abstraction/blob/develop/audits/SpearBit%20Account%20Abstraction%20Security%20Review%20-%20Mar%202024.pdf)
+
+## How to use
+
+```ts
+import { Simple7702Account } from "abstractionkit"; 
+
+const delegatorPublicKey = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31"; // eoa public key
+const smartAccount = Simple7702Account.initializeNewAccount([delegatorPublicKey]);
+```
+
+export const GETTING_STARTED_ITEMS = [
+    {
+        title: "EIP-7702 QuickStart",
+        description: "Learn how to upgrade an EOA to a Smart Account with batch transactions and gas sponsorship capabilities",
+        route: "/wallet/guides/getting-started-eip-7702/",
+    },
+];
+
+<CardList items={GETTING_STARTED_ITEMS} />
