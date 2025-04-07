@@ -19,16 +19,6 @@ const sidebars = {
   aaSideBar: ["account-abstraction/intro"],
   dappsSideBar: [
     "dapps/getting-started",
-    {
-      type: "category",
-      collapsed: false,
-      label: "Guides",
-      items: [
-        "dapps/guides/sponsor-gas",
-        "dapps/guides/batch-transactions",
-        "dapps/guides/verify-signatures",
-      ],
-    },
   ],
   infraSideBar: [
     {
@@ -252,6 +242,16 @@ const sidebars = {
           id: "instagas/gas-policies",
           label: "Gas Policies"
         },
+      ],
+    },
+    {
+      type: "category",
+      collapsible: false,
+      className: "category-not-collapsible",
+      label: "Guides",
+      items: [
+        "instagas/batch-sponsor-transactions",
+        "dapps/guides/verify-signatures",
       ],
     },
     {
