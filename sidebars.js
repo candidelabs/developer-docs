@@ -162,7 +162,7 @@ const sidebars = {
     },
     {
       type: "category",
-      label: "Plugins",
+      label: "Safe Plugins",
       collapsible: false,
       className: "category-not-collapsible",
       items: [

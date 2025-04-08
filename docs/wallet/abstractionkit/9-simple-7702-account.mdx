@@ -1,7 +1,6 @@
 ---
 title: Simple 7702 Account
 description: Learn how to upgrade EOAs to Smart Accounts with fully audited Smart Contracts
-image: /img/posters/abstractionkit-meta.png
 keywords: [safe-account, "4337", sdk, account-abstraction, gnosis-safe]
 ---
 import CardList from "/src/components/CardList";
@@ -27,11 +26,23 @@ The contracts have been developed by the Ethereum Foundation Account Abstraction
 
 ## How to use
 
+### Installation
+
+```bash
+yarn add abstractionkit@0.2.16
+```
+
+:::note
+```abstractionkit@0.2.16``` is the version release with EIP-7702 support before the official upgrade with Pectra.
+:::
+
+### Usage
+
 ```ts
 import { Simple7702Account } from "abstractionkit"; 
 
-const delegatorPublicKey = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31"; // eoa public key
-const smartAccount = Simple7702Account.initializeNewAccount([delegatorPublicKey]);
+const delegatorPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31"; // eoa public key
+const smartAccount = Simple7702Account.initializeNewAccount([delegatorPublicAddress]);
 ```
 
 export const GETTING_STARTED_ITEMS = [
