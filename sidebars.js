@@ -251,7 +251,6 @@ const sidebars = {
       label: "Guides",
       items: [
         "instagas/batch-sponsor-transactions",
-        "dapps/guides/verify-signatures",
       ],
     },
     {
