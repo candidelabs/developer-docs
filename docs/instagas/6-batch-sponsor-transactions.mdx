@@ -153,7 +153,7 @@ const { sendCalls, data: id } = useSendCalls(); // wagmi hook to send batch & sp
 const { sendTransaction } = useSendTransaction(); // wagmi hook to send standard tx
 const chainId = useChainId();
 
-const candidePaymasterUrl = "https://api.candide.dev/paymaster/v3/network/APY_KEY";
+const paymasterUrl = "https://api.candide.dev/paymaster/v3/network/APY_KEY";
 
 const handleSendTx = () => {
 // check if capabilities are supported
