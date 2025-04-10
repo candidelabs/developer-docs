@@ -145,8 +145,13 @@ Your app shouldfallback to sending normal transactions if the wallet doesn't sup
 
 ```ts
 import { useSendCalls } from 'wagmi/experimental'
+import { useChainId, useSendTransaction } from 'wagmi';
+import { toHex } from 'viem';
 
-const { sendCalls, data: id } = useSendCalls();
+
+const { sendCalls, data: id } = useSendCalls(); // wagmi hook to send batch & sponsored tx
+const { sendTransaction } = useSendTransaction(); // wagmi hook to send standard tx
+const chainId = useChainId();
 
 const candidePaymasterUrl = "https://api.candide.dev/paymaster/v3/network/APY_KEY";
 
@@ -168,13 +173,19 @@ try {
         ],
     capabilities: {
         paymasterService: {
-            url: candidePaymasterUrl,
+          [toHex(chainId)]: {
+              url: paymasterUrl,
+          }
         }
     },
     });
     } else {
        // fallback to regular sendTransactions
-       sendTransaction(TEST_TX);
+       sendTransaction({
+            to: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045", // Vitalik's address
+            value: parseGwei('0'),
+            data: "0x" as Hex,
+        });
     }
 } catch (err) {
     sendError(`Error sending transaction:'${err}`)
@@ -186,6 +197,8 @@ try {
 Example using wagmi [useCallsStatus](https://wagmi.sh/react/api/hooks/useCallsStatus) hook
 
 ```ts
+import { useSendCalls } from 'wagmi/experimental'
+
 const { data: callStatusData, refetch: refetchCallStatus } = useCallsStatus({
     id: id as string,
     query: {
