@@ -27,14 +27,44 @@ import {
 
 # Safe Recovery UX API
 
-Safe Recovery Service follows RESTful API standard. It uses standard HTTP methods (GET, POST, ..) to perform CRUD (Create, Read, Update, Delete) 
-operations on our resources, and return error responses in a consistent and predictable format.
+Safe Recovery UX API gives developers the ability to build smooth recovery process
+
+1. **Alerts and Notifications**: Account owners can subscribe to receive notifications via email or SMS when a recovery request is initiated on-chain.
+2. **One click for Guardians**: By aggregating signatures, we enable off-chain collection and automatic execution once all signatures are received.
+3. **Auto Executed**: A built-in relayer to submit signed transactions on behalf of guardians for both confirmation and finalization after the grace period.
+4. **Social Engineering Protection**: A communication system using emojis that allows guardians to verify and approve legitimate recovery requests from their rightful owners.
 
 :::info
-The following API is in a pre-release phase. Request access by contacting us.    
+The following API is in a pre-release phase. [Request access here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).    
 :::
 
-## Create recovery request 
+**/recoveries**
+- **/recoveries/create**
+  - **POST**: Creates a new recovery request
+- **/recoveries/fetchByAddress**
+  - **GET**: Fetches recovery requests
+- **/recoveries/fetchById**
+  - **GET**: Fetch a recovery request by ID
+- **/recoveries/sign**
+  - **POST**: Collects a guardian siganture
+- **/recoveries/execute**
+  - **POST**: Execute a recovery request by ID
+- **/recoveries/finalize**
+  - **POST**: Finalize a recovery request by ID
+
+
+**/alerts**
+- **/alerts/subscribe**
+  - **POST**: Creates an inactive alerts subscription for an account
+- **/alerts/activate**
+  - **POST**: Activate subscripton to recovery requests
+- **/alerts/subscriptions**
+  - **GET**: Fetches active alerts subscriptions for an account.
+- **/alerts/unsubscribe**
+  - **POST**: Unsubscribes from an active alerts subscription.
+
+## Recoveries
+### Create recovery request 
 Creates a new recovery request by a guardian with a lost signer of a Safe account. Can only be initated by guardians of the account.
 #### `POST /recoveries/create`
 <Tabs>
@@ -94,7 +124,7 @@ curl -X POST \
 </TabItem>
 </Tabs>
 
-## Fetch recovery by address
+### Fetch recovery by address
 Fetches recovery requests created by guardians of the Safe accounts by the safe address 
 #### `GET /recoveries/fetchByAddress`
 
@@ -174,7 +204,7 @@ curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetc
 </TabItem>
 </Tabs>
 
-## Fetch recovery by ID
+### Fetch recovery by ID
 Fetch a recovery request by ID
 #### `GET /recoveries/fetchById`
 
@@ -225,7 +255,7 @@ curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetc
 </TabItem>
 </Tabs>
 
-## Collect a guardian signature
+### Collect a guardian signature
 Collects a guardian siganture to store for later confirmation and finilization
 #### `POST /recoveries/sign`
 <Tabs>
@@ -260,7 +290,7 @@ curl -X POST \
 </TabItem>
 </Tabs>
 
-## Execute a recovery by ID
+### Execute a recovery by ID
 #### `POST /recoveries/execute`
 Execute a recovery request by ID
 
@@ -294,7 +324,7 @@ curl -X POST \
 </TabItem>
 </Tabs>
 
-## Finalize recovery by ID
+### Finalize recovery by ID
 #### `POST /recoveries/finalize`
 Finalize a recovery request by ID
 
@@ -326,6 +356,158 @@ curl -X POST \
     <DataTable items={postRecoveriesFinalizeByIdResponse} / >
 </TabItem>
 </Tabs>
+
+## Alerts
+### Alerts: Subscribe to recovery requests
+#### `POST /alerts/subscribe`
+Creates an inactive alerts subscription for an account, both onchain and offchain. It then needs to be activated through challenge submission using `POST /alerts/activate`.
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```json
+curl -X POST \
+  https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/subscribe \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "account": "0x...",
+  "chainId": 1,
+  "channel": "email",
+  "target": "user@example.com",
+  "message": "siwe(chainId, statement(channel, target))",
+  "signature": "sign(message)"
+}'
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "subscriptionId": "unique-subscription-id", // please note that this alerts subscription needs to be activated using the next endpoint
+}
+```
+</TabItem>
+</Tabs>
+
+-   `account`: The smart account address requesting registration.
+-   `chainId`: The chain id in which the account resides (this is used to verify the signature field only, the alert will trigger for any action for this account across any chain)
+-   `channel`: Either `"email"` or `"sms"` (defines the delievery channel).
+-   `target`: The email or phone number for authentication.
+-   `message`: SIWE (EIP-4361) message statement. Statement: 
+
+```
+I agree to receive Social Recovery Module alert notifications for my account address on all supported chains sent to {{target}}
+```
+
+-   `signature`: signature proving the request is initiated from the account
+
+See [example guide](/wallet/recovery/auth-api/#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign in With Ethereum (SIWE)
+
+### Alerts: Activate subscripton to recovery requests
+#### `POST /alerts/activate`
+Verifies submitted challenge and activates alerts subscription.
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```json
+curl -X POST \
+  https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/activate \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "subscriptionId": "unique-subscription-id",
+  "challenge": "123456"
+}'
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "success": true,
+}
+```
+</TabItem>
+</Tabs>
+
+-   `subscriptionId`: The unique ID received in the subscription response.
+-   `challenge`: The code received via email/SMS.
+
+### Alerts: Get active subscription
+Fetches active alerts subscriptions for an account.
+
+#### `GET /alerts/subscriptions`
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```json
+curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/subscriptions" \
+   --data-urlencode "account=0x...",
+   --data-urlencode "chainId=0x1",
+   --data-urlencode "message=siwe(chainId, statement)",
+   --data-urlencode "signature=sign(message)"
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "subscriptions": [
+    {
+      "id": "unique-subscription-id",
+      "channel": "email",
+      "target": "user@example.com"
+    }
+  ]
+}
+```
+</TabItem>
+</Tabs>
+
+-   `account`: The smart account address.
+-   `chainId`: The chain id in which the account resides (this is used to verify the signature field only, the alerts are global for this account accross all supported chains that have alerts enabled)
+-   `message`: SIWE (EIP-4361) message statement. Statement: 
+
+```
+I request to retrieve all Social Recovery Module alert subscriptions linked to my account
+```
+
+-   `signature`: signature proving the request is initiated from the account
+
+See [example guide](/wallet/recovery/auth-api/#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign in With Ethereum (SIWE)
+
+### Alerts: Unsubscribe
+Unsubscribes from an active alerts subscription.
+
+#### `POST /alerts/unsubscribe`
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```json
+curl -X GET \
+  https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/subscriptions \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "subscriptionId": "unique-subscription-id",
+}'
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "success": true,
+}
+```
+</TabItem>
+</Tabs>
+
+- `subscriptionId`: The unique ID received in the subscription response.
+
 
 ## Error Handeling
 The API uses standard HTTP status codes to indicate the success or failure of a request.

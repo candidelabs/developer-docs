@@ -4,11 +4,11 @@ description: An overview of Candide's Safe Recovery Service and how it works. Fe
 keywords: [safe recovery, social recovery, smart wallet, email recovery, guardian recovery]
 ---
 
-A UX and a security service for Safe Account Recovery, streamlining the recovery process for account owners and their designated recovery contacts.
+Secure Safe Accounts with a diverse set of recovery options like trusted contacts, email/SMS verification, Passkeys, secondary devices and more. 
+Safe Rocovery service has two main components: [Recovery UX](#recovery-ux-api) and [Email/SMS Recovery](#emailsms-recovery-api).
 
 ## Who is this for
-
-Wallets applications integrating Candide's [Social Recovery Module](https://github.com/candidelabs/candide-contracts), and want to offer a seamless and secure recovery experience for their end-users.
+Wallets using Safe [Social Recovery Module](/wallet/plugins/recovery-with-guardians/), and want to offer a seamless and secure recovery experience for their end-users.
 
 ## Recovery UX API
 
@@ -30,6 +30,10 @@ It includes a gas sponsorship relayer, which cover the gas costs for both confir
 The api provides a communication system using emojis that enables guardians to verify and approve legitimate recovery requests, effectively preventing social phishing 
 attempts by malicious actors who may try to manipulate the recovery process.
 
+### Alerts and Notifications
+Account owners can subscribe to receive notifications via email or SMS when a recovery request is initiated, whether onchain or through the service, ensuring they stay informed during a recovery process.
+The service keeps track of transactions sent via the *Safe Recovery Module* and uses events and tracing to index transactions to send timely alerts.  
+
 ## Email/SMS Recovery API 
 
 A secure and user-friendly solution that uses email and phone verification to facilitate account recovery. Can be used as a default recovery method or 
@@ -44,9 +48,8 @@ Supports SMS OTP. To verify user ownership of the phone number, a confirmation c
 ### Multi-factor authentication
 Supports MFA with different channels such as a combination of email and sms.
 
-### Alerts and Notifications
-Account owners can subscribe to receive notifications via email or SMS when a recovery request is initiated, whether onchain or through the service, ensuring they stay informed during a recovery process.
-The service keeps track of transactions sent via the *Safe Recovery Module* and uses events and tracing to index transactions to send timely alerts.  
+### Custom
+Supports adding more channels like WhatsApp, Telegram and others. Please reach out to request the support of your selected channel. 
 
 ## How it works
 

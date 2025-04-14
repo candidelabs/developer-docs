@@ -31,10 +31,29 @@ A Safe guardian service that uses email and phone verification to facilitate acc
 with other guardians (such as hardware wallets or trusted contacts) to create a customized recovery threshold.
 
 :::info
-The following API is in a pre-release phase. Request access by contacting us.    
+The following API is in a pre-release phase. [Request access here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).    
 :::
 
-## Registration: Email / SMS
+**/auth** (Registration)
+- **/auth/register**
+  - **POST**: Submit a registration request
+- **/auth/submit**
+  - **POST**: Submits the receive OTP
+- **/auth/registrations**
+  - **GET**: Fetch active registration
+- **/auth/delete**
+  - **POST**: Delete a registration
+
+**/auth/signature** (Recovery)
+- **/auth/signature/request**
+  - **POST**: Request to recover an account
+- **/auth/signature/submit**
+  - **POST**: Confirm recovery with OTP challenge
+
+
+
+## Auth Registration
+### Email / SMS
 
 Submit a registration request with the target smart account to protect using the choice of channel (email or sms). 
 The user will then receive a OTP code to later submits the challenge in `/auth/submit`
@@ -81,9 +100,9 @@ I authorize Safe Recovery Service to sign a recovery request for my account afte
 
 -   `signature`: signature proving the request is initiated from the account
 
-See example guide how to construct the message and signature using Sign in With Ethereum (SIWE)
+See [example guide](#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign in With Ethereum (SIWE)
 
-## Registration: Submits confirmation using OTP
+### Submits confirmation using OTP
 Submits the receive OTP code to confirm ownership of the target channel 
 
 #### `POST /auth/submit`
@@ -116,7 +135,7 @@ curl -X POST \
 -   `challengeId`: The unique challenge ID received in the registration response.
 -   `challenge`: The code received via email/SMS.
 
-## Registration: Get active registration 
+### Get active registration 
 Fetch the registration of the protected smart account
 ####  `GET /auth/registrations`
 
@@ -158,9 +177,9 @@ I request to retrieve all authentication methods currently registered to my acco
 
 -   `signature`: signature proving the request is initiated from the account
 
-See example guide how to construct the message and signature using Sign in With Ethereum (SIWE)
+See [example guide](#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign in With Ethereum (SIWE)
 
-## Registration: Delete
+### Delete
 Deletes a registration
 
 #### `POST /auth/delete`
@@ -198,9 +217,10 @@ I request to remove the authentication method with registration ID {{id}} from m
 
 -   `signature`: signature proving the request is initiated from the account
 
-See example guide how to construct the message and signature using Sign in With Ethereum (SIWE)
+See [example guide](#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign in With Ethereum (SIWE)
 
-## Recovery: Request to recover an account
+## Auth Recovery
+### Request to recover an account
 Request a siganture from the service to recover an account given the new owners and threshold 
 #### `POST /auth/signature/request`
 
@@ -243,7 +263,7 @@ curl -X POST \
 -   `newThreshold`: The new threshold to the safe account
 -   `chainId`: chain id for the recovery request signature
 
-## Recovery: Confirm recovery with OTP challenge
+### Confirm recovery with OTP challenge
 Request to submits the signature with the provided OTP code challenge and id
 #### `POST /auth/signature/submit`
 
@@ -277,156 +297,6 @@ curl -X POST \
 -   `requestId`: The unique ID received in the signature request response.
 -   `challengeId`: The unique challenge ID specific to a authentication method, received in the signature request response.
 -   `challenge`: The code received via email/SMS.
-
-## Alerts: Subscribe to recovery requests
-#### `POST /alerts/subscribe`
-Creates an inactive alerts subscription for an account, both onchain and offchain. It then needs to be activated through challenge submission using `POST /alerts/activate`.
-
-<Tabs>
-<TabItem value="example-request" label="Example Request">
-
-```json
-curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/subscribe \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "account": "0x...",
-  "chainId": 1,
-  "channel": "email",
-  "target": "user@example.com",
-  "message": "siwe(chainId, statement(channel, target))",
-  "signature": "sign(message)"
-}'
-```
-
-</TabItem>
-<TabItem value="example-response" label="Example Response">
-
-```json
-{
-  "subscriptionId": "unique-subscription-id", // please note that this alerts subscription needs to be activated using the next endpoint
-}
-```
-</TabItem>
-</Tabs>
-
--   `account`: The smart account address requesting registration.
--   `chainId`: The chain id in which the account resides (this is used to verify the signature field only, the alert will trigger for any action for this account across any chain)
--   `channel`: Either `"email"` or `"sms"` (defines the delievery channel).
--   `target`: The email or phone number for authentication.
--   `message`: SIWE (EIP-4361) message statement. Statement: 
-
-```
-I agree to receive Social Recovery Module alert notifications for my account address on all supported chains sent to {{target}}
-```
-
--   `signature`: signature proving the request is initiated from the account
-
-See example guide how to construct the message and signature using Sign in With Ethereum (SIWE)
-
-## Alerts: Activate subscripton to recovery requests
-#### `POST /alerts/activate`
-Verifies submitted challenge and activates alerts subscription.
-
-<Tabs>
-<TabItem value="example-request" label="Example Request">
-
-```json
-curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/activate \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "subscriptionId": "unique-subscription-id",
-  "challenge": "123456"
-}'
-```
-
-</TabItem>
-<TabItem value="example-response" label="Example Response">
-
-```json
-{
-  "success": true,
-}
-```
-</TabItem>
-</Tabs>
-
--   `subscriptionId`: The unique ID received in the subscription response.
--   `challenge`: The code received via email/SMS.
-
-## Alerts: Get active subscription
-Fetches active alerts subscriptions for an account.
-
-#### `GET /alerts/subscriptions`
-<Tabs>
-<TabItem value="example-request" label="Example Request">
-
-```json
-curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/subscriptions" \
-   --data-urlencode "account=0x...",
-   --data-urlencode "chainId=0x1",
-   --data-urlencode "message=siwe(chainId, statement)",
-   --data-urlencode "signature=sign(message)"
-```
-
-</TabItem>
-<TabItem value="example-response" label="Example Response">
-
-```json
-{
-  "subscriptions": [
-    {
-      "id": "unique-subscription-id",
-      "channel": "email",
-      "target": "user@example.com"
-    }
-  ]
-}
-```
-</TabItem>
-</Tabs>
-
--   `account`: The smart account address.
--   `chainId`: The chain id in which the account resides (this is used to verify the signature field only, the alerts are global for this account accross all supported chains that have alerts enabled)
--   `message`: SIWE (EIP-4361) message statement. Statement: 
-
-```
-I request to retrieve all Social Recovery Module alert subscriptions linked to my account
-```
-
--   `signature`: signature proving the request is initiated from the account
-
-See example guide how to construct the message and signature using Sign in With Ethereum (SIWE)
-
-## Alerts: Unsubscribe
-Unsubscribes from an active alerts subscription.
-
-#### `POST /alerts/subscriptions`
-<Tabs>
-<TabItem value="example-request" label="Example Request">
-
-```json
-curl -X GET \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/subscriptions \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "subscriptionId": "unique-subscription-id",
-}'
-```
-
-</TabItem>
-<TabItem value="example-response" label="Example Response">
-
-```json
-{
-  "success": true,
-}
-```
-</TabItem>
-</Tabs>
-
-- `subscriptionId`: The unique ID received in the subscription response.
 
 ## How to Sign Messages (SIWE EIP-4361)
 
