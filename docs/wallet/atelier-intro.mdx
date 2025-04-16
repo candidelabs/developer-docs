@@ -1,33 +1,42 @@
 ---
-title: Intro to Candide Atelier
+title: Intro to Candide
 description: A powerful toolkit to create, customize, and offer Smart Wallets. Explore ERC-4337 support, account abstraction, paymaster integration, bundler features, and seamless management of Smart Wallets
 image: /img/posters/atelier-meta.png
 keywords: [erc-4337, account abstraction, paymaster, bundler, Smart Wallets]
 sidebar_position: 1
 ---
-# Intro to Candide Atelier
+# Intro to Candide
 
-Create, customize and offer Smart Wallets for your users
+Candide is the most complete smart account toolset with support for both ERC-4337 and [EIP-7702](/wallet/guides/getting-started-eip-7702/) Account Abstraction.
 
-## What is Candide Atelier?
+## UX Benefits
 
-Candide Atelier is a set of tools that lets you build **Smart Wallets** powered by [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) Account Abstraction
+- **Auth Abstraction**: 
+  - [Passkeys Login](/wallet/plugins/passkeys/)
+  - [Email/Social Login](/wallet/guides/authentication/#social--email)
+  - [Multisig](/wallet/guides/multisig/)
+- **Gas Abstraction**: 
+  - [Sponsor gas](/wallet/guides/send-gasless-tx/) with rules and policies
+  - Offer [gas payments in erc-20](/wallet/guides/pay-gas-in-erc20/) tokens
+- **Transaction Abstraction**
+  - [Automate transactions](/wallet/plugins/allowance) with Spending Limits. Offer subscriptions, reccuring or scheduled payments.
+  - [Batch multiple transactions](/wallet/guides/getting-started/#step-4-create-useroperation) into one.
+- **Security**
+  - Account Recovery with [trusted contracts](/wallet/plugins/recovery-with-guardians) or with traditional [email/sms](/wallet/recovery/auth-api/) 
 
-- AbstractionKit: A Typescript library to build and send UserOperations, with first class support for *Safe* Accounts.
-- Bundler: ERC-4337 nodes on all EVM compatible chains to send UserOperations
-- Paymaster: Off-chain verification API facilitating gas sponsorship
+And that's only the tip of the iceberg. Because each account is a smart contract, contracts are programmable and enable arbitrarily advanced transaction functionalities. Unlike EOAs, which are limited by design.
 
-## Benefits of Smart Wallets
+## Products
 
-- **Account Security**: Use different authentication methods to support easy login and recovery features
-- **Gas Fee Abstraction**: Completely abstract away gas from your users, or let them pay fees in different currencies other than the native.
-- **One-click Interfaces**: Batch transactions or send multiple transactions automatically in a single transaction
+- **AbstractionKit SDK**: A Typescript library to build and send UserOperations, with first class support for *Safe* Accounts and *Simple Account*.
+- **Bundler API**: Nodes extension on all EVM compatible chains to send smart wallet type transactions
+- **Paymaster API**: Off-chain verification API facilitating gas sponsorship for gasless and gas payments in erc-20 token
+- **InstaGas**: A no-code platform that enables Apps to sponsor gas fees for their end-users using rules and policies
 
-And that's only the tip of the iceberg. Because each account is a smart contract, contracts are programmable and enable arbitrarily advanced transaction functionalities. Unlike EOAs (MetaMask-style wallets), which are limited by design.
 
 ## Chains supported
 
-Candide Atelier is available on all major EVM equivalent networks. If you would like to see a network supported, [reach out to us](https://t.me/heymarcopolo).
+Candide is available on all major EVM equivalent networks. If you would like to see a network supported, [reach out to us](https://t.me/heymarcopolo).
 
 import {NetworkList} from "/src/components/NetworkList";
 

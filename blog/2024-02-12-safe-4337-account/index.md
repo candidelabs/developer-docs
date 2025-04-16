@@ -24,7 +24,7 @@ AbstractionKit embodies a lightweight design to minimize dependencies on externa
 - The Essentials method provides a comprehensive set of functionalities with support for overrides, delivering a simplified and efficient approach.
 - The Advanced method provides intricate control and customization options, specifically tailored for developers seeking detailed configurations.
 
-AbstractionKit comes equipped with a suite of infrastructure with Candide Atelier, including hosted Bundlers and a Paymaster API, ready for developers to use right out of the box. It is Ethereum interface library-agnostic; it can be used with ethers, viem, or web3js. Furthermore, it can be used with any Bundler client, thanks to ERC-4337 standardization across different platforms like LlamaNodes, BlockPi, or other Account Abstraction Providers.
+AbstractionKit comes equipped with a suite of infrastructure with Candide, including hosted Bundlers and a Paymaster API, ready for developers to use right out of the box. It is Ethereum interface library-agnostic; it can be used with ethers, viem, or web3js. Furthermore, it can be used with any Bundler client, thanks to ERC-4337 standardization across different platforms like LlamaNodes, BlockPi, or other Account Abstraction Providers.
 
 Thanks to the support from the [Safe Grants Program](https://grants.safe.global), Candide secured funding for the development of [The Reference SDK for ERC-4337 Safe](https://twitter.com/candidelabs/status/1719039290842239225). While ERC-4337 introduces a novel paradigm for account abstraction, its practical application has been hindered by the so far limited adoption of battle tested smart-contract based accounts, in particularly Safe based accounts.
 

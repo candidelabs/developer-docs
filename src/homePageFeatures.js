@@ -1,15 +1,15 @@
 export default [
   {
-    title: 'AbstractionKit',
+    title: 'AbstractionKit SDK',
     rows: [
       {
-        title: 'SDK Guides',
+        title: 'Guides',
         description: 'Step by step guides on how to create, customize and offer Smart Wallets for your users',
         to: './wallet/atelier-intro'
       },
       {
         title: 'Plugins',
-        description: "Safe modules including Passkeys, Account Recovery and Allowances",
+        description: "Safe modules including Passkeys, Account Recovery and Spending Limits",
         to: './wallet/plugins/passkeys/',
       },
     ],
@@ -36,6 +36,11 @@ export default [
         title: 'Bundler',
         description: 'Connect to the Unified Bundler Mempool to send ERC-4337 AA UserOperations',
         to: './wallet/bundler/rpc-methods',
+      },
+      {
+        title: 'Account Recovery Service',
+        description: 'Diverse set of recovery methods like email/SMS, an alert system and automatic recovery execution',
+        to: './wallet/recovery/overview/',
       },
     ],
   }

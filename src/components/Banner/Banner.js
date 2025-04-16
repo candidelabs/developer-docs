@@ -7,11 +7,11 @@ const Banner = () => {
   return (
     <div className={styles.banner__container}>
       <div className={styles.banner__text}>
-        <h2>Candide Atelier</h2>
+        <h2>Candide</h2>
         <p>
           Candide provides the tools to build seamless onchain UX experiences with Smart Wallets.
         </p>
-        {/* <a href="./wallet/guides/getting-started">
+        <a href="/wallet/atelier-intro/">
           Get started
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -26,7 +26,7 @@ const Banner = () => {
               d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"
             />
           </svg>
-        </a> */}
+        </a>
       </div>
       <div className={styles.banner__backdrop} />
       {/* <img className={styles.banner__image} src={logo} alt="Candide Logo" /> */}
