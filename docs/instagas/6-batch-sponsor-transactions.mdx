@@ -9,17 +9,10 @@ import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { DataTable } from "/src/components/CustomTable";
 
-# Batch & Sponsor Transactions (ERC-5792)
+# Batch & Sponsor Transactions (via ERC-5792)
  
-Batched transactions allows apps to perform multiple actions in one single on-chain transaction. If you are building a dapp, you communicate 
-the actions to the wallet that the user performs. Instead of sending a single transaction one after the other, you can send an `array` of transactions, 
-and the wallet will execute the bundle. [ERC-5792](https://eips.ethereum.org/EIPS/eip-5792) standarizes the communication between the App and the Wallet.
-
-InstaGas is a no-code solution for apps, provided that the wallet natively use Candide's [Paymaster API](/wallet/paymaster/rpc-methods/).
-However, this integration is not a barrier for Apps wishing to sponsor gas fees for wallets that do not natively support Candide. 
-Thanks to [ERC-7677](https://eips.ethereum.org/EIPS/eip-5792), which is an extension to ERC-5792 which standarizes the communication of gas sponsorship 
-between the App and the Wallet. Apps can still send InstaGas info programmatically to Wallets. 
-
+If you are building a Dapp, you communicate the actions to the wallet that the user performs. Instead of sending a single transaction one after the other, you can send an `array` of transactions, 
+and the wallet will execute the bundle. [ERC-5792](https://eips.ethereum.org/EIPS/eip-5792) standarizes this communication between the Dapp and the Wallet.
 
 <div
   style={{
@@ -56,10 +49,10 @@ The following apps and wallets support smart capabilities.
 
 #### PoolTogether and Candide
 
-Back then where we were first building Candide Wallet, Pooltogether proposed to sponsor gas to enable No-Loss donation to fund public goods.
+Back then where we were first building [Candide Wallet](https://candidewallet.com), Pooltogether proposed to sponsor gas to enable No-Loss donation to fund public goods.
 
 Sponsorship was tailored with precision. PoolTogether leveraged InstaGas [Transaction Rules](/instagas/gas-policies/#transaction-rules) to limit sponsorship 
-to only a selected methods qualify on PoolTogether Contracts; necessitating a minimum deposit of 200 USDC and a lock duration of 14 days. 
+to only a selected methods qualify on PoolTogether Contracts; requiring a minimum deposit of 200 USDC and a lock duration of 14 days. 
 This precision safeguarded against Sybil attacks and fortifies the integrity of PoolTogether’s Gas Sponsorship Funds. 
 
 See [Video announcement](https://x.com/candidewallet/status/1704901643081244996)
@@ -134,59 +127,63 @@ console.log(capabilities);
 
 ### Step 2: Batch & Sponsor Transactions
 
+The example below uses WAGMI [useSendCalls](https://wagmi.sh/react/api/hooks/useSendCalls) hook that shows how to send two actions in a single one. 
+Your app should fallback to sending normal transactions if the wallet doesn't support smart batching capabilities. 
+
+**Gas Sponsorship**
+
+InstaGas is a no-code solution for Dapps, provided that the wallet natively use Candide's [Paymaster API](/wallet/paymaster/rpc-methods/).
+However, this integration is not a barrier for Apps wishing to sponsor gas fees for wallets that do not natively support Candide. 
+In thi step, we demonstrate how to use [ERC-7677](https://eips.ethereum.org/EIPS/eip-5792), which is an extension to ERC-5792 that standarizes the communication of gas sponsorship 
+between the App and the Wallet.
+
 1. Create an App on [dashboard.candide.dev/api-keys](https://dashboard.candide.dev/api-keys)
 2. Copy the paymaster URL link with the API key and fill in the `candidePaymasterUrl`
-3. Create a Gas Policy and customise it with [your rules](/instagas/gas-policies/)
+3. [Setup a Gas Policy](/instagas/overview/#how-it-works) and customise it with [your rules](/instagas/gas-policies/)
 
-Learn [how to setup a gas policy](/instagas/overview/#how-it-works)
-
-The example below uses WAGMI [useSendCalls](https://wagmi.sh/react/api/hooks/useSendCalls) hook that shows how to send two actions in a single one. 
-Your app shouldfallback to sending normal transactions if the wallet doesn't support smart batching capabilities. 
 
 ```ts
 import { useSendCalls } from 'wagmi/experimental'
 import { useChainId, useSendTransaction } from 'wagmi';
 import { toHex } from 'viem';
 
-
-const { sendCalls, data: id } = useSendCalls(); // wagmi hook to send batch & sponsored tx
-const { sendTransaction } = useSendTransaction(); // wagmi hook to send standard tx
+const { sendCalls, data: id } = useSendCalls(); // to send batch & sponsored tx
+const { sendTransaction } = useSendTransaction(); // to send standard tx
 const chainId = useChainId();
 
 const paymasterUrl = "https://api.candide.dev/paymaster/v3/network/APY_KEY";
 
 const handleSendTx = () => {
-// check if capabilities are supported
-try {
-    sendCalls({
-        calls: [
-          {
-            to: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045", // Vitalik's address
-            value: parseGwei('0'),
-            data: "0x" as Hex,
-          },
-          {
-            to: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045", // Vitalik's address
-            value: parseGwei('0'),
-            data: "0x" as Hex,
+    try {
+      sendCalls({
+          calls: [
+            {
+              to: "0x0000000000000000000000000000000000000000",
+              value: parseGwei('0'),
+              data: "0x" as Hex,
+            },
+            {
+              to: "0x0000000000000000000000000000000000000000",
+              value: parseGwei('0'),
+              data: "0x" as Hex,
+            }
+          ],
+      capabilities: {
+          paymasterService: {
+            [toHex(chainId)]: {
+                url: paymasterUrl,
+            }
           }
-        ],
-    capabilities: {
-        paymasterService: {
-          [toHex(chainId)]: {
-              url: paymasterUrl,
-          }
-        }
-    },
-    });
-    } else {
-       // fallback to regular sendTransactions
-       sendTransaction({
-            to: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045", // Vitalik's address
-            value: parseGwei('0'),
-            data: "0x" as Hex,
-        });
-    }
+      },
+      });
+      } else {
+          // fallback to regular sendTransactions
+          sendTransaction({
+              to: "0x0000000000000000000000000000000000000000",
+              value: parseGwei('0'),
+              data: "0x" as Hex,
+          });
+      }
 } catch (err) {
     sendError(`Error sending transaction:'${err}`)
 }
@@ -210,18 +207,14 @@ const { data: callStatusData, refetch: refetchCallStatus } = useCallsStatus({
 
 Optional: if you've lost track of the transaction, you can also delegate showing the status to the wallet directly using [useShowCallsStatus](https://wagmi.sh/react/api/hooks/useShowCallsStatus).
 
-## EIP-5792 Spec
+## ERC-5792 Spec
 
-[EIP-5792](https://eips.ethereum.org/EIPS/eip-5792) allows us to standardize JSON-RPC methods for apps to communicate bundle calls to wallets. The flow is usually in this order:
+[ERC-5792](https://eips.ethereum.org/EIPS/eip-5792) allows us to standardize JSON-RPC methods for apps to communicate bundle calls to wallets. The flow is usually in this order:
 
-1. `wallet_getCapabilities`: App checks which capabilties the wallet support (e.g.: batching, sponsorship, ..), 
+1. `wallet_getCapabilities`: App checks which capabilties the wallet support (e.g: batching, sponsorship, ..)
 2. `wallet_sendCalls`: App sends the batch transactions
 3. `wallet_getCallsStatus`: App requests to get the status (e.g: pending, confirmed, failed)
 4. `wallet_showCallsStatus`: optional method for app to request to show the status of the transaction on the wallet interface
-
-:::info Did you know?
-These requests are sent to Wallets, not to nodes. These RPC requests are communicated directly to the wallet through a standard EIP-1193 custom requests.
-:::
 
 ### wallet_getCapabilities
 
@@ -300,26 +293,29 @@ Requests that the wallet deliver a group of function calls on-chain from the use
 [
   {
     "version": "1.0",
-    "from": "0xd46e8dd67c5d32be8058bb8eb970870f07244567",
+    "from": "0x0000000000000000000000000000000000000000",
     "chainId": "0x01",
     "atomicRequired": true,
     "calls": [
       {
-        "to": "0xd46e8dd67c5d32be8058bb8eb970870f07244567",
-        "value": "0x9184e72a",
-        "data": "0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675"
+        "to": "0x0000000000000000000000000000000000000000",
+        "value": "0x",
+        "data": "0x"
       },
       {
-        "to": "0xd46e8dd67c5d32be8058bb8eb970870f07244567",
-        "value": "0x182183",
-        "data": "0xfbadbaf01"
+        "to": "0x0000000000000000000000000000000000000000",
+        "value": "0x",
+        "data": "0x"
       }
     ],
     "capabilities": {
       "paymasterService": {
-        "url": "https://...",
-        "context": {
-          "sponsorshipPolicyId": "962b252c"
+          ["0x01"]: {
+              "url": "https://...",
+              "context" {
+                "sponsorshipPolicyId": "123"
+              }
+          }
         }
       }
     }
