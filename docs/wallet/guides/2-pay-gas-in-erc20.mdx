@@ -178,20 +178,27 @@ const tokenAddress = process.env.TOKEN_ADDRESS as string;
 
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC)
 
-userOperation = await paymaster.createTokenPaymasterUserOperation(
-    smartAccount,
-    userOperation,
-    tokenAddress,
-    bundlerUrl,
-)
+const tokensSupported = await paymaster.fetchSupportedERC20TokensAndPaymasterMetadata();
+const tokenSelected = tokensSupported.tokens.find(
+    token => token.address.toLocaleLowerCase() === tokenAddress.toLowerCase()
+);
 
-const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
-    userOperation,
-    tokenAddress
-)
+if (tokenSelected) {
+    userOperation = await paymaster.createTokenPaymasterUserOperation(
+        smartAccount,
+        userOperation,
+        tokenSelected.address,
+        bundlerUrl,
+    )
 
-console.log("This useroperation may cost upto : " + cost + " wei in CTT token")
-console.log("Please fund the sender account : " + userOperation.sender +" with more than "+ cost + " wei CTT token")
+    const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
+        userOperation,
+        tokenSelected.address
+    )
+    console.log("This useroperation may cost upto : " + cost + " wei in CTT token")
+    console.log("Please fund the sender account : " + userOperation.sender +" with more than "+ cost + " wei CTT token")
+}
+
 ```
 
 </TabItem>
