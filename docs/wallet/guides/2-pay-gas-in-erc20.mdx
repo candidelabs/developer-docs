@@ -176,7 +176,7 @@ import {
 const paymasterRPC = process.env.PAYMASTER_RPC as string;
 const tokenAddress = process.env.TOKEN_ADDRESS as string;
 
-const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC)
+const paymaster = new CandidePaymaster(paymasterRPC)
 
 const tokensSupported = await paymaster.fetchSupportedERC20TokensAndPaymasterMetadata();
 const tokenSelected = tokensSupported.tokens.find(
@@ -196,9 +196,8 @@ if (tokenSelected) {
         tokenSelected.address
     )
     console.log("This useroperation may cost upto : " + cost + " wei in CTT token")
-    console.log("Please fund the sender account : " + userOperation.sender +" with more than "+ cost + " wei CTT token")
+    console.log("Please fund the sender account: " + userOperation.sender +" with more than "+ cost + " wei CTT token")
 }
-
 ```
 
 </TabItem>
