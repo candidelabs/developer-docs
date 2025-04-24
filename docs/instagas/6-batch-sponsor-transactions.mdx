@@ -81,6 +81,16 @@ This exampe demo communicating a batch of transactions and the gas sponsorship i
 
 ## Quickstart with Viem/WAGMI
 
+### Installation
+
+```bash
+npm install viem wagmi
+```
+
+:::note
+EIP-5792 is supported beginning with viem@2.28 and wagmi@2.15 and later
+:::
+
 ### Step 1: Get Wallet Capabilities
 
 Example using wagmi [useCapabilities](https://wagmi.sh/react/api/hooks/useCapabilities) hook 
@@ -89,7 +99,7 @@ Example using wagmi [useCapabilities](https://wagmi.sh/react/api/hooks/useCapabi
 <TabItem value="example" label="Usage">
 
 ```ts
-import { useCapabilities } from 'wagmi/experimental';
+import { useCapabilities } from 'wagmi';
 
 const { data: capabilities } = useCapabilities({
     account: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045", // account address
@@ -134,7 +144,7 @@ Your app should fallback to sending normal transactions if the wallet doesn't su
 
 InstaGas is a no-code solution for Dapps, provided that the wallet natively use Candide's [Paymaster API](/wallet/paymaster/rpc-methods/).
 However, this integration is not a barrier for Apps wishing to sponsor gas fees for wallets that do not natively support Candide. 
-In thi step, we demonstrate how to use [ERC-7677](https://eips.ethereum.org/EIPS/eip-5792), which is an extension to ERC-5792 that standarizes the communication of gas sponsorship 
+In this step, we demonstrate how to use [ERC-7677](https://eips.ethereum.org/EIPS/eip-5792), which is an extension to ERC-5792 that standarizes the communication of gas sponsorship 
 between the App and the Wallet.
 
 1. Create an App on [dashboard.candide.dev/api-keys](https://dashboard.candide.dev/api-keys)
@@ -143,7 +153,7 @@ between the App and the Wallet.
 
 
 ```ts
-import { useSendCalls } from 'wagmi/experimental'
+import { useSendCalls } from 'wagmi'
 import { useChainId, useSendTransaction } from 'wagmi';
 import { toHex } from 'viem';
 
@@ -194,10 +204,10 @@ const handleSendTx = () => {
 Example using wagmi [useCallsStatus](https://wagmi.sh/react/api/hooks/useCallsStatus) hook
 
 ```ts
-import { useCallsStatus } from 'wagmi/experimental'
+import { useCallsStatus } from 'wagmi'
 
 const { data: callStatusData, refetch: refetchCallStatus } = useCallsStatus({
-    id: id as string,
+    id: id?.id || '',
     query: {
         enabled: !!id,
         refetchInterval: (data) => data.state.data?.status === "CONFIRMED" ? false : 1000,
@@ -312,8 +322,9 @@ Requests that the wallet deliver a group of function calls on-chain from the use
       "paymasterService": {
           ["0x01"]: {
               "url": "https://...",
+              "optional": true,
               "context" {
-                "sponsorshipPolicyId": "123"
+                "sponsorshipPolicyId": "123",
               }
           }
         }
