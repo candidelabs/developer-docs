@@ -11,7 +11,7 @@ export const arbitrumList = [
     address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
   },
   {
-    token: "USDT",
+    token: "USDT (Bridged)",
     logo: "/img/tokens/usdt-logo.svg",
     address: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
   },
@@ -27,6 +27,11 @@ export const baseList = [
     token: "USDC (Native)",
     logo: "/img/tokens/usdc-logo.svg",
     address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  },
+  {
+    token: "USDT (Bridged)",
+    logo: "/img/tokens/usdt-logo.svg",
+    address: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
   },
 ];
 
@@ -65,7 +70,7 @@ export const polygonList = [
     address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
   },
   {
-    token: "USDT",
+    token: "USDT (Bridged)",
     logo: "/img/tokens/usdt-logo.svg",
     address: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
   },
@@ -87,7 +92,7 @@ export const celoList = [
     address: "0xcebA9300f2b948710d2653dD7B07f33A8B32118C",
   },
   {
-    token: "USDT",
+    token: "USDT (Native)",
     logo: "/img/tokens/usdt-logo.svg",
     address: "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e",
   },
@@ -104,11 +109,21 @@ export const ethereumList = [
     logo: "/img/tokens/usdc-logo.svg",
     address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
   },
+  {
+    token: "USDT (Native)",
+    logo: "/img/tokens/usdt-logo.svg",
+    address: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+  },
+  {
+    token: "XAU₮ (Tether Gold)",
+    logo: "/img/tokens/xaut-tether-gold-logo.svg",
+    address: "0x68749665FF8D2d112Fa859AA293F07A622782F38",
+  },
 ];
 
 export const gnosisList = [
   {
-    token: "Monerium EUR (EURe)",
+    token: "EURe (Monerium EUR)",
     logo: "/img/tokens/EURe.png",
     address: "0xcB444e90D8198415266c6a2724b7900fb12FC56E",
   },
@@ -118,7 +133,7 @@ export const gnosisList = [
     address: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83",
   },
   {
-    token: "USDT",
+    token: "USDT (Bridged)",
     logo: "/img/tokens/usdt-logo.svg",
     address: "0x4ECaBa5870353805a9F068101A40E0f32ed605C6",
   },
@@ -135,12 +150,12 @@ export const optimismList = [
     address: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
   },
   {
-    token: "USDC Native",
+    token: "USDC (Native)",
     logo: "/img/tokens/usdc-logo.svg",
     address: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
   },
   {
-    token: "USDT",
+    token: "USDT (Bridged)",
     logo: "/img/tokens/usdt-logo.svg",
     address: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
   },
