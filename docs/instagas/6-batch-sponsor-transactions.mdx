@@ -79,7 +79,8 @@ See [Video announcement](https://x.com/candidewallet/status/1704901643081244996)
 
 This exampe demo communicating a batch of transactions and the gas sponsorship info of InstaGas directly to the Wallet.
 
-[candidelabs/batch-sponsor-calls-instagas](https://github.com/candidelabs/batch-sponsor-calls-instagas)
+- Live Demo [batch-and-sponsor.on-fleek.app](https://batch-and-sponsor.on-fleek.app/)
+- Source code [candidelabs/batch-sponsor-calls-instagas](https://github.com/candidelabs/batch-sponsor-calls-instagas)
 
 ## Quickstart with Viem/WAGMI
 
@@ -90,7 +91,7 @@ npm install viem wagmi
 ```
 
 :::note
-EIP-5792 is supported beginning with viem@2.28 and wagmi@2.15 and later
+EIP-5792 is supported beginning with viem@2.29 and wagmi@2.15 and later
 :::
 
 ### Step 1: Get Wallet Capabilities
@@ -210,11 +211,12 @@ Example using wagmi [useCallsStatus](https://wagmi.sh/react/api/hooks/useCallsSt
 import { useCallsStatus } from 'wagmi'
 
 const { data: callStatusData, refetch: refetchCallStatus } = useCallsStatus({
-    id: id?.id || '',
-    query: {
-        enabled: !!id,
-        refetchInterval: (data) => data.state.data?.status === "CONFIRMED" ? false : 1000,
-    },
+  id: id?.id || '',
+  query: {
+    enabled: !!id,
+    refetchInterval: (data) =>
+      data.state.data?.status === "success" ? false : 1000,
+  },
 });
 ```
 
