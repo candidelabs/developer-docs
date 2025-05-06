@@ -181,6 +181,7 @@ const handleSendTx = () => {
       capabilities: {
           paymasterService: {
             [toHex(chainId)]: {
+                optional: true,
                 url: paymasterUrl,
             }
           }
