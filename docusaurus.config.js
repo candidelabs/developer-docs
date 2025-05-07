@@ -103,9 +103,9 @@ const config = {
       },
       image: 'img/posters/atelier-meta.png',
       announcementBar: {
-        id: 'instagas',
+        id: 'eip-7702',
         content:
-          'Now supported: Upgrade EOAs to Smart Accounts with EIP-7702 <button><a href="/blog/eip-7702-support/">Read the Release</a></button>',
+          'EIP-7702 is now live on Ethereum, Gnosis, BSC, and Sepolia <button><a href="/blog/eip-7702-support/">Get Started</a></button>',
         backgroundColor: '#f0f6ff',
         textColor: '#000000',
         isCloseable: true, 
