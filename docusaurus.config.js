@@ -105,7 +105,7 @@ const config = {
       announcementBar: {
         id: 'eip-7702',
         content:
-          'EIP-7702 is now live on Ethereum, Gnosis, BSC, and Sepolia <button><a href="/blog/eip-7702-support/">Get Started</a></button>',
+          'EIP-7702 is now live on Ethereum, Optimism, Base, Gnosis, BSC <button><a href="/blog/eip-7702-support/">Get Started</a></button>',
         backgroundColor: '#f0f6ff',
         textColor: '#000000',
         isCloseable: true, 
