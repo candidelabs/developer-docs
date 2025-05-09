@@ -31,13 +31,14 @@ Here's the [complete code](https://github.com/candidelabs/abstractionkit/tree/ma
 ```bash
 mkdir candide-eip7702-upgrade-eoa
 cd candide-eip7702-upgrade-eoa
-yarn init
+npx tsc --init
 ```
 
-2. Install required dependencies
+2. Install dependencies
 
 ```bash
-npm install abstractionkit dotenv ethers
+npm i typescript --save-dev
+npm i abstractionkit dotenv ethers
 ```
 
 3. Configure Environment Variables
@@ -178,7 +179,7 @@ userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
 
 ## Step 5: Get Paymaster data
 
-Optionally sponsor gas for your user transaction or offer them to pay [gas in erc-20 tokens](/wallet/guides/pay-gas-in-erc20/#step-5-get-paymaster-data) 
+Optionally [sponsor gas](/wallet/guides/send-galess-eip-7702/) for your user transaction or offer them to pay [gas in erc-20 tokens](/wallet/guides/pay-gas-in-erc20-eip-7702/) 
 
 ```ts
 import { CandidePaymaster } from "abstractionkit";

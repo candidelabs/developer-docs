@@ -1,0 +1,72 @@
+---
+title: How to Pay Gas in ERC-20 Tokens Using EIP-7702   
+description: Learn how to upgrade an EOA to a EIP-7702 Smart Account and let users pay gas in ERC-20s using paymasters  
+keywords: [eip-7702, smart-account, pay gas in erc20, EOA, gas sponsorship]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# How to Pay Gas in ERC-20 Tokens | EIP-7702
+
+**Smart EOAs via EIP-7702**
+
+Offer the ability for users to pay gas in ERC-20s using any of the [supported ERC-20 Tokens](/wallet/paymaster/tokens-supported/) on Candide Paymaster.
+
+1. Create a new app on the [dashboard](https://dashboard.candide.dev) and copy the Paymaster RPC URL into your `.env` file.
+2. Select an ERC-20 token to pay gas with and add its address to the `.env` file. We use CTT in this example. 
+
+<Tabs>
+<TabItem value="index.ts" label="index.ts">
+
+```ts
+import {
+  ...
+  // highlight-start
+  CandidePaymaster,
+  // highlight-end
+} from "abstractionkit";
+
+const paymasterRPC = process.env.PAYMASTER_RPC as string;
+const tokenAddress = process.env.TOKEN_ADDRESS as string;
+
+const paymaster = new CandidePaymaster(paymasterRPC)
+
+const tokensSupported = await paymaster.fetchSupportedERC20TokensAndPaymasterMetadata();
+const tokenSelected = tokensSupported.tokens.find(
+    token => token.address.toLocaleLowerCase() === tokenAddress.toLowerCase()
+);
+
+if (tokenSelected) {
+    userOperation = await paymaster.createTokenPaymasterUserOperation(
+        smartAccount, // = new Simple7702Account(eoaDelegator.address)
+        userOperation,
+        tokenSelected.address,
+        bundlerUrl,
+    )
+
+    const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
+        userOperation,
+        tokenSelected.address
+    )
+    console.log("This useroperation may cost upto : " + cost + " wei in CTT token")
+    console.log("Please fund the sender account: " + userOperation.sender +" with more than "+ cost + " wei CTT token")
+}
+```
+
+</TabItem>
+
+<TabItem value=".env" label=".env">
+
+```env
+PAYMASTER_RPC=https://api.candide.dev/paymaster/$version/$network/$apikey
+TOKEN_ADDRESS=0xFa5854FBf9964330d761961F46565AB7326e5a3b # CTT address on sepolia
+```
+
+</TabItem>
+</Tabs>
+
+:::info
+Don't forget to fund the account with ERC-20s to pay for gas. We are using Candide Test Tokens (CTT) for this example. Request some on our Discord.
+:::
+

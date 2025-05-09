@@ -1,0 +1,79 @@
+---
+title: How to Send a Gasless Transaction Using EIP-7702   
+description: Learn how to upgrade an EOA to a EIP-7702 Smart Account and send a gasless transaction  
+keywords: [eip-7702, smart-account, gasless, EOA, gas sponsorship]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# How to Send a Gasless Transaction | EIP-7702
+
+**Smart EOAs via EIP-7702**
+
+Enable users to benefit from gasless transactions by offering publicly available gas policies set up by third parties on InstaGas
+like PoolTogether, AAVE, Unizen and many more. If no matching public gas policy is found for the user operation, you can fall back to a private gas policy of your own.
+
+Definitions:
+
+- **Public Gas Policies**: Gas sponsorships provided by Dapps and do not require a sponsorship policy ID.
+- **Private Gas Policies**: Require a sponsorship policy ID and can be used by the wallet if no public gas policy matches the user operation.
+
+Steps to Implement Gasless Transactions:
+
+1. Create a new app on the [dashboard](https://dashboard.candide.dev) and copy the Paymaster RPC URL into your `.env` file.
+2. Optionally, set up a Private Gas Policy on the dashboard and copy its sponsorship policy ID into your `.env` file.
+
+<Tabs>
+<TabItem value="index.ts" label="index.ts">
+
+```ts
+import {
+  // highlight-start
+  CandidePaymaster,
+  // highlight-end
+} from "abstractionkit";
+
+const paymasterRPC = process.env.PAYMASTER_RPC as string;
+const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
+const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
+
+let paymasterUserOperation;
+let sponsorMetadata;
+try {
+  // sponsor gas using public gas policies
+  [paymasterUserOperation, sponsorMetadata] =
+    await paymaster.createSponsorPaymasterUserOperation(
+      userOperation,
+      bundlerUrl,
+    );
+} catch (publicGasPolicyUnavailable) {
+  try {
+    // sponsor gas using a private gas policy
+    [paymasterUserOperation, sponsorMetadata] =
+      await paymaster.createSponsorPaymasterUserOperation(
+        userOperation,
+        bundlerUrl,
+        sponsorshipPolicyId,
+      );
+  } catch (privateGasPolicyUnavailable) {
+    // fallback to propose to the user the option to pay gas in erc-20 tokens
+  } catch (erc20GasPaymentUnavalable) {
+    // Last fallback to propose to the user the option to pay gas in native token
+  }
+}
+
+userOperation = paymasterUserOperation;
+```
+
+</TabItem>
+
+<TabItem value=".env" label=".env">
+
+```env
+PAYMASTER_RPC=https://api.candide.dev/paymaster/$version/$network/$apikey
+SPONSORSHIP_POLICY_ID=
+```
+
+</TabItem>
+</Tabs>
