@@ -158,49 +158,65 @@ between the App and the Wallet.
 ```ts
 import { useSendCalls } from 'wagmi'
 import { useChainId, useSendTransaction } from 'wagmi';
-import { toHex } from 'viem';
+import { toHex, zeroAddress } from 'viem';
 
 const { sendCalls, data: id } = useSendCalls(); // to send batch & sponsored tx
 const { sendTransaction } = useSendTransaction(); // to send standard tx
 const chainId = useChainId();
 
 const paymasterUrl = "https://api.candide.dev/paymaster/v3/network/APY_KEY";
+const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
+
+const tx = {
+  to: zeroAddress as Address,
+  value: parseGwei('0'),
+  data: zeroAddress as Hex,
+};
 
 const handleSendTx = () => {
-    try {
-      sendCalls({
-          calls: [
-            {
-              to: "0x0000000000000000000000000000000000000000",
-              value: parseGwei('0'),
-              data: "0x" as Hex,
-            },
-            {
-              to: "0x0000000000000000000000000000000000000000",
-              value: parseGwei('0'),
-              data: "0x" as Hex,
-            }
-          ],
-      capabilities: {
-          paymasterService: {
-            [toHex(chainId)]: {
-                optional: true,
+  // if smart capabilities are supported, send a sponsored batched transaction
+  try {
+    if (!capabilities) {
+      // Fallback to standard sendTransactions if capabilities are not available
+      sendTransaction(tx);
+      return;
+    }
+
+    const atomicStatus = capabilities[chainId].atomic?.status;
+    const isAtomicSupported = atomicStatus === "supported" || atomicStatus === "ready";
+    const isPaymasterSupported = capabilities[chainId].paymasterService?.supported;
+
+    if (isAtomicSupported) {
+      if (isPaymasterSupported) {
+        sendCalls({
+          calls: [TEST_TX, TEST_TX],
+          // and sponsor the tx, optionally with a sponsorshipPolicyId
+          capabilities: {
+            paymasterService: {
+              [toHex(chainId)]: {
                 url: paymasterUrl,
+                optional: true,
+                context: {
+                  sponsorshipPolicyId,
+                }
+              }
             }
-          }
-      },
-      });
+          },
+        });
       } else {
-          // fallback to regular sendTransactions
-          sendTransaction({
-              to: "0x0000000000000000000000000000000000000000",
-              value: parseGwei('0'),
-              data: "0x" as Hex,
-          });
+        sendCalls({
+          calls: [tx, tx],
+        });
       }
-} catch (err) {
+    } else {
+      // if not, fallback to standard sendTransactions
+      sendTransaction(tx);
+    }
+  } catch (err) {
     sendError(`Error sending transaction:'${err}`)
-}
+    console.log('Error sending transaction:', err);
+  }
+};
 ```
 
 ### Step 3: Track Transaction Status
