@@ -1,5 +1,5 @@
 ---
-title: Intro to AbstractionKit
+title: Why AbtractionKit 
 description: A Typescript Library to easily build and send ERC-4337 UserOperations, with first class support fot Safe Accounts
 image: /img/posters/abstractionkit-meta.png
 keywords: [typescript, sdk, userOperation, library]
@@ -18,6 +18,47 @@ Seamlessly use Safe Accounts, construct callData, estimate and sponsor gas (comp
   - Ethereum interface libraries: ethers, web3.js, viem/wagmi
   - Bundler implentation: Plug and play from any bundler provider
   - Paymaster services: use any 3rd party paymaster, or build your own
+
+## Why AbstractionKit
+
+Building production-ready smart contract wallets is notoriously complex and time-consuming. We know this firsthand from developing Candide Wallet, 
+one of the earliest fully-fledged smart wallets. That journey involved months of intensive work: architecting smart account contracts, 
+implementing an Ethereum Standards-compliant Bundler, engineering gas sponsorship features, and let alone building the user interface. 
+Having built this powerful infrastructure, we realized its immense value to the broader ecosystem. That’s why we created AbstractionKit: 
+to distill our expertise into a comprehensive toolkit that gives every company worldwide to build and launch a Smart Account in days, 
+not months.
+
+### Fast and Efficient
+AbstractionKit is engineered for optimal performance by minimizing HTTPS requests to the all infra: Node / Bundler / Paymaster, leading to a faster product experience. 
+We achieve this by employing cryptographic techniques to calculate complex smart account signatures offline, reducing the need for external 
+calls to the Bundler or Node. Fewer HTTPS requests not only lower your infrastructure costs but also hugely improve user experience with enhanced 
+speed. Don't just take our word for it—we encourage you to verify. Compare our performance benchmarks against other account abstraction libraries like 
+in the [AA-SDK-Benchmark](https://aa-sdk-benchmark.on-fleek.app/).
+
+### Developer-Friendly and Customizable
+We are obsessed with making AbstractionKit exceptionally developer-friendly while ensuring it remains highly customizable for advanced use cases. 
+While not strictly a "plug and play" solution, it is purposefully designed to be high-level enough for any TypeScript developer to integrate
+smart accounts without needing deep expertise in the intricate details of ERC-4337 or EIP-7702 entry point interactions. Simultaneously, its design 
+ensures developers can understand the flow of UserOperations and easily debug any issues during integration. AbstractionKit is also not dependent on 
+specific Ethereum client libraries, allowing you to use it with your preferred tools like ethers.js or viem. Its minimal dependencies also contribute to its ease of maintenance.
+
+### Secure Smart Accounts: Built with Safe
+AbstractionKit distributes Safe Accounts, the battle-tested smart accounts securing billions of dollars in assets across Ethereum and other 
+EVM-compatible chains. We particularly chose to integrate Safe due to their unparalleled security track record, extensive audits, 
+and widespread community trust, making them the leading standard for secure smart contract wallets.
+
+### Flexible and Extensible
+
+AbstractionKit is designed for flexibility and extensibility. You can build smart account plugins, integrate social logins via various authentication 
+services, or even use it with different smart account implementations beyond the default Safe Accounts. Each core component—Bundler, Paymaster, and 
+Account—is built separately and modularly, like Lego blocks, allowing for tailored configurations and extensions.
+
+### Truly Vendor-Agnostic
+When we say vendor-agnostic, we mean it. AbstractionKit meticulously follows the official Ethereum Account Abstraction standards. 
+This ensures your product will seamlessly operate not only with Candide's infrastructure but also with any other compliant Account Abstraction provider, 
+such as Alchemy, Pimlico, and Etherspot. While Candide is a long-standing Account Abstraction infrastructure provider, our commitment to standards means 
+your product's longevity is not tied to us; if Candide's were to cease, your app would continue to function with alternative 
+providers. 
 
 ## Installation
 
