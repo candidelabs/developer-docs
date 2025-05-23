@@ -99,7 +99,7 @@ npm install viem wagmi
 ```
 
 :::note
-EIP-5792 is supported beginning with viem@2.29 and wagmi@2.15 and later
+EIP-5792 is supported beginning with viem@2.30 and wagmi@2.15.4 and later
 :::
 
 ### Step 1: Get Wallet Capabilities
@@ -182,7 +182,7 @@ const tx = {
 };
 
 const handleSendTx = () => {
-  // if smart capabilities are supported, send a sponsored batched transaction
+  // if smart capabilities are supported, send a batched and optionally sponsored transaction
   try {
     if (!capabilities) {
       // Fallback to standard sendTransactions if capabilities are not available
@@ -192,30 +192,21 @@ const handleSendTx = () => {
 
     const atomicStatus = capabilities[chainId].atomic?.status;
     const isAtomicSupported = atomicStatus === "supported" || atomicStatus === "ready";
-    const isPaymasterSupported = capabilities[chainId].paymasterService?.supported;
 
     if (isAtomicSupported) {
-      if (isPaymasterSupported) {
-        sendCalls({
-          calls: [TEST_TX, TEST_TX],
-          // and sponsor the tx, optionally with a sponsorshipPolicyId
-          capabilities: {
-            paymasterService: {
-              [toHex(chainId)]: {
-                url: paymasterUrl,
-                optional: true,
-                context: {
-                  sponsorshipPolicyId,
-                }
-              }
+      sendCalls({
+        calls: [TEST_TX, TEST_TX],
+        // and sponsor the tx, optionally with a sponsorshipPolicyId
+        capabilities: {
+          paymasterService: {
+            url: paymasterUrl,
+            optional: true,
+            context: {
+              sponsorshipPolicyId,
             }
-          },
-        });
-      } else {
-        sendCalls({
-          calls: [tx, tx],
-        });
-      }
+          }
+        },
+      });
     } else {
       // if not, fallback to standard sendTransactions
       sendTransaction(tx);
