@@ -21,33 +21,35 @@ Seamlessly use Safe Accounts, construct callData, estimate and sponsor gas (comp
 
 ## Why AbstractionKit
 
-Smart contract wallets are hard to build. We learned this spending months developing Candide Wallet, one of the first. We built the complex 
-infrastructure – contracts, a compliant Bundler, gas features. We realized this core tech wasn't just for us; it was what developers like you needed most.
-So, we refocused. AbstractionKit is our commitment to provide an SDK that let you build on smart accounts and launch in days, not months.
+Smart contract wallets are hard to build. We learned this from developing [Candide Wallet](https://candidewallet.com), one of the first Smart Wallets. We wrote its smart 
+contracts, got it audited, developed a compliant Bundler and designed paymaster gas features. Until we realized we've spent more on infarstructure than 
+our actual product, which was the consumer facing app. What we've built wasn't just for us; it was what developers like. 
+So, we refocused. AbstractionKit is our commitment to provide an SDK that let you build on smart accounts in days, not months.
 
-### Fast and Efficient
+### At the frontier of Efficiency
 AbstractionKit is engineered for optimal performance by minimizing HTTPS requests to the key infra (Node, Bundler, Paymaster). 
 We do this writing cryptographic techniques to calculate complex smart account signatures offline. Fewer HTTPS requests not only lower your 
 infrastructure costs not also gives you vastly improved, snappier user experience. Don't just take our word for it—we encourage you to verify. 
 Compare the performance of AbstractionKit against other account abstraction libraries in [AA-SDK-Benchmark](https://aa-sdk-benchmark.on-fleek.app/).
 
-### Secure Smart Accounts: Built with Safe
-AbstractionKit distributes Safe Accounts, the battle-tested smart accounts securing billions of dollars in assets across Ethereum and other 
+### Secure Smart Accounts
+AbstractionKit distributes [Safe Accounts](/wallet/abstractionkit/safe-account/), the battle-tested smart accounts securing billions of dollars in assets across Ethereum and other 
 EVM-compatible chains. We particularly chose to integrate Safe due to their unparalleled security track record, extensive audits, 
-and widespread community trust, making them the leading standard for secure smart contract wallets.
+and widespread community trust, making them the leading standard for secure smart contract wallets. It also distributes [Simple7702Account](/wallet/abstractionkit/simple-7702-account/),
+developed by the authors of Account Abstraction themselves to enable EAOs to upgrade to Smart Accounts.
 
-### Flexible and Extensible
+### Extensible
 
-AbstractionKit is designed for flexibility and extensibility. You can build smart account plugins, integrate social logins via various authentication 
-services, or even use it with different smart account implementations beyond the default Safe Accounts. Each core component—Bundler, Paymaster, and 
-Account—is built separately and modularly, like Lego blocks, allowing for tailored configurations and extensions.
+Each core component—Bundler, Paymaster, and Account—is built separately and modularly, like Lego blocks, allowing for tailored configurations and extensions. 
+You can build your own smart account plugins, integrate social logins via various third-party authentication services, or even use it with different 
+smart account implementations beyond the *Safe* and *Simple* Accounts.
 
-### Truly Vendor-Agnostic
-When we say vendor-agnostic, we mean it. AbstractionKit follows the Ethereum Account Abstraction standards, line by line. 
-This guarantees your product will seamlessly operate not only with Candide's infra but also with any other compliant Account Abstraction provider, 
-such as Alchemy, Pimlico, and Etherspot. While Candide is the longest-standing Account Abstraction infra provider and we won't disappear anytime soon, 
-our commitment to standards means your product's longevity is not tied to us; if Candide's were to cease, your app would continue to function with 
-alternative providers. 
+### Vendor-Agnostic
+We truly mean it when we say vendor-agnostic. AbstractionKit strictly adheres to Ethereum Account Abstraction standards. This ensures your product works
+with Candide's infrastructure and any other compliant Account Abstraction provider, such as Alchemy, Pimlico, and Etherspot. While Candide is the 
+longest-standing provider in this space and isn't going anywhere, our commitment to open standards means your product's longevity isn't tied to us. 
+If Candide were to cease operations, your app would continue to function with alternative providers. You can verify Candide's Voltaire, as the 
+most compliant in the industry on [ERC-4337 Bundlers website](https://www.erc4337.io/bundlers).
 
 ## Installation
 
