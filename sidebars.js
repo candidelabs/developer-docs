@@ -134,17 +134,13 @@ const sidebars = {
     "wallet/atelier-intro",
     {
       type: "category",
-      label: "Guides",
+      label: "Starter Guides",
       collapsible: false,
       className: "category-not-collapsible",
       items: [
         "wallet/guides/getting-started",
         "wallet/guides/send-gasless-tx",
         "wallet/guides/pay-gas-in-erc20",
-        "wallet/guides/authentication",
-        "wallet/guides/multisig",
-        "wallet/guides/signing",
-        "wallet/guides/onchain-identifiers",
       ],
     },
     {
@@ -179,6 +175,18 @@ const sidebars = {
         "wallet/plugins/passkeys",
         "wallet/plugins/recovery-with-guardians",
         "wallet/plugins/allowance",
+      ],
+    },
+        {
+      type: "category",
+      label: "Advanced Guides",
+      collapsible: false,
+      className: "category-not-collapsible",
+      items: [
+        "wallet/guides/authentication",
+        "wallet/guides/multisig",
+        "wallet/guides/signing",
+        "wallet/guides/onchain-identifiers",
       ],
     },
     {
