@@ -50,11 +50,11 @@ npm i abstractionkit dotenv
 
 ```bash title=".env"
 CHAIN_ID=11155111
-BUNDLER_URL=https://api.candide.dev/bundler/version/network/YOUR_API_KEY
-JSON_RPC_NODE_PROVIDER=NODE_PROVIDER_URL
+BUNDLER_URL=https://api.candide.dev/public/v3/sepolia
+JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
 
 # API key for Sepolia
-PAYMASTER_RPC=https://api.candide.dev/paymaster/$version/sepolia/$APY_KEY
+PAYMASTER_RPC=https://api.candide.dev/public/v3/sepolia
 
 # Private gas policy ID 
 SPONSORSHIP_POLICY_ID=
@@ -218,7 +218,7 @@ userOperation = paymasterUserOperation;
 <TabItem value=".env" label=".env">
 
 ```env
-PAYMASTER_RPC=https://api.candide.dev/paymaster/$version/$network/$apikey
+PAYMASTER_RPC=https://api.candide.dev/public/v3/sepolia
 SPONSORSHIP_POLICY_ID=
 ```
 
