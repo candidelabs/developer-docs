@@ -177,7 +177,7 @@ const sidebars = {
         "wallet/plugins/allowance",
       ],
     },
-        {
+    {
       type: "category",
       label: "Advanced Guides",
       collapsible: false,
@@ -187,6 +187,11 @@ const sidebars = {
         "wallet/guides/multisig",
         "wallet/guides/signing",
         "wallet/guides/onchain-identifiers",
+        {
+          type: "doc",
+          id: "wallet/guides/simulate-transaction",
+          label: "Simulate Transaction"
+        },
       ],
     },
     {

@@ -1,0 +1,83 @@
+---
+title: Simulate Transactions with Tenderly
+keywords: [simulate transaction, tenderly, simulate user operation, simulate safe calldata]
+description: Learn how to simulate calldata and User Operation using Tenderly to debug potential issues before sending them onchain.
+---
+
+# Simulate Transactions with Tenderly
+
+This guide will walk you through using abtractionkit to simulate UserOperations and raw smart contract calldata with [Tenderly](https://tenderly.co/). 
+Simulating transactions allows you to:
+
+* Test transaction behaviors.
+* Debug potential issues before they occur on-chain.
+* Verify outcomes and state changes.
+* Potentially show end-users a preview of what their transaction will do before they sign.
+
+**To run a complete example**: [simulate-with-tenderly](https://github.com/candidelabs/abstractionkit-examples/blob/main/simulate-with-tenderly/simulate-with-tenderly.ts).
+ 
+## Configuration
+
+You will need the following configured with tenderly in order to use their services. 
+
+1. Visit [dashboard.tenderly.co](https://dashboard.tenderly.co)
+2. Create a free account
+3. Go to Settings >> Integration
+
+```env
+TENDERLY_ACCOUNT_SLUG=
+TENDERLY_PROJECT_SlUG=
+TENDERLY_ACCESS_KEY=
+```
+
+
+## Simulate User Operation 
+
+```ts
+import { simulateUserOperationWithTenderlyAndCreateShareLink } from "abstractionkit";
+
+const tenderlyAccountSlug = process.env.TENDERLY_ACCOUNT_SLUG as string
+const tenderlyProjectSlug = process.env.TENDERLY_PROJECT_SlUG as string
+const tenderlyAccessKey = process.env.TENDERLY_ACCESS_KEY as string
+
+const userOpSimulationLink = await simulateUserOperationWithTenderlyAndCreateShareLink(
+    tenderlyAccountSlug,
+    tenderlyProjectSlug,
+    tenderlyAccessKey,
+    chainId,
+    entrypointAddress,
+    userOperation
+);
+
+console.log("userop simulation link: ", userOpSimulationLink);
+```
+
+## Simulate Safe CallData 
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount} from "abstractionkit";
+
+const smartAccount = SafeAccount.initializeNewAccount(
+    [ownerPublicAddress],
+);
+
+const metaTx: MetaTransaction = {
+    to: "0x0000000000000000000000000000000000000000",
+    value: 0n,
+    data: "0x",
+};
+
+// highlight-start
+const callDataSimulatedLink = await smartAccount.simulateCallDataWithTenderlyAndCreateShareLink(
+    tenderlyAccountSlug,
+    tenderlyProjectSlug,
+    tenderlyAccessKey,
+    nodeUrl,
+    chainId,
+    [metaTx],
+);
+// highlight-end
+
+console.log("calldata simulation link: ", callDataSim.callDataSimulationShareLink);
+```
+
