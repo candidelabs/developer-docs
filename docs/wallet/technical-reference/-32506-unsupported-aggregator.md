@@ -1,5 +1,5 @@
 ---
-title: "-32506" 
+title: "Bundler Error -32506 Unsupported Aggregator" 
 description: Transaction rejected because wallet specified unsupported signature aggregator
 keywords: ['-32506', error, entrypoint, erc-4337]
 ---

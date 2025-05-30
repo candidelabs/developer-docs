@@ -1,5 +1,5 @@
 ---
-title: "-32521" 
+title: "Bundler Error -32521 Transaction Reverted" 
 description: Transaction was reverted during the execution phase
 keywords: ['-32521', error, entrypoint, erc-4337]
 ---

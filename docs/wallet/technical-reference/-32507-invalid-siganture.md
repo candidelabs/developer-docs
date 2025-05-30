@@ -1,5 +1,5 @@
 ---
-title: "-32507" 
+title: "Bundler Error -32507 Invalid UserOp Signature or Paymaster Signature" 
 description: Transaction rejected because of the wallet signature check failed or paymaster
 keywords: ['-32507', error, entrypoint, erc-4337]
 ---

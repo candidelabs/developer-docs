@@ -1,5 +1,5 @@
 ---
-title: "-32505" 
+title: "Bundler Error -32505 Paymaster or Aggregator stake or unstake-delay is too low" 
 description: Transaction rejected because paymaster (or signature aggregator) stake or unstake-delay is too low
 keywords: ['-32505', error, entrypoint, erc-4337]
 ---

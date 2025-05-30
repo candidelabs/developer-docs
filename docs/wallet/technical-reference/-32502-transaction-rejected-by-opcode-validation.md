@@ -1,5 +1,5 @@
 ---
-title: "-32502"
+title: "Bundler Error -32502 Transaction Rejected by opcode Validation"
 description: Transaction rejected because of opcode validation
 keywords: ['-32502', error, entrypoint, erc-4337]
 ---

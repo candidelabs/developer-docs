@@ -1,5 +1,5 @@
 ---
-title: "-32500"
+title: "Bundler Error -32500 Transaction Rejected By Entrypoint Simulation"
 description: Transaction rejected by entryPoint’s simulateValidation, during wallet creation or validation
 keywords: ['-32500', error, bundler, 'entrypoint', erc-4337]
 ---

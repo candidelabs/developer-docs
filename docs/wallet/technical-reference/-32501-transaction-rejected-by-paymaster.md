@@ -1,5 +1,5 @@
 ---
-title: "-32501"
+title: "Bundler Error -32501 Transaction Rejected by Paymaster"
 description: Transaction rejected by paymaster’s validatePaymasterUserOp
 keywords: ['-32501', error, entrypoint, erc-4337]
 ---

@@ -1,5 +1,5 @@
 ---
-title: "-32602" 
+title: "Bundler Error -32602 Invalid UserOperation" 
 description: Invalid UserOperation struct/fields
 keywords: ['-32602', error, entrypoint, erc-4337]
 ---

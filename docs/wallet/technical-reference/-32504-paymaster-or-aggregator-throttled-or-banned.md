@@ -1,5 +1,5 @@
 ---
-title: "-32504"
+title: "Bundler Error -32504 Paymaster or Aggregator Throttled or Banned"
 description: Transaction rejected because paymaster (or signature aggregator) is throttled or banned
 keywords: ['-32504', error, entrypoint, erc-4337]
 ---
