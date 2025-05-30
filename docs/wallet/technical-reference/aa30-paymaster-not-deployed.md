@@ -1,5 +1,5 @@
 ---
-title: AA30 Paymaster not deployed
+title: EntryPoint Error AA30 Paymaster not deployed
 description: The paymaster address contains no code
 keywords: [AA30, error, entrypoint, erc-4337]
 ---

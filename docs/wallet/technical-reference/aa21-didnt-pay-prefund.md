@@ -1,5 +1,5 @@
 ---
-title: AA21 Didn’t pay prefund
+title: EntryPoint Error AA21 Didn’t pay prefund
 description: The sender did not pay the EntryPoint
 keywords: [AA21, error, entrypoint, erc-4337]
 ---

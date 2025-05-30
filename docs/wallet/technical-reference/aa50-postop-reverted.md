@@ -1,5 +1,5 @@
 ---
-title: AA50 PostOp reverted
+title: EntryPoint Error AA50 PostOp reverted
 description: An error occurred after the user operation executed.
 keywords: [AA50, error, entrypoint, erc-4337]
 ---

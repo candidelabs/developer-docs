@@ -1,5 +1,5 @@
 ---
-title: AA34 Signature Error
+title: EntryPoint Error AA34 Signature Error
 description: The paymaster's signature is invalid.
 keywords: [AA34, error, entrypoint, erc-4337]
 ---

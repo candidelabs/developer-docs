@@ -1,5 +1,5 @@
 ---
-title: AA14 initCode must return sender
+title: EntryPoint Error AA14 initCode must return sender
 description: The initCode does not return the sender address.
 keywords: [AA14, error, entrypoint, erc-4337]
 ---

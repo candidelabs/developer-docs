@@ -1,5 +1,5 @@
 ---
-title: AA31 Paymaster deposit too low
+title: EntryPoint Error AA31 Paymaster deposit too low
 description: The paymaster is out of funds.
 keywords: [AA31, error, entrypoint, erc-4337]
 ---

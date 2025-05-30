@@ -1,5 +1,5 @@
 ---
-title: AA10 sender already constructed
+title: EntryPoint Error AA10 sender already constructed
 description: This error may occur if you attempt to create the same account multiple times
 keywords: [AA10, error, entrypoint, erc-4337]
 ---

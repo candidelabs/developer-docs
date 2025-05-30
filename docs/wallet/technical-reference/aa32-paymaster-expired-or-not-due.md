@@ -1,5 +1,5 @@
 ---
-title: AA32 Paymaster expired or not due
+title: EntryPoint Error AA32 Paymaster expired or not due
 description: The paymaster signature is outside of the specified time range.
 keywords: [AA32, error, entrypoint, erc-4337]
 ---

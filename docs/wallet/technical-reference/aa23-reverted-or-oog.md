@@ -1,5 +1,5 @@
 ---
-title: AA23 reverted (or OOG)
+title: EntryPoint Error AA23 reverted (or OOG)
 description: The signature was rejected or it took too much gas to verify.
 keywords: [AA23, error, entrypoint, erc-4337]
 ---

@@ -1,5 +1,5 @@
 ---
-title: AA13 initCode failed or OOG
+title: EntryPoint Error AA13 initCode failed or OOG
 description: The initCode failed to create the account or ran out of gas.
 keywords: [AA13, error, entrypoint, erc-4337]
 ---

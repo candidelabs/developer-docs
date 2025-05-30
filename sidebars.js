@@ -113,25 +113,101 @@ const sidebars = {
                 id: "wallet/technical-reference/entrypoint-error-codes",
               },
               items: [
-                "wallet/technical-reference/aa10-sender-already-constructed",
-                "wallet/technical-reference/aa13-initCode-failed-or-oog",
-                "wallet/technical-reference/aa14-initcode-must-return-sender",
-                "wallet/technical-reference/aa15-initcode-must-create-sender",
-                "wallet/technical-reference/aa20-account-not-deployed",
-                "wallet/technical-reference/aa22-expired-or-not-due",
-                "wallet/technical-reference/aa21-didnt-pay-prefund",
-                "wallet/technical-reference/aa23-reverted-or-oog",
-                "wallet/technical-reference/aa24-signature-error",
-                "wallet/technical-reference/aa25-invalid-account-nonce",
-                "wallet/technical-reference/aa30-paymaster-not-deployed",
-                "wallet/technical-reference/aa31-paymaster-deposit-too-low",
-                "wallet/technical-reference/aa32-paymaster-expired-or-not-due",
-                "wallet/technical-reference/aa33-reverted-or-oog",
-                "wallet/technical-reference/aa34-signature-error",
-                "wallet/technical-reference/aa40-over-verificationgaslimit",
-                "wallet/technical-reference/aa41-too-little-verificationgas",
-                "wallet/technical-reference/aa50-postop-reverted",
-                "wallet/technical-reference/aa51-prefund-below-actualgascost",
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa10-sender-already-constructed",
+                  label: "AA10"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa13-initCode-failed-or-oog",
+                  label: "AA13"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa14-initcode-must-return-sender",
+                  label: "AA14"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa15-initcode-must-create-sender",
+                  label: "AA15"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa20-account-not-deployed",
+                  label: "AA20"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa21-didnt-pay-prefund",
+                  label: "AA21"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa22-expired-or-not-due",
+                  label: "AA22"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa23-reverted-or-oog",
+                  label: "AA23"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa24-signature-error",
+                  label: "AA24"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa25-invalid-account-nonce",
+                  label: "AA25"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa30-paymaster-not-deployed",
+                  label: "AA30"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa31-paymaster-deposit-too-low",
+                  label: "AA31"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa32-paymaster-expired-or-not-due",
+                  label: "AA32"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa33-reverted-or-oog",
+                  label: "AA33"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa34-signature-error",
+                  label: "AA34"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa40-over-verificationgaslimit",
+                  label: "AA40"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa41-too-little-verificationgas",
+                  label: "AA41"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa50-postop-reverted",
+                  label: "AA50"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/aa51-prefund-below-actualgascost",
+                  label: "AA51"
+                },
               ],
             },
           ],
@@ -198,7 +274,11 @@ const sidebars = {
     },
   ],
   walletSideBar: [
-    "wallet/atelier-intro",
+    {
+      type: "doc",
+      id: "wallet/atelier-intro",
+      label: "Intro to Candide"
+    },
     {
       type: "category",
       label: "Starter Guides",
@@ -359,8 +439,16 @@ const sidebars = {
       className: "category-not-collapsible",
       label: "Technical Reference",
       items: [
-        "wallet/technical-reference/chain-nuances",
-        "wallet/technical-reference/deployments",
+        {
+          type: "doc",
+          id: "wallet/technical-reference/chain-nuances",
+          label: "EVM Chain Nuances"
+        },
+        {
+          type: "doc",
+          id: "wallet/technical-reference/deployments",
+          label: "Deployment Addresses"
+        },
       ],
     },
   ],
