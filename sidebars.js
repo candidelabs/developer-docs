@@ -157,9 +157,21 @@ const sidebars = {
       collapsible: false,
       className: "category-not-collapsible",
       items: [
-        "wallet/guides/getting-started",
-        "wallet/guides/send-gasless-tx",
-        "wallet/guides/pay-gas-in-erc20",
+        {
+          type: "doc",
+          id: "wallet/guides/getting-started",
+          label: "Send Your First Transaction"
+        },
+        {
+          type: "doc",
+          id: "wallet/guides/send-gasless-tx",
+          label: "Send Gasless Transactions"
+        },
+        {
+          type: "doc",
+          id: "wallet/guides/pay-gas-in-erc20",
+          label: "Pay Gas in ERC-20"
+        },
       ],
     },
     {
