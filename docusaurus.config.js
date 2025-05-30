@@ -8,7 +8,7 @@ const darkTheme = themes.dracula;
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Candide',
-  tagline: 'Building software for ERC-4337 Account Abstraction',
+  tagline: 'Ethereum Account Abstraction developer tools for building Smart Accounts',
   url: 'https://docs.candide.dev',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -90,7 +90,16 @@ const config = {
     ],
     [require.resolve('docusaurus-lunr-search'), {
       excludeRoutes: ["/blog"],
-    }]
+    }],
+    [
+      'docusaurus-plugin-llms',
+      {
+        generateLLMsFullTxt: false,
+        title: 'Candide Account Abstraction',
+        description: 'Candide Ethereum Account Abstraction developer tools for building smart accounts',
+        includeBlog: false,
+      }
+    ],
   ],
 
   themeConfig:
