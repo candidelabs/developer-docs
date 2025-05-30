@@ -1,10 +1,10 @@
 ---
-title: Install
+title: Installation Guide for running a ERC-4337 Bundler locally or for self-hosting
 description: Instructions for running Voltaire ERC-4337 Python Bundler
 image: /img/posters/voltaire-meta.png
 ---
 
-# Install & Self-host Voltaire 
+# Install & Self-host Candide's Voltaire 
 
 This guide is intended for developers wishing to spin a instance of Voltaire ERC-4337 Python bundler for handling User Operations. Voltaire is open source and can be found on [github.com/candidelabs/voltaire](https://github.com/candidelabs/voltaire)
 

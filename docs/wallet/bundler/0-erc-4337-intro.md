@@ -1,10 +1,10 @@
 ---
-title: Intro
+title: Introduction to ERC-4337 Bundlers
 description: A new modular, developer-friendly and lighting-fast Python Bundler for Ethereum EIP-4337 Account Abstraction
 image: /img/posters/voltaire-meta.png
 ---
 
-# Introduction To Voltaire
+# Introduction To Candide's Voltaire
 
 Voltaire is a modular, developer-friendly and lighting-fast Python Bundler for Ethereum EIP-4337 Account Abstraction. 
 

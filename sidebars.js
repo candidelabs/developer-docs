@@ -28,8 +28,16 @@ const sidebars = {
       collapsible: false,
       collapsed: false,
       items: [
-        "wallet/bundler/rpc-endpoints",
-        "wallet/bundler/rpc-methods",
+        {
+          type: "doc",
+          id: "wallet/bundler/rpc-methods",
+          label: "Bundler API"
+        },
+        {
+          type: "doc",
+          id: "wallet/bundler/rpc-endpoints",
+          label: "Bundler Supported Networks"
+        },
         {
           type: "category",
           label: "Error Codes",
@@ -127,7 +135,18 @@ const sidebars = {
       type: "category",
       label: "Bundler (self-host)",
       collapsed: true,
-      items: ["wallet/bundler/erc-4337-intro", "wallet/bundler/installation"],
+      items: [
+        {
+          type: "doc",
+          id: "wallet/bundler/erc-4337-intro",
+          label: "Intro"
+        },
+        {
+          type: "doc",
+          id: "wallet/bundler/installation",
+          label: "Install & Self-host"
+        }
+      ]
     },
   ],
   walletSideBar: [

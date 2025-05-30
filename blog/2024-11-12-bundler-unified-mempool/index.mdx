@@ -1,0 +1,89 @@
+---
+slug: account-abstractionkit-unified-mempool
+title: Account Abstraction Unified Mempool Stages
+description: Voltaire is a modular and lightning-fast Python Bundler for Ethereum EIP-4337 Account Abstraction
+image: "/img/posters/erc4337-bundler.png"
+authors: [marc]
+tags: [bundler]
+---
+
+ERC-4337 aims to bring Account Abstraction to Ethereum while maintaining strong decentralization and censorship-resistance, aligning closely with the block production security of the underlying chain. Launching a truly public and decentralized mempool for ERC-4337 is a complex process, and development will progress with “training wheels” — a controlled setup that allows for system updates and bug fixes in a safer environment. While necessary in the early stages, these training wheels will be gradually removed, enabling Bundlers to fully adopt the decentralized principles of the base layer.
+
+To guide this evolution, the ERC-4337 Team introduced a framework, inspired by Vitalik’s proposed milestones for Rollups and L2Beat Stages Framework, which categorizes Bundler Mempool development into distinct stages. Each stage defines specific conditions and requirements for advancing, building toward a fully open and decentralized mempool. As the framework progresses, it enhances user benefits at every stage, such as censorship resistance, decentralization, and permissionless.
+
+### Stage 0 — Independent Operation
+
+*At Stage 0, bundlers operate individually, receiving and submitting UserOperations directly to the network without a shared mempool.*
+
+- **User Advantage:** Minimal setup allows bundlers to begin integrating quickly.  
+- **Mechanism:** Each bundler creates bundles independently, reducing initial complexity.  
+- **Trade-off:** No shared mempool means no cross-communication between bundlers, not censorship proof, and not decentrlizated.
+
+*Protection:* Some protection against front-running can be achieved using Flashbot Protect on Ethereum Mainnet.
+
+<details>
+<summary>The Bundler is compliant with the ERC-4337 Standard</summary>
+To confirm that a Bundler is following ERC-4337, it should demonstrate consistent adherence to the guidelines set out in the standard. This includes handling User Operations as specified and ensuring accurate validation processes. Compliance can be verified through audits, source code transparency, and through the Compatibility Test Suite published on erc4337.io/bundlers that validate the Bundler’s correct behavior within an Account Abstraction framework.
+</details>
+<details>
+<summary>The Bundler software source code is available</summary>
+A Bundler software processing User Operations should be available, contributing significantly to transparency and trust. This allows anyone to review, audit, and run the software, enabling users and external observers to independently validate that the Bundler is following the Account Abstraction Standard. 
+</details>
+
+### Stage 1 — Permissioned Mempool
+
+*Stage 1 introduces a shared, permissioned mempool where only whitelisted bundlers can participate.*  
+
+- **User Advantage:** Greater transaction inclusion, visibility, and consistency across bundlers.  
+- **Mechanism:** A whitelist allows select bundlers to validate and submit transactions in the mempool, providing faster transaction handling.  
+- **Validation:** All bundlers follow standardized validation rules for gas fees and transaction requirements, ensuring alignment across the network.
+
+*Reliability:* A system like Fastlane on Polygon is able to ensure prioritized visibility for UserOperations and reduces front-running risks. This stage tests robustness through Fuzz Testing simulation, ensuring bundlers can handle invalid transactions without spreading spam.
+
+<details>
+<summary>
+A Bundler must apply a consistent set of validation rules for transaction gas requirements and UserOperation formats.
+</summary>
+A core requirement in this stage is the uniform validation of transaction gas values, including preVerificationGas, by participating bundlers. Each transaction must meet predefined gas requirements, so every bundler’s understanding of a “valid transaction” remains aligned. Any UserOperation that doesn’t meet these requirements is disregarded, preventing discrepancies across bundlers.
+</details>
+
+### Stage 2 — Controlled Decentralization
+
+*In Stage 2, the mempool is semi-permissioned, but validation processes begin to open up with fewer restrictions.*
+
+- **User Advantage:** Increased security through active validation and accountability.  
+- **Mechanism:** Whitelisted bundlers validate and flag potential spam transactions but do not disconnect for minor discrepancies.  
+- **New:** A “mempool explorer” tool is introduced for transparency, allowing users to monitor mempool activity and bundler performance.
+
+*Robustness:* This stage tests robustness, with tools like [antithesis](https://antithesis.com/).  This is used by Ethereum clients, and bundlers will benefit. This end criterion is met when no false-positive warnings are generated.
+
+<details>
+<summary>The Bundler must be resilient to invalid User Operations under p2p stress testing</summary>
+Using fuzz testing, each Bundler should be able to consistently reject invalid User Operations without propagating them across the network. This ensures that each Bundler accurately filters out potentially harmful or spam transactions under high-volume conditions.
+</details>
+
+<details>
+<summary>The Bundler accurately identify and flag spammers without generating false positives</summary>
+The Bundler should undergo tests for robustness, using tools like antithesis, to confirm it can correctly mark genuine spammers without mistakenly labeling valid transactions or honest Bundlers as spammers. This end criterion is met when no false-positive warnings are generated.
+</details>
+
+
+### Stage 3 — Full Decentralization
+
+*Stage 3 enables a fully permissionless mempool, where any bundler can participate.*
+
+- **User Advantage:** Complete decentralization and enhanced censorship resistance.  
+- **Mechanism:** All bundlers must meet full validation criteria, and non-compliant participants are marked as “spammers” and disconnected.  
+- **Monitoring:** Continuous monitoring helps detect and resolve any rule misalignments to prevent splits in the mempool.
+
+
+<details>
+<summary>There is a strict validation process that enforces consistency across Bundlers</summary>
+Full validation rules must be applied between all Bundlers. Any Bundler that fails to comply with the rules should be flagged as a "spammer" and disconnected from the network. Continuous monitoring is necessary to ensure that there are no discrepancies or splits caused by differences in rule interpretation or implementation. 
+</details>
+
+<details>
+<summary>Any Bundler can enter the mempool without permission</summary>
+The mempool should be open to all Bundlers, allowing anyone to participate without restrictions. This ensures a truly permissionless environment where any Bundler can submit User Operations to the public mempool.
+</details>
+
