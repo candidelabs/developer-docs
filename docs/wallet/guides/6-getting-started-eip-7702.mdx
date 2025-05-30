@@ -166,9 +166,11 @@ console.log("Please fund the sender account : " + userOperation.sender +" with m
 
 ## Step 4: Sign the Delegate Authorization
 
-Sign the `eip7702Auth` tuple to delegate the authorization to the smart account. Again, this is only called once, during the upgrade transaction of the EOA.
+Sign the `eip7702Auth` tuple to delegate the authorization to the smart account. This is only called once, during the upgrade transaction of the EOA.
 
 ```ts
+import { createAndSignEip7702DelegationAuthorization } from "abstractionkit"
+
 userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
     BigInt(userOperation.eip7702Auth.chainId),
     userOperation.eip7702Auth.address,
