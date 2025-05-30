@@ -200,21 +200,49 @@ const sidebars = {
       collapsible: false,
       className: "category-not-collapsible",
       items: [
-        "wallet/abstractionkit/introduction",
+        {
+          type: "doc",
+          id: "wallet/abstractionkit/introduction",
+          label: "Why AbstractionKit"
+        },
         {
           type: "category",
           label: "Safe Account",
           collapsed: true,
           link: { type: "doc", id: "wallet/abstractionkit/safe-account" },
           items: [
-            "wallet/abstractionkit/safe-account-v3",
-            "wallet/abstractionkit/safe-account-v2",
+            {
+              type: "doc",
+              id: "wallet/abstractionkit/safe-account-v3",
+              label: "Safe Account V3"
+            },
+            {
+              type: "doc",
+              id: "wallet/abstractionkit/safe-account-v2",
+              label: "Safe Account V2"
+            },
           ],
         },
-        "wallet/abstractionkit/simple-7702-account",
-        "wallet/abstractionkit/bundler",
-        "wallet/abstractionkit/paymaster",
-        "wallet/abstractionkit/utilities",
+        {
+          type: "doc",
+          id: "wallet/abstractionkit/simple-7702-account",
+          label: "Simple 7702 Account"
+        },
+        {
+          type: "doc",
+          id: "wallet/abstractionkit/bundler",
+          label: "Bundler"
+        },
+        {
+          type: "doc",
+          id: "wallet/abstractionkit/paymaster",
+          label: "Paymaster"
+        },
+        {
+          type: "doc",
+          id: "wallet/abstractionkit/utilities",
+          label: "Utilities"
+        },
       ],
     },
     {
