@@ -1,5 +1,5 @@
 ---
-title: Batch & Sponsor
+title: ERC-5792 Guide | How to implement Batch transactions and sponsor its Gas 
 description: Batch multiple actions into a single on-chain transaction, and sponsor gas for your users -- reducing costs and enhancing your app UX
 image: /img/batch-transactions_meta_screen.png
 keywords: [batch transactions, multicall, one-click, UX]
@@ -12,7 +12,11 @@ import { DataTable } from "/src/components/CustomTable";
 # Batch & Sponsor Transactions (via ERC-5792)
  
 If you are building a Dapp, you communicate the actions to the wallet that the user performs. Instead of sending a single transaction one after the other, you can send an `array` of transactions, 
-and the wallet will execute the bundle. [ERC-5792](https://eips.ethereum.org/EIPS/eip-5792) standarizes this communication between the Dapp and the Wallet.
+and the wallet will execute the bundle. 
+
+## EIPs Definitions
+- [ERC-5792](https://eips.ethereum.org/EIPS/eip-5792) standarizes the general communication between the Dapp and the Wallet, with batching as the default capability.
+- [ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) standrizes the communication of Gas Sponsorship capability.
 
 <div
   style={{
@@ -30,62 +34,42 @@ The following apps and wallets support smart capabilities.
 
 ### Wallets
 
-|                          Wallet                                    | Batching | Sponsor Gas |
-|------------------------------------------------------------------- |----------|-------------|
-|[ Coinbase Smart Wallet](https://www.base.org/builders/smart-wallet)| ✅       | ✅          |
-| [Ambire](https://www.ambire.com/)                                  | ✅       | ✅          |
-| [Safe\{Wallet\}](https://github.com/safe-global/safe-wallet-web  ) | ✅       | ✅          |
-| [MetaMask Extension](https://metamask.io)                          | ✅       | ✖️          |
-| [Reown AppKit](https://reown.com/appkit)                           | ✅       | ✅          |
-| [thirdweb InApp](https://thirdweb.com)                             | ✅       | ✅          |
-| [Openfort](https://openfort.xyz)                                   | ✅       | ✅          |
-| [Abstract Global](https://abs.xyz)                                 | ✅       | ✅          |
+|                          Wallet                                    | Batching | Sponsor Gas     |
+|------------------------------------------------------------------- |----------|-----------------|
+| [Ambire](https://www.ambire.com/)                                  | ✅       | ERC-7677        |
+| [Coinbase Smart Wallet](https://www.base.org/builders/smart-wallet)| ✅       | ERC-7677        |
+| [Reown AppKit](https://reown.com/appkit)                           | ✅       | ERC-7677        |
+| [thirdweb InApp](https://thirdweb.com)                             | ✅       | ERC-7677        |
+| [Openfort](https://openfort.xyz)                                   | ✅       | ERC-7677        |
+| [Safe\{Wallet\}](https://github.com/safe-global/safe-wallet-web  ) | ✅       | via its Relayer |
+| [Abstract Global](https://abs.xyz)                                 | ✅       | via its Relayer |
+| [MetaMask Extension](https://metamask.io)                          | ✅       | ✖️              |
 
 ### Apps
 
 |                      App                            | Batching | Sponsor Gas |
 |-----------------------------------------------------|----------|-------------|
-| [PoolTogether Cabana](https://app.cabana.fi/)       | ✅       | ✅          |
-| [revoke.cash](https://revoke.cash/)                 | ✅       | 🏗️          |
+| [PoolTogether Cabana](https://app.cabana.fi/)       | ✅       | ERC-767     |
+| [revoke.cash](https://revoke.cash/)                 | ✅       | ERC-7677    |
 | [Lido](https://lido.fi)                             | ✅       | ✖️          |
 | [Lifi](https://li.fi/)                              | ✅       | ✖️          |
 | [Jumper.Exchange](https://jumper.exchange/)         | ✅       | ✖️          |
 | [PoolTogether PoolTime](https://app.cabana.fi/)     | ✅       | ✖️          |
 | [Ekubo Exchange](https://ekubo.org/)                | ✅       | ✖️          |
 | [Uniswap Exchange](https://https://app.uniswap.org) | ✅       | ✖️          |
+| [Vaults.fyi](https://app.vaults.fyi/)               | ✅       | ✖️          |
+| [Spark](https://spark.fi/)                          | ✅       | ✖️          |
+| [Reserve](https://app.reserve.org/)                 | ✅       | ✖️          |
+| [Matcha](https://matcha.xyz/)                       | ✅       | ✖️          |
+| [Ethena](https://app.ethena.fi/)                    | ✅       | ✖️          |
+| [Fibrous](https://app.fibrous.finance/)             | ✅       | ✖️          |
+| [PWN](https://app.pwn.xyz/)                         | ✅       | ✖️          |
+| [Relay](https://relay.link/bridge)                  | ✅       | ✖️          |
+| [Relay](https://relay.link/bridge)                  | ✅       | ✖️          |
 
+## Reference example
 
-### Our Favourites ❤️
-
-#### PoolTogether and Candide
-
-Back then where we were first building [Candide Wallet](https://candidewallet.com), Pooltogether proposed to sponsor gas to enable No-Loss donation to fund public goods.
-
-Sponsorship was tailored with precision. PoolTogether leveraged InstaGas [Transaction Rules](/instagas/gas-policies/#transaction-rules) to limit sponsorship 
-to only a selected methods qualify on PoolTogether Contracts; requiring a minimum deposit of 200 USDC and a lock duration of 14 days. 
-This precision safeguarded against Sybil attacks and fortifies the integrity of PoolTogether’s Gas Sponsorship Funds. 
-
-See [Video announcement](https://x.com/candidewallet/status/1704901643081244996)
-
-<div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }}
->
-  <img
-    src={require("./retro_pool_screen.png").default}
-    alt="PoolTogether Sponsorship"
-    width="29%"
-  />
-</div>
-
-
-
-## Demo example
-
-This exampe demo communicating a batch of transactions and the gas sponsorship info of InstaGas directly to the Wallet.
+This exampe demo communicating a batch of transactions and the gas sponsorship info directly to the Wallet.
 
 - Live Demo [batch-and-sponsor.on-fleek.app](https://batch-and-sponsor.on-fleek.app/)
 - Source code [candidelabs/batch-sponsor-calls-instagas](https://github.com/candidelabs/batch-sponsor-calls-instagas)
@@ -340,12 +324,10 @@ Requests that the wallet deliver a group of function calls on-chain from the use
     ],
     "capabilities": {
       "paymasterService": {
-          ["0x01"]: {
-              "url": "https://...",
-              "optional": true,
-              "context" {
-                "sponsorshipPolicyId": "123",
-              }
+          "url": "https://...",
+          "optional": true,
+          "context" {
+            "sponsorshipPolicyId": "123",
           }
         }
       }

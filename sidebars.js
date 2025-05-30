@@ -272,8 +272,11 @@ const sidebars = {
       collapsible: false,
       className: "category-not-collapsible",
       label: "Guides",
-      items: [
-        "instagas/batch-sponsor-transactions",
+      items: [{
+        type: "doc",
+        id: "instagas/batch-sponsor-transactions",
+        label: "Batch & Sponsor",
+      },
       ],
     },
     {
