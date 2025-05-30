@@ -52,16 +52,56 @@ const sidebars = {
                 id: "wallet/technical-reference/bundler-error-codes",
               },
               items: [
-                "wallet/technical-reference/-32500-transaction-rejected-by-entrypoint-simulation",
-                "wallet/technical-reference/-32501-transaction-rejected-by-paymaster",
-                "wallet/technical-reference/-32502-transaction-rejected-by-opcode-validation",
-                "wallet/technical-reference/-32503-useroperation-out-of-time-range",
-                "wallet/technical-reference/-32504-paymaster-or-aggregator-throttled-or-banned",
-                "wallet/technical-reference/-32505-stake-or-delay-too-low",
-                "wallet/technical-reference/-32506-unsupported-aggregator",
-                "wallet/technical-reference/-32507-invalid-siganture",
-                "wallet/technical-reference/-32521-transaction-reverted",
-                "wallet/technical-reference/-32602-invalid-useroperation",
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/-32500-transaction-rejected-by-entrypoint-simulation",
+                  label: "-32500"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/-32501-transaction-rejected-by-paymaster",
+                  label: "-32501"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/-32502-transaction-rejected-by-opcode-validation",
+                  label: "-32502"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/-32503-useroperation-out-of-time-range",
+                  label: "-32503"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/-32504-paymaster-or-aggregator-throttled-or-banned",
+                  label: "-32504"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/-32505-stake-or-delay-too-low",
+                  label: "-32505"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/-32506-unsupported-aggregator",
+                  label: "-32506"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/-32507-invalid-siganture",
+                  label: "-32507"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/-32521-transaction-reverted",
+                  label: "-32521"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/technical-reference/-32602-invalid-useroperation",
+                  label: "-32602"
+                },
               ],
             },
             {
