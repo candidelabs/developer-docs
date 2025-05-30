@@ -17,9 +17,6 @@ const sidebars = {
 
   // But you can create a sidebar manually
   aaSideBar: ["account-abstraction/intro"],
-  dappsSideBar: [
-    "dapps/getting-started",
-  ],
   infraSideBar: [
     {
       type: "category",
