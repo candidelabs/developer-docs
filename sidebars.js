@@ -104,8 +104,16 @@ const sidebars = {
       className: "category-not-collapsible",
       collapsible: false,
       items: [
-        "wallet/paymaster/rpc-methods",
-        "wallet/paymaster/tokens-supported",
+        {
+          type: "doc",
+          id: "wallet/paymaster/rpc-methods",
+          label: "Paymaster API"
+        },
+        {
+          type: "doc",
+          id: "wallet/paymaster/tokens-supported",
+          label: "ERC-20 Tokens Supported"
+        },
       ],
     },
     {
@@ -203,9 +211,21 @@ const sidebars = {
       collapsible: false,
       className: "category-not-collapsible",
       items: [
-        "wallet/plugins/passkeys",
-        "wallet/plugins/recovery-with-guardians",
-        "wallet/plugins/allowance",
+        {
+          type: "doc",
+          id: "wallet/plugins/passkeys",
+          label: "Passkeys"
+        },
+        {
+          type: "doc",
+          id: "wallet/plugins/recovery-with-guardians",
+          label: "Account Recovery"
+        },
+        {
+          type: "doc",
+          id: "wallet/plugins/allowance",
+          label: "Allowance"
+        },
       ],
     },
     {
@@ -214,10 +234,27 @@ const sidebars = {
       collapsible: false,
       className: "category-not-collapsible",
       items: [
-        "wallet/guides/authentication",
-        "wallet/guides/multisig",
-        "wallet/guides/signing",
-        "wallet/guides/onchain-identifiers",
+        {
+          type: "doc",
+          id: "wallet/guides/authentication",
+
+          label: "Authentication"
+        },
+        {
+          type: "doc",
+          id: "wallet/guides/multisig",
+          label: "Multisig"
+        },
+        {
+          type: "doc",
+          id: "wallet/guides/signing",
+          label: "Signing Messages"
+        },
+        {
+          type: "doc",
+          id: "wallet/guides/onchain-identifiers",
+          label: "Onchain Tracking"
+        },
         {
           type: "doc",
           id: "wallet/guides/simulate-transaction",
