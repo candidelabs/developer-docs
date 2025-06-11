@@ -75,6 +75,14 @@ export function NetworkList() {
           marginRight: "10px",
         }}
       />
+      <img
+        src="/img/tokens/world-logo.svg"
+        alt="World Chain"
+        style={{
+          width: "45px",
+          marginRight: "10px",
+        }}
+      />
     </div>
   );
 }
