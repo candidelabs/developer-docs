@@ -9,7 +9,7 @@ image: /img/posters/voltaire-meta.png
 This guide is intended for developers wishing to spin a instance of Voltaire ERC-4337 Python bundler for handling User Operations. Voltaire is open source and can be found on [github.com/candidelabs/voltaire](https://github.com/candidelabs/voltaire)
 
 :::info
-Looking for a quick bundler instance? Use one of our [public hosted endpoints](./3-rpc-endpoints.mdx) for your developement
+Looking for a quick bundler instance? Use one from our [dashboard](https://dashboard.candide.dev) for your developement
 :::
 
 ## Docker
@@ -44,6 +44,8 @@ This command will pull the latest docker image and will then start the bundler t
 |`--whitelist_entity_storage_access`| list of entities to whitelist for storage access rules (optional)
 |`--metrics`       | enable metrics collection using prometheus and grafana (optional)
 |`--version`       | show program's version number and exit (optional)
+| `--p2p_boot_nodes_enr` | To connect the unified shared mempool. Find all ENRs [in this repo](https://github.com/sherifahmed990/shared_bundler_mempool_4337/). (optional)
+| `--eip7702` | To enable EIP-7702 support. (optional)
 
 To know about all flags:
 
