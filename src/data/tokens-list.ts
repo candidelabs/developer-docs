@@ -6,6 +6,11 @@ export const arbitrumList = [
     address: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
   },
   {
+    token: "EURe (Monerium EUR)",
+    logo: "/img/tokens/EURe.png",
+    address: "0x0c06cCF38114ddfc35e07427B9424adcca9F44F8",
+  },
+  {
     token: "USDC (Native)",
     logo: "/img/tokens/usdc-logo.svg",
     address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
@@ -60,6 +65,11 @@ export const polygonList = [
     address: "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063",
   },
   {
+    token: "EURe (Monerium EUR)",
+    logo: "/img/tokens/EURe.png",
+    address: "0xE0aEa583266584DafBB3f9C3211d5588c73fEa8d",
+  },
+  {
     token: "USDC (Native)",
     logo: "/img/tokens/usdc-logo.svg",
     address: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
@@ -105,6 +115,11 @@ export const ethereumList = [
     address: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
   },
   {
+    token: "EURe (Monerium EUR)",
+    logo: "/img/tokens/EURe.png",
+    address: "0x39b8B6385416f4cA36a20319F70D28621895279D",
+  },
+  {
     token: "USDC",
     logo: "/img/tokens/usdc-logo.svg",
     address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
@@ -125,7 +140,7 @@ export const gnosisList = [
   {
     token: "EURe (Monerium EUR)",
     logo: "/img/tokens/EURe.png",
-    address: "0xcB444e90D8198415266c6a2724b7900fb12FC56E",
+    address: "0x420CA0f9B9b604cE0fd9C18EF134C705e5Fa3430",
   },
   {
     token: "USDC (Bridged)",
