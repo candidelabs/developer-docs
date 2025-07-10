@@ -906,8 +906,44 @@ Example respone for an `Included` status
 }
 ```
 
+## Gas Prices
 
+### voltaire_feesPerGas
+The `voltaire_feesPerGas` method provides the recommended gas fees, `maxFeePerGas` and `maxPriorityFeePerGas`. 
+This method simplifies gas price estimation by offering a reliable price for the various EVM networks that Candide's Bundler Voltaire supports. 
+This allows you to set appropriate gas fees for your UserOperations without needing to implement complex gas price prediction logic for each chain.
 
+#### Request
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "voltaire_feesPerGas",
+  "params": []
+}
+```
+
+#### Response
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "maxFeePerGas": "0x6fc35fb80",
+    "maxPriorityFeePerGas": "0x124f80"
+  }
+}
+```
+
+<details title="What is maxFeePerGas and maxPriorityFeePerGas?">
+<summary>Gas Fee Concepts</summary>
+
+- `maxFeePerGas`: This represents the absolute maximum price per unit of gas you are willing to pay for a UserOperation. 
+This fee is the sum of the baseFee and the maxPriorityFeePerGas.
+
+- `maxPriorityFeePerGas`: Also known as the "tip", this is the fee that is paid directly to the bundler. 
+A higher priority fee can incentivize the bundler to include your UserOperation in a block more quickly, especially during times of network congestion.
+</details>
 
 
 
