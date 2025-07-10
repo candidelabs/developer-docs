@@ -54,7 +54,7 @@ export function ChainListTable({ items }) {
           <span>{item.network}</span>
         </div>
       )}
-      renderRightItem={(item) =>  <span>{item.chainId}</span>}
+      renderRightItem={(item) => <span>{item.chainId}</span>}
     />
   );
 }
@@ -81,7 +81,15 @@ export function PaymasterSupportedToken({ items }) {
           <span>{item.token}</span>
         </div>
       )}
-      renderRightItem={(item) => <a>{item.address}</a>}
+      renderRightItem={(item) => (
+        <a
+          href={`${item.blockExplorer}${item.address}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {item.address}
+        </a>
+      )}
     />
   );
 }
