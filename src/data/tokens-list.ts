@@ -34,6 +34,11 @@ export const baseList = [
     address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
   },
   {
+    token: "USDS",
+    logo: "/img/tokens/usds-logo.svg",
+    address: "0x820C137fa70C8691f0e44Dc420a5e53c168921Dc",
+  },
+  {
     token: "USDT (Bridged)",
     logo: "/img/tokens/usdt-logo.svg",
     address: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
@@ -123,6 +128,11 @@ export const ethereumList = [
     token: "USDC",
     logo: "/img/tokens/usdc-logo.svg",
     address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+  },
+  {
+    token: "USDS",
+    logo: "/img/tokens/usds-logo.svg",
+    address: "0xdC035D45d973E3EC169d2276DDab16f1e407384F",
   },
   {
     token: "USDT (Native)",
