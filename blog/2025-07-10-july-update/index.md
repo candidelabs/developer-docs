@@ -29,7 +29,7 @@ After:
 No rush to switch over—the old endpoints will keep working just fine.
 ## More Stablecoins as Gas
 
-You can now offer USDS and EURe as gas payments for your users. Check out the full list of [supported tokens](wallet/paymaster/tokens-supported/).
+You can now offer USDS and EURe as gas payments for your users. Check out the full list of [supported tokens](/wallet/paymaster/tokens-supported/).
 
 ## EIP-7702 is now live on Arbitrum and Polygon
 
