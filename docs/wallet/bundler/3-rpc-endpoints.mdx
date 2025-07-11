@@ -62,6 +62,14 @@ export const chainList = [
     address: "Available on Dashboard",
     type: "Bundler",
   },
+  {
+    network: "Worldchain",
+    logo: "/img/tokens/world-logo.svg",
+    chainId: 480,
+    chainHandle: "worldchain",
+    address: "Available on Dashboard",
+    type: "Bundler",
+  },
 ];
 
 export const unifiedMempool = [
@@ -94,12 +102,6 @@ export const testChainList = [
     logo: "/img/networks/42161.png",
     chainId: 421614,
     chainHandle: "arbitrum",
-  },
-  {
-    network: "Avalanche Fuji Testnet",
-    logo: "/img/networks/43114.png",
-    chainId: 43113,
-    chainHandle: "fuji",
   },
   {
     network: "Base Sepolia",
@@ -144,8 +146,6 @@ export const testChainList = [
 Candide's Bundler endpoint includes methods for ERC-4337 and EIP-7702. See all the full RPC spec in [Bundler API](./2-rpc-methods.mdx).
 
 ## Supported Networks
-
-Candide provide public endpoints which is accessible for anyone to use, and production-grade endpoints for wallets, which are available through our [dashboard](https://dashboard.candide.dev).
 
 :::tip 
 If you require a specific network not listed below, send us a note and we will let you know if we can support it.

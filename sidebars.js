@@ -33,7 +33,12 @@ const sidebars = {
         {
           type: "doc",
           id: "wallet/bundler/rpc-endpoints",
-          label: "Bundler Supported Networks"
+          label: "Supported Networks"
+        },
+        {
+          type: "doc",
+          id: "wallet/bundler/public-endpoints",
+          label: "Public Endpoints"
         },
         {
           type: "category",
