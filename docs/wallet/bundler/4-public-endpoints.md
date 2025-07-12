@@ -30,7 +30,7 @@ See the list of [supported networks](/wallet/bundler/rpc-endpoints/).
 
 ## Supported Methods
 
-See the list of the [Bundler API](wallet/bundler/rpc-methods/) and [Paymaster API](/wallet/paymaster/rpc-methods/).
+See the list of the [Bundler API](/wallet/bundler/rpc-methods/) and [Paymaster API](/wallet/paymaster/rpc-methods/).
 
 ## Rate Limit
 
