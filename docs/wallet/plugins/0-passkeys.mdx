@@ -41,68 +41,53 @@ These example showcases a Safe Smart Account deployment utilizing 4337 and Passk
 <TabItem value="npm" label="npm">
 
 ```bash
-npm i abstractionkit cbor
+npm i abstractionkit ox
 ```
 
 </TabItem>
 <TabItem value="yarn" label="yarn">
 
 ```bash
-yarn add abstractionkit cbor
+yarn add abstractionkit ox
 ```
 
 </TabItem>
 </Tabs>
 
-:::note 
-We will often import WebAuthn API helper functions and classes from 
-[/webauthn](https://github.com/candidelabs/abstractionkit/blob/main/examples/SafeAccountExamples/WebAuthnCreateAccountAndSendTransaction/src/webauthn.ts). 
-Make sure to copy it and using it during your developement. That's why we also installed `cbor`, 
-as some of the methods in this file uses this library. 
-:::
-
 ### Step 1: Create WebAuthn credentials
 
-Create WebAuthn credentials using the navigator.credentials API. This includes defining parameters such as the relying party (RP) name and ID, user details, and challenge.
+Create WebAuthn credentials using the `createCredential` function from `ox/WebAuthnP256`. This function simplifies the process by handling the interaction with the WebAuthn API.
 
 ```ts
-import ethers from "ethers";
-import { WebAuthnCredentials } from './webauthn';
+import { createCredential } from 'ox/WebAuthnP256'
 
-const navigator = {
-    credentials: new WebAuthnCredentials(),
-}
-
-const credential = navigator.credentials.create({
-    publicKey: {
-        rp: {
-            name: 'Candide',
-            id: 'candide.dev',
-        },
-        user: {
-            id: ethers.getBytes(ethers.id('chucknorris')),
-            name: 'chucknorris',
-            displayName: 'Chuck Norris',
-        },
-        challenge: ethers.toBeArray(Date.now()),
-        pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+const passkeyCredential = await createCredential({
+    name: 'Safe Wallet',
+    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    rp: {
+      id: window.location.hostname,
+      name: 'Safe Wallet'
     },
+    authenticatorSelection: {
+      authenticatorAttachment: 'platform',
+      residentKey: 'required',
+      userVerification: 'required',
+    },
+    timeout: 60000,
+    attestation: 'none',
 })
 ```
 
 ### Step 2: Extract Public Key
 
-Extract the public key from the generated WebAuthn credential response
+The `createCredential` function directly returns the public key coordinates, so no extra extraction step is needed.
 
 ```ts
-import { extractPublicKey } from "./webauthn";
 import { WebauthPublicKey } from "abstractionkit";
 
-const publicKey = extractPublicKey(credential.response)
-
 const webauthPublicKey: WebauthPublicKey = {
-    x: publicKey.x,
-    y: publicKey.y,
+    x: passkeyCredential.publicKey.x,
+    y: passkeyCredential.publicKey.y,
 }
 ```
 
@@ -137,45 +122,51 @@ let userOperation = await smartAccount.createUserOperation(
 
 ### Step 1: Calculate the EIP712 hash
 
-Calculate the Safe EIP712 hash for the UserOp
+Calculate the Safe EIP712 hash for the UserOp.
 
 ```ts
 const userOpHash = SafeAccount.getUserOperationEip712Hash(
     userOperation,
-    chainId,
+    BigInt(chainId),
 );
 ```
 
 ### Step 2: Request a WebAuthn assertion
 
-Using the navigator.credentials API
+Use the `sign` function from `ox/WebAuthnP256` to sign the user operation hash. 
+This function takes the `challenge` (the user operation hash) and the `credentialId` of the passkey.
 
 ```ts
-import { UserVerificationRequirement } from "./webauthn";
+import { sign } from 'ox/WebAuthnP256';
+import { Hex as OxHex } from 'ox/Hex';
+import { Bytes, Hex } from 'ox';
 
-const assertion = navigator.credentials.get({
-    publicKey: {
-        challenge: ethers.getBytes(userOpHash),
-        rpId: 'candide.dev',
-        allowCredentials: [{ type: 'public-key', id: new Uint8Array(credential.rawId) }],
-        userVerification: UserVerificationRequirement.required,
-    },
-})
+const { metadata, signature } = await sign({
+    challenge: userOpHash as OxHex,
+    credentialId: passkeyCredential.id as OxHex,
+});
 ```
 
-### Step 3: Extract WebAuthn signature data
+### Step 3: Create the `WebauthnSignatureData`
 
-Extract WebAuthn signature data from the assertion response and create a signature from the extracted signature data
+The `sign` function returns the `metadata` and `signature` needed to construct the `WebauthnSignatureData` object for `abstractionkit`.
 
 ```ts
 import { WebauthnSignatureData } from "abstractionkit";
-import { extractClientDataFields, extractSignature } from "./webauthn";
+
+const clientDataMatch = metadata.clientDataJSON.match(
+    /^\{"type":"webauthn.get","challenge":"[A-Za-z0-9\-_]{43}",(.*)\}$/,
+);
+if (!clientDataMatch) {
+    throw new Error('Invalid clientDataJSON format: challenge not found');
+}
+const [, fields] = clientDataMatch;
 
 const webauthnSignatureData: WebauthnSignatureData = {
-    authenticatorData: assertion.response.authenticatorData,
-    clientDataFields: extractClientDataFields(assertion.response),
-    rs: extractSignature(assertion.response),
-}
+    authenticatorData: Bytes.fromHex(metadata.authenticatorData).buffer as ArrayBuffer,
+    clientDataFields: Hex.fromString(fields),
+    rs: [signature.r, signature.s],
+};
 
 const webauthnSignature: string = SafeAccount.createWebAuthnSignature(webauthnSignatureData)
 ```
@@ -409,10 +400,9 @@ This API is supported by most major browsers, including Google Chrome, Mozilla F
 on the browser support and requirements, Mozilla has created great [documentation on WebAuthn](https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API).
 
 #### Web-based:
-In the guides above, we showed how to implement and call the WebAuthn API directly using the built-in Navigator API. However, you can also use helper or higher-level libraries to simplify the integration process:
+In this guide, we use the `0x` library, which provides a high-level abstraction over the WebAuthn API. This simplifies the integration process by handling the low-level details of the WebAuthn API.
 
-- **WebAuthnP256 (Viem ox)**: This library provides a higher level abstraction over the WebAuthn API.
-  - [Web reference](https://gist.github.com/thomas779/9bcee2b20f0abc1712c434e2a5063856) by Thomas, founder of Backpack.Network, for using [`WebAuthnP256`](https://oxlib.sh/api/WebAuthnP256) and `abstractionkit`.
+- **`ox/WebAuthnP256`**: This is the specific module from the `0x` library used in this guide. It provides functions for creating and using P-256 credentials, which are the standard for passkeys.
 
 #### React Native:
 For React Native applications, teams have used the following libraries to integrate the WebAuthn/Passkeys functionality:
