@@ -306,29 +306,6 @@ const sidebars = {
     },
     {
       type: "category",
-      label: "EIP-7702",
-      collapsible: false,
-      className: "category-not-collapsible",
-      items: [
-        {
-          type: "doc",
-          id: "wallet/guides/getting-started-eip-7702",
-          label: "EIP-7702 Quickstart"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/send-galess-eip-7702",
-          label: "Gasless Transactions"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/pay-gas-in-erc20-eip-7702",
-          label: "Gas in ERC-20"
-        },
-      ]
-    },
-    {
-      type: "category",
       label: "Safe Plugins",
       collapsible: false,
       className: "category-not-collapsible",
@@ -383,6 +360,29 @@ const sidebars = {
           label: "Simulate Transaction"
         },
       ],
+    },
+    {
+      type: "category",
+      label: "EIP-7702 (EOA Upgrades)",
+      collapsible: false,
+      className: "category-not-collapsible",
+      items: [
+        {
+          type: "doc",
+          id: "wallet/guides/getting-started-eip-7702",
+          label: "EIP-7702 Quickstart"
+        },
+        {
+          type: "doc",
+          id: "wallet/guides/send-galess-eip-7702",
+          label: "Gasless Transactions"
+        },
+        {
+          type: "doc",
+          id: "wallet/guides/pay-gas-in-erc20-eip-7702",
+          label: "Gas in ERC-20"
+        },
+      ]
     },
     {
       type: "category",
