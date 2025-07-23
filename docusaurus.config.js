@@ -190,7 +190,7 @@ const config = {
       footer: {
         links: [
           {
-            "title": "Github",
+            "title": "Open Source",
             "items": [
               {
                 "label": "AbstractionKit",
@@ -201,12 +201,8 @@ const config = {
                 "href": "https://github.com/candidelabs/voltaire"
               },
               {
-                "label": "Account Recovery Contract",
-                "href": "https://github.com/candidelabs/CandideWalletContracts/blob/main/contracts/modules/social_recovery/SocialRecoveryModule.sol"
-              },
-              {
-                "label": "Mobile App",
-                "href": "https://github.com/candidelabs/candide-mobile-app"
+                "label": "Smart Contracts",
+                "href": "https://github.com/candidelabs/candide-contracts"
               },
             ],
           },
@@ -226,10 +222,22 @@ const config = {
                 "href": "mailto:team@candidelabs.com"
               },
               {
-                "label": "Twitter",
+                "label": "X (Twitter)",
                 "href": "https://twitter.com/candidelabs"
               },
             ]
+          },
+          {
+            title: 'Status',
+            items: [
+              {
+                html: `
+                  <a href="https://status.candide.dev/" target="_blank" rel="noopener noreferrer">
+                    <img src="https://candide.openstatus.dev/badge" alt="OpenStatus Badge" />
+                  </a>
+                `,
+              },
+            ],
           },
         ],
       },
