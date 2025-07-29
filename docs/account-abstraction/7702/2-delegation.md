@@ -8,7 +8,7 @@ keywords: [EIP-7702, Externally Owned Accounts, EOAs, smart contract wallets, Et
 EIP-7702 enhances Externally Owned Accounts (EOAs) by allowing them to perform smart contract-like operations. In this example, we show how 
 to sign the `eip7702Auth` tuple in SimpleAccount to delegate the authorization to the smart account.
 
-For the complete example on how to upgrade an EOA to a smart account, vist [EIP-7702 Geting Started](/wallet/guides/getting-started-eip-7702).
+For the complete example on how to upgrade an EOA to a smart account, visit [EIP-7702 Getting Started](/wallet/guides/getting-started-eip-7702).
 
 ## Setup
 
@@ -77,4 +77,4 @@ userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
 ```
 
 
-In this guide, we've shown you what it needs to how upgrade an Externally Owned Account (EOA) by delegating its authorization to a designated smart contract address using EIP-7702. To run a complete example, visit [EIP-7702 Geting Started](/wallet/guides/getting-started-eip-7702).
+In this guide, we've shown you what it needs to how to upgrade an Externally Owned Account (EOA) by delegating its authorization to a designated smart contract address using EIP-7702. To run a complete example, visit [EIP-7702 Getting Started](/wallet/guides/getting-started-eip-7702).
