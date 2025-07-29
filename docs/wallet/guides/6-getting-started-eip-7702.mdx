@@ -1,12 +1,12 @@
 ---
-title: How to upgrade an EOA to an EIP-7702 Smart Account using Abstractionkit   
-description: Learn how to upgrade an EOA to a EIP-7702 Smart Account to leverage features such as batching and gas sponsorship  
+title: How to use EIP-7702 Smart Account Authorization with Abstractionkit   
+description: Learn how to upgrade an EOA to an EIP-7702-compatible Smart Account to leverage features such as batching and gas sponsorship  
 keywords: [eip-7702, smart-account, batching, EOA, metamask]
 ---
 
 # EIP-7702 Quickstart
 
-EIP-7702 upgrades current Ethereum External Owned Accounts (EOAs) by upgrading them to smart contract accounts
+EIP-7702 enables Ethereum External Owned Accounts (EOAs) to authorize smart contract code at their own address. This allows:
 
 - **Gas sponsorship**: abstract away gas fees, allowing third-party sponsorship or payment in ERC-20 tokens
 - **Transaction batching**: improve UX and security by combining approvals and contract interactions into a single step
@@ -15,7 +15,7 @@ EIP-7702 upgrades current Ethereum External Owned Accounts (EOAs) by upgrading t
 
 To learn more about EIP-7702, visit the dedicated [7702 Overview](/account-abstraction/7702/overview).
 
-In this example, you will learn how to upgrade an EOA to a Smart Account to leverage features such as batching and gas sponsorship
+In this example, you will learn how to upgrade your EOA to a Smart Account to leverage features such as batching and gas sponsorship.
 
 ## Prerequisites
 
@@ -52,7 +52,7 @@ BUNDLER_URL=https://api.candide.dev/public/v3/sepolia
 PAYMASTER_URL=https://api.candide.dev/public/v3/sepolia
 ```
 
-4. Create a empty file and a function to run our script
+4. Create an empty file and a function to run your script
 
 ```ts title="index.ts"
 async function main(): Promise<void> {
@@ -62,20 +62,21 @@ async function main(): Promise<void> {
 main();
 ```
 
-## Step 2: Generate Account Address
+## Step 2: Prepare Smart Account Instance
 
-To generate an account address, we will be using [Simple7702Account](/wallet/abstractionkit/simple-7702-account),
+To prepare the smart account instance, we will use [Simple7702Account](/wallet/abstractionkit/simple-7702-account),
 a fully audited minimalist smart contract account that can be safely authorized by any EOA. It adds full support for major smart account features like batching and gas sponsorship.
 
 ```ts title="index.ts"
 import { Simple7702Account } from "abstractionkit";
 import { Wallet } from "ethers";
 
+// For demo: generate a random EOA. In production, use user's EOA/private key
 const eoaDelegator = Wallet.createRandom();
 
 const smartAccount = new Simple7702Account(eoaDelegator.address);
 
-console.log("Account address(sender) : " + smartAccount.accountAddress);
+console.log("Smart account address (sender): " + smartAccount.accountAddress);
 ```
 
 Let's run this code
@@ -84,7 +85,7 @@ Let's run this code
 npx ts-node index.ts
 ```
 
-If everything worked, you will get the calculate address of the smart account in the console.
+If everything worked, you will see the computed smart account address in the console, which is the same as the EOA address.
 
 <details>
 <summary>Result example</summary>
@@ -93,7 +94,7 @@ Account address(sender): 0x32afdcfa1e3bfe70d03ecb55b5c8045c26515c9d
 
 ## Step 3: Generate callData for minting NFTs
 
-Not only we can upgrade the EOA to a smart account, we will also be demonstrating how to execute minting two NFTs, all in the same transaction.  
+Not only can we upgrade the EOA to a smart account, we will also demonstrate how to execute minting two NFTs, all in the same transaction.  
 
 ```ts title="index.ts"
 import {
@@ -102,7 +103,7 @@ import {
   createCallData,
 } from "abstractionkit";
 
-// We will be mitting two random NFTs in a single tx
+// We will be minting two random NFTs in a single tx
 const nftContractAddress = "0x9a7af758aE5d7B6aAE84fe4C5Ba67c041dFE5336";
 const mintFunctionSignature = 'mint(address)';
 const mintFunctionSelector = getFunctionSelector(mintFunctionSignature);
@@ -124,49 +125,45 @@ const transaction2: MetaTransaction = {
 }
 ```
 
-## Step 3: Create UserOperation
+## Step 4: Create UserOperation
 Now the fun part. Call `createUserOperation`, which will:
 
-1. Compute the r and s values for the `eip7702Auth`. These values are part of signature authorization tuple needed to upgrade the EOA. 
-This is only used once, during the upgrade transaction of the EOA.
-2. Determine the nonce and fetch the gas prices from the provided node rpc
+1. Prepare the `eip7702Auth` tuple for signature authorization. This is used during the authorization transaction of the EOA.
+2. Determine the nonce and fetch the gas prices from the provided node RPC
 3. Estimate gas limits from the provided bundler
 
-This returns a unsigned user operation. Use `calculateUserOperationMaxGasCost` to calculate its cost.
+This returns an unsigned user operation. Use `calculateUserOperationMaxGasCost` to calculate its cost.
 
 ```ts title="index.ts"
 import {
-  ...
-  // highlight-start
+  // ...
   calculateUserOperationMaxGasCost
-  // highlight-end
 } from "abstractionkit";
 
 const bundlerUrl = process.env.BUNDLER_URL as string;
 const chainId = BigInt(process.env.CHAIN_ID as string);
 const eoaDelegatorPrivateKey = process.env.PRIVATE_KEY as string;
+const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string;
 
 let userOperation = await smartAccount.createUserOperation(
     [transaction1, transaction2],
     jsonRpcNodeProvider,
     bundlerUrl,
-    // highlight-start
     {
         eip7702Auth:{
-            chainId, // chainId at which the account will be upgraded
+            chainId, // chainId at which the account will be authorized
         }
     }
-    // highlight-end
 );
 
 const cost = calculateUserOperationMaxGasCost(userOperation)
-console.log("This useroperation may cost upto : " + cost + " wei")
+console.log("This useroperation may cost up to : " + cost + " wei")
 console.log("Please fund the sender account : " + userOperation.sender +" with more than " + cost + " wei")
 ```
 
-## Step 4: Sign the Delegate Authorization
+## Step 5: Sign the Authorization
 
-Sign the `eip7702Auth` tuple to delegate the authorization to the smart account. This is only called once, during the upgrade transaction of the EOA.
+Sign the `eip7702Auth` tuple to authorize the smart account code at your EOA address. This is called during the authorization transaction of the EOA.
 
 ```ts
 import { createAndSignEip7702DelegationAuthorization } from "abstractionkit"
@@ -179,9 +176,9 @@ userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
 )
 ```
 
-## Step 5: Get Paymaster data
+## Step 6: Get Paymaster data (Optional)
 
-Optionally [sponsor gas](/wallet/guides/send-galess-eip-7702/) for your user transaction or offer them to pay [gas in erc-20 tokens](/wallet/guides/pay-gas-in-erc20-eip-7702/) 
+Optionally [sponsor gas](/wallet/guides/send-galess-eip-7702/) for your user transaction or offer them to pay [gas in erc-20 tokens](/wallet/guides/pay-gas-in-erc20-eip-7702/).
 
 ```ts
 import { CandidePaymaster } from "abstractionkit";
@@ -198,7 +195,7 @@ let [paymasterUserOperation, _sponsorMetadata] = await paymaster.createSponsorPa
 userOperation = paymasterUserOperation; 
 ```
 
-## Step 6: Sign and Submit
+## Step 7: Sign and Submit
 
 1. Call `signUserOperation`, which will create a signature for the private key provided of the owner of the EOA.
 
@@ -212,7 +209,7 @@ userOperation.signature = smartAccount.signUserOperation(
 );
 ```
 
-2. Use the Bundler URL to send the userop to the bundler with `sendUserOperation`, and await the return `SendUseroperationResponse` object to confirm the on-chain inclusion of the user operation. 
+2. Use the Bundler URL to send the user operation to the bundler with `sendUserOperation`, and await the return `SendUseroperationResponse` object to confirm the on-chain inclusion of the user operation. 
 
 ```ts title="index.ts"
 const sendUserOperationResponse = await smartAccount.sendUserOperation(userOperation, bundlerUrl)
@@ -230,7 +227,7 @@ console.log("Useroperation receipt received.")
 console.log(userOperationReceiptResult)
 
 if (userOperationReceiptResult.success) {
-    console.log("EOA upgraded to a Smart Account and minted two Nfts! The transaction hash is : " + userOperationReceiptResult.receipt.transactionHash)
+    console.log("EOA upgraded to a Smart Account and minted two NFTs! The transaction hash is : " + userOperationReceiptResult.receipt.transactionHash)
 } else {
     console.log("Useroperation execution failed")
 }
@@ -242,7 +239,7 @@ Now let's run this code again
 npx ts-node index.ts
 ```
 
-You've now sent upgrade your EOA to a Smart Account! If everything went well, you should see the bundler returning a user operation receipt
+You've now enabled smart account features for your EOA! If everything went well, you should see the bundler returning a user operation receipt.
 
 <details>
 <summary>Result</summary>
@@ -259,31 +256,24 @@ Useroperation receipt received.
   actualGasCost: 243581295447n,
   actualGasUsed: 84429n,
   success: true,
-  logs: '[{"address":"0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108","topics":["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f","0x89a5111d40c4ca45977a28419a08ca33e496a88e973bc995ec6a5a28da564cb5","0x000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31","0x0000000000000000000000000000000000000000000000000000000000000000"],"data":"0x0000000000000000000000000000000000000000000000000000000000000015000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000038b6939b5700000000000000000000000000000000000000000000000000000000000149cd","blockHash":"0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c","blockNumber":"0x347611","blockTimestamp":"0x67c57b18","transactionHash":"0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a","transactionIndex":"0x8","logIndex":"0x3e","removed":false}]',
+  // ...
   receipt: {
-    blockHash: '0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c',
-    blockNumber: 3438097n,
-    from: '0x6eb0296e64fb8d9d946c7b819e4ff55c7167b0ce',
-    cumulativeGasUsed: 884430n,
-    gasUsed: 96887n,
-    logs: '[{"address":"0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108","topics":["0x2da466a7b24304f47e87fa2e1e5a81b9831ce54fec19055ce277ca2f39ba42c4","0x000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31"],"data":"0x000000000000000000000000000000000000000000000000000000627c080142","blockHash":"0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c","blockNumber":"0x347611","blockTimestamp":"0x67c57b18","transactionHash":"0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a","transactionIndex":"0x8","logIndex":"0x3c","removed":false},{"address":"0x0000000071727de22e5e9d8baf0edac6f37da032","topics":["0xbb47ee3e183a558b1a2ff0874b079f3fc5478b7454eacf2bfc5af2ff5878f972"],"data":"0x","blockHash":"0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c","blockNumber":"0x347611","blockTimestamp":"0x67c57b18","transactionHash":"0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a","transactionIndex":"0x8","logIndex":"0x3d","removed":false},{"address":"0x0000000071727de22e5e9d8baf0edac6f37da032","topics":["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f","0x89a5111d40c4ca45977a28419a08ca33e496a88e973bc995ec6a5a28da564cb5","0x000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31","0x0000000000000000000000000000000000000000000000000000000000000000"],"data":"0x0000000000000000000000000000000000000000000000000000000000000015000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000038b6939b5700000000000000000000000000000000000000000000000000000000000149cd","blockHash":"0x51e49209271f31b831f466c256e971053f8d65fb71160a6da36277b56270a74c","blockNumber":"0x347611","blockTimestamp":"0x67c57b18","transactionHash":"0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a","transactionIndex":"0x8","logIndex":"0x3e","removed":false}]',
-    logsBloom: '0x00000000000000000000000000000400000000000000000000000000000000000008000000000000000800010000000000000000000000000000020000000000000000000000000000000000000000000040000000000000000000000000200000000000020801000000000000000800000000000000000000000000000200000000000000000000000000000000000000000000000000008000000000000000000000000000000000400000000800000000000000000000000002000000000000000000000000410001000000000000000000000000000000000000000020000040000000000000000000000000000000000000000000000000000000000000',
+    // ...
     transactionHash: '0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a',
-    transactionIndex: 8n,
-    effectiveGasPrice: 2644614n
+    // ...
   }
 }
-EOA upgraded to a Smart Account and minted two Nfts! The transaction hash is : 0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a
+EOA upgraded to a Smart Account and minted two NFTs! The transaction hash is : 0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a
 ```
 
 </details>
 
-You can lookup the hash on explorers that supports user operations like [Blockscout](https://www.blockscout.com/).
+You can look up the hash on explorers that support user operations like [Blockscout](https://www.blockscout.com/).
 
 ## Full Example
 Below is the complete example code that you can copy directly to implement the functionality described in the tutorial.
 <details>
-<summary>index.js</summary>
+<summary>index.ts</summary>
 
 ```ts
 import * as dotenv from 'dotenv'
@@ -302,17 +292,16 @@ async function main(): Promise<void> {
     const chainId = BigInt(process.env.CHAIN_ID as string)
     const bundlerUrl = process.env.BUNDLER_URL as string
     const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string;
-    
+    const paymasterUrl = process.env.PAYMASTER_URL as string;
+
     const eoaDelegator = Wallet.createRandom();
     const eoaDelegatorPublicAddress = eoaDelegator.address;
     const eoaDelegatorPrivateKey = eoaDelegator.privateKey;
-    const paymasterUrl = process.env.PAYMASTER_URL as string;
-
 
     // initiate the smart account
     const smartAccount = new Simple7702Account(eoaDelegatorPublicAddress);
 
-    // We will be mitting two random NFTs in a single txs
+    // We will be minting two random NFTs in a single tx
     const nftContractAddress = "0x9a7af758aE5d7B6aAE84fe4C5Ba67c041dFE5336";
     const mintFunctionSignature = 'mint(address)';
     const mintFunctionSelector = getFunctionSelector(mintFunctionSignature);
@@ -334,15 +323,12 @@ async function main(): Promise<void> {
     }
 
     let userOperation = await smartAccount.createUserOperation(
-        [
-            //You can batch multiple transactions to be executed in one useroperation.
-            transaction1, transaction2,
-        ],
-        jsonRpcNodeProvider, //the node rpc is used to fetch the current nonce and fetch gas prices.
-        bundlerUrl, //the bundler rpc is used to estimate the gas limits.
+        [transaction1, transaction2],
+        jsonRpcNodeProvider,
+        bundlerUrl,
         {
             eip7702Auth:{
-                chainId: chainId, // chainId at which the account will be upgraded
+                chainId: chainId, // chainId at which the account will be authorized
             }
         }
     );
@@ -354,13 +340,12 @@ async function main(): Promise<void> {
         eoaDelegatorPrivateKey
     )
 
-    
     let paymaster: CandidePaymaster = new CandidePaymaster(
         paymasterUrl
     )
 
     let [paymasterUserOperation, _sponsorMetadata] = await paymaster.createSponsorPaymasterUserOperation(
-        userOperation, bundlerUrl) // sponsorshipPolicyId will have no effect if empty
+        userOperation, bundlerUrl)
     userOperation = paymasterUserOperation; 
 
     userOperation.signature = smartAccount.signUserOperation(
@@ -382,7 +367,7 @@ async function main(): Promise<void> {
     console.log("Useroperation receipt received.")
     console.log(userOperationReceiptResult)
     if (userOperationReceiptResult.success) {
-        console.log("EOA upgraded to a Smart Account and minted two Nfts! The transaction hash is : " + userOperationReceiptResult.receipt.transactionHash)
+        console.log("EOA upgraded to a Smart Account and minted two NFTs! The transaction hash is : " + userOperationReceiptResult.receipt.transactionHash)
     } else {
         console.log("Useroperation execution failed")
     }

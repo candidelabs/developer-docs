@@ -1,47 +1,40 @@
 ---
-title: What is EIP-7702, what features it enables and what are its limitation
-description: Add a new tx type that permanently sets the code for an EOA
+title: What is EIP-7702, what features it enables and what are its limitations
+description: EIP-7702 introduces a new transaction type that allows an EOA to authorize smart contract code at its own address for a transaction, enabling smart account features.
 keywords: [EIP-7702, Externally Owned Accounts, EOAs, smart contract wallets, Ethereum, ERC-4337, batching, sponsorship, privilege de-escalation]
 ---
 
 # EIP-7702
 
-EIP-7702 introduces a new transaction type that empowers Externally Owned Accounts (EOAs) with smart contract wallet functionalities by enabling 
-the deployment of code directly at their address. This improvement allows EOAs to perform complex operations typically reserved for smart contracts.
+EIP-7702 introduces a new transaction type that empowers Externally Owned Accounts (EOAs) with smart contract wallet functionalities by allowing them to authorize smart contract code at their own address for a transaction. This enables EOAs to perform complex operations typically reserved for smart contracts, without permanently converting the EOA or changing its address.
 
 ## Key Features
 
 ### Batching
-   This feature allows users to execute multiple operations in a single atomic transaction. A common use case is the combination of an ERC-20 approval 
-   followed by the spending of that approval. Currently, this workflow requires two separate transactions in decentralized exchanges (DEXes). 
-   Advanced batching scenarios may involve dependencies, where the output of one operation serves as the input for another, streamlining complex workflows.
+This feature allows users to execute multiple operations in a single atomic transaction. A common use case is the combination of an ERC-20 approval followed by the spending of that approval. Currently, this workflow requires two separate transactions in decentralized exchanges (DEXes). Advanced batching scenarios may involve dependencies, where the output of one operation serves as the input for another, streamlining complex workflows.
 
 ### Gas Sponsorship
-   EIP-7702 enables one account (Account X) to pay for transactions on behalf of another account (Account Y). This can facilitate various use cases, such as:
-   - Account X receiving payment in a different ERC-20 token for the transaction service.
-   - Application operators covering transaction costs for their users, thereby improving user experience by eliminating the need for users to 
-     hold native tokens for transaction fees.
+EIP-7702 enables an account to pay for its own transaction using gas sponsorship, or to have a third party (such as a dapp or paymaster) cover the transaction fees. This can facilitate various use cases, such as:
+- Paying for gas in ERC-20 tokens instead of the native token.
+- Application operators covering transaction costs for their users, improving user experience by eliminating the need for users to hold native tokens for transaction fees.
 
 ### Privilege De-escalation
-   Users can create sub-keys with specific permissions that are more limited than the global access of the main account. This feature improves 
-   security and control over account operations. Examples of privilege de-escalation include:
-   - Granting permission to spend ERC-20 tokens while restricting access to ETH.
-   - Allowing a sub-key to spend only up to 1% of the total balance per day.
-   - Limiting interactions to specific applications, thereby reducing the risk of unauthorized access.
+Users can create sub-keys or set specific permissions that are more limited than the global access of the main account. This feature improves security and control over account operations. Examples include:
+- Granting permission to spend ERC-20 tokens while restricting access to ETH.
+- Allowing a sub-key to spend only up to a certain amount per day.
+- Limiting interactions to specific applications, thereby reducing the risk of unauthorized access.
 
 ### Forward-compatibility with Account Abstraction
-
-This EIP is designed to be very forward-compatible with endgame account abstraction, without over-enshrining any fine-grained details of ERC-4337 or RIP-7560.
+This EIP is designed to be highly forward-compatible with endgame account abstraction, without over-enshrining any fine-grained details of ERC-4337 or RIP-7560.
 
 Specifically:
-    - The address that users sign can directly point to existing ERC-4337 wallet code.
-    - The "code pathways" used are often the same as those in a fully smart contract wallet environment, making them compatible.
-    - This approach helps avoid the issue of creating two separate code ecosystems, as they largely remain unified. While some workflows may still need workarounds, 
-    these are relatively few compared to the overall functionality.
-    - It does not require adding any new opcodes that would become unnecessary in a future without Externally Owned Accounts (EOAs).
-    - It allows EOAs to function like smart contracts, enabling them to be included in ERC-4337 bundles while remaining compatible with the existing EntryPoint.
+- The address that users sign can directly point to existing ERC-4337 wallet code.
+- The "code pathways" used are often the same as those in a fully smart contract wallet environment, making them compatible.
+- This approach helps avoid the issue of creating two separate code ecosystems, as they largely remain unified. While some workflows may still need workarounds, these are relatively few compared to the overall functionality.
+- It does not require adding any new opcodes that would become unnecessary in a future without Externally Owned Accounts (EOAs).
+- It allows EOAs to function like smart contracts, enabling them to be included in ERC-4337 bundles while remaining compatible with the existing EntryPoint.
 
-## Limitation
+## Limitations
 While EIP-7702 brings significant improvements to Ethereum EOA wallets, it's essential to understand the full picture:
 
 - **Private key access remains**: The original key will always maintain admin access to the upgraded account, limiting the security benefits an EOA wallet can offer.    
