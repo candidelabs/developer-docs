@@ -145,6 +145,122 @@ export const userOperationParamV07 = [
   },
 ];
 
+export const userOperationParamV08 = [
+  {
+    key: "sender",
+    type: "string",
+    description: "The account making the operation",
+  },
+  {
+    key: "nonce",
+    type: "bigint",
+    description: "Anti-replay parameter (see Semi-abstracted Nonce Support)",
+  },
+  {
+    key: "factory",
+    type: "string | null",
+    description: "Account factory address, only for new accounts (null if account already exists)",
+  },
+  {
+    key: "factoryData",
+    type: "string | null",
+    description: "Data for account factory (null if account already exists)",
+  },
+  {
+    key: "callData",
+    type: "string",
+    description: "The data to pass to the sender during the main execution call",
+  },
+  {
+    key: "callGasLimit",
+    type: "bigint",
+    description: "The amount of gas to allocate the main execution call",
+  },
+  {
+    key: "verificationGasLimit",
+    type: "bigint",
+    description: "The amount of gas to allocate for the verification step",
+  },
+  {
+    key: "preVerificationGas",
+    type: "bigint",
+    description: "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata",
+  },
+  {
+    key: "maxFeePerGas",
+    type: "bigint",
+    description: "Maximum fee per gas (similar to EIP-1559 max_fee_per_gas)",
+  },
+  {
+    key: "maxPriorityFeePerGas",
+    type: "bigint",
+    description: "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)",
+  },
+  {
+    key: "paymaster",
+    type: "string | null",
+    description: "Address of paymaster contract (null if account pays for itself)",
+  },
+  {
+    key: "paymasterVerificationGasLimit",
+    type: "bigint | null",
+    description: "The amount of gas to allocate for the paymaster verification step (null if no paymaster)",
+  },
+  {
+    key: "paymasterPostOpGasLimit",
+    type: "bigint | null",
+    description: "The amount of gas to allocate for the paymaster post-operation code (null if no paymaster)",
+  },
+  {
+    key: "paymasterData",
+    type: "string | null",
+    description: "Data for paymaster (null if no paymaster)",
+  },
+  {
+    key: "eip7702Auth",
+    type: "Authorization7702Hex | null",
+    description: "EIP-7702 authorization data for EOA delegation (null if not using EIP-7702)",
+  },
+  {
+    key: "signature",
+    type: "string",
+    description: "Data passed into the account to verify authorization. Resolves to '0x' when the user did not provide their signature yet",
+  },
+];
+
+export const authorization7702HexType = [
+  {
+    key: "chainId",
+    type: "string",
+    description: "Chain ID in hexadecimal format where the authorization is valid",
+  },
+  {
+    key: "address",
+    type: "string",
+    description: "Address to authorize for the EOA delegation",
+  },
+  {
+    key: "nonce",
+    type: "string",
+    description: "Authorization nonce in hexadecimal format",
+  },
+  {
+    key: "yParity",
+    type: "string",
+    description: "Y parity of the authorization signature",
+  },
+  {
+    key: "r",
+    type: "string",
+    description: "R component of the authorization signature",
+  },
+  {
+    key: "s",
+    type: "string",
+    description: "S component of the authorization signature",
+  },
+];
+
 export const userOperationReceiptType = [
   {
     key: "blockHash",

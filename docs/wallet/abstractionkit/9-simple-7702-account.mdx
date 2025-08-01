@@ -4,6 +4,31 @@ description: Learn how to upgrade EOAs to Smart Accounts with fully audited Smar
 keywords: [safe-account, "4337", sdk, account-abstraction, gnosis-safe]
 ---
 import CardList from "/src/components/CardList";
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+
+import {
+  createUserOperationParam,
+  createUserOperationReturn,
+  signUserOperationParam,
+  signUserOperationReturn,
+  sendUserOperationParam,
+  sendUserOperationReturn,
+  createAccountCallDataParam,
+  createAccountCallDataReturn,
+  createAccountCallDataSingleTransactionParam,
+  createAccountCallDataBatchTransactionsParam,
+  prependTokenPaymasterApproveToCallDataStaticParam,
+  prependTokenPaymasterApproveToCallDataStaticReturn,
+  estimateUserOperationGasParam,
+  estimateUserOperationGasReturn,
+  prependTokenPaymasterApproveToCallDataParam,
+  prependTokenPaymasterApproveToCallDataReturn,
+  simpleMetaTransactionType
+} from "/src/data/simple7702AccountParams";
+import { sendUseroperationResponseType, bundlerJsonRpcErrorType } from "/src/requestRpcData";
+import { userOperationReceiptResultType } from "/src/data/userOperation";
 
 # Simple 7702 Account
 The `Simple7702Account` is a fully audited minimalist smart contract account that can be safely authorized by any EOA. It adds full support for 
@@ -17,6 +42,16 @@ The following ERCs are supported:
 - ERC-1271
 - ERC-4337 v0.8
 
+export const GETTING_STARTED_ITEMS = [
+    {
+        title: "EIP-7702 QuickStart",
+        description: "Learn how to upgrade an EOA to a Smart Account with batch transactions and gas sponsorship capabilities",
+        route: "/wallet/guides/getting-started-eip-7702/",
+    },
+];
+
+<CardList items={GETTING_STARTED_ITEMS} />
+
 ## Smart Contracts and Audits
 
 The contracts have been developed by the Ethereum Foundation Account Abstraction Team, and have been audited by Spearbit. 
@@ -26,6 +61,14 @@ The contracts have been developed by the Ethereum Foundation Account Abstraction
 - [Audit](https://github.com/eth-infinitism/account-abstraction/blob/develop/audits/SpearBit%20Account%20Abstraction%20Security%20Review%20-%20Mar%202024.pdf)
 
 ## How to use
+
+### Prerequisites
+Before using `Simple7702Account`, you must have:
+
+- **Node.js**: Version 18.0 or higher.
+- **EIP-7702 Compatible Network**: Ethereum mainnet, Sepolia, Optimism, Base, or other EIP-7702 enabled chains
+- **Private Key acccess**: Required for signing authorizations and user operations
+
 
 ### Installation
 
@@ -42,12 +85,412 @@ const delegatorPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31"; // 
 const smartAccount = Simple7702Account.initializeNewAccount([delegatorPublicAddress]);
 ```
 
-export const GETTING_STARTED_ITEMS = [
-    {
-        title: "EIP-7702 QuickStart",
-        description: "Learn how to upgrade an EOA to a Smart Account with batch transactions and gas sponsorship capabilities",
-        route: "/wallet/guides/getting-started-eip-7702/",
-    },
+## Essential Methods
+
+### createUserOperation
+
+Creates a UserOperation for EIP-7702 accounts that can be sent to bundlers for execution.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { Simple7702Account } from "abstractionkit";
+
+const delegatorPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
+const smartAccount = Simple7702Account.initializeNewAccount([delegatorPublicAddress]);
+
+const transactions = [
+  {
+    to: "0x...",
+    value: 0n,
+    data: "0x...",
+  },
 ];
 
-<CardList items={GETTING_STARTED_ITEMS} />
+// highlight-start
+const userOperation = await smartAccount.createUserOperation(
+  transactions,
+  "https://ethereum-sepolia-rpc.publicnode.com", // provider RPC
+  "https://api.candide.dev/public/v3/sepolia", // bundler RPC
+  {
+    eip7702Auth:{
+        chainId, // chainId at which the account will be authorized
+    }
+    // Optional overrides
+    maxFeePerGas: 20000000000n,
+    maxPriorityFeePerGas: 2000000000n,
+  }
+);
+// highlight-end
+
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createUserOperationParam} />
+  SimpleMetaTransaction
+  <DataTable items={simpleMetaTransactionType} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createUserOperationReturn} />
+</TabItem>
+
+</Tabs>
+
+### signUserOperation
+
+Signs a UserOperation with the provided private key for the EIP-7702 account.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const signature = smartAccount.signUserOperation(
+  userOperation,
+  "0x...private-key",
+  11155111n // chain ID
+);
+
+userOperation.signature = signature;
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={signUserOperationParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={signUserOperationReturn} />
+</TabItem>
+
+</Tabs>
+
+### sendUserOperation
+
+Sends a signed UserOperation to the bundler for execution on-chain.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const response = await smartAccount.sendUserOperation(
+  userOperation,
+  "https://api.candide.dev/public/v3/sepolia" // bundler URL
+);
+
+console.log("UserOperation hash:", response.userOperationHash);
+
+// Wait for the transaction to be included
+const receipt = await response.included();
+console.log("Transaction receipt:", receipt);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={sendUserOperationParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={sendUserOperationReturn} />
+  SendUseroperationResponse
+  <DataTable items={sendUseroperationResponseType} />
+  BundlerJsonRpcError
+  <DataTable items={bundlerJsonRpcErrorType} />
+  UserOperationReceiptResult
+  <DataTable items={userOperationReceiptResultType} />
+</TabItem>
+
+</Tabs>
+
+## Advanced Methods
+
+### createAccountCallData
+
+Creates call data for a basic transaction with specified target, value, and data.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const callData = Simple7702Account.createAccountCallData(
+  "0x...", // to address
+  1000000000000000000n, // value in wei
+  "0x..." // transaction data
+);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createAccountCallDataParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAccountCallDataReturn} />
+</TabItem>
+
+</Tabs>
+
+### createAccountCallDataSingleTransaction
+
+Creates call data for a single SimpleMetaTransaction.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const metaTransaction = {
+  to: "0x...",
+  value: 0n,
+  data: "0x...",
+};
+
+const callData = Simple7702Account.createAccountCallDataSingleTransaction(metaTransaction);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createAccountCallDataSingleTransactionParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAccountCallDataReturn} />
+</TabItem>
+
+</Tabs>
+
+### createAccountCallDataBatchTransactions
+
+Creates call data for batching multiple SimpleMetaTransactions together.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const transactions = [
+  { to: "0x...", value: 0n, data: "0x..." },
+  { to: "0x...", value: 0n, data: "0x..." },
+];
+
+const callData = Simple7702Account.createAccountCallDataBatchTransactions(transactions);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createAccountCallDataBatchTransactionsParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAccountCallDataReturn} />
+</TabItem>
+
+</Tabs>
+
+### prependTokenPaymasterApproveToCallDataStatic
+
+Prepends a token approval transaction to existing call data for use with token paymasters.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const callDataWithApproval = Simple7702Account.prependTokenPaymasterApproveToCallDataStatic(
+  "0x...", // existing call data
+  "0xa0b86a33e6b3e96bb24b8e4b28e80e0fb3a4f4b6", // USDC token address
+  "0x...", // paymaster address
+  1000000n // approve amount (1 USDC)
+);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={prependTokenPaymasterApproveToCallDataStaticParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={prependTokenPaymasterApproveToCallDataStaticReturn} />
+</TabItem>
+
+</Tabs>
+
+### prependTokenPaymasterApproveToCallData
+
+Instance method to prepend token approval to call data for paymaster usage.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const callDataWithApproval = smartAccount.prependTokenPaymasterApproveToCallData(
+  "0x...", // existing call data
+  "0xa0b86a33e6b3e96bb24b8e4b28e80e0fb3a4f4b6", // USDC token address
+  "0x...", // paymaster address
+  1000000n // approve amount
+);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={prependTokenPaymasterApproveToCallDataParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={prependTokenPaymasterApproveToCallDataReturn} />
+</TabItem>
+
+</Tabs>
+
+### estimateUserOperationGas
+
+Estimates gas limits for a UserOperation using the bundler.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const [callGasLimit, verificationGasLimit, preVerificationGas] = 
+  await smartAccount.estimateUserOperationGas(
+    userOperation,
+    "https://api.candide.dev/public/v3/sepolia",
+    {
+      // Optional overrides
+      stateOverrideSet: {...},
+      dummySignature: "0x...",
+    }
+  );
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={estimateUserOperationGasParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={estimateUserOperationGasReturn} />
+</TabItem>
+
+</Tabs>
+
+## Error Handling & Common Issues
+
+### Common Errors
+
+<Tabs>
+<TabItem value="auth-errors" label="Authorization Errors">
+
+```typescript
+// ❌ Missing eip7702Auth on the first UserOperation authorization
+const userOperation = await smartAccount.createUserOperation(
+  transactions,
+  providerRpc,
+  bundlerRpc
+  // Missing eip7702Auth causes delegation failure
+);
+
+// ✅ Correct usage
+const userOperation = await smartAccount.createUserOperation(
+  transactions,
+  providerRpc,
+  bundlerRpc,
+  {
+    eip7702Auth: { chainId: 11155111n }, // Required for EIP-7702
+  }
+);
+```
+
+</TabItem>
+
+<TabItem value="gas-errors" label="Gas Estimation Issues">
+
+```typescript
+// ❌ Insufficient gas prices
+const userOperation = await smartAccount.createUserOperation(
+  transactions,
+  providerRpc,
+  bundlerRpc,
+  {
+    eip7702Auth: { chainId: 11155111n },
+    maxFeePerGas: 1000000000n, // Too low for current network conditions
+    maxPriorityFeePerGas: 100000000n, // Too low for current network conditions 
+  }
+);
+
+// ✅ add multipliers to the node 
+const userOperation = await smartAccount.createUserOperation(
+  transactions,
+  providerRpc,
+  bundlerRpc,
+  {
+    eip7702Auth: { chainId: 11155111n },
+    // Use higher gas prices
+    maxFeePerGasMultiplier: 120, // 20% higher than current network conditions
+    maxPriorityFeePerGasMultiplier: 150, // 50% higher than current network conditions
+  }
+);
+```
+
+</TabItem>
+
+<TabItem value="network-errors" label="Network Mismatches">
+
+```typescript
+// ❌ ChainId mismatch
+const userOperation = await smartAccount.createUserOperation(
+  transactions,
+  "https://ethereum-sepolia-rpc.publicnode.com", // Sepolia RPC
+  "https://api.candide.dev/public/v3/11155111", // Sepolia bundler
+  {
+    eip7702Auth: { chainId: 1n }, // Mainnet chainId
+  }
+);
+
+// ✅ Matching network configuration
+const userOperation = await smartAccount.createUserOperation(
+  transactions,
+  "https://ethereum-sepolia-rpc.publicnode.com", // Sepolia RPC
+  "https://api.candide.dev/public/v3/11155111", // Sepolia bundler
+  {
+    eip7702Auth: { chainId: 11155111n }, // Sepolia chainId
+  }
+);
+```
+
+</TabItem>
+</Tabs>
+
+### Error Recovery
+
+```typescript
+async function robustTransactionExecution() {
+  try {
+    const response = await smartAccount.sendUserOperation(userOperation, bundlerRpc);
+    const receipt = await response.included();
+    
+    if (!receipt.success) {
+      console.error("Transaction failed:", receipt.logs);
+      // Handle transaction failure
+    }
+    
+    return receipt;
+  } catch (error) {
+    if (error.code === -32500) {
+      // Transaction rejected by entrypoint simulation
+      console.error("Simulation failed, check transaction data");
+    } else if (error.code === -32501) {
+      // Paymaster rejection
+      console.error("Paymaster rejected transaction");
+    }
+    throw error;
+  }
+}
+```
