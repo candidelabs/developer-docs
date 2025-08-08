@@ -1,211 +1,85 @@
 ---
-title: How to send a sponsored gas user operation using a paymaster with abstractionkit
-description: Learn how to send gasless transactions using a paymaster
-keywords: [paymaster, gasless, sponsored]
+title: Gas Sponsorship with Paymasters
+description: Learn how to sponsor gas fees using public and private gas policies
+keywords: [paymaster, gasless, sponsored, gas-policies, gas-sponsorship]
 image: /img/gasless-transaction-screen.png
 ---
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-# How to Send a Gasless Transaction
+# Gas Sponsorship with Paymaster
 
-Learn how to send gasless transactions using a paymaster. 
+Learn how to sponsor gas fees for UserOperations using Candide's Paymaster [InstaGas](/instagas/overview/), with both public and private gas policies. 
 
-If you are coming from the [previous guide](../getting-started), you only need one additional step. Skip directly to [step 5](./#step-5-get-paymaster-data).
+ 
+> If you need help with the basics of smart accounts, start with the [Getting Started Guide](/wallet/guides/getting-started/).
 
 <img src="/img/gasless-transaction-screen.png" style={{ width: "300px" }} />
 
-## Quickstart
-If you need, you can fork and run this tutorial directly on [Github](https://github.com/candidelabs/abstractionkit-examples/blob/main/sponsor-gas/sponsor-gas.ts)
+## Getting Started
 
-### Prerequisites
+### Setup Gas Policy
 
-- Node and a package manager (yarn or npm)
-- Bundler API key from the [Candide Dashboard](https://dashboard.candide.dev) 
-- An API key from the [dashboard](https://dashboard.candide.dev)
-- A Gas Policy, private or public, created on the dashboard
+If you want to create your own private gas policy to sponsor specific transactions:
 
-### Step 1: Get setup
+1. Create an account on the [Candide Dashboard](https://dashboard.candide.dev)
+2. Navigate to Gas Policies and create a new private policy
+3. Configure sponsorship rules - Set [rules and conditions](/instagas/gas-policies/) for which transactions to sponsor
+4. Fund your policy - Deposit Native Tokens to cover the gas costs
+5. Copy the Policy ID - You'll need this to reference your policy
 
-1. Create a new directory for your project:
+#### Environment Configuration
 
-```bash
-mkdir candide-gasless
-cd candide-gasless
-npx tsc --init
-```
-
-2. Install required dependencies
-
-```bash
-npm i typescript --save-dev
-npm i abstractionkit dotenv
-```
-
-3. Configure Environment Variables
-
-- Create a `.env` file in ./src and add the following environment variables with your own values
-- We will be using Sepolia Testnet for this example
+Add the paymaster configuration to your `.env`:
 
 ```bash title=".env"
-CHAIN_ID=11155111
-BUNDLER_URL=https://api.candide.dev/public/v3/sepolia
-JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
-
-# API key for Sepolia
+# Paymaster service endpoint
 PAYMASTER_RPC=https://api.candide.dev/public/v3/sepolia
 
-# Private gas policy ID 
+# Optional: Your private gas policy ID (if you created one)
 SPONSORSHIP_POLICY_ID=
-
-#account owner pub & private key
-PRIVATE_KEY=YOUR_PRIVATE_KEY
-PUBLIC_ADDRESS=YOUR_PUBLIC_KEY
 ```
 
-4. Create a empty file and a function to run our script
+### Getting Paymaster Data
 
-```ts title="index.ts"
-async function main(): Promise<void> {
-  // Rest of the code will go here...
-}
+Try public policies first, then fallback to private if no public policy matches
 
-main();
-```
-
-### Step 2: Generate Account Address
-
-Let's open up `index.ts`
-
-To generate an account address, we will be using the [Safe Module/Fallback](https://github.com/safe-global/safe-modules/blob/main/modules/4337/contracts/Safe4337Module.sol) as our base smart account. An extension to the Safe contract that implements the ERC4337 interface. We will control the Account with a single EOA owner.
-
-Since this is our first transaction, we will need to deploy the account in the same transaction 
-
-```ts title="index.ts"
-import * as dotenv from "dotenv";
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
-  
-async function main(): Promise<void> {
-  //get values from .env
-  dotenv.config();
-
-  const ownerPublicAddress = process.env.PUBLIC_ADDRESS as string
-  const smartAccount = SafeAccount.initializeNewAccount(
-      [ownerPublicAddress],
-  )
-  console.log("Account address(sender) : " + smartAccount.accountAddress);
-}
-
-main();
-```
-
-Let's run this code
-
-```cli title="Terminal"
-npx ts-node index.ts
-```
-
-If everything worked, you will get the calculate address of the account in the console.
-
-<details>
-<summary>Result example</summary>
-Account address(sender): 0x32afdcfa1e3bfe70d03ecb55b5c8045c26515c9d
-</details>
-
-### Step 3: Generate the callData
-
-We will be creating two transactions to mint 2 NFTs. You can use your fav library (like ethers or viem) to construct the calldata.
-
-```ts title="index.ts"
-import {
-  SafeAccountV0_3_0 as SafeAccount
-  // highlight-start
-  MetaTransaction,
-  getFunctionSelector,
-  createCallData,
-  // highlight-end
-} from "abstractionkit";
-
-const nftContractAddress = "0x9a7af758aE5d7B6aAE84fe4C5Ba67c041dFE5336";
-const mintFunctionSignature =  'mint(address)';
-const mintFunctionSelector =  getFunctionSelector(mintFunctionSignature);
-const mintTransactionCallData = createCallData(
-  mintFunctionSelector, 
-  ["address"], 
-  [smartAccount.accountAddress]
-);
-
-const transaction1 :MetaTransaction ={
-    to: nftContractAddress,
-    value: 0n,
-    data: mintTransactionCallData, 
-}
-
-const transaction2 :MetaTransaction ={
-    to: nftContractAddress, 
-    value: 0n,
-    data: mintTransactionCallData,
-}
-```
-### Step 4: Create UserOperation
-Now the fun part. Call `createUserOperation`, which will determine the nonce, fetch the gas prices, estimate gas limits and return a userop to be signed.
-
-```ts title="index.ts"
-const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string
-const bundlerUrl = process.env.BUNDLER_URL as string
-
-let userOperation = await smartAccount.createUserOperation(
-  [transaction1, transaction2], // you can batch multiple transactions to be executed in one userop
-  jsonRpcNodeProvider, // the node rpc is used to fetch the current nonce and fetch gas prices.
-  bundlerUrl, // the bundler rpc is used to estimate the gas limits
-)
-```
-
-### Step 5: Get Paymaster Data
-
- Sponsor gas for a user operation by first checking for publicly available gas policies set up by third parties. If no matching public gas policy is found for the user operation, you can fall back to a private gas policy.
-
-- **Public Gas Policies**: These are gas policies provided by third parties that do not require a sponsorship policy ID.
-- **Private Gas Policies**: These require a sponsorship policy ID and can be used if no public gas policy matches the user operation.
-
-1. Create a new app on the [dashboard](https://dashboard.candide.dev), and copy the paymaster RPC URL in your .env 
-2. Setup a Private Gas Policy on the dashboard, and copy its sponsor policy ID in your .env
-3. Import `CandidePaymaster` and call the method [createsponsorpaymasteruseroperation](/wallet/abstractionkit/paymaster/#createsponsorpaymasteruseroperation)
-
+> You can also [fork the complete code](https://github.com/candidelabs/abstractionkit-examples/blob/main/sponsor-gas/sponsor-gas.ts) and follow along.
 
 <Tabs>
 <TabItem value="index.ts" label="index.ts">
 
-```ts
-import {
-  // highlight-start
-  CandidePaymaster,
-  // highlight-end
-} from "abstractionkit";
+```ts title="Public first, private fallback"
+import { CandidePaymaster } from "abstractionkit";
 
 const paymasterRPC = process.env.PAYMASTER_RPC as string;
-const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
+const paymaster = new CandidePaymaster(paymasterRPC);
 const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
 
 let paymasterUserOperation;
 let sponsorMetadata;
+
 try {
+  // First, try public gas policies
   [paymasterUserOperation, sponsorMetadata] =
     await paymaster.createSponsorPaymasterUserOperation(
       userOperation,
-      bundlerUrl,
+      bundlerUrl
     );
+  console.log("Sponsored by public gas policy!");
 } catch (error) {
   try {
+    // Fallback to private gas policy
     [paymasterUserOperation, sponsorMetadata] =
       await paymaster.createSponsorPaymasterUserOperation(
         userOperation,
         bundlerUrl,
-        sponsorshipPolicyId,
+        sponsorshipPolicyId
       );
+    console.log("Sponsored by your private gas policy!");
   } catch (finalError) {
-    // Last fallback to propose to the user the option to pay gas in erc-20 tokens 
+    console.log("No gas sponsorship available");
     throw finalError;
   }
 }
@@ -217,107 +91,26 @@ userOperation = paymasterUserOperation;
 
 <TabItem value=".env" label=".env">
 
-```env
+```bash
+# Paymaster service endpoint
 PAYMASTER_RPC=https://api.candide.dev/public/v3/sepolia
+
+# Optional: Your private gas policy ID (if you created one)
 SPONSORSHIP_POLICY_ID=
 ```
 
 </TabItem>
 </Tabs>
 
+#### Complete Runnable Example
 
-### Step 6: Sign and Submit
-
-1. Call `signUserOperation`, which will create a signature for the private key provided of the owner of the Safe.
-
-```ts title="index.ts"
-const chainId = BigInt(process.env.CHAIN_ID as string);
-const privateKey = process.env.PRIVATE_KEY as string;
-
-userOperation.signature = smartAccount.signUserOperation(
-  userOperation,
-  [privateKey],
-  chainId,
-)
-```
-
-2. Use the Bundler RPC to send the userop to the bundler with `sendUserOperation`, and await the return `SendUseroperationResponse` object to confirm the on-chain inclusion of the user operation. 
-
-```ts title="index.ts"
-// highlight-start
-const sendUserOperationResponse = await smartAccount.sendUserOperation(userOperation, bundlerUrl)
-// highlight-end
-
-console.log("UserOperation sent. Waiting to be included ......")
-```
-
-
-3. Track the userOperation and wait for its inclusion onchain 
-```ts
-// highlight-start
-let userOperationReceiptResult = await sendUserOperationResponse.included()
-// highlight-end
-
-console.log("Useroperation receipt received.")
-console.log(userOperationReceiptResult)
-
-if (userOperationReceiptResult.success) {
-    console.log("Two Nfts were minted. The transaction hash is : " + userOperationReceiptResult.receipt.transactionHash)
-} else {
-    console.log("Useroperation execution failed")
-}
-```
-
-Now let's run this code again
-
-```cli title="Terminal"
-npx ts-node index.ts
-```
-
-You've now sent your first sponsored userOperation! If everything went well, you should see the bundler returning a receipt
+Below is a complete example that demonstrates gas sponsorship with public and private policy fallback:
 
 <details>
-<summary>Result</summary>
+<summary>Full Working Example</summary>
 
-```terminal
-Useroperation sent. Waiting to be included ......
-Useroperation receipt received.
-{
-  userOpHash: '0x1acede61123ab7116eb29c797aeaec3c03615c37732ba66428524aebdb4b4514',
-  entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
-  sender: '0xb8741a449d50ed0dcfe395287f85be152884c8d9',
-  nonce: 0n,
-  paymaster: '0x3fe285dcd76bcce4ac92d38a6f2f8e964041e020',
-  actualGasCost: 8078496n,
-  actualGasUsed: 504906n,
-  success: true,
-  logs: '[{"address":"0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000007b44a0000000000000000000000000000000000000000000000000000000000007b44a","logIndex":"0x9a","removed":false,"topics":["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f","0x1acede61123ab7116eb29c797aeaec3c03615c37732ba66428524aebdb4b4514","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9","0x0000000000000000000000003fe285dcd76bcce4ac92d38a6f2f8e964041e020"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"}]',
-  receipt: {
-    blockHash: '0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c',
-    blockNumber: 10419807n,
-    from: '0x3cfdc212769c890907bce93d3d8c2c53de6a7a89',
-    cumulativeGasUsed: 6978990n,
-    gasUsed: 507053n,
-    logs: '[{"address":"0xb8741a449d50ed0dcfe395287f85be152884c8d9","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x","logIndex":"0x90","removed":false,"topics":["0xecdf3a3effea5783a3c4c2140e677577666428d44ed9d474a0b3a4c9943f8440","0x000000000000000000000000a581c4a4db7175302464ff3c06380bc3270b4037"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0xb8741a449d50ed0dcfe395287f85be152884c8d9","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000010000000000000000000000008ecd4ec46d4d2a6b64fe960b3d64e8b94b2234eb000000000000000000000000a581c4a4db7175302464ff3c06380bc3270b40370000000000000000000000000000000000000000000000000000000000000001000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31","logIndex":"0x91","removed":false,"topics":["0x141df868a6331af528e38c83b7aa03edc19be66e37ae67f9285bf4f8e3c6a1a8","0x0000000000000000000000004e1dcf7ad4e460cfd30791ccc4f9c8a4f820ec67"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0x4e1dcf7ad4e460cfd30791ccc4f9c8a4f820ec67","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x00000000000000000000000029fcb43b46531bca003ddc8fcb67ffe91900c762","logIndex":"0x92","removed":false,"topics":["0x4f51faf6c4561ff95f067657e43439f0f856d97c04d9ec9070a6199ad418e235","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x0000000000000000000000004e1dcf7ad4e460cfd30791ccc4f9c8a4f820ec670000000000000000000000003fe285dcd76bcce4ac92d38a6f2f8e964041e020","logIndex":"0x93","removed":false,"topics":["0xd51a9c61267aa6196961883ecf5ff2da6619c37dac0fa92122513fb32c032d2d","0x1acede61123ab7116eb29c797aeaec3c03615c37732ba66428524aebdb4b4514","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x","logIndex":"0x94","removed":false,"topics":["0xbb47ee3e183a558b1a2ff0874b079f3fc5478b7454eacf2bfc5af2ff5878f972"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0xb8741a449d50ed0dcfe395287f85be152884c8d9","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x000000000000000000000000a581c4a4db7175302464ff3c06380bc3270b403700000000000000000000000038869bf66a61cf6bdb996a6ae40d5853fd43b526000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000001048d80ff0a000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000b200d9de104e3386d9a45a61bce269c43e48b534e4e7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041249c58b00d9de104e3386d9a45a61bce269c43e48b534e4e7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041249c58b000000000000000000000000000000000000000000000000000000000000000000000000000000000000","logIndex":"0x95","removed":false,"topics":["0xb648d3644f584ed1c2232d53c46d87e693586486ad0d1175f8656013110b714e"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0xd9de104e3386d9a45a61bce269c43e48b534e4e7","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x","logIndex":"0x96","removed":false,"topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0x0000000000000000000000000000000000000000000000000000000000000000","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9","0x0000000000000000000000000000000000000000000000000000000000000056"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0xd9de104e3386d9a45a61bce269c43e48b534e4e7","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x","logIndex":"0x97","removed":false,"topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0x0000000000000000000000000000000000000000000000000000000000000000","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9","0x0000000000000000000000000000000000000000000000000000000000000057"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0xb8741a449d50ed0dcfe395287f85be152884c8d9","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x","logIndex":"0x98","removed":false,"topics":["0x6895c13664aa4f67288b25d7a21d7aaa34916e355fb9b6fae0a139a9085becb8","0x000000000000000000000000a581c4a4db7175302464ff3c06380bc3270b4037"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0x3fe285dcd76bcce4ac92d38a6f2f8e964041e020","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x0000000000000000000000000000000000000000000000000000000000000000","logIndex":"0x99","removed":false,"topics":["0xa050a122b4c0e369e3385eb6b7cccd8019638b2764de67bec0af99130ddf8471","0x1acede61123ab7116eb29c797aeaec3c03615c37732ba66428524aebdb4b4514","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9","0x0000000000000000000000000000000000000000000000000000000000000000"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"},{"address":"0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789","blockHash":"0xe19e52b4c222c1cdbc765f1a4e196ff4bf40c5550926e02974570e1845e88e2c","blockNumber":"0x9efe5f","data":"0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000007b44a0000000000000000000000000000000000000000000000000000000000007b44a","logIndex":"0x9a","removed":false,"topics":["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f","0x1acede61123ab7116eb29c797aeaec3c03615c37732ba66428524aebdb4b4514","0x000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9","0x0000000000000000000000003fe285dcd76bcce4ac92d38a6f2f8e964041e020"],"transactionHash":"0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa","transactionIndex":"0x1d"}]',
-    logsBloom: '0x0000040000009000000000000000010080000000000000000000000000000000000800000000000000020001000004040010000000000000800002000000000000001000000000000000000c0002000000000000010000080040000000000000020000000a0000000500002000000800008000000100000000000014000000000800010020000200008000000040000000000200000400000000000000000000000004000000000000500000000004000210000000000000000002001000000020200082000000000001000008000000000000002060000000100000000026000000082000010000000000000008100220000000000000000000000010000200',
-    transactionHash: '0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa',
-    transactionIndex: 29n,
-    effectiveGasPrice: 16n
-  }
-}
-Two Nfts were minted. The transaction hash is : 0xf43576a07f39660737a342c99a187eb70ac59d89bc0df92ff3c1bb8a8da370aa
-```
-</details>
-
-You can lookup the hash on explorers that supports user operations like [Blockscout](https://www.blockscout.com/).
-
-In the next guides, we will show how to allow users to pay gas in erc-20s using a paymaster.
-
-
-### Full Example
-Below is the complete example code that you can copy directly to implement the functionality described in the tutorial.
-<details>
-<summary>index.js</summary>
+<Tabs>
+<TabItem value="index.ts" label="index.ts">
 
 ```ts
 import * as dotenv from 'dotenv'
@@ -325,117 +118,158 @@ import * as dotenv from 'dotenv'
 import {
     SafeAccountV0_3_0 as SafeAccount,
     MetaTransaction,
-    calculateUserOperationMaxGasCost,
     CandidePaymaster,
-    UserOperationV7,
     getFunctionSelector,
     createCallData,
 } from "abstractionkit";
 
 async function main(): Promise<void> {
-    //get values from .env
+    // Load environment variables
     dotenv.config()
     const chainId = BigInt(process.env.CHAIN_ID as string)
     const bundlerUrl = process.env.BUNDLER_URL as string
     const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string
+    const paymasterRPC = process.env.PAYMASTER_RPC as string
+    const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID
     const ownerPublicAddress = process.env.PUBLIC_ADDRESS as string
     const ownerPrivateKey = process.env.PRIVATE_KEY as string
-    const paymasterRPC = process.env.PAYMASTER_RPC as string;
     
-    //initializeNewAccount only needed when the smart account
-    //have not been deployed yet for its first useroperation.
-    //You can store the accountAddress to use it to initialize 
-    //the SafeAccount object for the following useroperations
-    let smartAccount = SafeAccount.initializeNewAccount(
-        [ownerPublicAddress],
-    )
+    // Create smart account
+    let smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress])
+    console.log("Smart Account Address:", smartAccount.accountAddress)
 
-    //After the account contract is deployed, no need to call initializeNewAccount
-    //let smartAccount = new SafeAccount(accountAddress)
-
-    console.log("Account address(sender) : " + smartAccount.accountAddress)
-
-    //create two meta transaction to mint two NFTs
-    //you can use favorite method (like ethers.js) to construct the call data 
+    // Create example transactions (minting NFTs)
     const nftContractAddress = "0x9a7af758aE5d7B6aAE84fe4C5Ba67c041dFE5336";
-    const mintFunctionSignature =  'mint(address)';
-    const mintFunctionSelector =  getFunctionSelector(mintFunctionSignature);
+    const mintFunctionSignature = 'mint(address)';
+    const mintFunctionSelector = getFunctionSelector(mintFunctionSignature);
     const mintTransactionCallData = createCallData(
         mintFunctionSelector, 
         ["address"],
         [smartAccount.accountAddress]
     );
-    const transaction1 :MetaTransaction ={
+    
+    const transaction1: MetaTransaction = {
         to: nftContractAddress,
         value: 0n,
         data: mintTransactionCallData,
     }
 
-    const transaction2 :MetaTransaction ={
+    const transaction2: MetaTransaction = {
         to: nftContractAddress,
         value: 0n,
         data: mintTransactionCallData,
     }
 
-    //createUserOperation will determine the nonce, fetch the gas prices,
-    //estimate gas limits and return a useroperation to be signed.
-    //you can override all these values using the overrides parameter.
+    // Create UserOperation
     let userOperation = await smartAccount.createUserOperation(
-		[
-            //You can batch multiple transactions to be executed in one useroperation.
-            transaction1, transaction2,
-        ],
-        jsonRpcNodeProvider, //the node rpc is used to fetch the current nonce and fetch gas prices.
-        bundlerUrl, //the bundler rpc is used to estimate the gas limits.
-	)
-
-  
-
-    let paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC)
-
-    let [paymasterUserOperation, _sponsorMetadata] =
-      await paymaster.createSponsorPaymasterUserOperation(
-        userOperation,
+        [transaction1, transaction2],
+        jsonRpcNodeProvider,
         bundlerUrl
-      );
-    userOperation = paymasterUserOperation as UserOperationV7;
-
-    const cost = calculateUserOperationMaxGasCost(userOperation)
-    console.log("This useroperation may cost upto : " + cost + " wei")
-    console.log("This example uses a Candide paymaster to sponsor the useroperation, so there is not need to fund the sender account.")
-
-    //Safe is a multisig that can have multiple owners/signers
-    //signUserOperation will create a signature for the provided
-    //privateKeys
-    userOperation.signature = smartAccount.signUserOperation(
-		userOperation,
-        [ownerPrivateKey],
-        chainId,
-	)
-    console.log(userOperation)
-
-    //use the bundler rpc to send a userOperation
-    //sendUserOperation will return a SendUseroperationResponse object
-    //that can be awaited for the useroperation to be included onchain
-    const sendUserOperationResponse = await smartAccount.sendUserOperation(
-        userOperation, bundlerUrl
     )
 
-    console.log("Useroperation sent. Waiting to be included ......")
-    //included will return a UserOperationReceiptResult when 
-    //useroperation is included onchain
+    // Add paymaster sponsorship - try public first, fallback to private
+    const paymaster = new CandidePaymaster(paymasterRPC)
+    
+    let paymasterUserOperation;
+    let sponsorMetadata;
+    
+    try {
+        // Try public gas policies first
+        console.log("🔍 Checking for public gas policies...")
+        [paymasterUserOperation, sponsorMetadata] =
+            await paymaster.createSponsorPaymasterUserOperation(
+                userOperation,
+                bundlerUrl
+            );
+        console.log("✅ Sponsored by public gas policy!")
+        
+    } catch (error) {
+        try {
+            // Fallback to private gas policy
+            console.log("🔍 Trying private gas policy fallback...")
+            [paymasterUserOperation, sponsorMetadata] =
+                await paymaster.createSponsorPaymasterUserOperation(
+                    userOperation,
+                    bundlerUrl,
+                    sponsorshipPolicyId
+                );
+            console.log("✅ Sponsored by private gas policy!")
+            
+        } catch (finalError) {
+            console.log("❌ No gas sponsorship available");
+            throw finalError;
+        }
+    }
+    
+    userOperation = paymasterUserOperation;
+    console.log("💰 Transaction will be gasless for the user!")
+
+    // Sign the UserOperation
+    userOperation.signature = smartAccount.signUserOperation(
+        userOperation,
+        [ownerPrivateKey],
+        chainId
+    )
+
+    // Submit the sponsored UserOperation
+    const sendUserOperationResponse = await smartAccount.sendUserOperation(
+        userOperation, 
+        bundlerUrl
+    )
+
+    console.log("📤 Sponsored UserOperation sent. Waiting for confirmation...")
+    
+    // Wait for transaction to be included
     let userOperationReceiptResult = await sendUserOperationResponse.included()
 
-    console.log("Useroperation receipt received.")
+    console.log("📋 UserOperation receipt received.")
     console.log(userOperationReceiptResult)
-    if(userOperationReceiptResult.success){
-        console.log("Two Nfts were minted. The transaction hash is : " + userOperationReceiptResult.receipt.transactionHash)
-    }else{
-        console.log("Useroperation execution failed")
+    
+    if (userOperationReceiptResult.success) {
+        console.log("🎉 Gasless transaction successful! Hash:", userOperationReceiptResult.receipt.transactionHash)
+    } else {
+        console.log("❌ UserOperation execution failed")
     }
 }
 
-main()
+main().catch(console.error)
 ```
 
+</TabItem>
+
+<TabItem value=".env" label=".env">
+
+```bash
+CHAIN_ID=11155111
+BUNDLER_URL=https://api.candide.dev/public/v3/sepolia
+JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
+PAYMASTER_RPC=https://api.candide.dev/public/v3/sepolia
+
+# Optional: Your private gas policy ID
+SPONSORSHIP_POLICY_ID=
+
+# Your EOA credentials
+PRIVATE_KEY=your_private_key_here
+PUBLIC_ADDRESS=your_public_address_here
+```
+
+</TabItem>
+</Tabs>
+
 </details>
+
+## Gas Policies Overview
+
+Candide's Paymaster supports two types of gas policies:
+
+### Public Gas Policies
+- Set up by external applications - Apps like PoolTogether and Revoke.cash sponsor gas for their users
+- Application-specific - Each policy targets specific contract interactions or user flows
+- No setup required - Available automatically when your UserOperation matches their criteria
+- Best for - Users interacting with supported dApps and protocols
+
+### Private Gas Policies  
+- Your custom rules - You create and fund policies for your specific application
+- Full control - Set custom sponsorship conditions, limits, and restrictions
+- Your funding - You deposit native tokens to sponsor transactions that match your criteria
+- Best for - Wallets wanting to sponsor their users' transactions
