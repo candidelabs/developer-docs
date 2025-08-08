@@ -1,45 +1,69 @@
 ---
-title: Introduction to Candide Account Abstraction
-description: A powerful toolkit to create, customize, and offer Smart Wallets. Explore ERC-4337 support, account abstraction, paymaster integration, bundler features, and seamless management of Smart Wallets
+title: Candide Developer Platform
+description: Complete toolkit for building user-friendly Ethereum applications with Smart Accounts. Features ERC-4337 and EIP-7702 support, gas abstraction, social login, and advanced transaction capabilities
 image: /img/posters/atelier-meta.png
 keywords: [erc-4337, account abstraction, paymaster, bundler, Smart Wallets]
 sidebar_position: 1
 ---
-# Intro to Candide
+# Welcome to Candide
 
-Candide is the most complete smart account toolset with support for both ERC-4337 and [EIP-7702](/wallet/guides/getting-started-eip-7702/) Account Abstraction.
+**Build User-Friendly Ethereum apps with Smart Accounts**
 
-## UX Benefits
+Candide provides a complete developer toolkit for Ethereum Account Abstraction, supporting ERC-4337 and EIP-7702.
 
-- **Gas Abstraction**
-  - [Sponsor gas](/wallet/guides/send-gasless-tx/) with rules and policies
-  - Offer [gas payments in erc-20](/wallet/guides/pay-gas-in-erc20/) tokens
-- **Authentication made easy** 
-  - [Passkeys Login](/wallet/plugins/passkeys/)
-  - [Email/Social Login](/wallet/guides/authentication/#social--email)
-- **Programmable Transactions**
-  - Use [Spending Limits](/wallet/plugins/allowance) to offer subscriptions and reccuring/scheduled payments.
-  - [Batch multiple transactions](/wallet/guides/getting-started/#step-4-create-useroperation) into one.
-- **Familiar Security**
-  - Account Recovery with [trusted contracts](/wallet/plugins/recovery-with-guardians) or with traditional [email/sms](/wallet/recovery/auth-api/)
-  - Two Factor Auth using [Multisig](/wallet/guides/multisig/)
+Transform traditional wallet limitations into powerful Smart Accounts—with gasless transactions, social login, and battle-tested infrastructure that just works.
 
-And that's only the tip of the iceberg. Because each account is a smart contract, contracts are programmable and enable arbitrarily advanced transaction functionalities. Unlike EOAs, which are limited by design.
+## Why Smart Accounts?
 
-## Products
+Smart accounts eliminate the biggest UX barriers in Web3:
+- No more gas tokens: Users can pay fees in any ERC-20 token or have fees sponsored
+- Simplified onboarding: Login with email, social accounts, or passkeys instead of managing seed phrases  
+- Enhanced security: Built-in recovery, multisig support, and spending limits
+- Batch transactions: Execute multiple operations atomically in a single transaction
 
-- **AbstractionKit SDK**: A Typescript library to build and send UserOperations, with first class support for *Safe* Accounts and *Simple* Accounts.
-- **InstaGas**: A no-code platform to sponsor gas fees for end-users using rules and policies
-- **API**
-  - **Bundler**: Nodes extension on all EVM compatible chains to send smart wallet type transactions
-  - **Paymaster**: Off-chain verification API facilitating gas sponsorship for gasless and gas payments in erc-20 token
+## Core Features
 
+### Gas Abstraction
+- Gasless transactions: [Sponsor user fees](/wallet/guides/send-gasless-tx/) with flexible rules and policies
+- ERC-20 gas payments: Let users [pay gas in any token](/wallet/guides/pay-gas-in-erc20/) (USDC, DAI, etc.)
+
+### Modern Authentication
+- Passkey integration: [Onchain WebAuthn](/wallet/plugins/passkeys/) support for biometric login
+- Social login: [Email and OAuth](/wallet/guides/authentication/#social--email) integration
+
+### Advanced Transactions  
+- Batch operations: [Execute multiple transactions](/wallet/guides/getting-started/#step-4-create-useroperation) atomically
+- Spending controls: [Set limits and policies](/wallet/plugins/allowance) for subscriptions and recurring payments
+
+### Security
+- Account recovery: [Social Recovery](/wallet/plugins/recovery-with-guardians) or [traditional](/wallet/recovery/auth-api/) recovery options
+- Multi-signature: A single account controlled with [multiple signatures](/wallet/guides/multisig/)
+
+*Smart accounts are programmable contracts, unlocking transaction capabilities impossible with traditional EOAs.*
+
+## Developer Tools
+
+### AbstractionKit SDK
+TypeScript library for building and sending UserOperations with native support for Safe (Gnosis Safe) Accounts and EIP-7702 Accounts. 
+Includes utilities for transaction batching, gas estimation, and account deployment. Learn more on [why you should 
+choose abstractionkit](/wallet/abstractionkit/introduction/).
+
+### Infrastructure APIs
+- [Bundler](/wallet/bundler/rpc-methods/): ERC-4337 compliant nodes on all major EVM chains for submitting UserOperations to the mempool
+- [Paymaster](/wallet/paymaster/rpc-methods/): Gas abstraction service supporting both sponsorship and ERC-20 token payments with configurable policies
+- [Account Recovery Service](/wallet/recovery/overview/): Offer users the ability to secure their accounts using email/sms coupled with an alert system
+
+Access [Candide's Dashboard](https://dashboard.candide.dev) to manage your API keys and configure your integration.
+
+### InstaGas  
+No-code platform for configuring gas sponsorship policies. Set spending limits, whitelist contracts, and manage paymaster rules without deploying custom smart contracts.
+[Learn more on InstaGas](/instagas/overview/)
 
 ## Chains supported
 
 Candide is available on all major EVM equivalent networks. If you would like to see a network supported, reach out to us.
 
-import {NetworkList} from "/src/components/NetworkList";
+import { NetworkList } from "/src/components/NetworkList";
 
 <NetworkList />
 
@@ -48,7 +72,7 @@ import {NetworkList} from "/src/components/NetworkList";
 You can reach out to us at any time for questions, issues, concerns, product ideas, or random thoughts. Here are some ways to do so:
 
 - Join our [Discord](https://discord.gg/7R4g9XcxDQ)
-- Tweet us on [@candidelabs](https://twitter.com/candidelabs)
+- Follow us on Twitter (X) [@candidelabs](https://twitter.com/candidelabs)
 - Email us at team@candidelabs.com
 - Reach us on telegram [@heymarcopolo](https://t.me/heymarcopolo)
 
@@ -58,29 +82,33 @@ We have night owls and early birds on our team, so you can expect to hear back f
 
 import CardList from "/src/components/CardList";
 
+### Quick Start
+
+Get started in under 5 minutes:
+
+```bash
+npm install abstractionkit
+```
+
+### Starter Guides
 export const GETTING_STARTED_ITEMS = [
   {
-    title: "Send your First Transaction",
+    title: "Send your First Gasless Transaction",
     description:
-      "Learn how to create a smart wallet and to send your first erc-4337 UserOperation",
-    route: "/wallet/guides/getting-started",
-  },
-  {
-    title: "Send a Gasless Transaction",
-    description: "Learn how to send gasless transactions using a paymaster",
+      "Create a smart account and submit your first Gasless UserOperation with batched transactions",
     route: "/wallet/guides/getting-started",
   },
   {
     title: "Pay Gas in ERC-20",
     description:
-      "Learn how to abstract gas away by letting users pay gas in ERC-20",
+      "Let users pay transaction fees in USDC, DAI, or any ERC-20 token",
     route: "/wallet/guides/pay-gas-in-erc20",
   },
-    {
-    title: "Multisig",
+  {
+    title: "EIP-7702 Account Upgrades",
     description:
-      "Learn how to create a multisig wallet and sign with all parties a userOperation",
-    route: "/wallet/guides/multisig",
+      "Upgrade existing EOAs to smart accounts with EIP-7702 delegation",
+    route: "/wallet/guides/getting-started-eip-7702",
   },
 ];
 
