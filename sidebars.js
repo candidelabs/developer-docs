@@ -295,7 +295,7 @@ const sidebars = {
         {
           type: "doc",
           id: "wallet/guides/send-gasless-tx",
-          label: "Send Gasless Transactions"
+          label: "Gas Sponsorship"
         },
         {
           type: "doc",
