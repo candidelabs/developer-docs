@@ -1,28 +1,47 @@
 ---
-title: How to send your first smart account user operation with abstractionkit
-description: Learn how to create a smart wallet and to send your first erc-4337 user operation 
-keywords: [create-smart-wallet, initCode, userOperation]
+title: Your First Gasless Smart Account Transaction
+description: Create a smart account and send gasless batched transactions using AbstractionKit in under 10 minutes
+keywords: [smart-account, userOperation, batch-transactions, abstractionkit]
 ---
 
-# Building Your First UserOperation
+# Your First Gasless Smart Account Transaction
 
-Learn how to create a smart wallet and to send your first userOperation
+**Create a Smart Account and send gasless batched transactions in under 10 minutes**
 
-Candide builds open-source software for ERC-4337 account abstraction standard. This guarantees smooth compatibility with any platform that follow the ERC-4337 protocol, fostering effortless integration, and providing the flexibility of independent hosting to avoid any vendor lock-in.
+This guide walks you through creating your first smart account and sending multiple gasless transactions in a single UserOperation. You'll learn the core concepts of account abstraction while building a practical example that requires no ETH for gas fees.
+
+#### What You'll Build
+
+By the end of this tutorial, you'll have:
+- Created a smart contract wallet (smart account)
+- Batched two NFT minting transactions into one operation
+- Sent your first gasless UserOperation using a paymaster
+
+#### What is a UserOperation?
+
+A UserOperation is how smart accounts interact with Ethereum. Unlike regular transactions that go directly to the network, UserOperations are:
+- **Batched**: Multiple transactions can be grouped together
+- **Gas flexible**: Can be sponsored or paid with any ERC-20 token
+- **Programmable**: Include custom validation and execution logic
+
 ## Quickstart
 <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/t1ycwhN-Lvw?si=OMAiB7lK50XMkF68" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-### Prerequisites
+## Prerequisites
 
-- Node and a package manager (yarn or npm)
-- Bundler API key from the [Candide Dashboard](https://dashboard.candide.dev) 
-- Some Sepolia ETH. Find Faucets [here](https://ethereum.org/en/developers/docs/networks/#sepolia)
-- If you need, fork the full example of this tutorial on [Github](https://github.com/candidelabs/abstractionkit-examples/blob/main/batch-transactions/batch-transactions.ts)
+Before starting, make sure you have:
+
+- **Node.js 18+** and npm/yarn
+- **Basic TypeScript knowledge** - We'll explain the smart account concepts
+
+:::tip Complete Example
+You can also [fork the complete code](https://github.com/candidelabs/abstractionkit-examples/blob/main/sponsor-gas/sponsor-gas.ts) and follow along.
+:::
 
 
-### Step 1: Get setup
+## Step 1: Project Setup
 
-1. Create a new directory for your project:
+#### Create Project Directory
 
 ```bash
 mkdir candide-smart-account
@@ -30,179 +49,236 @@ cd candide-smart-account
 npx tsc --init
 ```
 
-2. Install required dependencies
+#### Install Dependencies
 
 ```bash
-npm i typescript --save-dev
-npm i abstractionkit dotenv 
+npm install typescript --save-dev
+npm install abstractionkit dotenv
 ```
 
-3. Configure Environment Variables
+**What each package does:**
+- `abstractionkit` - Candide's SDK for smart account operations
+- `dotenv` - Loads environment variables from .env file
 
-- Create a `.env` file and add the following environment variables with your own values
-- We will be using Sepolia Testnet for this example
+#### Configure Environment Variables
+
+Create a `.env` file in your project root:
 
 ```bash title=".env"
 CHAIN_ID=11155111
 BUNDLER_URL=https://api.candide.dev/public/v3/sepolia
 JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
+PAYMASTER_URL=https://api.candide.dev/public/v3/sepolia
+SPONSORSHIP_POLICY_ID= # optional
 
-#account owner pub & private key
-PRIVATE_KEY=YOUR_PRIVATE_KEY
-PUBLIC_ADDRESS=YOUR_PUBLIC_KEY
+PRIVATE_KEY=YOUR_PRIVATE_KEY_HERE
+PUBLIC_ADDRESS=YOUR_PUBLIC_ADDRESS_HERE
 ```
 
-4. Create a empty file and a function to run our script
+#### Create Main Script
+
+Create an `index.ts` file:
 
 ```ts title="index.ts"
 async function main(): Promise<void> {
-  // Rest of the code will go here...
+  // We'll build our smart account logic here
 }
 
-main();
+main().catch(console.error);
 ```
 
-### Step 2: Generate Account Address
+## Step 2: Create Your Smart Account
 
-Let's open up `index.ts`
+#### Understanding Smart Accounts
 
-To generate an account address, we will be using the [Safe Module/Fallback](https://github.com/safe-global/safe-modules/blob/main/modules/4337/contracts/Safe4337Module.sol) as our base smart account. An extension to the Safe contract that implements the ERC4337 interface. We will control the Account with a single EOA owner.
+Smart accounts are smart contracts. Unlike regular wallets (EOAs), they can:
+- Execute multiple transactions atomically
+- Have custom validation logic
+- Be controlled by multiple signers or different signature schemes
 
-Since this is our first transaction, we will need to deploy the account in the same transaction 
+In this guide, we will use Safe's implementation, which is battle-tested and widely adopted.
+
+#### Generate Account Address
 
 ```ts title="index.ts"
 import * as dotenv from "dotenv";
 import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
   
 async function main(): Promise<void> {
-  //get values from .env
+  // Load environment variables
   dotenv.config();
 
-  const ownerPublicAddress = process.env.PUBLIC_ADDRESS as string
-  const smartAccount = SafeAccount.initializeNewAccount(
-      [ownerPublicAddress],
-  )
-  console.log("Account address(sender) : " + smartAccount.accountAddress);
+  const ownerPublicAddress = process.env.PUBLIC_ADDRESS as string;
+  
+  // Create a new smart account controlled by your EOA
+  const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+  
+  console.log("Smart Account Address:", smartAccount.accountAddress);
 }
 
-main();
+main().catch(console.error);
 ```
 
-Let's run this code
+#### Test Your Setup
 
-```cli title="Terminal"
+Run the code to generate your smart account address:
+
+```bash
 npx ts-node index.ts
 ```
 
-If everything worked, you will get the calculate address of the account in the console.
+**Expected output:**
+```
+Smart Account Address: 0x32afdcfa1e3bfe70d03ecb55b5c8045c26515c9d
+```
 
-<details>
-<summary>Result example</summary>
-Account address(sender): 0x32afdcfa1e3bfe70d03ecb55b5c8045c26515c9d
-</details>
-
-:::tip Fund the Account
-Now that you have generated the smart account, go ahead and fund it with some Sepolia ETH here.
-
-In another example, we will show you how to sponsor transactions with a paymaster. 
+:::info How It Works
+The `initializeNewAccount()` method deterministically computes your smart account address locally, using only the provided inputs—no network calls or API requests are made. 
+The account itself is not deployed at this stage; deployment happens automatically when you send your first transaction.
 :::
 
-### Step 3: Generate the callData
 
-We will be creating two transactions to mint 2 NFTs. You can use your fav library (like ethers or viem) to construct the calldata.
+## Step 3: Prepare Your Transactions
+
+#### What We're Building
+
+We'll create two NFT minting transactions and batch them together. This demonstrates the power of smart accounts - executing multiple operations atomically.
+
+#### Understanding Transaction Data
+
+Every transaction needs three things:
+- `to`: The contract address to interact with
+- `value`: ETH amount to send (0 for most contract calls)
+- `data`: Encoded function call data
+
+#### Build the Transactions
+
+Add this to your `index.ts` (after the account creation code):
 
 ```ts title="index.ts"
 import {
-  SafeAccountV0_3_0 as SafeAccount
-  // highlight-start
+  SafeAccountV0_3_0 as SafeAccount,
   MetaTransaction,
   getFunctionSelector,
   createCallData,
-  // highlight-end
 } from "abstractionkit";
 
+// Inside your main() function, after creating smartAccount:
+
+// NFT contract we'll interact with (a test contract on Sepolia)
 const nftContractAddress = "0x9a7af758aE5d7B6aAE84fe4C5Ba67c041dFE5336";
-const mintFunctionSignature =  'mint(address)';
-const mintFunctionSelector =  getFunctionSelector(mintFunctionSignature);
+
+// Prepare the function call data
+const mintFunctionSignature = 'mint(address)';
+const mintFunctionSelector = getFunctionSelector(mintFunctionSignature);
 const mintTransactionCallData = createCallData(
   mintFunctionSelector, 
   ["address"], 
-  [smartAccount.accountAddress]
+  [smartAccount.accountAddress] // Mint NFT to our smart account
 );
 
-const transaction1 :MetaTransaction ={
-    to: nftContractAddress,
-    value: 0n,
-    data: mintTransactionCallData, 
-}
+// Create two identical transactions (we'll mint 2 NFTs)
+const transaction1: MetaTransaction = {
+  to: nftContractAddress,
+  value: 0n, // No ETH needed for minting
+  data: mintTransactionCallData, 
+};
 
-const transaction2 :MetaTransaction ={
-    to: nftContractAddress, 
-    value: 0n,
-    data: mintTransactionCallData,
-}
+const transaction2: MetaTransaction = {
+  to: nftContractAddress, 
+  value: 0n,
+  data: mintTransactionCallData,
+};
+
+console.log("Prepared 2 NFT minting transactions");
 ```
 
-### Step 4: Create UserOperation
-Now the fun part. Call `createUserOperation`, which will determine the nonce, fetch the gas prices, estimate gas limits and return a userop to be signed. Use `calculateUserOperationMaxGasCost` to calculate its cost.
+:::info Why Batch Transactions?
+Instead of sending two separate transactions, we'll batch them into one UserOperation. This gives your app UX a one click experience.
+:::
+
+## Step 4: Create UserOperation
+
+```ts title="index.ts"
+const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string;
+const bundlerUrl = process.env.BUNDLER_URL as string;
+
+// Create the UserOperation (batching both transactions)
+let userOperation = await smartAccount.createUserOperation(
+  [transaction1, transaction2], // Batch both NFT mints together
+  jsonRpcNodeProvider, // Used for nonce and gas price data
+  bundlerUrl // Used for gas limit estimation
+);
+```
+
+## Step 5: Get Paymaster Data
+
+We'll use a paymaster to sponsor the gas fees, making this transaction completely gasless for the user.
 
 ```ts title="index.ts"
 import {
-  ...
+  SafeAccountV0_3_0 as SafeAccount,
+  MetaTransaction,
+  getFunctionSelector,
+  createCallData,
   // highlight-start
-  calculateUserOperationMaxGasCost
+  CandidePaymaster,
   // highlight-end
 } from "abstractionkit";
 
-const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string
-const bundlerUrl = process.env.BUNDLER_URL as string
+const paymasterUrl = process.env.PAYMASTER_URL as string;
+const paymaster = new CandidePaymaster(paymasterUrl);
+const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
 
-let userOperation = await smartAccount.createUserOperation(
-  [transaction1, transaction2], // you can batch multiple transactions to be executed in one userop
-  jsonRpcNodeProvider, // the node rpc is used to fetch the current nonce and fetch gas prices.
-  bundlerUrl, // the bundler rpc is used to estimate the gas limits
-)
+let [paymasterUserOperation, _sponsorMetadata] = await paymaster.createSponsorPaymasterUserOperation(
+    userOperation, 
+    bundlerUrl, 
+    sponsorshipPolicyId // sponsorshipPolicyId will have no effect if empty
+  ) 
 
-const cost = calculateUserOperationMaxGasCost(userOperation)
-console.log("This useroperation may cost upto : " + cost + " wei")
-console.log("Please fund the sender account : " + userOperation.sender +" with more than " + cost + " wei")
+userOperation = paymasterUserOperation;
 ```
 
-### Step 5: Sign and Submit
+## Step 6: Sign and Submit
 
-1. Call `signUserOperation`, which will create a signature for the private key provided of the owner of the Safe.
+#### Sign the UserOperation
+
+Your smart account needs to be authorized by your EOA. Add this signing code:
 
 ```ts title="index.ts"
 const chainId = BigInt(process.env.CHAIN_ID as string);
 const privateKey = process.env.PRIVATE_KEY as string;
 
+// Sign the UserOperation with your private key
 userOperation.signature = smartAccount.signUserOperation(
   userOperation,
-  [privateKey],
+  [privateKey], // Array because Safe supports multiple signers
   chainId,
-)
+);
+
+console.log("UserOperation signed successfully");
 ```
 
-:::info
-Since Safe is a multisig wallet, `signUserOperation` can take an array of private keys for multiple owners of the Account. 
-:::
+#### Submit to Network
 
-2. Use the Bundler RPC to send the userop to the bundler with `sendUserOperation`, and await the return `SendUseroperationResponse` object to confirm the on-chain inclusion of the user operation. 
+Now send your UserOperation to the bundler:
 
 ```ts title="index.ts"
-// highlight-start
-const sendUserOperationResponse = await smartAccount.sendUserOperation(userOperation, bundlerUrl)
-// highlight-end
+// Submit the UserOperation
+const sendUserOperationResponse = await smartAccount.sendUserOperation(
+  userOperation, 
+  bundlerUrl
+);
 
-console.log("UserOperation sent. Waiting to be included ......")
+console.log("UserOperation submitted! Waiting for confirmation...");
 ```
 
+#### Wait for Confirmation
 
-3. Track the userOperation and wait for its inclusion onchain 
-```ts
-// highlight-start
+Track your UserOperation until it's included in a block:
+
+```ts title="index.ts"
 let userOperationReceiptResult = await sendUserOperationResponse.included()
-// highlight-end
 
 console.log("Useroperation receipt received.")
 console.log(userOperationReceiptResult)
@@ -214,16 +290,19 @@ if (userOperationReceiptResult.success) {
 }
 ```
 
-Now let's run this code again
+#### Run Your Complete Code
 
-```cli title="Terminal"
+Execute your smart account transaction:
+
+```bash
 npx ts-node index.ts
 ```
 
-You've now sent your first user operation! If everything went well, you should see the bundler returning a user operation receipt
+**Expected output:**
 
 <details>
-<summary>Result</summary>
+
+<summary>Example Receipt Result</summary>
 
 ```terminal
 Useroperation sent. Waiting to be included ......
@@ -256,11 +335,10 @@ Two Nfts were minted. The transaction hash is : 0xf43576a07f39660737a342c99a187e
 
 </details>
 
-You can lookup the hash on explorers that supports user operations like [Blockscout](https://www.blockscout.com/).
+🎉 **Congratulations!** You've successfully sent your first batched gasless smart account transaction.
 
-In the next guides, we will show how to use sponsored gas policies using paymasters.
+## Full Example
 
-### Full Example
 Below is the complete example code that you can copy directly to implement the functionality described in the tutorial.
 <details>
 <summary>index.js</summary>
@@ -271,7 +349,7 @@ import * as dotenv from 'dotenv'
 import { 
     SafeAccountV0_3_0 as SafeAccount,
     MetaTransaction,
-    calculateUserOperationMaxGasCost,
+    CandidePaymaster,
     getFunctionSelector,
     createCallData,
 } from "abstractionkit";
@@ -282,6 +360,7 @@ async function main(): Promise<void> {
     const chainId = BigInt(process.env.CHAIN_ID as string)
     const bundlerUrl = process.env.BUNDLER_URL as string
     const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string
+    const paymasterURL = process.env.PAYMASTER_URL as string
     const ownerPublicAddress = process.env.PUBLIC_ADDRESS as string
     const ownerPrivateKey = process.env.PRIVATE_KEY as string
 
@@ -332,13 +411,19 @@ async function main(): Promise<void> {
         bundlerUrl, //the bundler rpc is used to estimate the gas limits.
 	)
 
-    const cost = calculateUserOperationMaxGasCost(userOperation)
-    console.log("This useroperation may cost upto : " + cost + " wei")
-    console.log(
-        "Please fund the sender account : " + 
-        userOperation.sender +
-        " with more than " + cost + " wei"
-    )
+    // Get paymaster data to sponsor the transaction
+    const paymasterUrl = process.env.PAYMASTER_URL as string;
+    const paymaster: CandidePaymaster = new CandidePaymaster(paymasterUrl);
+    const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
+
+    let [paymasterUserOperation, _sponsorMetadata] = await paymaster.createSponsorPaymasterUserOperation(
+        userOperation, 
+        bundlerUrl, 
+        sponsorshipPolicyId // sponsorshipPolicyId will have no effect if empty
+    ) 
+    userOperation = paymasterUserOperation;
+    
+    console.log("Transaction will be sponsored - no ETH required!");
  
     //Safe is a multisig that can have multiple owners/signers
     //signUserOperation will create a signature for the provided
@@ -375,3 +460,35 @@ main()
 ```
 
 </details>
+
+## Troubleshooting
+
+**"Insufficient funds" error** 
+- Make sure your smart account address has enough Sepolia ETH, or are using a paymaster to sponsor gas fees
+
+**"Invalid signature" error**
+- Verify your `PRIVATE_KEY` matches your `PUBLIC_ADDRESS`
+- Ensure you're using the correct chain ID
+
+**Network/timeout errors**
+- Try a different node endpoint if the current one is down
+- Check your internet connection
+
+#### Getting Help
+
+If you're still stuck:
+- Ask questions in abstractionkit's [GitHub Discussions](https://github.com/candidelabs/abstractionkit/discussions)
+- Join our [Discord](https://discord.gg/7R4g9XcxDQ)
+- Check the [complete example code](https://github.com/candidelabs/abstractionkit-examples/blob/main/batch-transactions/batch-transactions.ts)
+
+You can view your transaction on block explorers that support UserOperations like [Blockscout](https://www.blockscout.com/).
+
+## What's Next?
+
+Now that you've mastered the basics, explore more advanced smart account features:
+
+#### Recommended Next Steps
+
+1. **[Pay Gas in ERC-20](/wallet/guides/pay-gas-in-erc20)** - Let users pay fees with USDC or other tokens  
+2. **[Passkeys](/wallet/plugins/passkeys/)** - Let users secure their account with biometrics login
+2. **[Enable Account Recovery](/wallet/plugins/recovery-with-guardians/)** - Let users add recovery methods through guardians or traditional sms/email
