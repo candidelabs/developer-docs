@@ -228,7 +228,7 @@ export const worldchainList = [
   },
   {
     token: "WLD",
-    logo: "/img/tokens/world-logo.png",
+    logo: "/img/networks/480.svg",
     address: "0x2cFc85d8E48F8EAB294be644d9E25C3030863003",
     blockExplorer: "https://www.worldscan.org/token/",
   },

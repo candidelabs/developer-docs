@@ -59,14 +59,14 @@ export function NetworkList() {
           marginRight: "10px",
         }}
       />
-      <img
+      {/* <img
         src="/img/networks/43114.png"
         alt="Avalanche"
         style={{
           width: "45px",
           marginRight: "10px",
         }}
-      />
+      /> */}
       <img
         src="/img/networks/56.png"
         alt="BnB Chain"
@@ -76,7 +76,7 @@ export function NetworkList() {
         }}
       />
       <img
-        src="/img/tokens/world-logo.svg"
+        src="/img/networks/480.svg"
         alt="World Chain"
         style={{
           width: "45px",
