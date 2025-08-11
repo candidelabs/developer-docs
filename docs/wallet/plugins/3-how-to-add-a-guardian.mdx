@@ -1,0 +1,264 @@
+---
+title: Enable Recovery Module and Add Guardians
+description: Learn how to enable the Social Recovery Module and add trusted guardians for your users' Safe accounts to provide secure account recovery functionality
+keywords: [social-recovery, guardians, account-recovery, safe-module, recovery-module, account-protection]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Enable Recovery Module and Add Guardians
+
+Learn how to enable the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/) and add trusted guardians for your users' Safe accounts to provide secure account recovery functionality.
+
+> If you need help with the basics of Smart Accounts, check out the [Getting Started Guide](/wallet/guides/getting-started/).
+
+## Quickstart
+
+> You can also [fork the complete code](https://github.com/candidelabs/abstractionkit-examples/blob/main/recovery/recovery.ts) and follow along.
+
+### Installation
+
+- `abstractionkit` provides the core functionality for interacting with social recovery module smart contracts and constructing calldata. 
+- `safe-recovery-service-sdk` adds optional API services including alerts, recovery via email/SMS, and additional recovery features.
+
+<Tabs>
+<TabItem value="npm" label="npm">
+
+```bash
+npm i abstractionkit safe-recovery-service-sdk
+```
+
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash
+yarn add abstractionkit safe-recovery-service-sdk
+```
+</TabItem>
+</Tabs>
+
+### Initialize Recovery Module
+
+Initialize a SocialRecoveryModule instance. By default, the grace period for recovery is set to 3 days. 
+
+```ts
+import { SocialRecoveryModule } from "abstractionkit";
+
+const srm = new SocialRecoveryModule(); // 3 days
+```
+
+If you need a different grace period, you can override it by providing 
+a [different grace period address](/wallet/technical-reference/deployments/#social-recovery-module)
+during initialization.
+
+```ts
+import { SocialRecoveryModule, SocialRecoveryModuleGracePeriodSelector } from "abstractionkit";
+ 
+const gracePeriod = SocialRecoveryModuleGracePeriodSelector.After7Days;
+const srm = new SocialRecoveryModule(gracePeriod); // 7 days
+```
+
+### Setup Recovery Module with Guardian
+
+Set up the Social Recovery Module on a Safe account with a designated guardian in a single transaction
+
+<Tabs>
+<TabItem value="enable-module.ts" label="enable-module.ts">
+
+```ts title="Enable Social Recovery Module and add a guardian"
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+
+const smartAccount = SafeAccount.initializeNewAccount([process.env.OWNER_PUBLIC_KEY]);
+
+// MetaTransaction to enable recovery module
+const enableModuleTx = srm.createEnableModuleMetaTransaction(
+  smartAccount.accountAddress
+);
+
+// MetaTransaction to add guardian
+const addGuardianTx = srm.createAddGuardianWithThresholdMetaTransaction(
+  "0x..", // guardian address
+  1n, //threshold for recovery
+);
+
+// Create UserOperation with both operations
+let userOperation = await smartAccount.createUserOperation(
+  [enableModuleTx, addGuardianTx],
+  process.env.NODE_URL,
+  process.env.BUNDLER_URL
+);
+```
+
+> Learn more: [`createEnableModuleMetaTransaction`](/wallet/plugins/recovery-with-guardians/#createenablemodulemetatransaction) | 
+[`createAddGuardianWithThresholdMetaTransaction`](/wallet/plugins/recovery-with-guardians/#createaddguardianwiththresholdmetatransaction)
+
+</TabItem>
+
+<TabItem value=".env" label=".env">
+
+```bash
+CHAIN_ID=11155111
+BUNDLER_URL=https://api.candide.dev/public/v3/sepolia
+NODE_URL=https://ethereum-sepolia-rpc.publicnode.com
+
+OWNER_PUBLIC_KEY=0x..
+```
+
+</TabItem>
+</Tabs>
+
+## Complete Runnable Example
+
+Below is a complete example that demonstrates enabling the recovery module and adding multiple guardians:
+
+<details>
+<summary>Full Working Example</summary>
+
+<Tabs>
+<TabItem value="recovery-setup.ts" label="recovery-setup.ts">
+
+```ts
+import * as dotenv from 'dotenv'
+
+import {
+  SafeAccountV0_3_0 as SafeAccount,
+  SocialRecoveryModule,
+} from "abstractionkit";
+
+async function main(): Promise<void> {
+  // Load environment variables
+  dotenv.config()
+  const chainId = BigInt(process.env.CHAIN_ID as string)
+  const bundlerUrl = process.env.BUNDLER_URL as string
+  const jsonRpcNodeProvider = process.env.NODE_URL as string
+  const ownerPublicAddress = process.env.PUBLIC_ADDRESS as string
+  const ownerPrivateKey = process.env.PRIVATE_KEY as string
+  const guardianAddress = process.env.GUARDIAN_PUBLIC_ADDRESS as string
+
+  // Initialize Smart Account
+  const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress])
+  console.log("Smart Account Address:", smartAccount.accountAddress)
+
+  // Initialize Social Recovery Module
+  const srm = new SocialRecoveryModule()
+
+  // Step 1: Enable module and add guardian in one UserOperation
+  console.log("Step 1: Enabling Social Recovery Module and adding guardian...")
+  
+  const enableModuleTx = srm.createEnableModuleMetaTransaction(
+    smartAccount.accountAddress
+  )
+
+  const addGuardianTx = srm.createAddGuardianWithThresholdMetaTransaction(
+    guardianAddress,
+    1n // threshold: 1 guardian needed for recovery
+  )
+
+  // Batch both operations
+  let userOperation = await smartAccount.createUserOperation(
+    [enableModuleTx, addGuardianTx],
+    jsonRpcNodeProvider,
+    bundlerUrl
+  )
+
+  userOperation.signature = smartAccount.signUserOperation(
+    userOperation,
+    [ownerPrivateKey],
+    chainId
+  )
+
+  let response = await smartAccount.sendUserOperation(userOperation, bundlerUrl)
+  let result = await response.included()
+  
+  if (result.success) {
+    console.log("Recovery module enabled and guardian added successfully!")
+  } else {
+    console.log("Failed to setup recovery")
+    return
+  }
+
+  // Step 2: Verify Guardian
+  console.log("Step 2: Verifying guardian...")
+  
+  const isGuardian = await srm.isGuardian(
+    jsonRpcNodeProvider,
+    smartAccount.accountAddress,
+    guardianAddress
+  )
+
+  console.log(`Guardian verification: ${isGuardian ? "Active" : "Not found"}`)
+
+  // Step 3: Get recovery info
+  const guardiansCount = await srm.guardiansCount(
+    jsonRpcNodeProvider,
+    smartAccount.accountAddress
+  )
+  
+  const threshold = await srm.threshold(
+    jsonRpcNodeProvider,
+    smartAccount.accountAddress
+  )
+
+  const guardiansList = await srm.getGuardians(
+    jsonRpcNodeProvider,
+    smartAccount.accountAddress
+  )
+
+  console.log("Recovery Configuration:")
+  console.log(`- Total guardians: ${guardiansCount}`)
+  console.log(`- Recovery threshold: ${threshold}`)
+  console.log(`- Guardian addresses: ${guardiansList.join(", ")}`)
+  
+  console.log("Recovery setup complete! Your account is now protected.")
+}
+
+main().catch(console.error)
+```
+
+</TabItem>
+
+<TabItem value=".env" label=".env">
+
+```bash
+CHAIN_ID=11155111
+BUNDLER_URL=https://api.candide.dev/public/v3/sepolia
+NODE_URL=https://ethereum-sepolia-rpc.publicnode.com
+
+# Your Smart Account credentials
+PRIVATE_KEY=your_private_key_here
+PUBLIC_ADDRESS=your_public_address_here
+
+# Guardian credentials (trusted person/device)
+GUARDIAN_PRIVATE_KEY=guardian_private_key_here  
+GUARDIAN_PUBLIC_ADDRESS=guardian_public_address_here
+```
+
+</TabItem>
+</Tabs>
+
+</details>
+
+## Guardian Types and Options
+
+### Personal Guardians
+Set up trusted individuals or devices as guardians:
+- **Family & Friends**: People you trust who understand the responsibility
+- **Multiple Devices**: Your own hardware wallets or secure devices  
+- **Professional Services**: Trusted custody or recovery services
+
+### Threshold Configuration
+
+| Setup | Threshold | Use Case | Security Level |
+|-------|-----------|----------|----------------|
+| **1/1** | 1 of 1 | Single trusted guardian | Low - single point of failure |
+| **1/2** | 1 of 2 | Backup guardian option | Good - redundancy with convenience |
+| **2/3** | 2 of 3 | Balanced security & availability | Excellent - prevents single compromise |
+| **3/5** | 3 of 5 | High security institutional setup | Maximum - requires coordination |
+
+:::tip Security Recommendations
+- **Never use 1/1** for high-value accounts (single point of failure)
+- **2/3 is optimal** for most use cases (prevents single guardian compromise)
+- **Consider Candide Guardian** as one of multiple guardians for user-friendly recovery
+- **Keep guardian list updated** as relationships change
+:::

@@ -1,0 +1,552 @@
+---
+title: Complete Recovery Flow Guide
+description: Step-by-step guide to implementing the complete account recovery flow using guardians and the Safe Recovery Service
+keywords: [account-recovery, social-recovery, guardians, recovery-flow, safe-recovery-service, eip-712-signatures]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Complete Recovery Flow Guide
+
+Learn how to implement a complete account recovery flow using guardians and the Safe Recovery Service. This guide assumes you already have a Safe account with the recovery module enabled and guardians configured.
+
+> If you need to set up the recovery module, check out the [Enable Recovery Module and Add Guardians](/wallet/plugins/how-to-add-a-guardian/).
+
+## Overview
+
+The recovery flow involves several key steps:
+
+1. **Recovery Request**: Create and submit a recovery request when needed
+2. **Guardian Approval**: Collect signatures from required guardians
+3. **Execution**: Execute the recovery after all guardian signatures are collected
+4. **Finalization**: Complete ownership transfer to new owner after grace period is over
+
+## Prerequisites
+
+### Installation
+
+<Tabs>
+<TabItem value="npm" label="npm">
+
+```bash
+npm i abstractionkit safe-recovery-service-sdk viem
+```
+
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash
+yarn add abstractionkit safe-recovery-service-sdk
+```
+
+</TabItem>
+</Tabs>
+
+1. `abstractionkit` provides the core functionality for interacting with social recovery module smart contracts and constructing calldata. 
+2. `safe-recovery-service-sdk` adds optional API services including alerts, recovery via email/SMS, and additional recovery features.
+3. `viem` provides the ethereum library utils to generate private keys and sign transactions. You can also use `ethers`.
+
+### Environment Setup
+
+```bash title=".env"
+CHAIN_ID=11155111
+BUNDLER_URL=https://api.candide.dev/public/v3/sepolia
+NODE_URL=https://ethereum-sepolia-rpc.publicnode.com
+RECOVERY_SERVICE_URL= #optional
+
+GUARDIAN_1_PRIVATE_KEY=
+GUARDIAN_2_PRIVATE_KEY=
+```
+
+## Recovery Steps
+
+> Follow along fork the [recovery example](https://github.com/candidelabs/safe-recovery-service-sdk/tree/main/examples/01-recovery-flow) and follow along 
+
+### Step 1: Initialize Services
+
+Initialize the recovery service and guardian references.
+
+<details>
+<summary>About the Recovery Service</summary>
+
+[Candide Recovery Service](/wallet/recovery/overview/) is an optional hosted service that streamlines the recovery process by automatically handling the 
+execution of recovery after the required guardian signatures are collected and finalizing it after the grace period expires.
+You can request access to the recovery service [here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).
+
+**Alternative**: Anyone can [execute](/blog/making-accounts-recoverable/#multi-confirm-recovery) and [finalize](/blog/making-accounts-recoverable/#finalize-recovery) recovery transactions directly 
+using the Social Recovery Module methods, as these methods are public and can be called once the guardian signatures are collected and grace period requirements are met.
+
+</details>
+
+```ts title="initialize-services.ts"
+import {
+  SafeAccountV0_3_0 as SafeAccount,
+  SocialRecoveryModule,
+  SocialRecoveryModuleGracePeriodSelector,
+} from "abstractionkit";
+import { RecoveryByGuardianService } from "safe-recovery-service-sdk";
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+
+const recoveryServiceURL = process.env.RECOVERY_SERVICE_URL as string;
+const chainId = BigInt(process.env.CHAIN_ID as string);
+
+// Account addresses (recovery module already setup)
+const smartAccountAddress = "0x..."; // Existing Safe account
+const newOwnerAddress = "0x...";     // Recovery target
+
+// Generate guardian accounts using viem
+const guardian1PrivateKey = process.env.GUARDIAN_1_PRIVATE_KEY as `0x${string}`;
+const guardian1Account = privateKeyToAccount(guardian1PrivateKey);
+const guardian2PrivateKey = process.env.GUARDIAN_2_PRIVATE_KEY as `0x${string}`;
+const guardian2Account = privateKeyToAccount(guardian2PrivateKey);
+
+// highlight-start
+// Initialize social recovery module instance
+const srm = new SocialRecoveryModule(SocialRecoveryModuleGracePeriodSelector.After3Minutes); 
+
+const recoveryService = new RecoveryByGuardianService(
+  recoveryServiceURL,
+  chainId,
+  SocialRecoveryModuleGracePeriodSelector.After3Minutes
+);
+// highlight-end
+```
+
+### Step 2: Create Recovery Request
+
+- First guardian signs EIP-712 recovery data
+- Guardian 1 submits the recovery request with their signature directly onchain or through the service
+- Service generates unique emoji for this specific recovery request
+
+```ts title="recovery-request.ts"
+import { TypedDataDomain } from 'viem';
+import { EXECUTE_RECOVERY_PRIMARY_TYPE } from "abstractionkit"
+
+const nodeUrl = process.env.NODE_URL as string;
+
+// Get EIP-712 data for recovery request
+const recoveryRequestEip712Data = await srm.getRecoveryRequestEip712Data(
+    nodeUrl,
+    chainId,
+    smartAccountAddress, // target safe account to recover
+    [newOwnerAddress],
+    1n // New threshold
+);
+
+// First guardian signs the recovery request
+const guardian1Signature = await guardian1Account.signTypedData({
+    primaryType: EXECUTE_RECOVERY_PRIMARY_TYPE,
+    domain: recoveryRequestEip712Data.domain as TypedDataDomain,
+    types: recoveryRequestEip712Data.types,
+    message: recoveryRequestEip712Data.messageValue
+});
+
+// Submit the guardian signature to create the recovery request
+const recoveryRequest = await recoveryService.createRecoveryRequest(
+    smartAccountAddress,
+    [newOwnerAddress],
+    1n, // New threshold
+    guardian1Account.address,
+    guardian1Signature
+);
+```
+
+### Step 3: Second Guardian Signature
+
+The second guardian and each consecutive guardian must sign the recovery request using EIP-712 signatures:
+
+```ts title="guardian-signatures.ts"
+console.log("Emoji for verification:", recoveryRequest.emoji);
+
+const guardian2Signature = await guardian2Account.signTypedData({
+    primaryType: EXECUTE_RECOVERY_PRIMARY_TYPE,
+    domain: recoveryRequestEip712Data.domain as TypedDataDomain,
+    types: recoveryRequestEip712Data.types,
+    message: recoveryRequestEip712Data.messageValue
+});
+
+// Submit the second guardian's signature
+await recoveryService.submitGuardianSignature(
+    recoveryRequest.id,
+    guardian2Account.address,
+    guardian2Signature
+);
+```
+
+### Step 4: Execute Recovery
+
+Once all guardian signatures are collected or the threshold is met, the service can execute the recovery to start the grace period:
+
+```ts title="recovery-execution.ts"
+const executionResult = await recoveryService.executeRecoveryRequest(recoveryRequest.id);
+
+await new Promise(resolve => setTimeout(resolve, 1 * 30 * 1000)); // 30 secs or or until tx is executed onchain
+
+// Check execution status
+const executedRequest = await recoveryService.getExecutedRecoveryRequestForLatestNonce(
+    nodeUrl,
+    smartAccountAddress
+);
+
+if (executedRequest && executedRequest.status === "EXECUTED") {
+    console.log("Recovery request successfully executed!");
+    console.log("Recovery ID:", executedRequest.id);
+    console.log("Recovery execution transaction hash:", executedRequest.executeData.transactionHash)
+} else {
+    console.log("Recovery execution failed or still pending");
+    // check again
+}
+```
+
+### Step 5: Finalize Recovery
+
+After the grace period has elapsed, anyone can finalize the recovery. Here's how to use the recovery service:
+
+```ts title="recovery-finalization.ts"
+console.log("Waiting for grace period, typically 3-7 days. 3 mins during testing...");
+
+// Check if ready for finalization
+const finalStatus = await recoveryService.getRecoveryRequestStatus(
+  recoveryRequest.id
+);
+
+if (finalStatus.readyForFinalization) {
+  // Finalize recovery
+  const finalizationResult = await recoveryService.finalizeRecovery(
+    recoveryRequest.id,
+    smartAccountAddress
+  );
+  
+  // Verify no more pending/executed requests
+  const pendingRequests = await recoveryService.getPendingRecoveryRequestsForLatestNonce(
+      nodeUrl,
+      smartAccountAddress
+  );
+}
+```
+
+## Complete Working Example
+
+<details>
+<summary>Full Recovery Flow Example</summary>
+
+<Tabs>
+<TabItem value="complete-flow.ts" label="complete-flow.ts">
+
+```ts
+/**
+ * Complete Safe Recovery Service workflow example
+ * 
+ * Demonstrates: Safe account setup, guardian-based recovery with emoji authentication,
+ * off-chain signature collection, and service-managed execution/finalization.
+ * 
+ * See README.md for detailed workflow explanation and setup instructions.
+ */
+
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
+import { TypedDataDomain } from 'viem';
+import {
+    CandidePaymaster,
+    EXECUTE_RECOVERY_PRIMARY_TYPE,
+    SafeAccountV0_3_0,
+    SocialRecoveryModule,
+    SocialRecoveryModuleGracePeriodSelector,
+} from "abstractionkit";
+import { RecoveryByGuardianService } from "safe-recovery-service-sdk";
+import * as dotenv from 'dotenv';
+
+async function main() {
+    dotenv.config();
+
+    // Environment variables - set these in your .env file
+    const chainId = BigInt(process.env.CHAIN_ID as string);
+    const serviceUrl = process.env.RECOVERY_SERVICE_URL as string;
+    const bundlerUrl = process.env.BUNDLER_URL as string;
+    const nodeUrl = process.env.NODE_URL as string;
+    const paymasterUrl = process.env.PAYMASTER_URL as string;
+
+    console.log("Starting Safe Recovery Flow Example");
+    console.log(`Chain ID: ${chainId}`);
+
+    // --------- 1. Create accounts ---------
+    console.log("\nStep 1: Creating accounts");
+
+    const ownerPrivateKey = generatePrivateKey();
+    const ownerAccount = privateKeyToAccount(ownerPrivateKey);
+    console.log("Original owner:", ownerAccount.address);
+
+    const newOwnerPrivateKey = generatePrivateKey();
+    const newOwner = privateKeyToAccount(newOwnerPrivateKey);
+    console.log("New owner (recovery target):", newOwner.address);
+
+    const guardian1PrivateKey = generatePrivateKey();
+    const guardian1Account = privateKeyToAccount(guardian1PrivateKey);
+
+    const guardian2PrivateKey = generatePrivateKey();
+    const guardian2Account = privateKeyToAccount(guardian2PrivateKey);
+
+    // --------- 2. Create Safe Account ---------
+    console.log("\nStep 2: Creating Safe Account");
+
+    const smartAccount = SafeAccountV0_3_0.initializeNewAccount([ownerAccount.address]);
+    console.log("Safe account address:", smartAccount.accountAddress);
+
+    // --------- 3. Setup Recovery Module and Guardians ---------
+    console.log("\nStep 3: Setting up Recovery Module and Guardians");
+
+    const srm = new SocialRecoveryModule(SocialRecoveryModuleGracePeriodSelector.After3Minutes);
+    console.log("Recovery module address:", SocialRecoveryModuleGracePeriodSelector.After3Minutes);
+
+    // Create transactions to enable module and add guardians
+    const enableModuleTx = srm.createEnableModuleMetaTransaction(smartAccount.accountAddress);
+
+    const addGuardian1Tx = srm.createAddGuardianWithThresholdMetaTransaction(
+        guardian1Account.address,
+        1n // Set threshold to 1 after adding first guardian
+    );
+
+    const addGuardian2Tx = srm.createAddGuardianWithThresholdMetaTransaction(
+        guardian2Account.address,
+        2n // Set threshold to 2 after adding second guardian (both guardians needed)
+    );
+
+    // Create and execute user operation
+    let userOperation = await smartAccount.createUserOperation(
+        [enableModuleTx, addGuardian1Tx, addGuardian2Tx],
+        nodeUrl,
+        bundlerUrl
+    );
+
+    // Use paymaster for sponsored transaction
+    const paymaster = new CandidePaymaster(paymasterUrl);
+    const [paymasterUserOperation, _sponsorMetadata] = await paymaster.createSponsorPaymasterUserOperation(
+        userOperation,
+        bundlerUrl
+    );
+    userOperation = paymasterUserOperation;
+
+    // Sign and send the user operation
+    userOperation.signature = smartAccount.signUserOperation(
+        userOperation,
+        [ownerPrivateKey],
+        chainId
+    );
+
+    console.log("Sending setup transaction...");
+    const sendUserOperationResponse = await smartAccount.sendUserOperation(userOperation, bundlerUrl);
+
+    console.log("Waiting for setup transaction to be included...");
+    const userOperationReceiptResult = await sendUserOperationResponse.included();
+
+    if (userOperationReceiptResult.success) {
+        console.log("Recovery module and guardians successfully set up. Transaction hash:", userOperationReceiptResult.receipt.transactionHash)
+    } else {
+        console.log("Useroperation execution failed")
+    }
+
+    // --------- 4. Create Recovery Request ---------
+    // Using 3-minute grace period for demo purposes (use longer periods in production)
+    const recoveryService = new RecoveryByGuardianService(
+        serviceUrl,
+        chainId,
+        SocialRecoveryModuleGracePeriodSelector.After3Minutes
+    );
+    console.log("\nStep 4: Creating Recovery Request");
+
+    // Get EIP-712 data for recovery request
+    const recoveryRequestEip712Data = await srm.getRecoveryRequestEip712Data(
+        nodeUrl,
+        chainId,
+        smartAccount.accountAddress,
+        [newOwner.address],
+        1n // New threshold
+    );
+
+    // First guardian signs the recovery request
+    const guardian1Signature = await guardian1Account.signTypedData({
+        primaryType: EXECUTE_RECOVERY_PRIMARY_TYPE,
+        domain: recoveryRequestEip712Data.domain as TypedDataDomain,
+        types: recoveryRequestEip712Data.types,
+        message: recoveryRequestEip712Data.messageValue
+    });
+
+    // Create the recovery request
+    const recoveryRequest = await recoveryService.createRecoveryRequest(
+        smartAccount.accountAddress,
+        [newOwner.address],
+        1n, // New threshold
+        guardian1Account.address,
+        guardian1Signature
+    );
+
+    console.log("Recovery request created with ID:", recoveryRequest.id);
+    console.log("Recovery Status:", recoveryRequest.status);
+    console.log("IMPORTANT - Emoji for guardian coordination:", recoveryRequest.emoji);
+    console.log("The initiating guardian should communicate this emoji to other guardians through secure channels");
+    console.log("Other guardians should verify this emoji matches before signing to prevent unauthorized recovery");
+
+    // --------- 5. Add Second Guardian Signature ---------
+    console.log("\nStep 5: Adding second guardian signature");
+
+    // Second guardian signs the same recovery request
+    const guardian2Signature = await guardian2Account.signTypedData({
+        primaryType: EXECUTE_RECOVERY_PRIMARY_TYPE,
+        domain: recoveryRequestEip712Data.domain as TypedDataDomain,
+        types: recoveryRequestEip712Data.types,
+        message: recoveryRequestEip712Data.messageValue
+    });
+
+    // Submit the second guardian's signature
+    const signatureSubmitted = await recoveryService.submitGuardianSignatureForRecoveryRequest(
+        recoveryRequest.id,
+        guardian2Account.address,
+        guardian2Signature
+    );
+
+    console.log("Second guardian signature submitted to Recovery Service:", signatureSubmitted);
+
+    // --------- 6. SERVICE-HANDLED EXECUTION ---------
+    console.log("\nStep 6: Service-Handled Recovery Execution");
+
+    const executionResult = await recoveryService.executeRecoveryRequest(recoveryRequest.id);
+    console.log("Recovery execution request sent to service:", executionResult);
+
+    console.log("Waiting for transaction to be included...")
+    await new Promise(resolve => setTimeout(resolve, 1 * 30 * 1000)); // 30 seconds
+
+    // Check execution status
+    const executedRequest = await recoveryService.getExecutedRecoveryRequestForLatestNonce(
+        nodeUrl,
+        smartAccount.accountAddress
+    );
+
+    if (executedRequest && executedRequest.status === "EXECUTED") {
+        console.log("Recovery request successfully executed!");
+        console.log("Recovery ID:", executedRequest.id);
+        console.log("Recovery execution transaction hash:", executedRequest.executeData.transactionHash)
+    } else {
+        console.log("Recovery execution failed or still pending");
+        return;
+    }
+
+    // --------- 7. SERVICE-HANDLED FINALIZATION ---------
+    console.log("\nStep 7: Service-Handled Recovery Finalization");
+
+    console.log("Waiting for 3-minute grace period...");
+    await new Promise(resolve => setTimeout(resolve, 3 * 60 * 1000)); // 3 minutes
+
+    // Finalize the recovery
+    const finalizationResult = await recoveryService.finalizeRecoveryRequest(recoveryRequest.id);
+    console.log("Recovery finalization request sent to service:", finalizationResult);
+
+    console.log("Waiting for transaction to be included...")
+
+    await new Promise(resolve => setTimeout(resolve, 1 * 30 * 1000)); // 30 seconds
+
+    console.log("Recovery finalization transaction hash:", finalizationResult.transactionHash);
+
+    // Check final status
+    const finalizedRequest = await recoveryService.getFinalizedRecoveryRequestForLatestNonce(
+        nodeUrl,
+        smartAccount.accountAddress
+    );
+
+    if (finalizedRequest && finalizedRequest.status === "FINALIZED") {
+        console.log("Safe account recovered to new owner:", newOwner.address);
+        console.log("Recovery ID:", finalizedRequest.id);
+
+        // Verify no more pending/executed requests
+        const pendingRequests = await recoveryService.getPendingRecoveryRequestsForLatestNonce(
+            nodeUrl,
+            smartAccount.accountAddress
+        );
+
+        console.log("Pending requests:", pendingRequests.length);
+    } else {
+        console.log("Recovery finalization failed or still pending");
+    }
+
+    console.log("\nRecovery flow example completed!");
+}
+
+// Error handling wrapper
+main()
+    .then(() => {
+        process.exit(0);
+    })
+    .catch((error) => {
+        console.error("Error occurred:", error);
+        process.exit(1);
+    });
+```
+
+</TabItem>
+
+<TabItem value=".env" label=".env">
+
+```bash
+# Safe Recovery Service SDK Example Configuration
+# Copy this file to .env and fill in your values
+
+# Network Configuration
+CHAIN_ID=11155111  # Sepolia testnet chain ID
+NODE_URL=https://ethereum-sepolia-rpc.publicnode.com
+
+# Bundler and Paymaster URLs
+BUNDLER_URL=https://api.candide.dev/public/v3/11155111
+PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
+
+# Recovery Service URL
+RECOVERY_SERVICE_URL=
+```
+
+</TabItem>
+</Tabs>
+
+</details>
+
+## Security Considerations
+
+### Emoji
+
+Candide Recovery Service provides a communication system using emojis that allows guardians to verify and approve legitimate recovery requests from their rightful owners.
+
+- **Unique Verification**: Each recovery request generates a unique emoji sequence.
+- **Anti-Phishing**: Prevents malicious recovery attempts through social engineering.
+- **Guardian Verification**: Guardians must verify emoji with account owner before signing.
+- **Secure Communication**: Share emoji through trusted, encrypted channels only.
+
+### Signatures
+- **EIP-712**: All signatures use typed data for replay protection.
+- **Domain Separation**: Signatures are bound to specific chains.
+- **Nonce Protection**: Each recovery request has a unique nonce.
+
+### Grace Period
+- **Sufficient Time**: Allow enough time for legitimate owner to cancel if needed. 
+- **Monitoring**: Implement a notification system to inform owners when recovery is attempted, like [Candide's Alert System](/wallet/recovery/ux-api/#alerts).
+
+## Utility Methods
+
+Common utilities you might find helpful:
+
+```ts
+// Check guardian status
+const isGuardian = await srm.isGuardian(
+  nodeUrl,
+  smartAccountAddress,
+  guardianAddress
+);
+
+if (!isGuardian) {
+  throw new Error("Address is not a configured guardian");
+}
+
+// Verify threshold
+const threshold = await srm.threshold(
+  nodeUrl,
+  smartAccountAddress
+);
+
+console.log(`Required guardian signatures: ${threshold}`);
+```

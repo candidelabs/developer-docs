@@ -316,9 +316,22 @@ const sidebars = {
           label: "Passkeys"
         },
         {
-          type: "doc",
-          id: "wallet/plugins/recovery-with-guardians",
-          label: "Account Recovery"
+          type: "category",
+          label: "Account Recovery",
+          collapsed: true,
+          link: { type: "doc", id: "wallet/plugins/recovery-with-guardians" },
+          items: [
+            {
+              type: "doc",
+              id: "wallet/plugins/how-to-add-a-guardian",
+              label: "How to add a Guardian"
+            },
+            {
+              type: "doc",
+              id: "wallet/plugins/recovery-flow-guide",
+              label: "How to Recover an Account"
+            },
+          ],
         },
         {
           type: "doc",
