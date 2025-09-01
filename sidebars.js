@@ -331,6 +331,11 @@ const sidebars = {
               id: "wallet/plugins/recovery-flow-guide",
               label: "How to Recover an Account"
             },
+            {
+              type: "doc",
+              id: "wallet/plugins/recovery-alerts-guide",
+              label: "How to Activate Recovery Alerts"
+            },
           ],
         },
         {

@@ -1,0 +1,716 @@
+---
+title: Recovery Alert Subscription Guide
+description: Learn how to set up email and SMS notifications for recovery requests to keep Safe account owners informed of any recovery attempts
+keywords: [recovery-alerts, notifications, safe-recovery, account-monitoring, security-alerts]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Recovery Alert Subscription Guide
+
+Learn how to set up email and SMS notifications for recovery requests to keep Safe account owners informed of any recovery attempts on their accounts. This security feature provides an essential early warning system during recovery processes.
+
+> If you need help setting up the recovery module first, check out the [Enable Recovery Module and Add Guardians](/wallet/plugins/how-to-add-a-guardian/) guide.
+
+## Overview
+
+The Recovery Alert system provides:
+
+1. **Instant Notifications**: Immediate email and SMS alerts when recovery requests are initiated
+2. **On-chain Monitoring**: Tracks on-chain recoveries across all supported networks
+3. **Grace Period Warnings**: Notifications during the grace period so owners can respond to unauthorized attempts
+4. **Signature Verification**: Only verified account owners can subscribe to alerts
+
+To learn more, visit the [Safe Recovery Service API](/wallet/recovery/overview/) section.
+
+## Prerequisites
+
+### Installation
+
+<Tabs>
+<TabItem value="npm" label="npm">
+
+```bash
+npm i safe-recovery-service-sdk abstractionkit viem
+```
+
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash
+yarn add safe-recovery-service-sdk abstractionkit viem
+```
+</TabItem>
+</Tabs>
+
+- `safe-recovery-service-sdk` provides the alert subscription functionality  
+- `abstractionkit` provides Safe account creation and management
+- `viem` is used for message signing and wallet operations
+
+### Environment Setup
+
+```bash title=".env"
+# Network Configuration
+CHAIN_ID=11155111  # Sepolia testnet chain ID
+NODE_URL=https://ethereum-sepolia-rpc.publicnode.com
+
+# Bundler and Paymaster URLs
+BUNDLER_URL=https://api.candide.dev/public/v3/11155111
+PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
+
+# Recovery Service URL
+# Contact us to get access: https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5
+RECOVERY_SERVICE_URL=
+
+# Safe Owner
+OWNER_PRIVATE_KEY=0x..
+
+# Alert Configuration
+USER_EMAIL=owner@example.com
+USER_PHONE=+1234567890
+```
+
+## Alert Subscription Steps
+
+> You can [fork the complete code](https://github.com/candidelabs/safe-recovery-service-sdk/tree/main/examples/02-recovery-alerts) and follow along.
+
+### Step 1: Initialize Alert Service
+
+Set up the recovery service client and account credentials.
+
+```ts title="initialize-alert-service.ts"
+import { Alerts } from "safe-recovery-service-sdk";
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { privateKeyToAccount } from "viem/accounts";
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
+const recoveryServiceURL = process.env.RECOVERY_SERVICE_URL as string;
+const ownerPrivateKey = process.env.OWNER_PRIVATE_KEY as `0x${string}`;
+const ownerEmail = process.env.OWNER_EMAIL as string;
+const ownerPhone = process.env.OWNER_PHONE as string;
+const chainId = BigInt(process.env.CHAIN_ID as string);
+
+// Create owner account instance for signing
+const ownerAccount = privateKeyToAccount(ownerPrivateKey);
+
+// Initialize Safe account and setup recovery module (see previous example)
+const smartAccount = SafeAccount.initializeNewAccount([ownerAccount.address]);
+const safeAccountAddress = smartAccount.accountAddress;
+
+// Initialize Alert Service
+// highlight-start
+const alertsService = new Alerts(recoveryServiceURL, chainId);
+// highlight-end
+
+console.log("Safe account to monitor:", safeAccountAddress);
+console.log("Owner receiving alerts:", ownerAccount.address);
+console.log("Alert email:", ownerEmail);
+console.log("Alert phone:", ownerPhone);
+```
+
+### Step 2: Create SIWE Messages
+
+Generate Sign-in with Ethereum (EIP-4361) messages for subscription verification using the SDK helper methods.
+
+<Tabs>
+<TabItem value="email-message.ts" label="Email Subscription">
+
+```ts title="create-email-siwe-message.ts"
+// Generate SIWE message for email subscription using SDK helper
+const emailSiweMessage = alertsService.createEmailSubscriptionSiweStatementToSign(
+  safeAccountAddress,   // Safe account address to monitor
+  ownerAccount.address, // Owner address (signer who receives notifications)
+  ownerEmail           // Email for notifications
+);
+
+console.log("Email SIWE Message:", emailSiweMessage);
+```
+
+</TabItem>
+<TabItem value="sms-message.ts" label="SMS Subscription">
+
+```ts title="create-sms-siwe-message.ts"
+// Generate SIWE message for SMS subscription using SDK helper
+const smsSiweMessage = alertsService.createSubscriptionSiweStatementToSign(
+  safeAccountAddress,   // Safe account address to monitor
+  ownerAccount.address, // Owner address (signer who receives notifications)
+  "sms",               // Channel type
+  ownerPhone           // Phone number for SMS notifications
+);
+
+console.log("SMS SIWE Message:", smsSiweMessage);
+```
+
+</TabItem>
+</Tabs>
+
+### Step 3: Sign Messages and Create Subscriptions
+
+Sign the SIWE messages and submit subscription requests for both email and SMS.
+
+<Tabs>
+<TabItem value="email-subscription.ts" label="Email Subscription">
+
+```ts title="subscribe-email-alerts.ts"
+// Sign the email SIWE message
+const emailSignature = await ownerAccount.signMessage({
+  message: emailSiweMessage
+});
+
+// Create email subscription
+try {
+  const emailSubscriptionId = await alertsService.createEmailSubscription(
+    safeAccountAddress,   // Safe account address to monitor
+    ownerAccount.address, // Owner address (signer who receives notifications)
+    ownerEmail,          // Email for notifications
+    emailSiweMessage,    // SIWE message
+    emailSignature       // Signature
+  );
+  
+  console.log("Email subscription created successfully!");
+  console.log("Email Subscription ID:", emailSubscriptionId);
+  console.log("Check your email for verification code");
+  
+  return emailSubscriptionId;
+} catch (error) {
+  console.error("Email subscription failed:", error.message);
+  throw error;
+}
+```
+
+</TabItem>
+<TabItem value="sms-subscription.ts" label="SMS Subscription">
+
+```ts title="subscribe-sms-alerts.ts"
+// Sign the SMS SIWE message
+const smsSignature = await ownerAccount.signMessage({
+  message: smsSiweMessage
+});
+
+// Create SMS subscription
+try {
+  const smsSubscriptionId = await alertsService.createSubscription(
+    safeAccountAddress,   // Safe account address to monitor
+    ownerAccount.address, // Owner address (signer who receives notifications)
+    "sms",               // Channel type
+    ownerPhone,          // Phone number for SMS
+    smsSiweMessage,      // SIWE message
+    smsSignature         // Signature
+  );
+  
+  console.log("SMS subscription created successfully!");
+  console.log("SMS Subscription ID:", smsSubscriptionId);
+  console.log("Check your phone for verification code");
+  
+  return smsSubscriptionId;
+} catch (error) {
+  console.error("SMS subscription failed:", error.message);
+  throw error;
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Step 4: Activate Subscriptions
+
+Enter the verification codes received via email and SMS to activate both subscriptions.
+
+<Tabs>
+<TabItem value="email-activation.ts" label="Email Activation">
+
+```ts title="activate-email-subscription.ts"
+// Activate email subscription
+const emailVerificationCode = "123456"; // Replace with actual code from email
+
+try {
+  const emailActivationResult = await alertsService.activateSubscription(
+    emailSubscriptionId, // from step 3
+    emailVerificationCode
+  );
+  
+  if (emailActivationResult) {
+    console.log("Email alert subscription activated successfully!");
+    console.log("You'll receive detailed recovery information via email");
+  }
+} catch (error) {
+  console.error("Email activation failed:", error.message);
+  console.log("Please verify the OTP code from your email and try again");
+}
+```
+
+</TabItem>
+<TabItem value="sms-activation.ts" label="SMS Activation">
+
+```ts title="activate-sms-subscription.ts"
+// Activate SMS subscription  
+const smsVerificationCode = "654321"; // Replace with actual code from SMS
+
+try {
+  const smsActivationResult = await alertsService.activateSubscription(
+    smsSubscriptionId, // from step 3
+    smsVerificationCode
+  );
+  
+  if (smsActivationResult) {
+    console.log("SMS alert subscription activated successfully!");
+    console.log("You'll receive urgent recovery alerts via SMS");
+    console.log("\nDual-channel notifications now active:");
+    console.log("  - Email: Detailed recovery information and analysis");
+    console.log("  - SMS: Critical alerts for immediate action");
+  }
+} catch (error) {
+  console.error("SMS activation failed:", error.message);
+  console.log("Please verify the OTP code from your SMS and try again");
+}
+```
+
+</TabItem>
+</Tabs>
+
+### Step 5: Verify Active Subscriptions
+
+Check your current active alert subscriptions.
+
+```ts title="verify-subscriptions.ts"
+// Generate SIWE message for getting subscriptions
+const getSubscriptionsSiweMessage = alertsService.getSubscriptionsSiweStatementToSign(
+  ownerAccount.address
+);
+
+// Sign the SIWE message
+const getSubscriptionsSignature = await ownerAccount.signMessage({
+  message: getSubscriptionsSiweMessage
+});
+
+try {
+  const activeSubscriptions = await alertsService.getActiveSubscriptions(
+    safeAccountAddress,   // Safe account address being monitored
+    ownerAccount.address, // Owner address (subscription holder)
+    getSubscriptionsSiweMessage,
+    getSubscriptionsSignature
+  );
+  
+  console.log("Active Alert Subscriptions:", activeSubscriptions.length);
+  activeSubscriptions.forEach((subscription, index) => {
+    console.log(`  ${index + 1}. ID: ${subscription.id}`);
+    console.log(`     Channel: ${subscription.channel}`);
+    console.log(`     Target: ${subscription.target}`);
+  });
+} catch (error) {
+  console.error("Failed to fetch subscriptions:", error.message);
+}
+```
+
+## Complete Working Example
+
+<details>
+<summary>Full Alert Subscription Example</summary>
+
+<Tabs>
+<TabItem value="recovery-alerts.ts" label="recovery-alerts.ts">
+
+```ts
+/**
+ * Safe Recovery Service Alert System Example
+ * 
+ * Demonstrates: Safe account setup with recovery module and guardian configuration,
+ * followed by setting up email and sms alert subscriptions to monitor recovery events.
+ * 
+ * See README.md for detailed workflow explanation and setup instructions.
+ */
+
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
+import {
+    SafeAccountV0_3_0,
+    SocialRecoveryModule,
+    SocialRecoveryModuleGracePeriodSelector,
+    CandidePaymaster,
+} from "abstractionkit";
+import { Alerts } from "safe-recovery-service-sdk";
+import * as dotenv from 'dotenv';
+import * as readline from 'readline';
+
+// Create readline interface for user input
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+function askQuestion(question: string): Promise<string> {
+    return new Promise((resolve) => {
+        rl.question(question, (answer) => {
+            resolve(answer);
+        });
+    });
+}
+
+async function main() {
+    dotenv.config();
+
+    // Validate required environment variables
+    const requiredEnvVars = ['CHAIN_ID', 'RECOVERY_SERVICE_URL', 'BUNDLER_URL', 'NODE_URL', 'PAYMASTER_URL', 'USER_EMAIL', 'USER_PHONE'];
+    const missing = requiredEnvVars.filter(v => !process.env[v]);
+    if (missing.length > 0) {
+        throw new Error(`Missing required environment variables: ${missing.join(', ')}. Please check your .env file.`);
+    }
+
+    // Environment variables - set these in your .env file
+    const chainId = BigInt(process.env.CHAIN_ID as string);
+    const serviceUrl = process.env.RECOVERY_SERVICE_URL as string;
+    const bundlerUrl = process.env.BUNDLER_URL as string;
+    const nodeUrl = process.env.NODE_URL as string;
+    const paymasterUrl = process.env.PAYMASTER_URL as string;
+    const userEmail = process.env.USER_EMAIL as string; // Email for alerts
+    const userPhone = process.env.USER_PHONE as string; // Phone number for SMS alerts
+
+    console.log("Starting Safe Alerts Subscription Example");
+    console.log(`Chain ID: ${chainId}`);
+
+    // --------- 1. Create accounts ---------
+    console.log("\nStep 1: Creating accounts");
+
+    const ownerPrivateKey = generatePrivateKey();
+    const ownerAccount = privateKeyToAccount(ownerPrivateKey);
+    console.log("Safe owner:", ownerAccount.address);
+
+    const guardianPrivateKey = generatePrivateKey();
+    const guardianAccount = privateKeyToAccount(guardianPrivateKey);
+    console.log("Guardian:", guardianAccount.address);
+
+    // --------- 2. Create Safe Account ---------
+    console.log("\nStep 2: Creating Safe Account");
+
+    const smartAccount = SafeAccountV0_3_0.initializeNewAccount([ownerAccount.address]);
+    console.log("Safe account address:", smartAccount.accountAddress);
+
+    // --------- 3. Setup Recovery Module and Guardian ---------
+    console.log("\nStep 3: Setting up Recovery Module and Guardian");
+
+    const srm = new SocialRecoveryModule(SocialRecoveryModuleGracePeriodSelector.After3Days);
+    console.log("Recovery module address:", SocialRecoveryModuleGracePeriodSelector.After3Days);
+    console.log("Recovery module type: Social Recovery Module (3-day grace period)");
+
+    // Create transactions to enable module and add guardian
+    const enableModuleTx = srm.createEnableModuleMetaTransaction(smartAccount.accountAddress);
+
+    const addGuardianTx = srm.createAddGuardianWithThresholdMetaTransaction(
+        guardianAccount.address,
+        1n // Set threshold to 1
+    );
+
+    // Create and execute user operation
+    let userOperation = await smartAccount.createUserOperation(
+        [enableModuleTx, addGuardianTx],
+        nodeUrl,
+        bundlerUrl
+    );
+
+    // Use paymaster for sponsored transaction
+    const paymaster = new CandidePaymaster(paymasterUrl);
+    const [paymasterUserOperation, _sponsorMetadata] = await paymaster.createSponsorPaymasterUserOperation(
+        userOperation,
+        bundlerUrl
+    );
+    userOperation = paymasterUserOperation;
+
+    // Sign and send the user operation
+    userOperation.signature = smartAccount.signUserOperation(
+        userOperation,
+        [ownerPrivateKey],
+        chainId
+    );
+
+    console.log("Sending setup transaction...");
+    const sendUserOperationResponse = await smartAccount.sendUserOperation(userOperation, bundlerUrl);
+
+    console.log("Waiting for setup transaction to be included...");
+    const userOperationReceiptResult = await sendUserOperationResponse.included();
+
+    if (userOperationReceiptResult.success) {
+        console.log("Recovery module and guardian successfully set up. Transaction hash:", userOperationReceiptResult.receipt.transactionHash);
+    } else {
+        console.log("User operation execution failed");
+        rl.close();
+        return;
+    }
+
+    // --------- 4. Setup Alert System ---------
+    console.log("\nStep 4: Setting up Alert System");
+
+    const alertsService = new Alerts(serviceUrl, chainId);
+    console.log("Alerts service initialized for chain:", chainId.toString());
+
+    // --------- 5. Create Email Subscription ---------
+    console.log("\nStep 5: Creating email alert subscription");
+
+    // Generate SIWE message for creating email subscription
+    const emailSubscriptionSiweMessage = alertsService.createEmailSubscriptionSiweStatementToSign(
+        smartAccount.accountAddress,
+        ownerAccount.address,
+        userEmail
+    );
+    console.log("Message to sign: " + emailSubscriptionSiweMessage);
+
+    // Sign the SIWE message with owner's private key
+    const emailSubscriptionSignature = await ownerAccount.signMessage({
+        message: emailSubscriptionSiweMessage
+    });
+
+    console.log("Signed SIWE message for email subscription");
+
+    // Create the email subscription
+    const subscriptionId = await alertsService.createEmailSubscription(
+        smartAccount.accountAddress,
+        ownerAccount.address,
+        userEmail,
+        emailSubscriptionSiweMessage,
+        emailSubscriptionSignature
+    );
+
+    console.log("Email subscription created with ID:", subscriptionId);
+    console.log(`Check your email (${userEmail}) for OTP activation code`);
+
+    // --------- 6. Activate Email Subscription ---------
+    console.log("\nStep 6: Activating email subscription");
+
+    const otpChallenge = await askQuestion("Enter the OTP code sent your email: ");
+
+    console.log("Activating subscription with OTP...");
+
+    try {
+        const activationResult = await alertsService.activateSubscription(subscriptionId, otpChallenge);
+
+        if (activationResult) {
+            console.log("Email subscription successfully activated!");
+        } else {
+            console.log("Failed to activate email subscription");
+        }
+    } catch (error) {
+        console.log("Error activating subscription:", error);
+        console.log("Please verify the OTP code and try again");
+    }
+
+    // --------- 7. Create SMS Subscription ---------
+    console.log("\nStep 7: Creating SMS alert subscription");
+
+    // Generate SIWE message for creating SMS subscription
+    const smsSubscriptionSiweMessage = alertsService.createSubscriptionSiweStatementToSign(
+        smartAccount.accountAddress,
+        ownerAccount.address,   
+        "sms",
+        userPhone
+    );
+
+    console.log("Message to sign for SMS: " + smsSubscriptionSiweMessage);
+
+    // Sign the SIWE message with owner's private key
+    const smsSubscriptionSignature = await ownerAccount.signMessage({
+        message: smsSubscriptionSiweMessage
+    });
+
+    console.log("Signed SIWE message for SMS subscription");
+
+    // Create the SMS subscription
+    const smsSubscriptionId = await alertsService.createSubscription(
+        smartAccount.accountAddress,
+        ownerAccount.address,
+        "sms",
+        userPhone,
+        smsSubscriptionSiweMessage,
+        smsSubscriptionSignature
+    );
+
+    console.log("SMS subscription created with ID:", smsSubscriptionId);
+    console.log(`Check your phone (${userPhone}) for SMS with OTP activation code`);
+
+    // --------- 8. Activate SMS Subscription ---------
+    console.log("\nStep 8: Activating SMS subscription");
+    
+    const smsOtpChallenge = await askQuestion("Enter the OTP code from your SMS: ");
+    
+    console.log("Activating SMS subscription with OTP...");
+    
+    try {
+        const smsActivationResult = await alertsService.activateSubscription(smsSubscriptionId, smsOtpChallenge);
+        
+        if (smsActivationResult) {
+            console.log("SMS subscription successfully activated!");
+        } else {
+            console.log("Failed to activate SMS subscription");
+        }
+    } catch (error) {
+        console.log("Error activating SMS subscription:", error);
+        console.log("Please verify the SMS OTP code and try again");
+    }
+
+    // --------- 9. Verify Active Subscriptions ---------
+    console.log("\nStep 9: Retrieving active subscriptions");
+
+    // Generate SIWE message for getting subscriptions
+    const getSubscriptionsSiweMessage = alertsService.getSubscriptionsSiweStatementToSign(ownerAccount.address);
+
+    // Sign the SIWE message
+    const getSubscriptionsSignature = await ownerAccount.signMessage({
+        message: getSubscriptionsSiweMessage
+    });
+
+    // Get active subscriptions
+    const activeSubscriptions = await alertsService.getActiveSubscriptions(
+        smartAccount.accountAddress,
+        ownerAccount.address,
+        getSubscriptionsSiweMessage,
+        getSubscriptionsSignature
+    );
+
+    console.log("Active subscriptions:", activeSubscriptions.length);
+    activeSubscriptions.forEach((subscription, index) => {
+        console.log(`  ${index + 1}. ID: ${subscription.id}`);
+        console.log(`     Channel: ${subscription.channel}`);
+        console.log(`     Target: ${subscription.target}`);
+    });
+
+    // --------- 10. Summary ---------
+    console.log("\nAlert System Setup Complete!");
+    console.log("=================================");
+    console.log("Safe Account:", smartAccount.accountAddress);
+    console.log("Recovery Module: Social Recovery Module (3-day grace period)");
+    console.log("Guardian configured: 1");
+    console.log("Guardian threshold: 1");
+    console.log("Email alerts configured for:", userEmail);
+    console.log("SMS alerts configured for:", userPhone);
+    console.log("");
+    console.log("Your Safe account is now protected by:");
+    console.log("• Social recovery with guardians");
+    console.log("• Email and SMS notifications for recovery events");
+    console.log("• 3-day grace period for recovery finalization");
+    console.log("");
+    console.log("You will receive email and SMS alerts when:");
+    console.log("• Recovery requests are initiated");
+    console.log("• Recovery requests are executed");
+    console.log("• Recovery requests are finalized");
+    console.log("• Guardian configurations change");
+
+    rl.close();
+}
+
+// Error handling wrapper
+main()
+    .then(() => {
+        console.log("\nExample completed successfully!");
+        process.exit(0);
+    })
+    .catch((error) => {
+        console.error("\nError occurred:", error.message || error);
+        if (error.context) {
+            console.error("Context:", error.context);
+        }
+        rl.close();
+        process.exit(1);
+    });
+```
+
+</TabItem>
+<TabItem value=".env" label=".env">
+
+```bash
+# Safe Recovery Service SDK Example Configuration
+# Copy this file to .env and fill in your values
+
+# Network Configuration
+CHAIN_ID=11155111  # Sepolia testnet chain ID
+NODE_URL=https://ethereum-sepolia-rpc.publicnode.com
+
+# Bundler and Paymaster URLs
+BUNDLER_URL=https://api.candide.dev/public/v3/11155111
+PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
+
+# Recovery Service URL
+RECOVERY_SERVICE_URL=https://api.candide.dev/recoveries/v1/sepolia/your_api_key
+
+# Safe Owner
+OWNER_PRIVATE_KEY=0x..
+
+# Alert Configuration
+USER_EMAIL=owner@example.com
+USER_PHONE=+1234567890
+```
+
+</TabItem>
+</Tabs>
+
+</details>
+
+## Managing Subscriptions
+
+### Update Contact Information
+To change your alert email or phone number:
+
+1. **Unsubscribe from current alerts** for that channel using the unsubscribe method with SIWE authentication
+2. **Subscribe with new contact information** using the subscription flow
+3. **Verify the new subscription** by entering the OTP code sent to your new contact
+
+### Unsubscribe from Specific Channel
+To stop receiving alerts on one channel:
+
+```ts
+// Generate SIWE message for unsubscribing
+const unsubscribeSiweMessage = alertsService.unsubscribeSiweStatementToSign(
+  ownerAccount.address
+);
+
+// Sign the SIWE message
+const unsubscribeSignature = await ownerAccount.signMessage({
+  message: unsubscribeSiweMessage
+});
+
+// Unsubscribe from email only
+const emailUnsubscribeSuccess = await alertsService.unsubscribe(
+  "your-email-subscription-id",
+  ownerAccount.address,
+  unsubscribeSiweMessage,
+  unsubscribeSignature
+);
+
+if (emailUnsubscribeSuccess) {
+  console.log("Successfully unsubscribed from email alerts");
+  // SMS subscription remains active
+}
+```
+
+### Unsubscribe from All Channels
+To stop all recovery alerts:
+
+```ts
+// Generate SIWE message for unsubscribing
+const unsubscribeSiweMessage = alertsService.unsubscribeSiweStatementToSign(
+  ownerAccount.address
+);
+
+// Sign the SIWE message
+const unsubscribeSignature = await ownerAccount.signMessage({
+  message: unsubscribeSiweMessage
+});
+
+// Unsubscribe from all channels
+const emailUnsubscribeSuccess = await alertsService.unsubscribe(
+  "email-subscription-id",
+  ownerAccount.address,
+  unsubscribeSiweMessage,
+  unsubscribeSignature
+);
+
+const smsUnsubscribeSuccess = await alertsService.unsubscribe(
+  "sms-subscription-id",
+  ownerAccount.address,
+  unsubscribeSiweMessage,
+  unsubscribeSignature
+);
+
+if (emailUnsubscribeSuccess && smsUnsubscribeSuccess) {
+  console.log("Successfully unsubscribed from all alerts");
+}
+```
