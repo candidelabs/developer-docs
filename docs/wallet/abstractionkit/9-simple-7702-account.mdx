@@ -82,7 +82,7 @@ npm install abstractionkit
 import { Simple7702Account } from "abstractionkit"; 
 
 const delegatorPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31"; // eoa public key
-const smartAccount = Simple7702Account.initializeNewAccount([delegatorPublicAddress]);
+const smartAccount = new Simple7702Account(eoaDelegatorPublicAddress);
 ```
 
 ## Essential Methods
@@ -98,7 +98,7 @@ Creates a UserOperation for EIP-7702 accounts that can be sent to bundlers for e
 import { Simple7702Account } from "abstractionkit";
 
 const delegatorPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
-const smartAccount = Simple7702Account.initializeNewAccount([delegatorPublicAddress]);
+const smartAccount = new Simple7702Account(eoaDelegatorPublicAddress);
 
 const transactions = [
   {
