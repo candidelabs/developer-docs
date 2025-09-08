@@ -336,6 +336,16 @@ const sidebars = {
               id: "wallet/plugins/recovery-alerts-guide",
               label: "How to Activate Recovery Alerts"
             },
+            {
+              type: "doc",
+              id: "wallet/plugins/add-candide-guardian",
+              label: "Add Candide Guardian"
+            },
+            {
+              type: "doc",
+              id: "wallet/plugins/recover-account-candide-guardian",
+              label: "Recover with Candide Guardian"
+            },
           ],
         },
         {

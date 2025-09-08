@@ -1,0 +1,202 @@
+---
+title: Recover Account using Candide Guardian
+description: Learn how to recover your Safe account using Candide Guardian service when you've lost access to your owner keys
+keywords: [candide-guardian, account-recovery, safe-recovery, lost-keys, guardian-recovery, email-recovery, sms-recovery]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Recover Account using Candide Guardian
+
+Learn how to recover your Safe account using [Candide Guardian](/wallet/recovery/auth-api/) when you've lost access to your owner keys. This guide walks through the complete recovery process using email and SMS verification.
+
+> If you haven't set up Candide Guardian yet, check out the [Add Candide Guardian](/wallet/plugins/add-candide-guardian/) guide first.
+
+## What You'll Need
+
+Before starting the recovery process, ensure you have:
+
+- **Access to registered recovery methods** (email or SMS)
+- **Safe account address** you want to recover
+- **New private key** to replace the lost one
+- **Recovery service access** (Candide Guardian must be enabled)
+
+## Recovery Overview
+
+The recovery process involves these key steps:
+
+1. **Generate new owner key** - Create replacement for lost key
+2. **Request guardian signature** - Initiate recovery through Guardian service
+3. **Verify all channels** - Confirm identity via ALL registered methods
+4. **Execute recovery** - Submit recovery transaction
+5. **Finalize recovery** - Complete ownership transfer after grace period
+
+## Quickstart
+
+> You can also [fork the complete code](https://github.com/candidelabs/safe-recovery-service-sdk/blob/main/examples/03-candide-guardian-recovery/index.ts) and follow along.
+
+### Installation
+
+<Tabs>
+<TabItem value="npm" label="npm">
+
+```bash
+npm i abstractionkit safe-recovery-service-sdk viem
+```
+
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash
+yarn add abstractionkit safe-recovery-service-sdk viem
+```
+
+</TabItem>
+</Tabs>
+
+### Configure Environment
+
+<Tabs>
+<TabItem value=".env" label=".env">
+
+```bash
+# Network Configuration
+CHAIN_ID=11155111
+BUNDLER_URL=https://api.candide.dev/public/v3/11155111
+NODE_URL=https://ethereum-sepolia-rpc.publicnode.com
+
+# Recovery Service URL
+# Get access here: https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5
+RECOVERY_SERVICE_URL= 
+```
+
+</TabItem>
+</Tabs>
+
+## Step 1: Initialize Recovery Service
+
+```ts
+import { RecoveryByCustodialGuardian } from "safe-recovery-service-sdk";
+import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
+
+const chainId = BigInt(process.env.CHAIN_ID as string);
+const serviceUrl = process.env.RECOVERY_SERVICE_URL as string;
+
+// Initialize recovery service
+const custodialGuardianService = new RecoveryByCustodialGuardian(serviceUrl, chainId);
+
+// Generate new owner key to replace the lost one
+const newOwnerPrivateKey = generatePrivateKey();
+const newOwner = privateKeyToAccount(newOwnerPrivateKey);
+```
+
+## Step 2: Request Guardian Signature Challenge
+
+Request a recovery signature from Candide Guardian:
+
+```ts
+// Request Candide Guardian signature for recovery
+const signatureRequest = await custodialGuardianService.requestCustodialGuardianSignatureChallenge(
+    safeAccountAddress,
+    [newOwner.address], // New owner array
+    1 // New threshold
+);
+```
+
+## Step 3: Verify All Recovery Channels
+
+You must verify **ALL** registered channels to complete recovery. Submit the OTP codes received:
+
+<Tabs>
+<TabItem value="email" label="Email Verification">
+
+```ts
+// Find the email authentication challenge
+const emailAuth = signatureRequest.auths.find(auth => auth.channel === 'email');
+
+// Enter OTP from email
+const emailOtp = "123456"; // Replace with actual OTP
+
+const verificationResult = await custodialGuardianService.submitCustodialGuardianSignatureChallenge(
+    signatureRequest.requestId,
+    emailAuth.challengeId,
+    emailOtp
+);
+```
+
+</TabItem>
+<TabItem value="sms" label="SMS Verification">
+
+```ts
+// Find the SMS authentication challenge
+const smsAuth = signatureRequest.auths.find(auth => auth.channel === 'sms');
+
+// Enter OTP from SMS
+const smsOtp = "654321"; // Replace with actual OTP
+
+const verificationResult = await custodialGuardianService.submitCustodialGuardianSignatureChallenge(
+    signatureRequest.requestId,
+    smsAuth.challengeId,
+    smsOtp
+);
+```
+
+</TabItem>
+<TabItem value="both" label="Verify All Channels">
+
+```ts
+// Verify ALL registered channels (required for recovery)
+let verificationResult;
+
+for (const auth of signatureRequest.auths) {
+    // Enter OTP for current channel
+    const recoveryOtpCode = "123456"; // Replace with actual OTP from respective channel
+    
+    verificationResult = await custodialGuardianService.submitCustodialGuardianSignatureChallenge(
+        signatureRequest.requestId,
+        auth.challengeId,
+        recoveryOtpCode
+    );
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Step 4: Execute Recovery Transaction
+
+After verifying all channels, execute the recovery with the obtained guardian signature:
+
+```ts
+// Execute recovery using the service
+const recoveryRequest = await custodialGuardianService.createAndExecuteRecoveryRequest(
+    safeAccountAddress,
+    [newOwner.address], // New owner array
+    1, // New threshold
+    verificationResult.custodianGuardianAddress as string,
+    verificationResult.custodianGuardianSignature as string
+);
+```
+
+## Step 5: Finalize Recovery After Grace Period
+
+Wait for the grace period to expire, then finalize the recovery:
+
+```ts
+import { SocialRecoveryModuleGracePeriodSelector } from "abstractionkit";
+import { RecoveryByGuardian } from "safe-recovery-service-sdk";
+
+// Wait for grace period (3 minutes)
+await new Promise(resolve => setTimeout(resolve, 3 * 60 * 1000));
+
+// Initialize recovery service for finalization
+const recoveryService = new RecoveryByGuardian(
+    serviceUrl,
+    chainId,
+    SocialRecoveryModuleGracePeriodSelector.After3Minutes
+);
+
+// Finalize the recovery
+const finalizationResult = await recoveryService.finalizeRecoveryRequest(recoveryRequest.id);
+```
