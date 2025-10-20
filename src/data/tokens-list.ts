@@ -219,6 +219,15 @@ export const optimismList = [
   },
 ];
 
+export const plasmaList = [
+  {
+    token: "USDT0",
+    logo: "/img/tokens/usdt0.png",
+    address: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
+    blockExplorer: "https://plasmascan.to/token/",
+  },
+];
+
 export const worldchainList = [
   {
     token: "USDC.e (Bridged)",

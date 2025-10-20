@@ -5,6 +5,7 @@ image: /img/posters/paymaster-meta.png
 keywords: [paymaster, gas sponsorship, pay gas in stablecoin]
 ---
 
+import { plasmaList } from "../../../src/data/tokens-list";
 import { PaymasterSupportedToken } from "/src/components/CustomTable";
 import {
     arbitrumList,
@@ -55,6 +56,10 @@ If you would like to see a token or network supported, reach out on Discord or e
 
 ### Polygon POS
 <PaymasterSupportedToken items={polygonList} />
+
+### Plasma
+<PaymasterSupportedToken items={plasmaList} />
+
 
 ### Worldchain Mainnet
 <PaymasterSupportedToken items={worldchainList}/>

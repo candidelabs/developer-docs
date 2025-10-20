@@ -59,14 +59,14 @@ export function NetworkList() {
           marginRight: "10px",
         }}
       />
-      {/* <img
-        src="/img/networks/43114.png"
-        alt="Avalanche"
+      <img
+        src="/img/networks/9745.svg"
+        alt="Plasma"
         style={{
           width: "45px",
           marginRight: "10px",
         }}
-      /> */}
+      />
       <img
         src="/img/networks/56.png"
         alt="BnB Chain"
