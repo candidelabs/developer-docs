@@ -83,6 +83,14 @@ export function NetworkList() {
           marginRight: "10px",
         }}
       />
+      <img
+        src="/img/networks/43114.png"
+        alt="Avalanche"
+        style={{
+          width: "45px",
+          marginRight: "10px",
+        }}
+      />
     </div>
   );
 }

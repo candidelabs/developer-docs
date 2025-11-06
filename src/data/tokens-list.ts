@@ -243,6 +243,15 @@ export const worldchainList = [
   },
 ];
 
+export const avalancheList = [
+  {
+    token: "USDT (Bridged)",
+    logo: "/img/tokens/usdt-logo.svg",
+    address: "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+    blockExplorer: "https://snowscan.xyz/token/",
+  },
+];
+
 // testnet tokens
 export const alfajoresList = [
   {
