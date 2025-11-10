@@ -55,7 +55,7 @@ Transaction rules limit gas sponsorship to specific smart contract interactions,
     - Example: "Only sponsor transactions that interacts with the smart contract address `0x123`."
 - **Method**: Limit gas sponsorship to a specific callable method on the smart contract.
     - Example: "Only sponsor gas when the transaction calls the method `swap` on the smart contract.
-- **Parameters Constraints**: Limit gas sponsorship to certain parameters and contrains on the selected method.
+- **Parameters Constraints**: Limit gas sponsorship to certain parameters and constraints on the selected method.
     - Example: "Only sponsor gas when the minimum amount of `tokenIn` in the selected method is greater than or equal to 1 ETH"
 - **Batch Transaction**: Design rules to sponsor a batch of transactions, such as an ERC-20 token approval followed by a deposit to a contract. 
     - Example: "Only sponsor if the transaction calls the `approval` of the erc-20 token to your contracts as well as the `deposit` transaction.

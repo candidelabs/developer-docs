@@ -11,7 +11,7 @@ import { DataTable } from "/src/components/Table";
 import { userOperationReturnParamsV06 } from "/src/data/userOperation"
 import { 
   candidePaymasterContext,
-  tokensParamatersV2,
+  tokensParametersV2,
   paymasterMetadataReturnParametersV06,
   pm_supportedEntryPointReturnParam,
   pm_sponsorUserOperationReturnParamsV06V02
@@ -88,7 +88,7 @@ Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
 
 <table>
   <thead>
-    <th align="left">Paramater</th>
+    <th align="left">Parameter</th>
     <th align="left">Type</th>
   </thead>
   <tbody>
@@ -103,7 +103,7 @@ Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
       <td align="left">tokens</td>
       <td align="left">
         <p>Object[]</p>
-        <DataTable items={tokensParamatersV2} />
+        <DataTable items={tokensParametersV2} />
       </td>
     </tr>
   </tbody>
@@ -190,7 +190,7 @@ If the paymaster rejects the UserOperation, it should not return a result but a 
 
 <table>
   <thead>
-    <th align="left">Paramater</th>
+    <th align="left">Parameter</th>
     <th align="left">Type</th>
   </thead>
   <tbody>
@@ -329,7 +329,7 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
 <TabItem value="response type" label="Response Type">
   <table>
     <thead>
-      <th align="left">Paramater</th>
+      <th align="left">Parameter</th>
       <th align="left">Type</th>
       <th align="left">Description</th>
     </thead>

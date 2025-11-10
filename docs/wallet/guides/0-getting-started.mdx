@@ -280,13 +280,13 @@ Track your UserOperation until it's included in a block:
 ```ts title="index.ts"
 let userOperationReceiptResult = await sendUserOperationResponse.included()
 
-console.log("Useroperation receipt received.")
+console.log("UserOperation receipt received.")
 console.log(userOperationReceiptResult)
 
 if (userOperationReceiptResult.success) {
-    console.log("Two Nfts were minted. The transaction hash is : " + userOperationReceiptResult.receipt.transactionHash)
+    console.log("Two NFTs were minted. The transaction hash is : " + userOperationReceiptResult.receipt.transactionHash)
 } else {
-    console.log("Useroperation execution failed")
+    console.log("UserOperation execution failed")
 }
 ```
 

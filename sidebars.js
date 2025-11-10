@@ -402,7 +402,7 @@ const sidebars = {
         },
         {
           type: "doc",
-          id: "wallet/guides/send-galess-eip-7702",
+          id: "wallet/guides/send-gasless-eip-7702",
           label: "Gasless Transactions"
         },
         {

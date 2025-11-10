@@ -20,7 +20,7 @@ Almost every wallet on Ethereum today have limitation in one way or the other.
 
     Moreover, this setup also leads to a poor user experience for existing users. They have to constantly top up their ETH balance solely to handle gas fees, even if they already possess enough ERC-20 tokens in their wallet to cover the desired transactions.
 
-- **Muti-step Transactions**: The usual interaction with any applications involves several signature and transactions submissin to complete the full process. The most popular example in a swap on uniswap: `Approve` ERC-20 spend + `Deposit`, where a user needs two click confirmations in their wallet to complete the process.
+- **Multi-step Transactions**: The usual interaction with any applications involves several signature and transactions submission to complete the full process. The most popular example in a swap on uniswap: `Approve` ERC-20 spend + `Deposit`, where a user needs two click confirmations in their wallet to complete the process.
 
 - **Security**: Regular wallets today, come with the risk of lost or stolen seed phrases. They are limited in functionality in terms of recovery mechanism. As the space continues to grow and attract more users, it becomes evident that wallets must adopt more robust and multi-layered security measures to ensure the safety of users' accounts.
 

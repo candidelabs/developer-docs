@@ -1,7 +1,7 @@
 ---
 title: "Multichain Deposit Address"
 description: "A multichain deposit address that works across all blockchains, enabling instant cross-chain asset access"
-keyords:
+keywords:
   - cross-chain
   - bridging
   - user-experience
