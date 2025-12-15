@@ -6,10 +6,10 @@ image: /img/posters/voltaire-meta.png
 
 # Introduction To Candide's Voltaire
 
-Voltaire is a modular, developer-friendly and lightning-fast Python Bundler for Ethereum EIP-4337 Account Abstraction. 
+Voltaire is a modular, developer-friendly and lightning-fast Python Bundler for Ethereum EIP-4337 Account Abstraction.
 
 :::info
-Looking for a quick bundler instance? Use one of our [public hosted endpoints](./3-rpc-endpoints.mdx) for your developement
+Looking for a quick bundler instance? Use one of our [public hosted endpoints](./3-rpc-endpoints.mdx) for your development
 :::
 
 Voltaire is a fully open-source project designed to operate within the peer-to-peer mempool of UserOperations, facilitating the inclusion of transactions on-chain more quickly and efficiently.

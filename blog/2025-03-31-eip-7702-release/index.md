@@ -59,7 +59,7 @@ In order to support EIP-7702, bundlers adds a new json element named `eip7702Aut
 See the full spec on [Bundler API](/wallet/bundler/rpc-methods/)
 
 ## SDK support for EIP-7702
-AbstractionKit releases EIP-7702 with its support for new `eip7702Auth` tuple for Bundlers and the support for a new smart account for batchig and sponsorship `Simple7702Account`. 
+AbstractionKit releases EIP-7702 with its support for new `eip7702Auth` tuple for Bundlers and the support for a new smart account for batching and sponsorship `Simple7702Account`. 
 
 ```typescript
 import {
