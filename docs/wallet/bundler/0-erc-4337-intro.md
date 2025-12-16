@@ -6,44 +6,44 @@ image: /img/posters/voltaire-meta.png
 
 # Introduction To Candide's Voltaire
 
-Voltaire is a modular, developer-friendly and lightning-fast Python Bundler for Ethereum EIP-4337 Account Abstraction.
+Voltaire is a modular, developer-friendly, and lightning-fast Python Bundler for Ethereum EIP-4337 Account Abstraction.
 
 :::info
-Looking for a quick bundler instance? Use one of our [public hosted endpoints](./3-rpc-endpoints.mdx) for your development
+Looking for a quick bundler instance? Use one of our [public hosted endpoints](./3-rpc-endpoints.mdx) for development.
 :::
 
-Voltaire is a fully open-source project designed to operate within the peer-to-peer mempool of UserOperations, facilitating the inclusion of transactions on-chain more quickly and efficiently.
+Voltaire is a fully open-source project designed to operate within the peer-to-peer mempool of UserOperations, enabling faster and more efficient on-chain transaction inclusion.
 
-The code is available for free on [Github](https://github.com/candidelabs/voltaire) under a permissive license for anyone to use without any strings attached. We encourage the community to fork it, contribute with docs, issues, pull requests, questions, or even try to break it.
+The code is freely available on [GitHub](https://github.com/candidelabs/voltaire) under a permissive license. We encourage the community to fork, contribute documentation, submit issues and pull requests, ask questions, or stress-test the implementation.
 
 ## ERC-4337 Account Abstraction
 
-ERC-4337 is designed to enable account abstraction without compromising on decentralization and censorship resistance. It strives to be as decentralized as the block production of the underlying chain. In practical terms, this means enabling access to smart contract wallets without depending on centralized relayers controlled by a single entity. 
+ERC-4337 enables account abstraction without compromising decentralization or censorship resistance. It maintains the same level of decentralization as the underlying chain's block production. Practically, this means providing access to smart contract wallets without relying on centralized relayers controlled by a single entity.
 
-The role of centralized relayers here is replaced with a p2p network of new entities called **Bundlers**.
+Centralized relayers are replaced with a peer-to-peer network of **Bundlers**.
 
-## How Bundlers work
+## How Bundlers Work
 
-A Bundler running in a public mempool can be considered a block-builder, or an MEV searcher. As Account Abstraction gains adoption, an increasing part of user transactions would move into bundles. This means that most MEV opportunities will happen in bundles rather than blocks. Any block builder not partnering with a bundler (or becoming one) will be missing out on an increasing portion of the MEV. Bundlers will probably optimize for MEV and make the most of their profits over there.
+A Bundler operating in a public mempool functions as a block builder or MEV searcher. As Account Abstraction adoption grows, an increasing share of user transactions will flow through bundles, shifting MEV opportunities from blocks to bundles. Block builders that don't partner with or operate bundlers will miss out on this growing MEV share. Bundlers will optimize for MEV extraction to maximize profits.
 
-### Bundlers role
+### Bundler Role
 
-- Users can propagate `UserOperations` to a network where any bundler can serve them
-- Bundlers receive and deliver `UserOperations` to the EntryPoint contract but cannot change them
+- Users propagate `UserOperations` to a network where any bundler can process them
+- Bundlers receive and submit `UserOperations` to the EntryPoint contract without modifying them
 
 ### UserOperation Flow
 
-The flow of UserOperation can be thought of as the following, from a Bundler perspective:
+From a Bundler's perspective, the UserOperation flow works as follows:
 
-1. Wallet Client Software send single `UserOperations` type to Bundlers
-2. Bundlers keep pending UserOps in memory and share them between other nodes in the mempool
-3. Bundlers send p2p message on every incoming UserOp
-4. For efficiency, the p2p protocol support sending multiple userOps in single message - mostly for cases where a new bundler is brought online and synced with the network.
-5. When it is time to create a bundle, each bundler is free to create a bundle of whatever size and order it likes - from zero to the entire mempool (given tx and block gas limits). This is where flashbot-api for searchers can be integrated.
-6. The benefit of large bundles - is reduced overheads (the constant 21000, some more overhead of EntryPoint itself, and the variable reduction due to using "warm" addresses that are used between the different ops.
+1. Wallet clients send individual `UserOperations` to Bundlers
+2. Bundlers maintain pending UserOps in memory and propagate them to other mempool nodes
+3. Bundlers broadcast peer-to-peer messages for each incoming UserOp
+4. For efficiency, the P2P protocol supports batching multiple UserOps in a single message—primarily for syncing new bundlers joining the network
+5. When creating a bundle, each bundler can freely choose the size and order—from empty to the entire mempool (within transaction and block gas limits). This is where flashbots-style APIs for searchers integrate
+6. Larger bundles reduce overhead: the fixed 21,000 gas cost, EntryPoint contract overhead, and variable costs through "warm" address reuse across operations
 
-## Voltaire 
+## Voltaire
 
-Voltaire presently has complete coverage of the test suite. While the specification is still under development, all upcoming updates will aim to sustain full compliance coverage.
+Voltaire currently maintains complete test suite coverage. While the ERC-4337 specification continues to evolve, all updates will maintain full compliance coverage.
 
-As open-source developers, we looked at every Ethereum client implementation and considered different architectures and languages. So we decided to build Voltaire from scratch with the following criteria: Performance, Modularity, Developer friendly Language and Open Licensing.
+As open-source developers, we evaluated every Ethereum client implementation and considered various architectures and languages. We built Voltaire from scratch optimizing for: performance, modularity, developer-friendly language, and open licensing.

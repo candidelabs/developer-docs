@@ -18,15 +18,15 @@ Voltaire is open-source, meaning that anyone can launch Voltaire and capture Use
 
 ### Bundler Endpoints
 :::info
-Get started by getting bundler endpoints for your developement [here](/wallet/bundler/rpc-methods)
+Get started by getting bundler endpoints for your development [here](/wallet/bundler/rpc-methods)
 :::
-ERC-4337 developers can get started sending [user operations requests](/wallet/bundler/rpc-endpoints) for Sepolia, Goerli, and Optimism-Goerli testnet. Stay tuned for more networks coming soon. 
+ERC-4337 developers can get started sending [UserOperations requests](/wallet/bundler/rpc-endpoints) for Sepolia, Goerli, and Optimism-Goerli testnet. Stay tuned for more networks coming soon.
 
-We partnered with BlockPi, Chainbase, and LlamaNodes to offer low latency and resilience ERC-4337 compliant public hosted bundlers using Voltaire
+We partnered with BlockPi, Chainbase, and LlamaNodes to offer low-latency and resilient ERC-4337 compliant public hosted bundlers using Voltaire.
 
 ### Docker
 
-The [docker image](/wallet/bundler/installation#docker) is a single command line to get starting running an instance of Voltaire, locally or on a private server. A bundler needs access to a **full node**. Run your own, or get one from a node provider.
+The [docker image](/wallet/bundler/installation#docker) is a single command line to get started running an instance of Voltaire, locally or on a private server. A bundler needs access to a **full node**. Run your own, or get one from a node provider.
 
 ### Source
 
@@ -37,9 +37,9 @@ Running from the source is intended for developers who wish to develop on top of
 ### Python 
 Python is a powerful programming language that, due to its simplicity, versatility, and wide range of libraries and frameworks, is a suitable language for a Bundler. One of the key features that makes Python suitable is the ability to write concurrent programs. The [asyncio library](https://docs.python.org/3/library/asyncio.html) primitives allow for writing simple and pure asyncio implementations.
 
-A bundler needs to perform and handle multiple User Operations requests at a time. Asyncio is ideal for handling multiple concurrent tasks efficiently. This enables the server to handle multiple client requests simultaneously without blocking other requests.
+A bundler needs to perform and handle multiple UserOperations requests at a time. Asyncio is ideal for handling multiple concurrent tasks efficiently. This enables the server to handle multiple client requests simultaneously without blocking other requests.
 
-A big of part of our inspiration for Voltaire is [Trinity](https://trinity.ethereum.org/), a previous open-source Ethereum client implementation written in Python. We would like to thank the Trinity team, as well as all Python community members for their open-source contributors.
+A big part of our inspiration for Voltaire is [Trinity](https://trinity.ethereum.org/), a previous open-source Ethereum client implementation written in Python. We would like to thank the Trinity team, as well as all Python community members for their open-source contributions.
 
 <p align="center">
   <img src="/img/posters/erc4337-bundler.png" />

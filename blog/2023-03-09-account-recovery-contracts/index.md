@@ -47,11 +47,11 @@ The owner can remove and replace a recovery contact at any time
 
 Account Recovery **interfaces** can be built with or without a backend service:
 
-- Without a backend: Each recovery contact can submit their signature transactions separately on the blockchain. Once the threshold is meant, anyone can call execute recovery to start the grace period.
+- Without a backend: Each recovery contact can submit their signature transactions separately on the blockchain. Once the threshold is met, anyone can call execute recovery to start the grace period.
 
-- With a backend: This service can aggregate guardians' signatures so that only the last guardian executes the transaction and pay gas fees. This is similar to how Safe's interface works when multiple owners for a multisig sign transactions before submitting them.
+- With a backend: This service can aggregate guardians' signatures so that only the last guardian executes the transaction and pays gas fees. This is similar to how Safe's interface works when multiple owners for a multisig sign transactions before submitting them.
 
-## Highlevel Spec
+## High-Level Spec
 
 We assume that the signer key belongs to its real owner. The probability of the signer key being in control of someone else should be close to zero. Under this model, we can build a simple yet highly secure non-custodial wallet. To enable that model to evolve if needed, upgrading the wallet to a new implementation requires the approval of only the owner of the account.
 
@@ -67,7 +67,7 @@ We assume that the signer key belongs to its real owner. The probability of the 
 
 ## The Contract
 
-The Account Recovery module is a smart contracts contract that gets added to the main Wallet Contract. Since Candide Wallet is based on Safe, they implement the Account functionality while separating module logic from the Account core contract. Adding and removing a module requires confirmation from the owner. Modules are security-critical, so they need to be as secure as all other contracts. Events are emitted whenever a module is added or removed and whenever a module transaction was successful or failed.
+The Account Recovery module is a smart contract that gets added to the main Wallet Contract. Since Candide Wallet is based on Safe, they implement the Account functionality while separating module logic from the Account core contract. Adding and removing a module requires confirmation from the owner. Modules are security-critical, so they need to be as secure as all other contracts. Events are emitted whenever a module is added or removed and whenever a module transaction was successful or failed.
 
 We will be using today's lingo `Guardians` in our code and explanation to reference a Recovery Contact or Device.
 
@@ -210,7 +210,7 @@ function validateGuardianSignature(
 
 ### Confirm Recovery
 
-This method lets a single guardian confirm the execution of the recovery request. Notice the `_execute`, when passed, allows the guardian to both sign and execute the recovery. THis is useful when building an interface for a seamless one-click experience.   
+This method lets a single guardian confirm the execution of the recovery request. Notice the `_execute`, when passed, allows the guardian to both sign and execute the recovery. This is useful when building an interface for a seamless one-click experience.   
 
 ```sol title="/social_recovery/SocialRecoveryModule.sol"
 /**
@@ -364,7 +364,7 @@ function finalizeRecovery(address _wallet) external whenRecovery(_wallet) {
 
 ### Cancel Recovery
 
-At any time during a recovery process, the owner can call `cancelRecovery` and remove their guardians form the Account.
+At any time during a recovery process, the owner can call `cancelRecovery` and remove their guardians from the Account.
 
 ```sol title="/social_recovery/SocialRecoveryModule.sol"
 /**
@@ -377,6 +377,6 @@ function cancelRecovery(address _wallet) external authorized(_wallet) whenRecove
 }
 ```
 
-The Account Recovery Module is open-source and can be found on [github](https://github.com/candidelabs/CandideWalletContracts/tree/main/contracts/modules/social_recovery)
+The Account Recovery Module is open-source and can be found on [GitHub](https://github.com/candidelabs/CandideWalletContracts/tree/main/contracts/modules/social_recovery).
 
 

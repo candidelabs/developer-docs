@@ -6,32 +6,31 @@ image: "/img/posters/atelier-meta.png"
 authors: [marc]
 tags: [bundler,sdk,paymaster]
 ---
-# EIP-7702 Support: Bundler, Paymaster, SDK 
+# EIP-7702 Support: Bundler, Paymaster, SDK
 
-EIP-7702 introduces a new paradigm for Ethereum users by allowing Externally Owned Accounts (EOAs), such as MetaMask accounts, to function like smart contracts. This enables on-chain code execution, giving smart capabilities to EOAs. Candide has added support for EIP-7702 across its entire stack, including Voltaire Bundler, InstaGas Paymaster, and AbstractionKit SDK.
+EIP-7702 introduces a new paradigm for Ethereum by enabling Externally Owned Accounts (EOAs), such as MetaMask accounts, to function like smart contracts. This allows on-chain code execution, granting smart capabilities to EOAs. Candide now supports EIP-7702 across its entire stack, including Voltaire Bundler, InstaGas Paymaster, and AbstractionKit SDK.
 
 <!-- truncate -->
 
 ## What EIP-7702 Enables
 
-- **Gas sponsorship**: Abstract away gas fees, allowing third-party sponsorship or payment in ERC-20 tokens
-- **Transaction batching**: Improve UX and security by combining approvals and contract interactions into a single step
-- **Permissions**: Grant specific, limited access to third-parties, enabling use cases like recurring payments
+- **Gas Sponsorship**: Abstract gas fees through third-party sponsorship or ERC-20 token payments
+- **Transaction Batching**: Improve UX and security by combining approvals and contract interactions into atomic operations
+- **Granular Permissions**: Grant specific, limited access to third parties, enabling use cases like recurring payments
 
-To learn more about EIP-7702, visit the dedicated [7702 Overview](/account-abstraction/7702/overview).
+Learn more about EIP-7702 in our dedicated [7702 Overview](/account-abstraction/7702/overview).
 
 ## EIP-7702 and ERC-4337
 
-EIP-7702 enables EOAs to include executable code in their addresses, allowing for multiple actions instead of just one. It also separates transaction execution from gas payment, requiring a supporting infrastructure to cover transaction costs. ERC-4337 provides this framework, featuring a thriving ecosystem of bundlers and paymasters. EIP-7702 accounts can integrate with ERC-4337 with only minor adjustments to bundlers and no changes to paymaster contracts. 
+EIP-7702 enables EOAs to execute code at their addresses, supporting multiple actions in a single transaction instead of one. It separates transaction execution from gas payment, requiring supporting infrastructure to cover transaction costs. ERC-4337 provides this framework through its ecosystem of bundlers and paymasters. EIP-7702 accounts integrate with ERC-4337 requiring only minor bundler adjustments and no paymaster contract changes. 
 
-A new Entrypoint Contract is released that adds support for EIP-7702. EntryPoint v0.8 can be found at the following address: [0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108](https://etherscan.io/address/0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108)
+A new EntryPoint Contract adds support for EIP-7702. EntryPoint v0.8 is deployed at: [0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108](https://etherscan.io/address/0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108)
 
-## Bundler support for EIP-7702 
+## Bundler Support for EIP-7702
 
-EIP-7702 support is added to Voltaire Bundler with EntryPoint V0.8. The main ERC-4337 RPC call are `eth_estimateUserOperationGas` and `eth_sendUserOperation`, 
-which takes a UserOperation structure. 
+Voltaire Bundler now supports EIP-7702 with EntryPoint v0.8. The main ERC-4337 RPC methods—`eth_estimateUserOperationGas` and `eth_sendUserOperation`—accept a UserOperation structure.
 
-In order to support EIP-7702, bundlers adds a new json element named `eip7702Auth`, to hold the eip-7702 auth tuple items. The recovered address MUST be the sender of this `UserOperation`.
+To support EIP-7702, bundlers add a new JSON element named `eip7702Auth` containing the EIP-7702 authorization tuple. The recovered address MUST match the `UserOperation` sender.
 
 ```json
 {
@@ -56,10 +55,10 @@ In order to support EIP-7702, bundlers adds a new json element named `eip7702Aut
 }
 ```
 
-See the full spec on [Bundler API](/wallet/bundler/rpc-methods/)
+View the complete specification in the [Bundler API](/wallet/bundler/rpc-methods/) documentation.
 
-## SDK support for EIP-7702
-AbstractionKit releases EIP-7702 with its support for new `eip7702Auth` tuple for Bundlers and the support for a new smart account for batching and sponsorship `Simple7702Account`. 
+## SDK Support for EIP-7702
+AbstractionKit now supports EIP-7702 through the new `eip7702Auth` tuple for Bundlers and the `Simple7702Account` implementation for transaction batching and sponsorship. 
 
 ```typescript
 import {
@@ -94,14 +93,14 @@ userOperation.eip7702auth = createAndSignEip7702DelegationAuthorization(
 // highlight-end
 ```
 
-See the full guide on [EIP-7702 Quickstart](/wallet/guides/getting-started-eip-7702/)
+View the complete guide: [EIP-7702 Quickstart](/wallet/guides/getting-started-eip-7702/)
 
-## Paymaster support for EIP-7702
-Candide's InstaGas adds support for EIP-7702 accounts, enabling wallets to benefit from gas sponsorship from dApps. There are no breaking changes in both the SDK and the paymaster API, so wallets can integrate the paymaster directly through the normal flow.
+## Paymaster Support for EIP-7702
+Candide's InstaGas now supports EIP-7702 accounts, enabling wallets to leverage dApp gas sponsorship. The SDK and Paymaster API maintain backward compatibility—wallets can integrate seamlessly using the existing flow.
 
-InstaGas also added support for ERC-7677, the standard for Paymaster Web Service Capability, which allows dapps to communicate standard paymaster calls to wallets.
+InstaGas also implements ERC-7677, the Paymaster Web Service Capability standard, enabling standardized paymaster communication between dApps and wallets.
 
-Resources: 
-- [How to send a gasless transaction](/wallet/guides/send-gasless-tx/)
-- [How to allow gas payment in ERC-20 Tokens](/wallet/guides/pay-gas-in-erc20/)
+**Resources:**
+- [How to Send a Gasless Transaction](/wallet/guides/send-gasless-tx/)
+- [How to Pay Gas in ERC-20 Tokens](/wallet/guides/pay-gas-in-erc20/)
 - [Paymaster API](/wallet/paymaster/rpc-methods/)

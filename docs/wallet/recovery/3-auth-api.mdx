@@ -1,6 +1,6 @@
 ---
-title: Safe Recovery Serice using Email/SMS | API Reference
-description: API specification for Candide's Safe Recovery Service. Features email / sms recovery, multifactor auth, and an alert system for on and offchain monitoring for active recovery.
+title: Safe Recovery Service using Email/SMS | API Reference
+description: API specification for Candide's Safe Recovery Service. Features email/SMS recovery, multifactor auth, and an alert system for on-chain and off-chain monitoring for active recovery.
 keywords: [safe recovery, social recovery, smart wallet, email-sms recovery, guardian recovery]
 ---
 
@@ -55,8 +55,8 @@ The following API is in a pre-release phase. [Request access here](https://app.f
 ## Auth Registration
 ### Email / SMS
 
-Submit a registration request with the target smart account to protect using the choice of channel (email or sms). 
-The user will then receive a OTP code to later submits the challenge in `/auth/submit`
+Submit a registration request with the target smart account to protect using the choice of channel (email or SMS).
+The user will then receive an OTP code to later submit the challenge in `/auth/submit`.
 
 #### `POST /auth/register`
 <Tabs>
@@ -100,10 +100,10 @@ I authorize Safe Recovery Service to sign a recovery request for my account afte
 
 -   `signature`: signature proving the request is initiated from the account
 
-See [example guide](#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign in With Ethereum (SIWE)
+See [example guide](#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign-In with Ethereum (SIWE).
 
-### Submits confirmation using OTP
-Submits the receive OTP code to confirm ownership of the target channel 
+### Submit Confirmation Using OTP
+Submit the received OTP code to confirm ownership of the target channel. 
 
 #### `POST /auth/submit`
 

@@ -9,22 +9,12 @@ image: /img/posters/paymaster-meta.png
 
 ## Introduction
 
-A no-code platform that allows applications on Ethereum, Layer 2 networks, and EVM compatible chains to define gas policies to directly sponsor gas 
-for Smart Wallets end-users, **without the need for API calls or code integration on the dApp client.** A standard for Paymaster RPC endpoints is part of the solution, 
-but the main benefits are lost if dApps are still required to write code to sponsor gas with different smart contract wallet implementations. 
+A no-code platform enabling applications on Ethereum, Layer 2 networks, and EVM-compatible chains to define gas policies for directly sponsoring Smart Wallet end-user gas fees **without API calls or code integration on the dApp client.** While a standard for Paymaster RPC endpoints is part of the solution, the main benefits are lost if dApps still need to write code to sponsor gas with different smart contract wallet implementations.
 
-InstaGas receives transactions from end-users’ Smart Wallets and checks for applicable gas policies set up by sponsors. If a matching policy is found, 
-InstaGas returns a valid sponsorship signature. Gas policies are configured using customizable rules, ranging from generic to account-based, access-based, 
-and transaction-specific rules. Simple gas policies require only a few basic rules to set up, while more complex ones may involve transaction rules that scan 
-for contract interactions, input parameters, and predefined limits. InstaGas, by design, is secured against draining attacks, provided that the gas policy 
-is properly configured to enforce the desired behavior.
+InstaGas receives transactions from end users' Smart Wallets and checks for applicable gas policies set up by sponsors. If a matching policy is found, InstaGas returns a valid sponsorship signature. Gas policies are configured using customizable rules ranging from generic to account-based, access-based, and transaction-specific rules. Simple gas policies require only a few basic rules, while more complex ones may involve transaction rules that scan for contract interactions, input parameters, and predefined limits. InstaGas is secured against draining attacks by design, provided the gas policy is properly configured to enforce desired behavior.
 
 ![candide-instagas-logo](/img/logo/instagas-logo.png)
 
 ## The Problem
-Without a Paymaster, anyone sending an Ethereum transaction must possess ETH to cover gas fees, forcing new users to complete KYC processes 
-and purchase ETH before accessing any dApp. With the growing demand for better user experiences and the introduction of the Account Abstraction standard, 
-Smart Wallets have emerged to cover gas fees on behalf of their users. However, this shift places dApps in a challenging position, as they lose control 
-over their user onboarding processes. To sponsor gas for end-user Smart Wallets, dApps have had to implement complex, custom code for each wallet integration, 
-and some even resort to offering their own embedded wallets to enhance user experience.
+Without a Paymaster, anyone sending an Ethereum transaction must possess ETH to cover gas fees, forcing new users to complete KYC processes and purchase ETH before accessing any dApp. With growing demand for better user experiences and the introduction of the Account Abstraction standard, Smart Wallets have emerged to cover gas fees on behalf of users. However, this shift places dApps in a challenging position as they lose control over user onboarding processes. To sponsor gas for end-user Smart Wallets, dApps have had to implement complex, custom code for each wallet integration, with some resorting to offering their own embedded wallets to enhance user experience.
 

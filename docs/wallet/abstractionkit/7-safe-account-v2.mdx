@@ -62,9 +62,9 @@ import {
 
 # Safe Account V2
 
-**Safe Account V2** uses the original Safe Singleton and adds ERC-4337 functionality using a module/fallback handler. 
+**Safe Account V2** uses the original Safe Singleton and adds ERC-4337 functionality using a module/fallback handler.
 
-The V2 contracts, known as the `SafeAccountV0_2_0` class in AbstractionKit, supports **EntryPoint v0.6**.
+The V2 contracts, known as the `SafeAccountV0_2_0` class in AbstractionKit, support **EntryPoint v0.6**.
 
 ## Import
 
@@ -72,7 +72,7 @@ The V2 contracts, known as the `SafeAccountV0_2_0` class in AbstractionKit, supp
 import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit"; 
 ```
 
-## How to use
+## How to Use
 
 Initialize a new Safe Account and calculate its address:
 
@@ -85,11 +85,11 @@ const accountAddress = smartAccount.accountAddress;
 
 ## Methods
 
-The **Essentials** methods provides all necessary functionalities with support for overrides, offering a streamlined approach. 
+The **Essentials** methods provide all necessary functionalities with support for overrides, offering a streamlined approach. 
 
 ### initializeNewAccount
 
-Initilizes a new SafeAccount class given a list of owners of public address(es). Only need to be called on the first transaction when the account has not been deployed yet.
+Initializes a new SafeAccount class given a list of owners' public addresses. Only needs to be called on the first transaction when the account has not been deployed yet.
 
 #### Usage
 
@@ -137,11 +137,11 @@ Account address(sender) : 0x1a02592A3484c2077d2E5D24482497F85e1980C6
 
 ### createUserOperation
 
-This method determines the nonce, fetch the gas prices, estimate gas limits and return a useroperation to be signed. You can override any of these values using the overrides parameter.
+This method determines the nonce, fetches the gas prices, estimates gas limits, and returns a UserOperation to be signed. You can override any of these values using the overrides parameter.
 
 #### Usage
 
-This example mints the same NFT twice in a single useroperation
+This example mints the same NFT twice in a single UserOperation.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
@@ -240,7 +240,7 @@ console.log(userOperation);
             </td>
         </td>
         <td align="left">
-          Returns a useroperation on success, or the rpc / bundler error on failure.
+          Returns a UserOperation on success, or the RPC/bundler error on failure.
         </td>
       </tr>
     </tbody>  
@@ -319,7 +319,7 @@ console.log(signature);
 
 ### sendUserOperation
 
-This method sends the userop to the bundler to be executed onchain. It returns a promise `SendUseroperationResponse` object to confirm the on-chain inclusion of the userop
+This method sends the UserOperation to the bundler to be executed on-chain. It returns a promise `SendUseroperationResponse` object to confirm the on-chain inclusion of the UserOperation.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
@@ -327,8 +327,8 @@ This method sends the userop to the bundler to be executed onchain. It returns a
 ```ts title="example.ts"
 const sendUserOperationResponse = await smartAccount.sendUserOperation(userOperation, bundlerUrl)
 
-console.log("sendUserOperationResponse: ". sendUserOperationResponse);
-console.log("Useroperation sent. Waiting to be included...");
+console.log("sendUserOperationResponse: ", sendUserOperationResponse);
+console.log("UserOperation sent. Waiting to be included...");
 
 const receipt = await sendUserOperationResponse.included()
 
@@ -361,7 +361,7 @@ sendUserOperationResponse: {
   entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
 }
 
-Useroperation sent. Waiting to be included...
+UserOperation sent. Waiting to be included...
 
 receipt: {
   userOpHash: '0x61b3e2c57ad7ad1ae788f0ac84c79b28aab8aeaf872be173cadc72ab8b3d4418',
@@ -445,11 +445,11 @@ Account address(sender) : 0x1a02592A3484c2077d2E5D24482497F85e1980C6
 
 #### Source code
 
-[getUserOperationEip712Hash](https://github.com/candidelabs/abstractionkit/blob/0c363636cd97d47cac39e4e6b8daf4283710adde/src/account/Safe/SafeAccountV0_2_0.ts#L110C16-L110C47)
+[createAccountAddress](https://github.com/candidelabs/abstractionkit/blob/0c363636cd97d47cac39e4e6b8daf4283710adde/src/account/Safe/SafeAccountV0_2_0.ts#L110C16-L110C47)
 
 ### createInitCode
 
-Calculates the initCode needed to deploy the account onchain
+Calculates the initCode needed to deploy the account on-chain.
 
 #### Usage
 
@@ -498,7 +498,7 @@ initCode: 0x...
 
 ### createAccountAddressAndInitCode
 
-Calculates the Safe address and the initCode needed to deploy the account onchain
+Calculates the Safe address and the initCode needed to deploy the account on-chain.
 
 #### Usage
 
@@ -588,12 +588,12 @@ initializeCallData: 0xb63e800d00000000000000000000000000000000000000000000000000
 
 </details>
 
-#### Source
+#### Source code
 [createInitializerCallData](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccountV0_2_0.ts#L187)
 
 ### createAccountCallDataSingleTransaction
 
-Encode calldata for a single MetaTransaction to be executed by Safe account
+Encodes calldata for a single MetaTransaction to be executed by a Safe account.
 
 #### Usage
 
@@ -646,7 +646,7 @@ callData : 0xf34308ef000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2
 
 ### createAccountCallDataBatchTransactions
 
-Encode calldata for a list of MetaTransactions to be executed by Safe account
+Encodes calldata for a list of MetaTransactions to be executed by a Safe account.
 
 #### Usage
 
@@ -711,7 +711,7 @@ callData : 0xf34308ef000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2
 
 ### estimateUserOperationGas
 
-Estimate gas limits for a userOperation
+Estimates gas limits for a UserOperation.
 
 #### Usage
 
@@ -781,7 +781,7 @@ const [preVerificationGas, verificationGasLimit, callGasLimit] = await estimateU
 
 ### getUserOperationEip712Hash
 
-Create a userOperation eip712 hash
+Creates a UserOperation EIP-712 hash.
 
 #### Usage
 
@@ -812,13 +812,13 @@ console.log(safeUserOpHash);
   </TabItem>
 </Tabs>
 
-#### Source
+#### Source code
 
 [getUserOperationEip712Hash](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccountV0_2_0.ts#L136)
 
 ### formatEip712SignaturesToUseroperationSignature
 
-A static method to format a list of eip712 signatures to a userOperation signature. 
+A static method to format a list of EIP-712 signatures to a UserOperation signature. 
 
 #### Usage
 
@@ -959,7 +959,7 @@ A static method that verifies a webAuthn signed hash message for Passkeys, and c
 
 ### getUserOperationEip712Data
 
-A static method that returns the EIP-712 domain data for a userOp
+A static method that returns the EIP-712 domain data for a UserOperation.
 
 <Tabs>
 <TabItem value="Param type" label="Param Types">

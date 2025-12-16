@@ -6,9 +6,9 @@ keywords: [smart-account, userOperation, batch-transactions, abstractionkit]
 
 # Your First Gasless Smart Account Transaction
 
-**Create a Smart Account and send gasless batched transactions in under 10 minutes**
+**Create a Smart Account and send gasless batched transactions in under 10 minutes.**
 
-This guide walks you through creating your first smart account and sending multiple gasless transactions in a single UserOperation. You'll learn the core concepts of account abstraction while building a practical example that requires no ETH for gas fees.
+This guide walks you through creating your first smart account and sending multiple gasless transactions in a single UserOperation. Learn the core concepts of account abstraction while building a practical example that requires no ETH for gas fees.
 
 #### What You'll Build
 
@@ -19,10 +19,10 @@ By the end of this tutorial, you'll have:
 
 #### What is a UserOperation?
 
-A UserOperation is how smart accounts interact with Ethereum. Unlike regular transactions that go directly to the network, UserOperations are:
-- **Batched**: Multiple transactions can be grouped together
-- **Gas flexible**: Can be sponsored or paid with any ERC-20 token
-- **Programmable**: Include custom validation and execution logic
+A UserOperation is the mechanism smart accounts use to interact with Ethereum. Unlike regular transactions sent directly to the network, UserOperations offer:
+- **Batching**: Group multiple transactions into a single atomic operation
+- **Gas Flexibility**: Sponsor transactions or pay with any ERC-20 token
+- **Programmability**: Include custom validation and execution logic
 
 ## Quickstart
 <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/t1ycwhN-Lvw?si=OMAiB7lK50XMkF68" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -93,10 +93,10 @@ main().catch(console.error);
 
 Smart accounts are smart contracts. Unlike regular wallets (EOAs), they can:
 - Execute multiple transactions atomically
-- Have custom validation logic
-- Be controlled by multiple signers or different signature schemes
+- Implement custom validation logic
+- Support multiple signers or alternative signature schemes
 
-In this guide, we will use Safe's implementation, which is battle-tested and widely adopted.
+This guide uses Safe's smart account implementation, which is battle-tested and widely adopted.
 
 #### Generate Account Address
 
@@ -133,8 +133,8 @@ Smart Account Address: 0x32afdcfa1e3bfe70d03ecb55b5c8045c26515c9d
 ```
 
 :::info How It Works
-The `initializeNewAccount()` method deterministically computes your smart account address locally, using only the provided inputs—no network calls or API requests are made. 
-The account itself is not deployed at this stage; deployment happens automatically when you send your first transaction.
+The `initializeNewAccount()` method deterministically computes your smart account address locally using only the provided inputs—no network calls required.
+The account contract is not deployed at this stage; deployment occurs automatically when you send your first transaction.
 :::
 
 
@@ -142,7 +142,7 @@ The account itself is not deployed at this stage; deployment happens automatical
 
 #### What We're Building
 
-We'll create two NFT minting transactions and batch them together. This demonstrates the power of smart accounts - executing multiple operations atomically.
+We'll create two NFT minting transactions and batch them together, demonstrating smart accounts' ability to execute multiple operations atomically.
 
 #### Understanding Transaction Data
 
@@ -194,7 +194,7 @@ console.log("Prepared 2 NFT minting transactions");
 ```
 
 :::info Why Batch Transactions?
-Instead of sending two separate transactions, we'll batch them into one UserOperation. This gives your app UX a one click experience.
+Instead of sending two separate transactions, batch them into one UserOperation for a seamless one-click user experience.
 :::
 
 ## Step 4: Create UserOperation

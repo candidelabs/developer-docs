@@ -11,14 +11,14 @@ import TabItem from "@theme/TabItem";
 
 **Smart EOAs via EIP-7702**
 
-EIP-7702 allows regular Ethereum EOAs (Externally Owned Accounts) to act as smart accounts for a transaction. This enables features like gas sponsorship, multisig, and more, without permanently converting the EOA.
+EIP-7702 enables Ethereum EOAs (Externally Owned Accounts) to function as smart accounts for transactions, unlocking features like gas sponsorship and multisig without permanently converting the EOA.
 
-With EIP-7702, users can benefit from gasless transactions by leveraging publicly available gas policies set up by third parties on InstaGas—like PoolTogether, Revoke, AAVE, and many more. If no matching public gas policy is found for the user operation, you can fall back to a private gas policy of your own.
+With EIP-7702, users access gasless transactions through publicly available gas policies on InstaGas from third parties like PoolTogether, Revoke, and AAVE. If no matching public gas policy is found, fall back to your private gas policy.
 
 Definitions:
 
-- **Public Gas Policies**: Gas sponsorships provided by Dapps and do not require a sponsorship policy ID.
-- **Private Gas Policies**: Require a sponsorship policy ID and can be used by the wallet if no public gas policy matches the user operation.
+- **Public Gas Policies**: Gas sponsorships provided by dApps that don't require a sponsorship policy ID
+- **Private Gas Policies**: Require a sponsorship policy ID and serve as fallback when no public gas policy matches the user operation
 
 Steps to Implement Gasless Transactions:
 

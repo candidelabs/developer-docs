@@ -8,21 +8,20 @@ import TabItem from "@theme/TabItem";
 
 # Bundler API
 
-Bundler exposes standard ERC-4337 JSON-RPC API
+The Bundler exposes the standard ERC-4337 JSON-RPC API.
 
 ## EntryPoint v0.8
 
-EIP-7702 support is added with with EntryPoint v0.8. The main ERC-4337 RPC call are `eth_estimateUserOperationGas` and `eth_sendUserOperation`, 
-which takes a UserOperation structure. In order to support EIP-7702, a new json element named `eip7702Auth`, to hold the eip-7702 auth tuple items.s
+EIP-7702 support is added with EntryPoint v0.8. The main ERC-4337 RPC calls are `eth_estimateUserOperationGas` and `eth_sendUserOperation`,
+which take a UserOperation structure. In order to support EIP-7702, a new JSON element named `eip7702Auth` is added to hold the EIP-7702 auth tuple items.
 
-The Bundler API for Entrypoint v0.8 is fully backword compatible and has no breaking changes from Entrypoint v0.7
+The Bundler API for EntryPoint v0.8 is fully backward compatible and has no breaking changes from EntryPoint v0.7.
 
 ### eth_sendUserOperation
 
-`eth_sendUserOperation` asks the bundler to sign and submit a User Operation. 
+`eth_sendUserOperation` asks the bundler to sign and submit a UserOperation.
 
-Highlighed code is relevant to 
-Wallets upgrading EOAs to Smart Accounts using EIP-7702. This is an optional field, and teams building smart wallets without EIP-7702 can ignore this field.  
+Highlighted code is relevant to wallets upgrading EOAs to Smart Accounts using EIP-7702. This is an optional field, and teams building smart wallets without EIP-7702 can ignore this field.  
 
 #### Example Request
 ```json

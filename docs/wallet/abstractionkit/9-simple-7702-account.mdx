@@ -54,20 +54,20 @@ export const GETTING_STARTED_ITEMS = [
 
 ## Smart Contracts and Audits
 
-The contracts have been developed by the Ethereum Foundation Account Abstraction Team, and have been audited by Spearbit. 
+The contracts were developed by the Ethereum Foundation Account Abstraction Team and audited by Spearbit. 
 
 - [Smart Contracts](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/accounts/Simple7702Account.sol)
 - [Release](https://github.com/eth-infinitism/account-abstraction/releases/tag/v0.8.0)
 - [Audit](https://github.com/eth-infinitism/account-abstraction/blob/develop/audits/SpearBit%20Account%20Abstraction%20Security%20Review%20-%20Mar%202024.pdf)
 
-## How to use
+## How to Use
 
 ### Prerequisites
 Before using `Simple7702Account`, you must have:
 
 - **Node.js**: Version 18.0 or higher.
-- **EIP-7702 Compatible Network**: Ethereum mainnet, Sepolia, Optimism, Base, or other EIP-7702 enabled chains
-- **Private Key acccess**: Required for signing authorizations and user operations
+- **EIP-7702 Compatible Network**: Ethereum mainnet, Sepolia, Optimism, Base, or other EIP-7702 enabled chains.
+- **Private Key Access**: Required for signing authorizations and user operations.
 
 
 ### Installation
@@ -79,9 +79,9 @@ npm install abstractionkit
 ### Usage
 
 ```ts
-import { Simple7702Account } from "abstractionkit"; 
+import { Simple7702Account } from "abstractionkit";
 
-const delegatorPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31"; // eoa public key
+const delegatorPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31"; // EOA public key
 const smartAccount = new Simple7702Account(eoaDelegatorPublicAddress);
 ```
 

@@ -9,18 +9,18 @@ import TabItem from "@theme/TabItem";
 
 # Complete Recovery Flow Guide
 
-Learn how to implement a complete account recovery flow using guardians and the Safe Recovery Service. This guide assumes you already have a Safe account with the recovery module enabled and guardians configured.
+Learn how to implement a complete account recovery flow using guardians and the Safe Recovery Service. This guide assumes you have a Safe account with the recovery module enabled and guardians configured.
 
-> If you need to set up the recovery module, check out the [Enable Recovery Module and Add Guardians](/wallet/plugins/how-to-add-a-guardian/).
+> To set up the recovery module, see [Enable Recovery Module and Add Guardians](/wallet/plugins/how-to-add-a-guardian/).
 
 ## Overview
 
-The recovery flow involves several key steps:
+The recovery flow consists of four key steps:
 
-1. **Recovery Request**: Create and submit a recovery request when needed
-2. **Guardian Approval**: Collect signatures from required guardians
-3. **Execution**: Execute the recovery after all guardian signatures are collected
-4. **Finalization**: Complete ownership transfer to new owner after grace period is over
+1. **Recovery Request**: Create and submit a recovery request
+2. **Guardian Approval**: Collect required guardian signatures
+3. **Execution**: Execute recovery after collecting all signatures
+4. **Finalization**: Complete ownership transfer after the grace period expires
 
 ## Prerequisites
 
@@ -61,7 +61,7 @@ GUARDIAN_2_PRIVATE_KEY=
 
 ## Recovery Steps
 
-> Follow along fork the [recovery example](https://github.com/candidelabs/safe-recovery-service-sdk/tree/main/examples/01-recovery-flow) and follow along 
+> Fork the [recovery example](https://github.com/candidelabs/safe-recovery-service-sdk/tree/main/examples/01-recovery-flow) to follow along.
 
 ### Step 1: Initialize Services
 
@@ -70,12 +70,10 @@ Initialize the recovery service and guardian references.
 <details>
 <summary>About the Recovery Service</summary>
 
-[Candide Recovery Service](/wallet/recovery/overview/) is an optional hosted service that streamlines the recovery process by automatically handling the 
-execution of recovery after the required guardian signatures are collected and finalizing it after the grace period expires.
-You can request access to the recovery service [here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).
+The [Candide Recovery Service](/wallet/recovery/overview/) is an optional hosted service that streamlines recovery by automatically executing recovery after collecting required guardian signatures and finalizing it after the grace period expires.
+Request access to the recovery service [here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).
 
-**Alternative**: Anyone can [execute](/blog/making-accounts-recoverable/#multi-confirm-recovery) and [finalize](/blog/making-accounts-recoverable/#finalize-recovery) recovery transactions directly 
-using the Social Recovery Module methods, as these methods are public and can be called once the guardian signatures are collected and grace period requirements are met.
+**Alternative**: Anyone can [execute](/blog/making-accounts-recoverable/#multi-confirm-recovery) and [finalize](/blog/making-accounts-recoverable/#finalize-recovery) recovery transactions directly using Social Recovery Module methods, which are public and callable once guardian signatures are collected and grace period requirements are met.
 
 </details>
 
@@ -116,8 +114,8 @@ const recoveryService = new RecoveryByGuardianService(
 ### Step 2: Create Recovery Request
 
 - First guardian signs EIP-712 recovery data
-- Guardian 1 submits the recovery request with their signature directly onchain or through the service
-- Service generates unique emoji for this specific recovery request
+- Guardian 1 submits the recovery request with their signature (on-chain or through the service)
+- Service generates a unique emoji sequence for this recovery request
 
 ```ts title="recovery-request.ts"
 import { TypedDataDomain } from 'viem';
@@ -176,7 +174,7 @@ await recoveryService.submitGuardianSignature(
 
 ### Step 4: Execute Recovery
 
-Once all guardian signatures are collected or the threshold is met, the service can execute the recovery to start the grace period:
+Once all guardian signatures are collected or the threshold is met, the service executes the recovery to initiate the grace period:
 
 ```ts title="recovery-execution.ts"
 const executionResult = await recoveryService.executeRecoveryRequest(recoveryRequest.id);
@@ -508,23 +506,23 @@ RECOVERY_SERVICE_URL=
 
 ## Security Considerations
 
-### Emoji
+### Emoji Verification
 
-Candide Recovery Service provides a communication system using emojis that allows guardians to verify and approve legitimate recovery requests from their rightful owners.
+Candide Recovery Service provides an emoji-based communication system enabling guardians to verify and approve legitimate recovery requests.
 
-- **Unique Verification**: Each recovery request generates a unique emoji sequence.
-- **Anti-Phishing**: Prevents malicious recovery attempts through social engineering.
-- **Guardian Verification**: Guardians must verify emoji with account owner before signing.
-- **Secure Communication**: Share emoji through trusted, encrypted channels only.
+- **Unique Verification**: Each recovery request generates a unique emoji sequence
+- **Anti-Phishing**: Prevents malicious recovery attempts through social engineering
+- **Guardian Verification**: Guardians must verify the emoji with the account owner before signing
+- **Secure Communication**: Share emojis only through trusted, encrypted channels
 
 ### Signatures
-- **EIP-712**: All signatures use typed data for replay protection.
-- **Domain Separation**: Signatures are bound to specific chains.
-- **Nonce Protection**: Each recovery request has a unique nonce.
+- **EIP-712**: All signatures use typed data for replay protection
+- **Domain Separation**: Signatures are chain-specific
+- **Nonce Protection**: Each recovery request includes a unique nonce
 
 ### Grace Period
-- **Sufficient Time**: Allow enough time for legitimate owner to cancel if needed. 
-- **Monitoring**: Implement a notification system to inform owners when recovery is attempted, like [Candide's Alert System](/wallet/recovery/ux-api/#alerts).
+- **Sufficient Duration**: Allow adequate time for legitimate owners to cancel unauthorized recovery attempts
+- **Monitoring**: Implement notification systems to alert owners of recovery attempts, such as [Candide's Alert System](/wallet/recovery/ux-api/#alerts)
 
 ## Utility Methods
 

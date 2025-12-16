@@ -60,9 +60,9 @@ import {
 
 # Safe Account V3
 
-**Safe Account V3** uses the original Safe Singleton and adds ERC-4337 functionality using a module/fallback handler. 
+**Safe Account V3** uses the original Safe Singleton and adds ERC-4337 functionality using a module/fallback handler.
 
-The V3 contracts, known as the `SafeAccountV0_3_0` class in AbstractionKit, supports **EntryPoint v0.7**.
+The V3 contracts, known as the `SafeAccountV0_3_0` class in AbstractionKit, support **EntryPoint v0.7**.
 
 ## Import
 
@@ -70,7 +70,7 @@ The V3 contracts, known as the `SafeAccountV0_3_0` class in AbstractionKit, supp
 import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit"; 
 ```
 
-## How to use
+## How to Use
 
 Initialize a new Safe Account and calculate its address:
 
@@ -83,11 +83,11 @@ const accountAddress = smartAccount.accountAddress;
 
 ## Methods
 
-The **Essentials** methods provides all necessary functionalities with support for overrides, offering a streamlined approach. 
+The **Essentials** methods provide all necessary functionalities with support for overrides, offering a streamlined approach.
 
 ### initializeNewAccount
 
-Initilizes a new SafeAccount class given a list of owners of public address(es). Only need to be called on the first transaction when the account has not been deployed yet.
+Initializes a new SafeAccount class given a list of owners' public addresses. Only needs to be called on the first transaction when the account has not been deployed yet.
 
 #### Usage
 
@@ -135,11 +135,11 @@ Account address(sender) : 0x1a02592A3484c2077d2E5D24482497F85e1980C6
 
 ### createUserOperation
 
-This method determines the nonce, fetch the gas prices, estimate gas limits and return a useroperation to be signed. You can override any of these values using the overrides parameter.
+This method determines the nonce, fetches the gas prices, estimates gas limits, and returns a UserOperation to be signed. You can override any of these values using the overrides parameter.
 
 #### Usage
 
-This example mints the same NFT twice in a single useroperation
+This example mints the same NFT twice in a single UserOperation.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
@@ -238,7 +238,7 @@ console.log(userOperation);
             </td>
         </td>
         <td align="left">
-          Returns a useroperation on success, or the rpc / bundler error on failure.
+          Returns a UserOperation on success, or the RPC/bundler error on failure.
         </td>
       </tr>
     </tbody>  
@@ -323,7 +323,7 @@ console.log(signature);
 
 ### sendUserOperation
 
-This method sends the userop to the bundler to be executed onchain. It returns a promise `SendUseroperationResponse` object to confirm the on-chain inclusion of the userop
+This method sends the UserOperation to the bundler to be executed on-chain. It returns a promise `SendUseroperationResponse` object to confirm the on-chain inclusion of the UserOperation.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
@@ -331,8 +331,8 @@ This method sends the userop to the bundler to be executed onchain. It returns a
 ```ts title="example.ts"
 const sendUserOperationResponse = await smartAccount.sendUserOperation(userOperation, bundlerUrl)
 
-console.log("sendUserOperationResponse: ". sendUserOperationResponse);
-console.log("Useroperation sent. Waiting to be included...");
+console.log("sendUserOperationResponse: ", sendUserOperationResponse);
+console.log("UserOperation sent. Waiting to be included...");
 
 const receipt = await sendUserOperationResponse.included()
 
@@ -365,7 +365,7 @@ sendUserOperationResponse: {
   entrypointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032'
 }
 
-Useroperation sent. Waiting to be included...
+UserOperation sent. Waiting to be included...
 
 receipt: {
   userOpHash: '0x395ddb51c0b76fd72796878d1008c8c9af897e944092bbc741b0a8def1a29984',

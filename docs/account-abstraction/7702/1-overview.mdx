@@ -6,17 +6,17 @@ keywords: [EIP-7702, Externally Owned Accounts, EOAs, smart contract wallets, Et
 
 # EIP-7702
 
-EIP-7702 introduces a new transaction type that empowers Externally Owned Accounts (EOAs) with smart contract wallet functionalities by allowing them to authorize smart contract code at their own address for a transaction. This enables EOAs to perform complex operations typically reserved for smart contracts, without permanently converting the EOA or changing its address.
+EIP-7702 introduces a new transaction type empowering Externally Owned Accounts (EOAs) with smart contract wallet functionality by allowing them to authorize smart contract code at their address for a transaction. This enables EOAs to perform complex operations typically reserved for smart contracts without permanently converting the EOA or changing its address.
 
 ## Key Features
 
 ### Batching
-This feature allows users to execute multiple operations in a single atomic transaction. A common use case is the combination of an ERC-20 approval followed by the spending of that approval. Currently, this workflow requires two separate transactions in decentralized exchanges (DEXes). Advanced batching scenarios may involve dependencies, where the output of one operation serves as the input for another, streamlining complex workflows.
+Execute multiple operations in a single atomic transaction. A common use case is combining an ERC-20 approval followed by spending that approval. Currently, this workflow requires two separate transactions in decentralized exchanges (DEXes). Advanced batching scenarios may involve dependencies where one operation's output serves as another's input, streamlining complex workflows.
 
 ### Gas Sponsorship
-EIP-7702 enables an account to pay for its own transaction using gas sponsorship, or to have a third party (such as a dapp or paymaster) cover the transaction fees. This can facilitate various use cases, such as:
-- Paying for gas in ERC-20 tokens instead of the native token.
-- Application operators covering transaction costs for their users, improving user experience by eliminating the need for users to hold native tokens for transaction fees.
+EIP-7702 enables accounts to pay for transactions using gas sponsorship or have third parties (such as dApps or paymasters) cover transaction fees. This facilitates various use cases:
+- Paying for gas in ERC-20 tokens instead of native tokens
+- Application operators covering transaction costs for users, eliminating the need to hold native tokens for transaction fees
 
 ### Privilege De-escalation
 Users can create sub-keys or set specific permissions that are more limited than the global access of the main account. This feature improves security and control over account operations. Examples include:
@@ -35,10 +35,10 @@ Specifically:
 - It allows EOAs to function like smart contracts, enabling them to be included in ERC-4337 bundles while remaining compatible with the existing EntryPoint.
 
 ## Limitations
-While EIP-7702 brings significant improvements to Ethereum EOA wallets, it's essential to understand the full picture:
+While EIP-7702 brings significant improvements to Ethereum EOA wallets, it's essential to understand the complete picture:
 
-- **Private key access remains**: The original key will always maintain admin access to the upgraded account, limiting the security benefits an EOA wallet can offer.    
-- **Portability limitations**: Upgraded EOAs to Smart Accounts are tied to a specific wallet, and transferring to a new wallet will be a security-critical operation, unless all wallets adopt the same smart contracts (which is unlikely).
+- **Private Key Access Remains**: The original key always maintains admin access to the upgraded account, limiting the security benefits an EOA wallet can offer
+- **Portability Limitations**: Upgraded EOAs to Smart Accounts are tied to specific wallets, and transferring to a new wallet is a security-critical operation unless all wallets adopt the same smart contracts (which is unlikely)
 
 ## References
 

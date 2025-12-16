@@ -46,12 +46,12 @@ import { smartAccountParameters } from "../../../src/data/accountParamAndReturnD
 import { userOperationParamV07 } from "../../../src/data/userOperation";
 
 # Paymaster
-A `CandidePaymaster` is a class interacts with Candide's ERC-4337 Paymaster API. 
+The `CandidePaymaster` class interacts with Candide's ERC-4337 Paymaster API.
 
-Supports:
+**Supports:**
 - Gas sponsorship through Gas Policies
 - ERC-20 Token Sponsorship
-- Multi-EntryPoins
+- Multi-EntryPoint
 
 ## Usage
 
@@ -61,9 +61,9 @@ Supports:
 import { CandidePaymaster } from "abstractionkit";
 ```
 
-### How to use
+### How to Use
 
-Initialize a Paymaster with your RPC url. Get an API key from the [dashboard](https://dashboard.candide.dev).
+Initialize a Paymaster with your RPC URL. Get an API key from the [dashboard](https://dashboard.candide.dev).
 
 ```ts title="paymaster.ts"
 import { CandidePaymaster } from "abstractionkit";
@@ -72,7 +72,7 @@ const paymasterRpc = "https://api.candide.dev/public/v3/sepolia";
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
 ```
 
-Then you can consume Paymaster methods:
+Then consume Paymaster methods:
 
 ```ts
 const supportedEntryPoints = await paymaster.getSupportedEntrypoints();

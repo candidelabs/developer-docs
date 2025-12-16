@@ -7,51 +7,51 @@ tags: ["4337", account-abstraction]
 
 # Intro to Account Abstraction
 
-Making it possible to use smart contract accounts instead of regular externally owned accounts (EOAs).
+Account Abstraction enables the use of smart contract accounts instead of traditional externally owned accounts (EOAs).
 
 :::info Did you know?
-A smart account is controlled and separated from the signer, unlike EOAs where the private key is tightly coupled with the account. This is where the term Account Abstraction comes into play. The account is abstracted away from the signer.
+A smart account separates ownership from control. Unlike EOAs where the private key is tightly coupled to the account, smart accounts abstract the account from the signer—hence the term "Account Abstraction."
 :::
 
-## The Problem with wallets today 
-Almost every wallet on Ethereum today have limitation in one way or the other.
+## The Problem with Wallets Today
+Almost every Ethereum wallet today has significant limitations:
 
-- **Gas**: Without Account Abstraction, individuals sending Ethereum transactions are required to possess ETH for covering gas fees. Consequently, this poses a challenge for newcomers, as they must undergo KYC procedures and acquire ETH before accessing any decentralized application (dapp).
+- **Gas Fees**: Without Account Abstraction, users must hold ETH to pay gas fees. This creates a major onboarding barrier for newcomers, who must complete KYC procedures and acquire ETH before using any decentralized application.
 
-    Moreover, this setup also leads to a poor user experience for existing users. They have to constantly top up their ETH balance solely to handle gas fees, even if they already possess enough ERC-20 tokens in their wallet to cover the desired transactions.
+    This also degrades the user experience for existing users, who must constantly maintain an ETH balance for gas fees—even when they have sufficient ERC-20 tokens to cover their desired transactions.
 
-- **Multi-step Transactions**: The usual interaction with any applications involves several signature and transactions submission to complete the full process. The most popular example in a swap on uniswap: `Approve` ERC-20 spend + `Deposit`, where a user needs two click confirmations in their wallet to complete the process.
+- **Multi-Step Transactions**: Common interactions require multiple signatures and transaction submissions. For example, swapping on Uniswap requires two separate transactions: `Approve` ERC-20 spend, then `Deposit`—each requiring user confirmation.
 
-- **Security**: Regular wallets today, come with the risk of lost or stolen seed phrases. They are limited in functionality in terms of recovery mechanism. As the space continues to grow and attract more users, it becomes evident that wallets must adopt more robust and multi-layered security measures to ensure the safety of users' accounts.
+- **Security**: Traditional wallets carry the risk of lost or stolen seed phrases and offer limited recovery mechanisms. As the ecosystem grows and attracts more users, wallets must implement more robust, multi-layered security measures to protect user accounts.
 
-Smart Wallets solve many of the issues that were raised with EOAs by offering specific wallet logic inside the contracts. Nevertheless, because each transaction on Ethereum needs to originate from an ECDSA-secured EOA, this makes it very difficult to build; and scale. 
+Smart Wallets address many EOA limitations by embedding custom logic in smart contracts. However, because every Ethereum transaction must originate from an ECDSA-secured EOA, building and scaling Smart Wallets remains challenging. 
 
 This is where Account Abstraction and Candide come in.
+
 ## What is Account Abstraction
 
-Account Abstraction through [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) is a standard to build Smart Wallets without the need for consensus-layer protocol changes. This involves packaging a transaction in a new transaction type called [`UserOperation`](https://eips.ethereum.org/EIPS/eip-4337#definitions) that contains the instructions for what users wants to accomplish. This includes information on the owner, the calldata, who is paying for gas, the user signature and gas information. 
+[ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) is a standard for building Smart Wallets without requiring consensus-layer protocol changes. It introduces a new transaction type called [`UserOperation`](https://eips.ethereum.org/EIPS/eip-4337#definitions) that packages user intent and execution instructions. A UserOperation contains the account owner, calldata, gas payment details, user signature, and gas parameters.
 
-Smart wallets offer a host of advantages that EOAs simply cannot offer:
+Smart wallets provide capabilities that EOAs fundamentally cannot:
 
 ### Sponsored Transactions
 
-Abstracts the process of paying for gas away from end users which minimizes UX friction 
+Abstract gas payments from end users to minimize UX friction:
 
-- **Gasless**: Allow for a seamless onboarding process by making dapps (or wallets) to subsidize the onboarding process for new users.
-- **ERC-20 Gas payments**: Allow users to pay gas fees in ERC-20 tokens such as Stablecoins or Governance tokens
-- **Off-chain Gas Payment**: Allow users to pay for gas indirectly via credit card
-- **Cross-chain Gas Payment**: Allow users to pay for gas indirectly via a L2 rollup
-- **Privacy**: Enable ETH-less withdrawal of tokens to stealth addresses and offer privacy first accounts to users
-
+- **Gasless Transactions**: Enable seamless onboarding by allowing dapps or wallets to subsidize gas costs for new users
+- **ERC-20 Gas Payments**: Let users pay gas fees in ERC-20 tokens such as stablecoins or governance tokens
+- **Off-Chain Gas Payment**: Allow users to pay for gas via credit card
+- **Cross-Chain Gas Payment**: Enable users to pay for gas through L2 rollups
+- **Privacy**: Support ETH-less token withdrawals to stealth addresses and privacy-focused accounts
 
 ### Account Security
 
-- **Arbitrary Verification Logic**: You gain flexibility to support a wide range of verification methods, including single and multi-signature verification, as well as any custom signature schemes your application may require.
+- **Arbitrary Verification Logic**: Support diverse verification methods including single-signature, multi-signature, and custom signature schemes tailored to your application's requirements.
 
-- **Security Plugins**: Enhance account security through features like social recovery, time-locks, and withdraw limits. These robust security measures instill greater confidence in users while safeguarding their assets.
+- **Security Plugins**: Enhance account security with social recovery, time-locks, and withdrawal limits. These features increase user confidence while protecting their assets.
 
-### Smooth App Experience
+### Seamless App Experience
 
-- **Session Keys**: Popup-less experience for your users. Session keys can be used to authenticate users, and authorize specific actions within an app, and grant limited permissions to their web3 accounts.
+- **Session Keys**: Provide a popup-free experience for users. Session keys authenticate users, authorize specific in-app actions, and grant limited permissions to web3 accounts.
 
-- **Atomic Multi-Operations**: Smart Wallets can perform multiple transactions in one single on-chain transaction
+- **Atomic Multi-Operations**: Execute multiple transactions in a single on-chain operation.

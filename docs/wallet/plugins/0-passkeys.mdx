@@ -9,18 +9,18 @@ import TabItem from "@theme/TabItem";
 
 # How to Add Support for Passkeys Authentication
 
-Passkeys can be used to secure onchain smart accounts using **fingerprint**, **face recognition**, or the device **PIN** code. Users no longer need to manage and remember complex private keys; instead, they can effortlessly access their digital wallets using passkey-enabled devices, synced across devices via Apple's **iCloud Keychain**, or other cross-platform password managers like **Proton Pass** and **Bitwarden**.
+Passkeys secure on-chain smart accounts using **fingerprint**, **face recognition**, or device **PIN** codes. Users no longer need to manage complex private keys—they can access their digital wallets using passkey-enabled devices synced via Apple's **iCloud Keychain** or cross-platform password managers like **Proton Pass** and **Bitwarden**.
 
-In the context of an Ethereum wallet, **Passkeys** serve as substitutes for traditional seedphrase backups. Unlike the default curve (secp256k1) used for Externally Owned Accounts (EOA), Passkeys generate unique digital keys using the **secp256r1** curve. These keys benefit from device secure enclave cryptography, which enhances security by preventing password reuse. Passkeys are built on the WebAuthn standard, leveraging public-key cryptography. Developed collaboratively by the FIDO Alliance, which includes Apple, Google, Microsoft, and others, Passkeys strictly adhere to WebAuthn standards.
+In Ethereum wallets, **Passkeys** replace traditional seed phrase backups. Unlike the secp256k1 curve used for Externally Owned Accounts (EOAs), Passkeys generate digital keys using the **secp256r1** curve. These keys leverage device secure enclave cryptography, enhancing security and preventing password reuse. Passkeys are built on the WebAuthn standard using public-key cryptography, developed collaboratively by the FIDO Alliance (Apple, Google, Microsoft, and others) in strict adherence to WebAuthn standards.
 
 ## Safe Passkeys
 
-The Safe Passkeys contracts are developed by the Safe Protocol Team. 
-The contracts and their audits are available on the [Safe-Modules repo](https://github.com/safe-global/safe-modules/tree/main/modules/passkey). 
-The deployment addresses can be found in our [contract deployment](/wallet/technical-reference/deployments/#safe-passkeys) page.
+Safe Passkeys contracts are developed by the Safe Protocol Team.
+The contracts and audits are available in the [Safe-Modules repository](https://github.com/safe-global/safe-modules/tree/main/modules/passkey).
+Deployment addresses can be found on our [contract deployment](/wallet/technical-reference/deployments/#safe-passkeys) page.
 
 ## Demo
-These example showcases a Safe Smart Account deployment utilizing 4337 and Passkeys
+These examples showcase Safe Smart Account deployments utilizing ERC-4337 and Passkeys
 
 - **React Demo**:
     - [Live Demo](https://passkeys.candide.dev/) 
@@ -54,9 +54,9 @@ yarn add abstractionkit ox
 </TabItem>
 </Tabs>
 
-### Step 1: Create WebAuthn credentials
+### Step 1: Create WebAuthn Credentials
 
-Create WebAuthn credentials using the `createCredential` function from `ox/WebAuthnP256`. This function simplifies the process by handling the interaction with the browser WebAuthn API.
+Create WebAuthn credentials using the `createCredential` function from `ox/WebAuthnP256`. This function simplifies credential creation by handling browser WebAuthn API interactions.
 
 ```ts
 import { createCredential } from 'ox/WebAuthnP256'
@@ -102,12 +102,12 @@ const smartAccount = SafeAccount.initializeNewAccount([webauthPublicKey])
 ```
 
 ## Create Passkey UserOp
-This step follows the same flow as the normal Safe flow with  [createUserOperation](../../abstractionkit/safe-account-v3/#createuseroperation), with the addition of the `expectedSigners` overrides 
+This step follows the same flow as the standard Safe flow with [createUserOperation](../../abstractionkit/safe-account-v3/#createuseroperation), with the addition of the `expectedSigners` override.
 
 ```ts
 
 let userOperation = await smartAccount.createUserOperation(
-    [transaction] // constructed your MetaTranasction 
+    [transaction] // construct your MetaTransaction 
     jsonRpcNodeProvider, //The Node rpc endpoint.
     bundlerUrl, //The Bundler rpc endpoint.
     // highlight-start
@@ -131,10 +131,10 @@ const userOpHash = SafeAccount.getUserOperationEip712Hash(
 );
 ```
 
-### Step 2: Request a WebAuthn assertion
+### Step 2: Request a WebAuthn Assertion
 
-Use the `sign` function from `ox/WebAuthnP256` to sign the user operation hash. 
-This function takes the `challenge` (the user operation hash) and the `credentialId` of the passkey.
+Use the `sign` function from `ox/WebAuthnP256` to sign the user operation hash.
+This function accepts the `challenge` (user operation hash) and the passkey's `credentialId`.
 
 ```ts
 import { sign } from 'ox/WebAuthnP256';
@@ -171,9 +171,9 @@ const webauthnSignatureData: WebauthnSignatureData = {
 const webauthnSignature: string = SafeAccount.createWebAuthnSignature(webauthnSignatureData)
 ```
 
-### Step 4: Create a Signer Signature Pair and Format
+### Step 4: Create and Format Signer Signature Pair
 
-Create a `SignerSignaturePair` containing the `webauthPublicKey` and `webauthSignature`, and format the `SignerSignaturePair` into the expected format for the userOperation signature
+Create a `SignerSignaturePair` containing the `webauthPublicKey` and `webauthSignature`, then format it into the expected userOperation signature format.
 
 ```ts
 import { SignerSignaturePair } from "abstractionkit";
@@ -205,11 +205,8 @@ const userOperationReceiptResult = await sendUserOperationResponse.included();
 ### Multisig
 
 #### New Account
-To initialize a smart account with multiple signer types, provide both a WebAuthn public key 
-and an EOA public key to the initialization function, ensuring the WebAuthn public key is listed first. 
-If you need to add two Passkey signers, start by initializing and deploying the account with a single 
-Passkey signer. Then, use the [`addOwnerWithThreshold`](/wallet/abstractionkit/safe-account-v3/#createaddownerwiththresholdmetatransactions) 
-function to add the second Passkey signer.
+To initialize a smart account with multiple signer types, provide both a WebAuthn public key and an EOA public key to the initialization function, with the WebAuthn public key listed first.
+To add two Passkey signers, initialize and deploy the account with a single Passkey signer first, then use [`addOwnerWithThreshold`](/wallet/abstractionkit/safe-account-v3/#createaddownerwiththresholdmetatransactions) to add the second Passkey signer.
 
 ```ts
 import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
@@ -257,8 +254,7 @@ const swapOwnerWithPasskeys: MetaTransaction = await smartAccount.createSwapOwne
 
 #### Create UserOp
 
-To get proper gas estimates, you can pass the expected signers that will sign over the userOp in the 
-overrides of `createUserOperation`.
+To obtain accurate gas estimates, pass the expected signers who will sign the UserOperation in the `createUserOperation` overrides.
 
 ```ts
 let userOperation = await smartAccount.createUserOperation(
@@ -275,8 +271,7 @@ let userOperation = await smartAccount.createUserOperation(
 
 #### Signature
 
-To sign a transaction with multiple signers, you will need to pass in the sign signature 
-pair in the `formatSignaturesToUseroperationSignature`.
+To sign a transaction with multiple signers, pass the signer signature pairs to `formatSignaturesToUseroperationSignature`.
 
 ```ts
 const eoaSignature = eoaSigner.signingKey.sign(userOpHash).serialized;
@@ -293,11 +288,10 @@ userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
 );
 ```
 
-### Gas savings with Precompiles
+### Gas Savings with Precompiles
 
-You can leverage Native Passkeys with [RIP-7212](https://github.com/ethereum/RIPs/blob/master/RIPS/rip-7212.md) 
-when supported, as it offers the lowest gas costs. You can import the default precompile address and pass it in the overrides. 
-We recommend verifying whether the chain you are using has adopted the same address as specified in the standard. 
+Leverage Native Passkeys with [RIP-7212](https://github.com/ethereum/RIPs/blob/master/RIPS/rip-7212.md) when supported for optimal gas efficiency. Import the default precompile address and pass it in the overrides.
+Verify that your chain has adopted the same precompile address specified in the standard. 
 
 #### New Account
 
@@ -343,10 +337,9 @@ userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
 ```
 
 ### Verifying a WebAuthn Signature
-You can validate webAuthn signature to verify whether a signature on a behalf of a given Safe Account 
-is valid, similar to EOA owners.
+Validate WebAuthn signatures to verify whether a signature on behalf of a given Safe Account is valid, similar to EOA owner verification.
 
-- Signing a message hash is as usual
+- Sign a message hash using the standard process:
 
 ```ts
 import { hashMessage } from "ethers";
@@ -411,49 +404,36 @@ For React Native applications, teams have used the following libraries to integr
 - [**cbor-web**](https://www.npmjs.com/package/cbor-web): This library is used in conjunction with `react-native-passkey` to handle the CBOR (Concise Binary Object Representation) data format used by the WebAuthn API.
   - [**React Native demo**](https://github.com/candidelabs/passkeys-react-native-demo) by Adrian, the lead developer from Unit-e, using `abstractionkit`, `react-native-passkey`, and `cbor-web`.
 
-### Security Consideration
-It’s important to consider a [multisig setup](#multisig) or the [recovery module](/wallet/plugins/recovery-with-guardians/) when using Passkeys. 
-In this demo, we demonstrated a simple setup by creating a 1/1 Safe with a passkey as the only signer. 
-While straightforward, this approach is not suitable for production environments. 
-Passkeys are tied to specific domain names and, in some cases, associated with particular 
-hardware manufacturers. This dependency introduces several vulnerabilities that could make 
-user accounts inaccessible under certain circumstances, such as: 
+### Security Considerations
+Consider implementing a [multisig setup](#multisig) or the [recovery module](/wallet/plugins/recovery-with-guardians/) when using Passkeys.
+This demo demonstrates a simple setup with a 1/1 Safe using a passkey as the sole signer.
+While straightforward, this approach is unsuitable for production environments.
+Passkeys are tied to specific domain names and, in some cases, to particular hardware manufacturers. This dependency introduces vulnerabilities that could make user accounts inaccessible under certain circumstances:
 
-1. **Device Migration**: Users switching from iPhone to Android, Windows to macOS, or vice versa, may lose access if the Passkey is tied to a specific device or ecosystem.
-2. **Domain Issues**: If your domain is compromised, becomes unavailable, or is no longer maintained, Passkey authentication may fail.
+1. **Device Migration**: Users switching between ecosystems (iPhone to Android, Windows to macOS, etc.) may lose access if the Passkey is device or ecosystem-specific.
+2. **Domain Issues**: Compromised, unavailable, or unmaintained domains can cause Passkey authentication failures.
 
-**Our recommendation**: include at lest a second way to access Safe. Either adding a different backup signer (1/2 Safe), or add a Recovery method using the recovery module.
+**Our recommendation**: Include at least a second access method for Safe accounts—either a different backup signer (1/2 Safe configuration) or a recovery method via the recovery module.
 
-### Saving Public Credentials  
-It's crucial to store the Passkey's public credentials, specifically the *x, y, and rawId*, 
-in a retrievable location. Losing this data would mean users can't recover their accounts 
-with Passkeys. This information isn't sensitive, so you can set up a simple server to do so, 
-or you can you use[@simplewebauthn/server](https://simplewebauthn.dev/docs/packages/server) for 
-this purpose.
+### Saving Public Credentials
+Store Passkey public credentials (*x*, *y*, and *rawId*) in a retrievable location. Losing this data prevents users from recovering their accounts with Passkeys. This information isn't sensitive, you can use a simple server or leverage [@simplewebauthn/server](https://simplewebauthn.dev/docs/packages/server) for storage.
 
 ### Sync & Recovery
 
 #### Apple
-Passkey recovery on Apple devices involves iCloud Keychain escrow. In case of device loss, 
-users authenticate through their iCloud account using standard procedure. After authentication, 
-they enter their device passcode. Apple users also has the option to add an account recovery contact 
-for additional support. Learn more on [Apple Passkeys security](https://support.apple.com/en-us/102195) 
+Passkey recovery on Apple devices uses iCloud Keychain escrow. In case of device loss, users authenticate through their iCloud account using standard procedures, then enter their device passcode. Apple users can also add an account recovery contact for additional support. Learn more about [Apple Passkeys security](https://support.apple.com/en-us/102195).
 
 #### Google
 
-Google Password Manager seamlessly syncs passkeys across devices, with plans to extend syncing
-support to a broader range of operating systems. Learn more on [Google Passkeys security](https://developers.google.com/identity/passkeys)
+Google Password Manager seamlessly syncs passkeys across devices, with plans to extend syncing support to additional operating systems. Learn more about [Google Passkeys security](https://developers.google.com/identity/passkeys).
 
-#### Yubikey
-YubiKey is compatible with passkeys through its support for the authentication protocol. 
-Passkeys can be protected and managed using YubiKey's hardware-based security features. 
-Learn more on [Yubico](https://www.yubico.com/blog/a-yubico-faq-about-passkeys/)
+#### YubiKey
+YubiKey supports passkeys through its authentication protocol implementation.
+Passkeys can be protected and managed using YubiKey's hardware-based security features.
+Learn more at [Yubico](https://www.yubico.com/blog/a-yubico-faq-about-passkeys/).
 
 #### Password Managers
-Passkey backups are not limited to hardware manufactures, they are supported across different 
-password managers like [Windows Hello](https://support.microsoft.com/en-us/windows/passkeys-in-windows-301c8944-5ea2-452b-9886-97e4d2ef4422), 
-[Bitwarden](https://bitwarden.com/passwordless-passkeys/), [ProtonPass](https://proton.me/blog/proton-pass-passkeys),
-[1Password](https://1password.com/product/passkeys), [LastPass](https://www.lastpass.com/features/passwordless-authentication) and others.  
+Passkey backups extend beyond hardware manufacturers—they're supported across various password managers including [Windows Hello](https://support.microsoft.com/en-us/windows/passkeys-in-windows-301c8944-5ea2-452b-9886-97e4d2ef4422), [Bitwarden](https://bitwarden.com/passwordless-passkeys/), [Proton Pass](https://proton.me/blog/proton-pass-passkeys), [1Password](https://1password.com/product/passkeys), [LastPass](https://www.lastpass.com/features/passwordless-authentication), and others.  
 
 ### Device Support
 Passkeys are widely available across devices such as: 

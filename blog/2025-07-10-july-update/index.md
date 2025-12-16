@@ -7,38 +7,38 @@ authors: [marc]
 tags: [unified-api,bundler,paymaster]
 ---
 
-# July Updates: Unified API, P2P Mempool Access & More 
+# July Updates: Unified API, P2P Mempool Access & More
 
-We've been shipping some big updates this month, all designed to streamline the developer experience and give you more power. Here’s the latest
+We've shipped significant updates this month to streamline developer experience and enhance capabilities.
 
 <!-- truncate -->
-## One API to Rule Them All
+## Unified API Endpoint
 
-We've combined our Bundler and Paymaster endpoints into a single URL to make your life easier. We're also swapping out the chain prefix for the more standard chain id. The dashboard will be updated soon, but you can start using the new endpoint right away.
+We've unified our Bundler and Paymaster endpoints into a single URL for simplified integration. We're also standardizing from chain names to chain IDs. The dashboard will be updated soon, but you can start using the new endpoint now.
 
-Before:
+**Before:**
 
 - **Bundler**: `https://api.candide.dev/bundler/v3/chain-name/API_KEY`
-
 - **Paymaster**: `https://api.candide.dev/paymaster/v3/chain-name/API_KEY`
 
-After:
+**After:**
 
 - **Bundler & Paymaster**: `https://api.candide.dev/api/v3/CHAIN_ID/API_KEY`
 
-No rush to switch over—the old endpoints will keep working just fine.
-## More Stablecoins as Gas
+The old endpoints remain fully supported—no rush to migrate.
 
-You can now offer USDS and EURe as gas payments for your users. Check out the full list of [supported tokens](/wallet/paymaster/tokens-supported/).
+## Additional Stablecoin Gas Payments
 
-## EIP-7702 is now live on Arbitrum and Polygon
+USDS and EURe are now available as gas payment options for your users. View the complete list of [supported tokens](/wallet/paymaster/tokens-supported/).
 
-Our Bundler and Paymaster now support EIP-7702 on Arbitrum and Polygon, on top of the existing live networks: Ethereum, Optimism, and Base. EIP-7702 lets regular EOA accounts upgrade to smart accounts. Get started here: [Check out the guide here](/wallet/guides/getting-started-eip-7702/).
+## EIP-7702 Support on Arbitrum and Polygon
 
-## P2P Mempool Access is Coming Soon
+Our Bundler and Paymaster now support EIP-7702 on Arbitrum and Polygon, expanding on existing support for Ethereum, Optimism, and Base. EIP-7702 enables regular EOA accounts to upgrade to smart accounts. [Get started with our guide](/wallet/guides/getting-started-eip-7702/).
 
-We're getting ready to switch to the unified P2P mempool by default for our Bundler on Ethereum, Arbitrum, and Optimism. You don't have to do a thing, but your users will get better execution and pricing, faster transactions, and—most importantly—the censorship resistance that makes ERC-4337 account abstraction so powerful.
+## P2P Mempool Access Coming Soon
 
-Curious about the Unified Shared Mempool? [Learn more about it here](/blog/account-abstractionkit-unified-mempool). 
+We're preparing to switch to the unified P2P mempool by default for our Bundler on Ethereum, Arbitrum, and Optimism. This transition is seamless on your end, while your users gain better execution and pricing, faster transactions, and the censorship resistance that makes ERC-4337 account abstraction powerful.
 
-Want early access? Just reach out.
+Learn more about the [Unified Shared Mempool](/blog/account-abstractionkit-unified-mempool).
+
+Want early access? Reach out to us.

@@ -8,7 +8,7 @@ keywords:
   - concept
   - interoperability
   - deposits
-  - multi-chain
+  - multichain
 ---
 
 # The Unified Deposit Address: One Address for Every Chain
@@ -17,7 +17,7 @@ keywords:
 
 ## The Cross-Chain Problem We All Face
 
-The multi-chain world is booming. Assets, apps, and opportunities are spread across dozens of vibrant ecosystems like Ethereum, Base, Polygon, and Arbitrum. But moving between them is a major headache.
+The multichain world is booming. Assets, apps, and opportunities are spread across dozens of vibrant ecosystems like Ethereum, Base, Polygon, and Arbitrum. But moving between them is a major headache.
 
 Today, sending yourself `USDC` from one chain to another involves:
 
@@ -61,4 +61,4 @@ That’s the Unified Deposit Address.
   * **Always Optimal:** The system automatically finds the best and most efficient route for your assets behind the scenes.
   * **Universal Onboarding:** This makes it trivial for anyone, regardless of which blockchain they currently use, to start interacting with a new ecosystem seamlessly.
 
-This is more than just a feature; it's a vision for how crypto should work—simple, intuitive, and truly interoperable. By removing the core friction of moving between chains, we can unlock the full potential of the multi-chain world for everyone.
+This is more than just a feature; it's a vision for how crypto should work—simple, intuitive, and truly interoperable. By removing the core friction of moving between chains, we can unlock the full potential of the multichain world for everyone.

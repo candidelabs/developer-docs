@@ -32,10 +32,10 @@ import {
 | Feature                          | Description                                                                                                           |
 |----------------------------------|-----------------------------------------------------------------------------------------------------------------------|
 | Alerts and Notifications         | Account owners subscribe to receive notifications via email or SMS when a recovery request is initiated on-chain. |
-| Guardians Sign once | Off-chain signature collection eliminating the need for guardians to share links with one another.
-| Privacy Guaranteed | Guardians sign only off-chain and do not need to maintain a balance in their accounts, allowing them to preserve their pseudonymity with fresh accounts|  
+| Guardians Sign Once | Off-chain signature collection eliminating the need for guardians to share links with one another. |
+| Privacy Guaranteed | Guardians sign only off-chain and do not need to maintain a balance in their accounts, allowing them to preserve their pseudonymity with fresh accounts. |
 | Social Engineering Protection     | A communication system using emojis that allows guardians to verify and approve legitimate recovery requests from their rightful owners. |
-| Auto Finalization After Grace Period | A built-in relayer automatically submits signed transactions on behalf of guardians for confirmation and finalization once the grace period has elapsed.|
+| Auto Finalization After Grace Period | A built-in relayer automatically submits signed transactions on behalf of guardians for confirmation and finalization once the grace period has elapsed. |
 
 :::info
 The following API is in a pre-release phase. [Request access here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).    
@@ -49,7 +49,7 @@ The following API is in a pre-release phase. [Request access here](https://app.f
 - **/recoveries/fetchById**
   - **GET**: Fetch a recovery request by ID
 - **/recoveries/sign**
-  - **POST**: Collects a guardian siganture
+  - **POST**: Collects a guardian signature
 - **/recoveries/execute**
   - **POST**: Execute a recovery request by ID
 - **/recoveries/finalize**
@@ -60,15 +60,15 @@ The following API is in a pre-release phase. [Request access here](https://app.f
 - **/alerts/subscribe**
   - **POST**: Creates an inactive alerts subscription for an account
 - **/alerts/activate**
-  - **POST**: Activate subscripton to recovery requests
+  - **POST**: Activate subscription to recovery requests
 - **/alerts/subscriptions**
   - **GET**: Fetches active alerts subscriptions for an account.
 - **/alerts/unsubscribe**
   - **POST**: Unsubscribes from an active alerts subscription.
 
 ## Recoveries
-### Create recovery request 
-Creates a new recovery request by a guardian with a lost signer of a Safe account. Can only be initated by guardians of the account.
+### Create Recovery Request
+Creates a new recovery request by a guardian with a lost signer of a Safe account. Can only be initiated by guardians of the account.
 #### `POST /recoveries/create`
 <Tabs>
 <TabItem value="example-request" label="Example Request">

@@ -14,9 +14,9 @@ import { DataTable } from "/src/components/CustomTable";
 If you are building a Dapp, you communicate the actions to the wallet that the user performs. Instead of sending a single transaction one after the other, you can send an `array` of transactions, 
 and the wallet will execute the bundle. 
 
-## EIPs Definitions
-- [ERC-5792](https://eips.ethereum.org/EIPS/eip-5792) standarizes the general communication between the Dapp and the Wallet, with batching as the default capability.
-- [ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) standrizes the communication of Gas Sponsorship capability.
+## EIP Definitions
+- [ERC-5792](https://eips.ethereum.org/EIPS/eip-5792) standardizes the general communication between the dApp and the wallet, with batching as the default capability.
+- [ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) standardizes the communication of gas sponsorship capability.
 
 <div
   style={{
@@ -56,7 +56,7 @@ The following apps and wallets support smart capabilities.
 | [Jumper.Exchange](https://jumper.exchange/)         | ✅       | ✖️          |
 | [PoolTogether PoolTime](https://app.cabana.fi/)     | ✅       | ✖️          |
 | [Ekubo Exchange](https://ekubo.org/)                | ✅       | ✖️          |
-| [Uniswap Exchange](https://https://app.uniswap.org) | ✅       | ✖️          |
+| [Uniswap Exchange](https://app.uniswap.org) | ✅       | ✖️          |
 | [Vaults.fyi](https://app.vaults.fyi/)               | ✅       | ✖️          |
 | [Spark](https://spark.fi/)                          | ✅       | ✖️          |
 | [Reserve](https://app.reserve.org/)                 | ✅       | ✖️          |
@@ -67,9 +67,9 @@ The following apps and wallets support smart capabilities.
 | [Relay](https://relay.link/bridge)                  | ✅       | ✖️          |
 | [Relay](https://relay.link/bridge)                  | ✅       | ✖️          |
 
-## Reference example
+## Reference Example
 
-This exampe demo communicating a batch of transactions and the gas sponsorship info directly to the Wallet.
+This example demonstrates communicating a batch of transactions and the gas sponsorship information directly to the wallet.
 
 - Live Demo [batch-and-sponsor.on-fleek.app](https://batch-and-sponsor.on-fleek.app/)
 - Source code [candidelabs/batch-sponsor-calls-instagas](https://github.com/candidelabs/batch-sponsor-calls-instagas)
@@ -137,10 +137,10 @@ Your app should fallback to sending normal transactions if the wallet doesn't su
 
 **Gas Sponsorship**
 
-InstaGas is a no-code solution for Dapps, provided that the wallet natively use Candide's [Paymaster API](/wallet/paymaster/rpc-methods/).
-However, this integration is not a barrier for Apps wishing to sponsor gas fees for wallets that do not natively support Candide. 
-In this step, we demonstrate how to use [ERC-7677](https://eips.ethereum.org/EIPS/eip-5792), which is an extension to ERC-5792 that standarizes the communication of gas sponsorship 
-between the App and the Wallet.
+InstaGas is a no-code solution for dApps, provided that the wallet natively uses Candide's [Paymaster API](/wallet/paymaster/rpc-methods/).
+However, this integration is not a barrier for apps wishing to sponsor gas fees for wallets that do not natively support Candide.
+In this step, we demonstrate how to use [ERC-7677](https://eips.ethereum.org/EIPS/eip-5792), which is an extension to ERC-5792 that standardizes the communication of gas sponsorship
+between the app and the wallet.
 
 1. Create an App on [dashboard.candide.dev/api-keys](https://dashboard.candide.dev/api-keys)
 2. Copy the paymaster URL link with the API key and fill in the `candidePaymasterUrl`
@@ -225,10 +225,10 @@ Optional: if you've lost track of the transaction, you can also delegate showing
 
 [ERC-5792](https://eips.ethereum.org/EIPS/eip-5792) allows us to standardize JSON-RPC methods for apps to communicate bundle calls to wallets. The flow is usually in this order:
 
-1. `wallet_getCapabilities`: App checks which capabilties the wallet support (e.g: batching, sponsorship, ..)
-2. `wallet_sendCalls`: App sends the batch transactions
-3. `wallet_getCallsStatus`: App requests to get the status (e.g: pending, confirmed, failed)
-4. `wallet_showCallsStatus`: optional method for app to request to show the status of the transaction on the wallet interface
+1. `wallet_getCapabilities`: App checks which capabilities the wallet supports (e.g., batching, sponsorship, etc.)
+2. `wallet_sendCalls`: App sends the batch transactions.
+3. `wallet_getCallsStatus`: App requests to get the status (e.g., pending, confirmed, failed).
+4. `wallet_showCallsStatus`: Optional method for the app to request showing the status of the transaction on the wallet interface.
 
 ### wallet_getCapabilities
 

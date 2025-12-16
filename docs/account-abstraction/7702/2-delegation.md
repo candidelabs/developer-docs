@@ -1,6 +1,6 @@
 ---
-title: EIP-7702 - How to delegate the EOA Authorization to a Smart Account  
-description: Add a new tx type that permanently sets the code for an EOA
+title: EIP-7702 - How to Delegate the EOA Authorization to a Smart Account
+description: Add a new transaction type that allows EOAs to temporarily delegate code execution to a smart contract
 keywords: [EIP-7702, Externally Owned Accounts, EOAs, smart contract wallets, Ethereum, ERC-4337, batching, sponsorship, privilege de-escalation]
 ---
 # EIP-7702 Delegation
@@ -32,17 +32,17 @@ const eoaDelegator = Wallet.createRandom();
 
 const smartAccount = new Simple7702Account(eoaDelegator.address);
 
-console.log("Account address(sender) : " + smartAccount.accountAddress);
+console.log("Account address (sender): " + smartAccount.accountAddress);
 ```
 
 ## Create UserOperation
 Calling `createUserOperation` on `Simple7702Account` will:
 
-1. Compute the r and s values for the `eip7702Auth`. These values are part of signature authorization tuple needed to upgrade the EOA. 
+1. Compute the r and s values for the `eip7702Auth`. These values are part of the signature authorization tuple needed to upgrade the EOA.
 This is only used once, during the upgrade transaction of the EOA.
-2. Determine the nonce and fetch the gas prices from the provided node rpc
-3. Estimate gas limits from the provided bundler
-4. Returns a unsigned user operation.
+2. Determine the nonce and fetch the gas prices from the provided node RPC.
+3. Estimate gas limits from the provided bundler.
+4. Returns an unsigned UserOperation.
 
 ```ts title="index.ts"
 const bundlerUrl = process.env.BUNDLER_URL as string;
@@ -77,4 +77,4 @@ userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
 ```
 
 
-In this guide, we've shown you what it needs to how to upgrade an Externally Owned Account (EOA) by delegating its authorization to a designated smart contract address using EIP-7702. To run a complete example, visit [EIP-7702 Getting Started](/wallet/guides/getting-started-eip-7702).
+In this guide, we've shown you how to upgrade an Externally Owned Account (EOA) by delegating its authorization to a designated smart contract address using EIP-7702. To run a complete example, visit [EIP-7702 Getting Started](/wallet/guides/getting-started-eip-7702).

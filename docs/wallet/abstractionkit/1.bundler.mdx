@@ -23,9 +23,9 @@ import { userOperationReturnParamsV06, userOperationParamV07, userOperationRecei
 
 # Bundler
 
-A `Bundler` is a class to an ERC-4337 Bundler JSON-RPC API methods such as estimating user operation gas, and sending user operations.
+The `Bundler` class provides access to ERC-4337 Bundler JSON-RPC API methods for estimating user operation gas and sending user operations.
 
-The `Bundler` class sets up a Bundler Instance with a [Bundler RPC URL](../../bundler/rpc-endpoints).
+The `Bundler` class creates a Bundler instance with a [Bundler RPC URL](../../bundler/rpc-endpoints).
 
 ## Usage
 
@@ -35,9 +35,9 @@ The `Bundler` class sets up a Bundler Instance with a [Bundler RPC URL](../../bu
 import { Bundler } from "abstractionkit";
 ```
 
-### How to use
+### How to Use
 
-Initialize a Bundler with your desired bundler RPC url
+Initialize a Bundler with your desired bundler RPC URL:
 
 ```ts
 const bundlerRPC = "https://api.candide.dev/public/v3/sepolia";
@@ -45,7 +45,7 @@ const bundlerRPC = "https://api.candide.dev/public/v3/sepolia";
 const bundler: Bundler = new Bundler(bundlerRPC);
 ```
 
-Then you can consume Bundler methods:
+Then consume Bundler methods:
 
 ```ts
 const entrypointAddresses = await bundler.supportedEntryPoints();
@@ -59,7 +59,7 @@ const entrypointAddresses = await bundler.supportedEntryPoints();
 
 ### chainId
 
-Returns chain ID of the current network that the bundler is operating in
+Returns the chain ID of the network the bundler is operating on.
 
 #### Usage
 

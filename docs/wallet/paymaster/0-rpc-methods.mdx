@@ -28,14 +28,14 @@ import {
 
 JSON-RPC API reference for Candide's Paymaster V3 service. Visit the [dashboard](https://dashboard.candide.dev) to get an API key for Candide's Paymaster.
 
-## Entrypoint V0.8
+## EntryPoint v0.8
 
-EIP-7702 support is added with with EntryPoint v0.8. You can use the Paymaster API to offer gas sponsorship to endusers through a full gas policies or offering to pay gas in erc-20 tokens.
-The Paymaster API for Entrypoint v0.8 is fully backward compatible and has no breaking changes from Entrypoint v0.7
+EIP-7702 support is added with EntryPoint v0.8. You can use the Paymaster API to offer gas sponsorship to end users through full gas policies or by offering to pay gas in ERC-20 tokens.
+The Paymaster API for EntryPoint v0.8 is fully backward compatible and has no breaking changes from EntryPoint v0.7.
 
 ### pm_supportedERC20Tokens
 
-Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
+Gets supported ERC-20 tokens for gas payments, alongside the paymaster metadata.
 
 #### Invocation
 
@@ -150,7 +150,7 @@ Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
 
 Sends a UserOperation to a paymaster for off-chain verification. If approved, it will return the `paymasterData`. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
 
-- **ERC-20s Gas Payments**: No gas overrides are returned
+- **ERC-20 Gas Payments**: No gas overrides are returned.
 - **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
 
 Supports two types of Gas Policies:
@@ -426,7 +426,7 @@ ERC-7677 is currently under review, and this method is subject to breaking chang
 
 It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
 
-- **ERC-20s Gas Payments**: No gas overrides are returned
+- **ERC-20 Gas Payments**: No gas overrides are returned.
 - **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
 
 Supports two types of Gas Policies:
@@ -607,7 +607,7 @@ ERC-7677 is currently under review, and this method is subject to breaking chang
 
 It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
 
-- **ERC-20s Gas Payments**: No gas overrides are returned
+- **ERC-20 Gas Payments**: No gas overrides are returned.
 - **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
 
 Supports two types of Gas Policies:
@@ -884,7 +884,7 @@ Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
 
 Sends a UserOperation to a paymaster for off-chain verification. If approved, it will return the `paymasterData`. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
 
-- **ERC-20s Gas Payments**: No gas overrides are returned
+- **ERC-20 Gas Payments**: No gas overrides are returned.
 - **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
 
 Supports two types of Gas Policies:
@@ -1160,7 +1160,7 @@ ERC-7677 is currently under review, and this method is subject to breaking chang
 
 It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
 
-- **ERC-20s Gas Payments**: No gas overrides are returned
+- **ERC-20 Gas Payments**: No gas overrides are returned.
 - **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
 
 Supports two types of Gas Policies:
@@ -1341,7 +1341,7 @@ ERC-7677 is currently under review, and this method is subject to breaking chang
 
 It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
 
-- **ERC-20s Gas Payments**: No gas overrides are returned
+- **ERC-20 Gas Payments**: No gas overrides are returned.
 - **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
 
 Supports two types of Gas Policies:
@@ -1608,7 +1608,7 @@ Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
 
 Sends a UserOperation to a paymaster for off-chain verification. If approved, it will return the `paymasterData`. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
 
-- **ERC-20s Gas Payments**: No gas overrides are returned
+- **ERC-20 Gas Payments**: No gas overrides are returned.
 - **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
 
 Supports two types of Gas Policies:
@@ -1874,7 +1874,7 @@ ERC-7677 is currently under review, and this method is subject to breaking chang
 
 Sends a UserOperation to a paymaster for off-chain verification. If approved, it will return the `paymasterAndData`. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
 
-- **ERC-20s Gas Payments**: No gas overrides are returned
+- **ERC-20 Gas Payments**: No gas overrides are returned.
 - **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
 
 Supports two types of Gas Policies:
@@ -2042,7 +2042,7 @@ ERC-7677 is currently under review, and this method is subject to breaking chang
 
 Sends a UserOperation to a paymaster for off-chain verification. If approved, it will return the `paymasterAndData`. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
 
-- **ERC-20s Gas Payments**: No gas overrides are returned
+- **ERC-20 Gas Payments**: No gas overrides are returned.
 - **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
 
 Supports two types of Gas Policies:

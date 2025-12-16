@@ -19,17 +19,17 @@ Candide Wallet Mobile App is powered by a vertically integrated open-source tech
 ## The Contracts
 
 ### ERC-4337 EntryPoint
-The EntryPoint is the global contract for ERC-4337 Smart Accounts and Paymasters. It coordinates the verification and execution of a UserOperation. The entrypoint contract is [audited by OpenZepplin](https://blog.openzeppelin.com/eip-4337-ethereum-account-abstraction-incremental-audit) and is used by Candide Wallet. The EntryPoint contract has been deployed on multiple chains, in the same address for Ethereum, Polygon, Optimism, Gnosis and other supported networks.
+The EntryPoint is the global contract for ERC-4337 Smart Accounts and Paymasters. It coordinates the verification and execution of a UserOperation. The EntryPoint contract is [audited by OpenZeppelin](https://blog.openzeppelin.com/eip-4337-ethereum-account-abstraction-incremental-audit) and is used by Candide Wallet. The EntryPoint contract has been deployed on multiple chains at the same address for Ethereum, Polygon, Optimism, Gnosis, and other supported networks.
 
 ### Candide Wallet Contracts
 [Candide Wallet Contracts](https://github.com/candidelabs/CandideWalletContracts/tree/main/contracts/candideWallet) leverage Safe Contracts to be ERC-4337 compatible and efficient. The Contracts implements a Smart Account with 2 essential methods for the EntryPoint to interact with it: `validateUserOp` and `execute`. They also have 2 more methods for both setup and replacing the EntryPoint for upgradability. Learn more about the contracts in this previous [blog post](https://docs.candidewallet.com/blog/unbundling-candide-core-wallet-contract).
 
 ### Candide Paymaster Contracts
-Paymasters are smart contract accounts that can sponsor transactions for Smart Accounts, enabling fee abstraction for dapps and wallets. Paymaster Sponsorship Options include: 
+Paymasters are smart contract accounts that can sponsor transactions for Smart Accounts, enabling fee abstraction for dApps and wallets. Paymaster Sponsorship Options include:
 
-- **Gasless** - Pay gas fees on behalf of your users, essentially making transactions Gassless
-- **Subsidized** - Pay partial gas fees for your users, letting them pay only a discounted gas price
-- **Paid with ERC-20** - Allows your users to pay gas with your native ERC-20 token
+- **Gasless** - Pay gas fees on behalf of your users, essentially making transactions gasless.
+- **Subsidized** - Pay partial gas fees for your users, letting them pay only a discounted gas price.
+- **Paid with ERC-20** - Allows your users to pay gas with your native ERC-20 token.
 
 Paymaster Contracts can be customized to allow for only certain methods, minimum deposits or certain lock durations. In addition, users don't have to worry about gas limits or gas prices since the Paymaster automatically reprices transactions to ensure prompt execution.
 
@@ -43,9 +43,9 @@ Candide plans to develop more modules in the upcoming weeks and months ahead. So
 - **Subscription** - While recurring payments are an important primitive of credit card systems and an important tool for businesses, digital memberships can be reimagined from the ground up using contracts behind the scenes. Subscriptions allow Operators to set rules for how payments are collected, how installments are paid, who gets access, and under what conditions by combining it with NFTs.
 
 
-## Voltaire - Candide's 4337 Bundler 
+## Voltaire - Candide's 4337 Bundler
 
-Voltaire is a modular, developer-friendly and lighting-fast Python Bundler for Ethereum EIP-4337 Account Abstraction. Voltaire is designed to operate within the peer-to-peer mempool of UserOperations, facilitating the inclusion of transactions on-chain more quickly and efficiently. A good way to think about Voltaire is that it is a software that delivers User Operations but cannot change them, similar to those expected of block-builders. It is incentivized to participate in the network through gas fees and MEV. 
+Voltaire is a modular, developer-friendly, and lightning-fast Python Bundler for Ethereum EIP-4337 Account Abstraction. Voltaire is designed to operate within the peer-to-peer mempool of UserOperations, facilitating the inclusion of transactions on-chain more quickly and efficiently. A good way to think about Voltaire is that it is software that delivers UserOperations but cannot change them, similar to those expected of block builders. It is incentivized to participate in the network through gas fees and MEV. 
 
 Voltaire is compliant with [Infinitism Compatibility Test Suite](https://github.com/eth-infinitism/bundler-spec-tests). These test suites ensure that different bundlers can communicate effectively and defend against DDoS attack vectors. 
 
@@ -59,19 +59,19 @@ Wallet Dart SDK is Candide's set of tools for creating, managing and engaging wi
 
 Using Wallet Dart provides several benefits, including:
 
-- **Mobile First Smart **Accounts** - Easily generate a new Smart Account associated with a user signer. Encrypt and Decrypt the signer with an easy to use open source library
-- **ERC-4337 compatible** - Directly integrate with Candide architecture without diving too deep into how the Entrypoint works under the hood
-- **Send User Operations** - Send transactions, including ERC20 and NFT transfers and interaction with arbitrary smart contracts, through Voltaire Bundler
-- **Account Recovery**  - Offer a recovery mechansm that helps your users access their account without a seed-phrase
-- **Enhanced UX** - Candide Paymaster support gasless transactions, improving the user experience and making it more seamless to interact.
-- **Better dev experience** - The Wallet Dart SDK abstracts away the complexities of the development *Smart Accounts*, such as cryptography, wallet management, and smart contract interactions, making it easier to build account abstraction applications
+- **Mobile-First Smart Accounts** - Easily generate a new Smart Account associated with a user signer. Encrypt and decrypt the signer with an easy-to-use open-source library.
+- **ERC-4337 Compatible** - Directly integrate with Candide architecture without diving too deep into how the EntryPoint works under the hood.
+- **Send UserOperations** - Send transactions, including ERC-20 and NFT transfers and interaction with arbitrary smart contracts, through Voltaire Bundler.
+- **Account Recovery** - Offer a recovery mechanism that helps your users access their account without a seed phrase.
+- **Enhanced UX** - Candide Paymaster supports gasless transactions, improving the user experience and making it more seamless to interact.
+- **Better Dev Experience** - The Wallet Dart SDK abstracts away the complexities of developing Smart Accounts, such as cryptography, wallet management, and smart contract interactions, making it easier to build account abstraction applications.
 
 Use the Wallet Dart [Library](https://github.com/candidelabs/wallet-dart) and contribute back. More documentation coming soon. Hop on our Discord if you need any help.
 
 
 ## Optimism
 
-Candide Wallet is powered by the [OP Stack](https://stack.optimism.io/), the open-source development stack that powers Optimism. An Ethereum layer 2 that improves the scalability and usability of crypto, bringing lower cost gas coupled with lighting fast transactions.
+Candide Wallet is powered by the [OP Stack](https://stack.optimism.io/), the open-source development stack that powers Optimism. An Ethereum Layer 2 that improves the scalability and usability of crypto, bringing lower-cost gas coupled with lightning-fast transactions.
 
-## Modile Client
-Candide Mobile Wallet is a cross-platform, mobile first, built with Flutter. Candide Mobile App seamless mobile experiences targets end-users on any mobile device. It is not only built on top of not only the libraries mentioned above but also on top of countless open-source code that was published for free to make it happen. You can get our Beta builds for both Android and iOS on our Discord, or by building it yourself on our [github](https://github.com/candidelabs/candide-mobile-app).
+## Mobile Client
+Candide Mobile Wallet is a cross-platform, mobile-first application built with Flutter. Candide Mobile App provides seamless mobile experiences targeting end users on any mobile device. It is built on top of the libraries mentioned above and countless other open-source code that was published for free to make it happen. You can get our beta builds for both Android and iOS on our Discord, or by building it yourself on our [GitHub](https://github.com/candidelabs/candide-mobile-app).

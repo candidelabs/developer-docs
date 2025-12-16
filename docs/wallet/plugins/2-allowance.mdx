@@ -1,7 +1,7 @@
 ---
 title: Allowance module guide and reference for adding spend permissions to Safe Accounts using abstractionkit
 description: Implement recurring transactions, scheduled orders, and subscription management using the Safe Allowance Module
-keywords: [allowance, safe, reccuring, reccuring-transfers, subscriptions]
+keywords: [allowance, safe, recurring, recurring-transfers, subscriptions]
 image: /img/posters/abstractionkit-meta.png
 ---
 
@@ -32,20 +32,20 @@ import {
 
 # Allowance | How to Enable Spend Permissions
 
-The Safe Allowance Module is a powerful tool designed to enable users to automate token transfers securely. It provides a flexible framework that allows account owners to delegate specific rights and permissions to other accounts or contracts, ensuring that funds can be transferred or utilized according to predefined conditions.
+The Safe Allowance Module enables users to automate token transfers securely. It provides a flexible framework allowing account owners to delegate specific rights and permissions to other accounts or contracts, ensuring funds can be transferred according to predefined conditions.
 
-This module does not manage allowances in the traditional sense of ERC20 token contracts. Instead, it provides a method for granting authorization of specific token amounts to a delegate: (an account or a smart contract), allowing them to use the token amounts on behalf of the user. It ensures a limited access to specific tokens while facilitating automated transactions.
+Unlike traditional ERC-20 token contract allowances, this module grants authorization for specific token amounts to delegates (accounts or smart contracts), enabling them to use tokens on behalf of users. It ensures limited access to specific tokens while facilitating automated transactions.
 
-By leveraging the Safe Allowance Module, wallet developers can implement sophisticated financial operations with ease. Whether it's managing delegated funds for multiple users, automating payment processes or delegating to smart contracts for various usecases.
+By leveraging the Safe Allowance Module, wallet developers can implement sophisticated financial operations—from managing delegated funds for multiple users and automating payment processes to delegating to smart contracts for various use cases.
 
 ## Use Cases
-**Recurring Transfers**: Automate periodic transactions for reccuring transfers. Users can define the amount, frequency, duration, and receipients.
+**Recurring Transfers**: Automate periodic transactions for recurring transfers. Users can define the amount, frequency, duration, and recipients.
 
 **Subscriptions**: Set up automatic payments for subscriptions, utility bills, or membership fees.
 
-**Dollar-Cost Averaging (DCA)**: Facilitate DCA by delegating allowances to swap contracts.
+**Dollar-Cost Averaging (DCA)**: Facilitate DCA strategies by delegating allowances to swap contracts.
 
-**And More..** by delegating to smart contracts for specific needs.
+**Custom Use Cases**: Delegate to smart contracts for application-specific needs.
 
 ## Audits
 
@@ -81,13 +81,13 @@ yarn add abstractionkit
 import { AllowanceModule } from "abstractionkit";
 ```
 
-## How to use
+## How to Use
 
-AbstractionKit provides two types of methods for the Allowance Module
-1. The recommended methods that offer simplified interfaces. These are under [Methods](/wallet/plugins/allowance/#methods).
-2. Those prefixed with `createBase`, which match the exact contract method names and parameters. These are under [Advanced Methods](/wallet/plugins/allowance/#advanced-methods).
+AbstractionKit provides two types of methods for the Allowance Module:
+1. Recommended methods offering simplified interfaces, documented under [Methods](/wallet/plugins/allowance/#methods).
+2. Methods prefixed with `createBase` that match exact contract method names and parameters, documented under [Advanced Methods](/wallet/plugins/allowance/#advanced-methods).
 
-While `createBase` methods allow direct interaction with the contract, they can be confusing for developers due to the multiple options and parameters involved. The recommended methods improves usability by providing clearer and more intuitive method names and input parameters.
+While `createBase` methods enable direct contract interaction, they can be complex due to multiple options and parameters. The recommended methods improve usability by providing clearer, more intuitive method names and input parameters.
 
 
 :::tip
@@ -117,7 +117,7 @@ const addDelegateMetaTransaction =
 
 ### 4. Set Allowance
 
-In the example below, we show how to set a reccuring allowance through [createRecurringAllowanceMetaTransaction](/wallet/plugins/allowance/#createrecurringallowancemetatransaction). You can also use one time allowences via [createOneTimeAllowanceMetaTransaction](/wallet/plugins/allowance/#createonetimeallowancemetatransaction)  
+The example below demonstrates setting a recurring allowance using [createRecurringAllowanceMetaTransaction](/wallet/plugins/allowance/#createrecurringallowancemetatransaction). You can also set one-time allowances via [createOneTimeAllowanceMetaTransaction](/wallet/plugins/allowance/#createonetimeallowancemetatransaction).  
 
 ```ts
 const setAllowanceMetaTransaction = 
@@ -130,9 +130,9 @@ const setAllowanceMetaTransaction =
     );
 ```
 
-### 5. Create UserOperation 
+### 5. Create UserOperation
 
-We batch all three MetaTransactions into a single UserOperation with [createUserOperation](/wallet/abstractionkit/safe-account-v3/#createuseroperation). From there, you can continue the normal flow of signing and submiting the UserOperation onchain.
+Batch all three MetaTransactions into a single UserOperation using [createUserOperation](/wallet/abstractionkit/safe-account-v3/#createuseroperation). Then proceed with the standard flow of signing and submitting the UserOperation on-chain.
 
 ```ts
 const userOperation =
@@ -143,9 +143,9 @@ const userOperation =
     );
 ```
 
-### 6. The Delegate execute the Allowance
+### 6. Delegate Executes the Allowance
 
-Once the allowance is set and the conditions are met, the delegate can execute the token transfer. The delegate can be an automated service, an EOA (Externally Owned Account), or a smart contract.
+Once the allowance is set and conditions are met, the delegate can execute token transfers. Delegates can be automated services, EOAs (Externally Owned Accounts), or smart contracts.
 
 ```ts
 const allowanceTransferMetaTransaction =

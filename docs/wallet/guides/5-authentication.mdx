@@ -1,6 +1,6 @@
 ---
-title: The difference authentication that can be used with smart accounts using abstractionkit
-description: Learn how to manage user authentification with smart accounts
+title: Different authentication methods that can be used with smart accounts using abstractionkit
+description: Learn how to manage user authentication with smart accounts
 image: /img/posters/abstractionkit-meta.png
 keywords: [mpc, hosted-wallets, social-login, passkeys, biometrics]
 ---
@@ -10,31 +10,24 @@ keywords: [mpc, hosted-wallets, social-login, passkeys, biometrics]
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-Smart Accounts, much like regular accounts (EOAs), depend on signatures for validating transactions and messages. What sets Smart Accounts apart is their ability to utilize various signature schemes, such as Passkeys and Multisig.
+Smart Accounts, like regular accounts (EOAs), rely on signatures for validating transactions and messages. What distinguishes Smart Accounts is their ability to support various signature schemes, including Passkeys and Multisig.
 
 ## Passkeys
 
-Candide supports on-chain Passkeys, allowing users to sign transactions directly from their devices. 
-Using their default phone/computer auth system, such as PIN, biometrics, or FaceID, signatures 
-are authenticated on-chain through smart contracts. All without reliance on centralized infrastructure. 
+Candide supports on-chain Passkeys, enabling users to sign transactions directly from their devices.
+Using default device authentication systems (PIN, biometrics, FaceID), signatures are authenticated on-chain through smart contracts without relying on centralized infrastructure.
 
-See a demo on [passkeys.candide.dev](https://passkeys.candide.dev), and learn more on the Passkeys [doc page](../plugins/0-passkeys.mdx).
+See a demo at [passkeys.candide.dev](https://passkeys.candide.dev) and learn more on the [Passkeys documentation page](../plugins/0-passkeys.mdx).
 
 ## Multisig
 
-Candide supports on-chain multisig (multi-signature) accounts, which enhance security by requiring multiple
-approvals for transactions. This feature is ideal for implementing two-factor authentication (2FA) 
-and is well-suited for wallets targeting companies or DAOs, where transactions often require multiple key 
-approvals. 
+Candide supports on-chain multisig (multi-signature) accounts that enhance security by requiring multiple approvals for transactions. This feature is ideal for implementing two-factor authentication (2FA) and suits wallets targeting companies or DAOs where transactions require multiple key approvals.
 
-Visit the dedicated guide on [Multisig](../multisig).
+Visit the dedicated [Multisig guide](../multisig).
 
 ## Traditional Signers
 
-Externally Owner Account (EOAs) utilize both a private and public key for security. Similarly,
-Smart Accounts can employ the same approach for securing funds. This can be achieved
-through various means such as a locally generated private key, utilizing a hosted MPC solution,
-or securing it with existing user wallets like MetaMask.
+Externally Owned Accounts (EOAs) utilize private and public keys for security. Similarly, Smart Accounts can employ the same approach through locally generated private keys, hosted MPC solutions, or existing user wallets like MetaMask.
 
 ### Social / Email
 

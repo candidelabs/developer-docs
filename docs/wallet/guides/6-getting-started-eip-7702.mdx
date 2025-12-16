@@ -6,16 +6,16 @@ keywords: [eip-7702, smart-account, batching, EOA, metamask]
 
 # EIP-7702 Quickstart
 
-EIP-7702 enables Ethereum External Owned Accounts (EOAs) to authorize smart contract code at their own address. This allows:
+EIP-7702 enables Ethereum Externally Owned Accounts (EOAs) to authorize smart contract code at their address, unlocking:
 
-- **Gas sponsorship**: abstract away gas fees, allowing third-party sponsorship or payment in ERC-20 tokens
-- **Transaction batching**: improve UX and security by combining approvals and contract interactions into a single step
-- **Permissions**: grant specific, limited access to third-parties, enabling use cases like recurring payments
-- **Forward compatibility with end-game AA**: Remains compatible with ERC-4337 and future native account abstraction.
+- **Gas Sponsorship**: Abstract gas fees through third-party sponsorship or ERC-20 token payments
+- **Transaction Batching**: Improve UX and security by combining approvals and contract interactions atomically
+- **Granular Permissions**: Grant specific, limited access to third parties for use cases like recurring payments
+- **Forward Compatibility**: Maintains compatibility with ERC-4337 and future native account abstraction
 
-To learn more about EIP-7702, visit the dedicated [7702 Overview](/account-abstraction/7702/overview).
+Learn more in the dedicated [7702 Overview](/account-abstraction/7702/overview).
 
-In this example, you will learn how to upgrade your EOA to a Smart Account to leverage features such as batching and gas sponsorship.
+This guide demonstrates how to upgrade your EOA to a Smart Account for batching and gas sponsorship capabilities.
 
 ## Prerequisites
 
@@ -64,8 +64,7 @@ main();
 
 ## Step 2: Prepare Smart Account Instance
 
-To prepare the smart account instance, we will use [Simple7702Account](/wallet/abstractionkit/simple-7702-account),
-a fully audited minimalist smart contract account that can be safely authorized by any EOA. It adds full support for major smart account features like batching and gas sponsorship.
+Prepare the smart account instance using [Simple7702Account](/wallet/abstractionkit/simple-7702-account), a fully audited minimalist smart contract account safely authorized by any EOA. It provides full support for smart account features including batching and gas sponsorship.
 
 ```ts title="index.ts"
 import { Simple7702Account } from "abstractionkit";
@@ -92,9 +91,9 @@ If everything worked, you will see the computed smart account address in the con
 Account address(sender): 0x32afdcfa1e3bfe70d03ecb55b5c8045c26515c9d
 </details>
 
-## Step 3: Generate callData for minting NFTs
+## Step 3: Generate callData for Minting NFTs
 
-Not only can we upgrade the EOA to a smart account, we will also demonstrate how to execute minting two NFTs, all in the same transaction.  
+Beyond upgrading the EOA to a smart account, this example demonstrates executing two NFT mints in a single transaction.  
 
 ```ts title="index.ts"
 import {

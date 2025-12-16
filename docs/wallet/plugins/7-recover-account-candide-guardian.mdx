@@ -9,28 +9,28 @@ import TabItem from "@theme/TabItem";
 
 # Recover Account using Candide Guardian
 
-Learn how to recover your Safe account using [Candide Guardian](/wallet/recovery/auth-api/) when you've lost access to your owner keys. This guide walks through the complete recovery process using email and SMS verification.
+Recover your Safe account using [Candide Guardian](/wallet/recovery/auth-api/) when you've lost access to your owner keys. This guide covers the complete recovery process using email and SMS verification.
 
-> If you haven't set up Candide Guardian yet, check out the [Add Candide Guardian](/wallet/plugins/add-candide-guardian/) guide first.
+> If you haven't set up Candide Guardian yet, see the [Add Candide Guardian](/wallet/plugins/add-candide-guardian/) guide first.
 
 ## What You'll Need
 
-Before starting the recovery process, ensure you have:
+Before starting recovery, ensure you have:
 
 - **Access to registered recovery methods** (email or SMS)
-- **Safe account address** you want to recover
-- **New private key** to replace the lost one
-- **Recovery service access** (Candide Guardian must be enabled)
+- **Safe account address** to recover
+- **New private key** to replace the lost key
+- **Recovery service access** (Candide Guardian enabled)
 
 ## Recovery Overview
 
-The recovery process involves these key steps:
+The recovery process consists of five key steps:
 
-1. **Generate new owner key** - Create replacement for lost key
-2. **Request guardian signature** - Initiate recovery through Guardian service
-3. **Verify all channels** - Confirm identity via ALL registered methods
-4. **Execute recovery** - Submit recovery transaction
-5. **Finalize recovery** - Complete ownership transfer after grace period
+1. **Generate New Owner Key** - Create a replacement for the lost key
+2. **Request Guardian Signature** - Initiate recovery through the Guardian service
+3. **Verify All Channels** - Confirm identity through ALL registered methods
+4. **Execute Recovery** - Submit the recovery transaction
+5. **Finalize Recovery** - Complete ownership transfer after the grace period
 
 ## Quickstart
 

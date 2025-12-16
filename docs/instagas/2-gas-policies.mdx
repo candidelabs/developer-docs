@@ -5,21 +5,21 @@ keywords: [InstaGas, gas policy, gas sponsorship, smart contracts, eip-7702]
 image: /img/posters/paymaster-meta.png
 ---
 
-# InstaGas Policies Rules Overview
+# InstaGas Policy Rules Overview
 
-InstaGas provides a set of rules to customize gas policies for dApps. These rules are categorized into four main sections: 
+InstaGas provides customizable rules for gas policies. These rules are organized into four categories:
 - [General Rules](/instagas/gas-policies/#general-rules)
 - [Account Rules](/instagas/gas-policies/#account-rules)
-- [Access Rules](/instagas/gas-policies/#access-rules) 
+- [Access Rules](/instagas/gas-policies/#access-rules)
 - [Transaction Rules](/instagas/gas-policies/#transaction-rules)
 
 ## General Rules
 
-- **Effective Date Range**: Specify the date range when the gas policy should be active. This setting is ignored if the policy is inactive.
-- **Active State**: Toggle to activate or deactivate the policy at any given moment.
+- **Effective Date Range**: Specify when the gas policy should be active. This setting is ignored if the policy is inactive.
+- **Active State**: Toggle to activate or deactivate the policy at any time.
 - **Private or Public**: Choose between public and private gas policies:
-  - **Public Gas Policies**: Set up by dApps for consumption by wallets without requiring a sponsorship policy ID.
-  - **Private Gas Policies**: Set up by wallets, requiring a sponsorship policy ID, and used when no public gas policy matches the transaction.
+  - **Public Gas Policies**: Set up by dApps for wallet consumption without requiring a sponsorship policy ID.
+  - **Private Gas Policies**: Set up by wallets, requiring a sponsorship policy ID. Used when no public gas policy matches.
 
 <img src="/img/instagas/instagas-general-rules.png" width="1200px" />
 
@@ -27,38 +27,38 @@ InstaGas provides a set of rules to customize gas policies for dApps. These rule
 ## Account Rules
 
 - **Total Max per Account**: Set an account spending limit.
-    - Example: "Every account has a total sponsorship gas limit of 0.5 ETH."
-- **Max per UserOperation**: Limit the transaction sponsorship.
-    - Example: "Every user operation can be sponsored for gas up to 0.0001 ETH."
-- **Rate Limit Per Account**: Define a rate and period. 
-    - Example: "Every account is allowed x sponsorships per y days."
+    - Example: "Each account has a total sponsorship gas limit of 0.5 ETH."
+- **Max per UserOperation**: Limit transaction sponsorship.
+    - Example: "Each UserOperation can be sponsored up to 0.0001 ETH."
+- **Rate Limit Per Account**: Define rate and period constraints.
+    - Example: "Each account is allowed x sponsorships per y days."
 
 <img src="/img/instagas/instagas-account-rules.png" width="900" />
 
 
 ## Access Rules
 
-- **Account Whitelist**: Create an allow list of accounts that can benefit from the gas policy. If empty, all accounts are allowed. 
-    - Example: "Only sponsor transactions that have `0xabcd...` as the sender."
-- **Domains Whitelist**: Create an allow list of origins that can benefit from the gas policy. If empty, all origins are allowed. 
-    - Example: "Only sponsor transactions that were originated from `app.uniswap.com`."
-- **IP Whitelists**: Create an allow list of IPs that can benefit from the gas policy. If empty, all IPs are allowed. 
-    - Example: "Only sponsor transactions that were originated from `148.156.123.63`."
+- **Account Whitelist**: Create an allowlist of accounts eligible for the gas policy. If empty, all accounts are allowed.
+    - Example: "Only sponsor transactions from sender `0xabcd...`."
+- **Domains Whitelist**: Create an allowlist of origins eligible for the gas policy. If empty, all origins are allowed.
+    - Example: "Only sponsor transactions originating from `app.uniswap.com`."
+- **IP Whitelists**: Create an allowlist of IPs eligible for the gas policy. If empty, all IPs are allowed.
+    - Example: "Only sponsor transactions originating from IP `148.156.123.63`."
 
 <img src="/img/instagas/instagas-access-rules.png" width="900" />
 
 ## Transaction Rules
 
-Transaction rules limit gas sponsorship to specific smart contract interactions, callable methods, input parameters, and their respective constraints.
+Transaction rules limit gas sponsorship to specific smart contract interactions, callable methods, input parameters, and constraints.
 
 - **Contract Address**: Limit gas sponsorship to a specific smart contract address.
-    - Example: "Only sponsor transactions that interacts with the smart contract address `0x123`."
+    - Example: "Only sponsor transactions interacting with smart contract `0x123`."
 - **Method**: Limit gas sponsorship to a specific callable method on the smart contract.
-    - Example: "Only sponsor gas when the transaction calls the method `swap` on the smart contract.
-- **Parameters Constraints**: Limit gas sponsorship to certain parameters and constraints on the selected method.
-    - Example: "Only sponsor gas when the minimum amount of `tokenIn` in the selected method is greater than or equal to 1 ETH"
-- **Batch Transaction**: Design rules to sponsor a batch of transactions, such as an ERC-20 token approval followed by a deposit to a contract. 
-    - Example: "Only sponsor if the transaction calls the `approval` of the erc-20 token to your contracts as well as the `deposit` transaction.
+    - Example: "Only sponsor when the transaction calls the `swap` method."
+- **Parameters Constraints**: Limit gas sponsorship based on method parameters and constraints.
+    - Example: "Only sponsor when `tokenIn` amount is greater than or equal to 1 ETH."
+- **Batch Transaction**: Design rules to sponsor transaction batches, such as an ERC-20 token approval followed by a contract deposit.
+    - Example: "Only sponsor if the transaction includes both ERC-20 token `approval` and `deposit` calls."
 
 <img src="/img/instagas/instagas-transaction-rules.png" width="900" />
 

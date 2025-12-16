@@ -4,52 +4,49 @@ description: An overview of Candide's Safe Recovery Service and how it works. Fe
 keywords: [safe recovery, social recovery, smart wallet, email recovery, guardian recovery]
 ---
 
-Secure Safe Accounts with a diverse set of recovery options like trusted contacts, email/SMS verification, Passkeys, secondary devices and more. 
-Safe Recovery service has two main components: [Recovery UX](#recovery-ux-api) and [Email/SMS Recovery](#emailsms-recovery-api).
+Secure Safe Accounts with diverse recovery options including trusted contacts, email/SMS verification, Passkeys, secondary devices, and more.
+The Safe Recovery service consists of two main components: [Recovery UX](#recovery-ux-api) and [Email/SMS Recovery](#emailsms-recovery-api).
 
 ## Who is this for
-Wallets using Safe [Social Recovery Module](/wallet/plugins/recovery-with-guardians/), and want to offer a seamless and secure recovery experience for their end-users.
+Wallets implementing the Safe [Social Recovery Module](/wallet/plugins/recovery-with-guardians/) that want to provide a seamless and secure recovery experience for their end users.
 
 ## Recovery UX API
 
 ### Automatic Execution
-The service offers automatic execution options to minimize UX friction and increase privacy for recovery contacts / guardians. 
-It can be configured to automatically execute:
+The service provides automatic execution options to minimize UX friction and enhance privacy for recovery contacts and guardians.
+Configure the service to automatically execute:
 
-1. The confirmation recovery transaction after the signature threshold is met, eliminating the need for guardians to cover gas costs.
-2. The finalization transaction after the grace period ends, avoiding recovery contacts to return back to complete the process.
+1. The recovery confirmation transaction once the signature threshold is met, eliminating the need for guardians to pay gas fees.
+2. The recovery finalization transaction after the grace period expires, removing the need for recovery contacts to return and complete the process.
 
 ### Signature Aggregation and Storage
-Guardians signatures can be sent to the service to allow off-chain collection. The service can then automatically execute the recovery confirmation and finalization
-once all required signatures have been collected.
+Guardian signatures can be submitted to the service for off-chain collection. Once all required signatures are collected, the service automatically executes the recovery confirmation and finalization.
 
 ### Gas Sponsorship Relayer
-It includes a gas sponsorship relayer, which cover the gas costs for both confirmation and finalization
+The service includes a gas sponsorship relayer that covers gas costs for both confirmation and finalization transactions.
 
-### Social Engineering protection
-The api provides a communication system using emojis that enables guardians to verify and approve legitimate recovery requests, effectively preventing social phishing 
-attempts by malicious actors who may try to manipulate the recovery process.
+### Social Engineering Protection
+The API provides an emoji-based communication system that enables guardians to verify and approve legitimate recovery requests, effectively preventing social engineering attacks by malicious actors attempting to manipulate the recovery process.
 
 ### Alerts and Notifications
-Account owners can subscribe to receive notifications via email or SMS when a recovery request is initiated, whether onchain or through the service, ensuring they stay informed during a recovery process.
-The service keeps track of transactions sent via the *Safe Recovery Module* and uses events and tracing to index transactions to send timely alerts.  
+Account owners can subscribe to email or SMS notifications when a recovery request is initiated, whether onchain or through the service, ensuring they remain informed throughout the recovery process.
+The service monitors transactions sent through the Safe Recovery Module, using events and tracing to index transactions and deliver timely alerts.  
 
-## Email/SMS Recovery API 
+## Email/SMS Recovery API
 
-A secure and user-friendly solution that uses email and phone verification to facilitate account recovery. Can be used as a default recovery method or 
-combined with other guardians (such as hardware wallets or trusted contacts) to create a customized recovery threshold. Features:
+A secure and user-friendly solution that uses email and phone verification for account recovery. Use it as a standalone recovery method or combine it with other guardians (hardware wallets, trusted contacts) to create a customized recovery threshold. Features include:
 
 ### Email Recovery
-Supports both SMTP or OAuth2 based protocols. To verify user ownership of the email, a confirmation code is sent to the user's email, which they must enter to enable the guardian service.
+Supports SMTP and OAuth2-based protocols. To verify email ownership, a confirmation code is sent to the user's email address. The user must enter this code to enable the guardian service.
 
 ### SMS Recovery
-Supports SMS OTP. To verify user ownership of the phone number, a confirmation code is sent to the user, which they must enter to enable the guardian service.
+Supports SMS OTP verification. To verify phone number ownership, a confirmation code is sent to the user. The user must enter this code to enable the guardian service.
 
-### Multi-factor authentication
-Supports MFA with different channels such as a combination of email and sms.
+### Multi-Factor Authentication
+Supports MFA across multiple channels, including combinations of email and SMS.
 
-### Custom
-Supports adding more channels like WhatsApp, Telegram and others. Please reach out to request the support of your selected channel. 
+### Custom Channels
+Supports additional channels including WhatsApp and Telegram. Contact us to request support for your preferred channel. 
 
 ## How it works
 

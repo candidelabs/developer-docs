@@ -7,12 +7,12 @@ keywords: [safe-account, "4337", sdk, account-abstraction, gnosis-safe]
 import CardList from "/src/components/CardList";
 
 # Safe Account
-The `SafeAccount` uses the original Safe Singleton and adds ERC-4337 functionality using a module/fallback handler. 
+The `SafeAccount` uses the original Safe Singleton and adds ERC-4337 functionality using a module/fallback handler.
 
-- The V2 contracts, or `SafeAccountV0_2_0` in AbstractionKit, supports EntryPoint v0.6.
-- The V3 contracts, or `SafeAccountV0_3_0` in AbstractionKit, supports EntryPoint v0.7.
+- The V2 contracts, or `SafeAccountV0_2_0` in AbstractionKit, support EntryPoint v0.6.
+- The V3 contracts, or `SafeAccountV0_3_0` in AbstractionKit, support EntryPoint v0.7.
 
-The contracts have been developed by the Safe Team, and have been audited by Open Zeppelin & Ackee Blockchain. 
+The contracts were developed by the Safe Team and audited by OpenZeppelin & Ackee Blockchain. 
 
 ## Audits 
 
@@ -35,9 +35,9 @@ import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit"; 
 ```
 
-## How to use
+## How to Use
 
-AbstractionKit classes are designed to support the same methods across both versions, ensuring compatibility within the essential classes. This allows developers to upgrade from Safe V2 to Safe V3 seamlessly, without breaking functionality or requiring significant code changes. 
+AbstractionKit classes are designed to support the same methods across both versions, ensuring compatibility within the essential classes. This allows developers to upgrade from Safe V2 to Safe V3 seamlessly without breaking functionality or requiring significant code changes. 
 
 To initialize a new Safe Account and calculate its address:
 

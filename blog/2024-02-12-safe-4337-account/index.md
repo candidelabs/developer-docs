@@ -9,29 +9,29 @@ tags: [sdk]
 
 ![abstractionkit_poster](/img/posters/abstracitonkit-blog-poster.png)
 
-Candide released AbstractionKit v0.1.x, adding first-class support for the new fully audited [ERC-4337 Safe canonical module](https://github.com/safe-global/safe-modules/tree/main/modules/4337). Audits by Open Zepplin and Ackee. At its core, AbstractionKit empowers developers to build Smart Wallets using Safe Contracts and the ERC-4337 standard, ushering in a new era of possibilities:
+Candide released AbstractionKit v0.1.x, adding first-class support for the fully audited [ERC-4337 Safe canonical module](https://github.com/safe-global/safe-modules/tree/main/modules/4337), audited by OpenZeppelin and Ackee. AbstractionKit empowers developers to build Smart Wallets using Safe Contracts and the ERC-4337 standard, unlocking new possibilities:
 
 <!-- truncate -->
 
-**Enhanced Account Security:** Leveraging battle-tested Safe Contracts, developers can seamlessly integrate various authentication methods, ensuring robust account security with features designed for easy login and recovery.
+**Enhanced Account Security:** Leverage battle-tested Safe Contracts to seamlessly integrate various authentication methods, ensuring robust account security with features designed for easy login and recovery.
 
-**Gas Fee Abstraction:** AbstractionKit takes the hassle out of gas management for users, providing the option to completely abstract gas concerns or allowing users to pay fees in different ERC-20s tokens such as stablecoins.
+**Gas Fee Abstraction:** AbstractionKit simplifies gas management for users, providing options to completely abstract gas concerns or allow users to pay fees in different ERC-20 tokens such as stablecoins.
 
-**One-click Interfaces:** AbstractionKit simplifies transaction workflows by enabling batched transactions or the automated execution of multiple transactions in a single one.
+**One-Click Interfaces:** Simplify transaction workflows by enabling batched transactions or automated execution of multiple transactions atomically.
 
-AbstractionKit embodies a lightweight design to minimize dependencies on external libraries. It natively interacts with Safe Contracts, without any external wrapping to other libraries. The interface strikes a balance between intuition and flexibility, empowering developers with the ability to make overrides, such as gas estimates and state overrides. The library provides two distinct sets of methods, catering to developers who prefer minimal abstraction and a high-level library approach:
+AbstractionKit features a lightweight design minimizing external library dependencies. It natively interacts with Safe Contracts without external wrappers. The interface balances intuition and flexibility, empowering developers to override gas estimates and state. The library provides two method sets catering to different developer preferences:
 
-- The Essentials method provides a comprehensive set of functionalities with support for overrides, delivering a simplified and efficient approach.
-- The Advanced method provides intricate control and customization options, specifically tailored for developers seeking detailed configurations.
+- The Essentials method provides comprehensive functionality with override support for a simplified, efficient approach
+- The Advanced method provides intricate control and customization options for developers requiring detailed configurations
 
-AbstractionKit comes equipped with a suite of infrastructure with Candide, including hosted Bundlers and a Paymaster API, ready for developers to use right out of the box. It is Ethereum interface library-agnostic; it can be used with ethers, viem, or web3js. Furthermore, it can be used with any Bundler client, thanks to ERC-4337 standardization across different platforms like LlamaNodes, BlockPi, or other Account Abstraction Providers.
+AbstractionKit includes Candide infrastructure with hosted Bundlers and a Paymaster API, ready for immediate use. It's Ethereum interface library-agnostic, working with ethers, viem, or web3.js. It also works with any Bundler client through ERC-4337 standardization across platforms like LlamaNodes, BlockPi, and other Account Abstraction providers.
 
-Thanks to the support from the [Safe Grants Program](https://grants.safe.global), Candide secured funding for the development of [The Reference SDK for ERC-4337 Safe](https://twitter.com/candidelabs/status/1719039290842239225). While ERC-4337 introduces a novel paradigm for account abstraction, its practical application has been hindered by the so far limited adoption of battle tested smart-contract based accounts, in particularly Safe based accounts.
+Thanks to support from the [Safe Grants Program](https://grants.safe.global), Candide secured funding to develop [The Reference SDK for ERC-4337 Safe](https://twitter.com/candidelabs/status/1719039290842239225). While ERC-4337 introduces a novel paradigm for account abstraction, its practical application has been limited by the adoption of battle-tested smart contract-based accounts, particularly Safe-based accounts.
 
-The introduction of Safe contracts to AbstractionKit paves the way for the adoption of Safe Accounts. This integration not only aims to streamline the development of Smart Wallets, but also ensures that these wallets operate cohesively within the ecosystem. It allows applications and their user bases to be expanded with the most battle tested Safe smart account standard.
+The integration of Safe contracts into AbstractionKit paves the way for Safe Account adoption. This integration streamlines Smart Wallet development while ensuring wallets operate cohesively within the ecosystem, allowing applications to expand their user bases with the battle-tested Safe smart account standard.
 
-To begin using AbstractionKit, visit the [getting started](https://docs.candide.dev/wallet/atelier-intro/) tutorial starting with `npm i abstractionkit`.
+To begin using AbstractionKit, visit the [getting started](https://docs.candide.dev/wallet/atelier-intro/) tutorial and install with `npm i abstractionkit`.
 
-If you are building on account abstraction, reach out on [twitter](https://twitter.com/@candidelabs), Discord or come say hello at team@candidelabs.com
+If you're building on account abstraction, reach out on [Twitter](https://twitter.com/@candidelabs), Discord, or email us at team@candidelabs.com.
 
-*Special thanks to Andre Thiessen, John Guilding, Thomas Wiesner, Shareef Hadid, Bertrand Juglas, Nicholas Rodrigues Lordello and SungEun Choi for the early feedback on pre-releases versions for AbstractionKit.*
+*Special thanks to Andre Thiessen, John Guilding, Thomas Wiesner, Shareef Hadid, Bertrand Juglas, Nicholas Rodrigues Lordello, and SungEun Choi for early feedback on pre-release versions of AbstractionKit.*

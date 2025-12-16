@@ -4,12 +4,11 @@ description: Learn how to add an onchain Identifier to all your ERC-4337 Safe tr
 keywords: [Identifier, on-chain]
 ---
 
-# Onchain Tracking - Adding an identifier to your Safes Accounts 
+# On-Chain Tracking - Adding an Identifier to Your Safe Accounts
 
-This guide explains how to add an on-chain identifier to your Safe Accounts, allowing you to track and recognize your Safe transactions 
-from other wallets, tracking your user adoption.
+This guide explains how to add an on-chain identifier to your Safe Accounts, enabling you to track and distinguish your Safe transactions from other wallets and monitor user adoption.
 
-## Generate an on-chain identifier  
+## Generate an On-Chain Identifier  
 
 ```ts
 import { SafeAccountV0_3_0 } from "abstractionkit"
@@ -22,20 +21,18 @@ const smartAccount = SafeAccountV0_3_0.initializeNewAccount(
 )
 ```
 
-In this example, we initialize a new Safe account and include an `onChainIdentifierParams` object with a project property set to "PROJECT_NAME". 
-This will add a unique identifier to all transactions made with this Safe account, allowing you to easily track and recognize them among other Safe 
-wallet transactions.
+This example initializes a new Safe account with an `onChainIdentifierParams` object containing a project property set to "PROJECT_NAME".
+This adds a unique identifier to all transactions from this Safe account, enabling easy tracking and recognition among other Safe wallet transactions.
 
-## Getting the on-chain identifier
+## Getting the On-Chain Identifier
 
 ```ts
 const onchainIdentifier = smartAccount.onChainIdentifier
 ```
 
-The `onChainIdentifier` property of the smartAccount object will contain the generated identifier, as well as other useful information of the tooling you've used.
+The `onChainIdentifier` property contains the generated identifier and additional information about the tooling used.
 
-You can see how we generate the identifier by seeing the source code of [generateOnChainIdentifier](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccount.ts#L2819)
-method. 
+View the identifier generation in the [generateOnChainIdentifier](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccount.ts#L2819) source code. 
 
 <details>
 <summary>What's the format of the identifier?</summary>

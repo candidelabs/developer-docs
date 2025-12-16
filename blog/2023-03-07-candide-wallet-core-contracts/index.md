@@ -19,19 +19,19 @@ To understand Candide Contracts, it is vital to know the key component that the 
 
 ![candide-contracts-entrypoint](./candide_contracts_and_entrypoint.png)
 
-### The Setup method 
+### The Setup Method
 
-Candide wallet is a modified version of Safe to accommodate for the entrypoint. The setup method simply calls the setup in Safe with one more argument:  the _entryPoint address 
+Candide wallet is a modified version of Safe to accommodate the EntryPoint. The setup method simply calls the setup in Safe with one more argument: the _entryPoint address. 
 
 ![setup-method-with-entrypoint](./setupwithentrypoint.png)
 
 ![execute-private-method](./execute_private_method.png)
 
-### The validation method
+### The Validation Method
 
-This method blocks unauthorized users to submit operations for the wallet. It's called by the EntryPoint to validate two things: the user's signature and the nonce.
+This method blocks unauthorized users from submitting operations for the wallet. It's called by the EntryPoint to validate two things: the user's signature and the nonce.
 
-`_validateSignature` call the signature validation of Safe. It returns zero on success and catches the revert in case the signature is not valid and returns 1 (`SIG_VALIDATION_FAILED`).
+`_validateSignature` calls the signature validation of Safe. It returns zero on success and catches the revert in case the signature is not valid and returns 1 (`SIG_VALIDATION_FAILED`).
 
 `_validateAndUpdateNonce` makes sure that the `nonce` coming from the `UserOperation` is valid and increments the `nonce` for the Account.
 
@@ -39,9 +39,9 @@ The `missingAccountFunds` is the amount that the Account needs to deposit in the
 
 ![validate-with-entrypoint](./validateUserOp.png)
 
-### The execution method
+### The Execution Method
 
-This function allows the Entrypoint to execute a transaction without any further confirmations. It has to check one condition: Make sure the transaction is indeed coming from Entrypoint.
+This function allows the EntryPoint to execute a transaction without any further confirmations. It has to check one condition: Make sure the transaction is indeed coming from the EntryPoint.
 
 ![execute-from-entrypoint](./executefromentrypoint.png)
 
@@ -51,7 +51,7 @@ Lastly, if a new EntryPoint is introduced, whether to add new functionality, imp
 ![replace-entrypoint](./replaceentrypoint.png)
 
 
-Those are essentially the four main methods used for Candide Wallet contracts. Find the [CandideWallet.sol](https://github.com/candidelabs/CandideWalletContracts/blob/main/contracts/candideWallet/CandideWallet.sol) on github.
+Those are essentially the four main methods used for Candide Wallet contracts. Find the [CandideWallet.sol](https://github.com/candidelabs/CandideWalletContracts/blob/main/contracts/candideWallet/CandideWallet.sol) on GitHub.
 
 
 
