@@ -161,7 +161,7 @@ export const pm_getPaymasterDataReturnParamsV06 = [
   ...sponsorDataType7677,
 ];
 
-export const tokensParamatersV2 = [
+export const tokensParametersV2 = [
   {
     key: "symbol",
     type: "string",
@@ -208,7 +208,7 @@ export const candidePaymasterContext = [
   },
 ];
 
-export const tokensParamatersV3 = [
+export const tokensParametersV3 = [
   {
     key: "name",
     type: "string",
