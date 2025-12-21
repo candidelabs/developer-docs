@@ -1218,6 +1218,75 @@ export const createRemoveOwnerMetaTransactionReturn = [
   },
 ];
 
+export const createDisableModuleMetaTransactionParams = [
+  {
+    key: "nodeRpcUrl",
+    type: "string",
+    description:
+      "The JSON-RPC API URL for the target chain to fetch the previous module address.",
+  },
+  {
+    key: "moduleToDisableAddress",
+    type: "string",
+    description: "The address of the module to be disabled.",
+  },
+  {
+    key: "accountAddress",
+    type: "string",
+    description: "The Safe account address for which to disable the module.",
+  },
+  {
+    key: "overrides",
+    description:
+      "Optional overrides for the default values used in the transaction.",
+    type: [
+      {
+        key: "prevModuleAddress",
+        type: "string",
+        description:
+          "If set, it will be used as the previous module address instead of fetching it.",
+      },
+      {
+        key: "modulesStart",
+        type: "string",
+        description: "Starting address for the module pagination query.",
+      },
+      {
+        key: "modulesPageSize",
+        type: "bigint",
+        description: "Page size for the module pagination query.",
+      },
+    ],
+  },
+];
+
+export const createDisableModuleMetaTransactionReturn = [
+  {
+    key: "MetaTransaction",
+    type: [
+      {
+        key: "to",
+        type: "string",
+        description:
+          "The target address for the meta-transaction (Safe account address).",
+      },
+      {
+        key: "data",
+        type: "string",
+        description: "The encoded function call data for disabling the module.",
+      },
+      {
+        key: "value",
+        type: "bigint",
+        description:
+          "The value to be sent with the meta-transaction, set to zero for this function.",
+      },
+    ],
+    description:
+      "A promise that resolves to the meta-transaction object for disabling the specified module.",
+  },
+];
+
 export const createAddOwnerWithThresholdMetaTransactionsParams = [
   {
     key: "newOwner",

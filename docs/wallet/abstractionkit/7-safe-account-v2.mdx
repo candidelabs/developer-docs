@@ -46,6 +46,8 @@ import {
   createRemoveOwnerMetaTransactionReturn,
   createAddOwnerWithThresholdMetaTransactionsParams,
   createAddOwnerWithThresholdMetaTransactionsReturn,
+  createDisableModuleMetaTransactionParams,
+  createDisableModuleMetaTransactionReturn,
   verifyWebAuthnSignatureForMessageHashParam,
   verifyWebAuthnSignatureForMessageHashReturn,
   getUserOperationEip712DataV6Param,
@@ -941,6 +943,19 @@ Creates a meta-transaction to remove an owner from the Safe account, fetching th
 </TabItem>
 <TabItem value="Return type" label="Return Types">
   <DataTable items={createRemoveOwnerMetaTransactionReturn} />
+</TabItem>
+</Tabs>
+
+### createDisableModuleMetaTransaction
+
+Creates a meta-transaction to disable a module from the Safe account. The function automatically fetches the previous module address in the linked list if not provided in the overrides. This function returns a promise that resolves to a meta-transaction object containing the necessary details for disabling the module.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createDisableModuleMetaTransactionParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={createDisableModuleMetaTransactionReturn} />
 </TabItem>
 </Tabs>
 
