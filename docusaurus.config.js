@@ -92,12 +92,21 @@ const config = {
       excludeRoutes: ["/blog"],
     }],
     [
-      'docusaurus-plugin-llms',
+      '@signalwire/docusaurus-plugin-llms-txt',
       {
-        generateLLMsFullTxt: false,
-        title: 'Candide Account Abstraction',
-        description: 'Candide Ethereum Account Abstraction developer tools for building smart accounts',
-        includeBlog: false,
+        siteTitle: 'Candide Account Abstraction',
+        siteDescription: 'Candide Ethereum Account Abstraction developer tools for building smart accounts',
+        content: {
+          relativePaths: false,  // Use absolute URLs instead of relative paths
+          includeBlog: false,    // Already false by default
+          includePages: false,   // Exclude tag/other pages
+          includeGeneratedIndex: false,  // Exclude auto-generated index pages
+          excludeRoutes: [
+            '/tags',           // Exclude tags index
+            '/tags/**',        // Exclude all tag pages
+            '/',               // Exclude homepage/index
+          ]
+        }
       }
     ],
   ],
