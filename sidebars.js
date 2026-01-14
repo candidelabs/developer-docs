@@ -487,20 +487,20 @@ const sidebars = {
       type: "category",
       collapsible: false,
       className: "category-not-collapsible",
-      label: "EIP-7702",
+      label: "Research",
       items: [
         {
           type: "doc",
-          id: "account-abstraction/7702/overview",
-          label: "Overview"
+          id: "account-abstraction/research/safe-unified-account",
+          label: "Safe Unified Account"
         },
         {
           type: "doc",
-          id: "account-abstraction/7702/delegation",
-          label: "Delegation"
+          id: "account-abstraction/research/multichain-deposit-address",
+          label: "Forwarding Address"
         },
       ],
-    }
+    },
   ],
   instaGasSidebar: [
     {

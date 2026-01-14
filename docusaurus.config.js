@@ -120,14 +120,14 @@ const config = {
         respectPrefersColorScheme: false,
       },
       image: 'img/posters/atelier-meta.png',
-      // announcementBar: {
-      //   id: 'eip-7702',
-      //   content:
-      //     'EIP-7702 is now live on Ethereum, Optimism, Base, Gnosis, BSC <button><a href="/blog/eip-7702-support/">Get Started</a></button>',
-      //   backgroundColor: '#f0f6ff',
-      //   textColor: '#000000',
-      //   isCloseable: true, 
-      // },
+      announcementBar: {
+        id: 'safe-unified-account',
+        content:
+          'Safe Unified Account: Sign once, execute on every chain. EIL-compatible multichain signatures for Safe. <a href="/account-abstraction/research/safe-unified-account/">Learn more</a>',
+        backgroundColor: '#f0f6ff',
+        textColor: '#000000',
+        isCloseable: true,
+      },
       metadata: [{
         name:
           'twitter:card',
@@ -161,6 +161,11 @@ const config = {
             to: '/instagas/overview',
             position: 'left',
             label: 'InstaGas',
+          },
+          {
+            to: '/account-abstraction/research/safe-unified-account',
+            position: 'left',
+            label: 'Research',
           },
           {
             to: 'https://dashboard.candide.dev',
