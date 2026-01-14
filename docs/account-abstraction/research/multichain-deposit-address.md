@@ -1,64 +1,65 @@
 ---
-title: "Multichain Deposit Address"
-description: "A multichain deposit address that works across all blockchains, enabling instant cross-chain asset access"
+title: "Forwarding Address"
+description: "A forwarding address that works across all blockchains, enabling instant cross-chain asset routing"
 keywords:
   - cross-chain
-  - bridging
+  - forwarding
   - user-experience
   - concept
   - interoperability
-  - deposits
+  - routing
   - multichain
 ---
 
-# The Unified Deposit Address: One Address for Every Chain
+# Forwarding Address: One Address for Every Chain
 
-*A new concept for seamless cross-chain deposits. Send assets from any blockchain and instantly access them where you need them most.*
+*A single address that receives assets from any chain and automatically routes them to your destination.*
 
-## The Cross-Chain Problem We All Face
+## The Cross-Chain Receiving Problem
 
-The multichain world is booming. Assets, apps, and opportunities are spread across dozens of vibrant ecosystems like Ethereum, Base, Polygon, and Arbitrum. But moving between them is a major headache.
+Users hold assets across multiple chains. When they need to consolidate funds or receive a payment, the sender's chain rarely matches the recipient's preferred chain. Today, handling this requires the recipient to share a chain-specific address, then manually bridge assets afterward, or ask the sender to bridge first. Neither option is practical.
 
-Today, sending yourself `USDC` from one chain to another involves:
+For wallet providers, this creates friction at a critical moment. A user wants to receive USDC, but the sender is on Arbitrum while the user operates primarily on Base. The choices are: reject the payment, explain bridging to the sender, or accept funds on the wrong chain and deal with it later. All of these degrade the experience.
 
-  * Finding a trustworthy bridge.
-  * Navigating a complex interface with multiple steps.
-  * Paying gas fees on two different chains.
-  * Waiting anxiously for 5-30 minutes, hoping nothing goes wrong.
+The problem compounds as users spread across more L2s. Managing receiving addresses per chain, or explaining to senders which chain to use, doesn't scale.
 
-This friction is a barrier for everyone, from crypto newcomers to seasoned veterans. It keeps the ecosystem fragmented and complicated.
+## The Solution: Forwarding Address
 
-## The Solution: A Deposit Address for Everything
+A Forwarding Address is a single address that works on any supported chain. Assets sent to this address are automatically routed to the user's destination chain. The sender doesn't need to know or care which chain the recipient uses.
 
-Imagine having a deposit address that works everywhere. A unified address you can send assets to from any supported chain, with the funds appearing automatically on your primary chain moments later.
+The mechanism is straightforward: when funds arrive on the source chain, a smart contract deploys instantly and routes them to the destination. The sender sends to one address, the recipient receives on their preferred chain, and the routing happens automatically.
 
-That’s the Unified Deposit Address.
+Consider a concrete example. A user's primary wallet is on Base, but they need to receive 100 USDC from someone on Arbitrum. Instead of coordinating chains or bridging manually, the sender simply sends to the user's Forwarding Address on Arbitrum. The funds are automatically routed to Base and appear in the user's wallet moments later.
 
-**Here’s how it works:**
+![Forwarding-Address](multichain-deposit-address.png)
 
-  * **Your Main Account:** You use Base for your daily activity.
-  * **The Task:** You need to get 100 `USDC` from an Arbitrum wallet over to Base.
-  * **The Action:** Instead of bridging, you simply send the 100 `USDC` from Arbitrum to your one Unified Deposit Address.
-  * **The Result:** The system handles everything in the background. Moments later, 100 `USDC` is available in your Base wallet, ready to use.
+For wallet providers, this simplifies the UX considerably. Users get one address to share regardless of context. Incoming funds from any chain consolidate automatically. There's no need to explain bridging or manage per-chain addresses.
 
-![Multichain-Deposit-Address](multichain-deposit-address.png)
-
-### The Difference is Night and Day
-
-| The Old Way (Manual Bridging) | The Unified Address (Simple) |
+| Manual Bridging | Forwarding Address |
 | :--- | :--- |
-| 1. Find and vet a third-party bridge. | 1. Copy your one Unified Address. |
-| 2. Connect your wallet. | 2. Send assets to it from any chain. |
-| 3. Approve and confirm multiple transactions. | 3. Done. Funds appear on your main chain. |
-| 4. Pay gas fees on both chains. | |
-| 5. Wait 5-30 minutes for funds to arrive. | |
+| Recipient shares chain-specific address | Recipient shares one address |
+| Sender must use the correct chain or bridge first | Sender uses any supported chain |
+| Recipient bridges funds manually after receiving | Funds route automatically to destination |
+| Multiple steps, gas on multiple chains | Single send, routing handled automatically |
 
-### Key Benefits
+## Trustless and Self-Custodial with EIL
 
-  * **Zero Complexity:** Forget bridges, RPCs, and chain-switching. Just send your assets and you're done. The complex routing is completely abstracted away.
-  * **Instant Access:** Your funds arrive on your main chain in moments, not long, unpredictable minutes.
-  * **One Address for Everything:** Finally, a single, persistent address you can give to anyone or use yourself to consolidate funds from across the EVM ecosystem.
-  * **Always Optimal:** The system automatically finds the best and most efficient route for your assets behind the scenes.
-  * **Universal Onboarding:** This makes it trivial for anyone, regardless of which blockchain they currently use, to start interacting with a new ecosystem seamlessly.
+The Forwarding Address isn't just about convenience. We're designing it to be fully trustless and self-custodial, aligned with the Ethereum Foundation's [Interoperability Layer (EIL)](https://blog.ethereum.org/2025/11/18/eil).
 
-This is more than just a feature; it's a vision for how crypto should work—simple, intuitive, and truly interoperable. By removing the core friction of moving between chains, we can unlock the full potential of the multichain world for everyone.
+With EIL, the routing no longer requires trusting a bridge operator or third-party relayer. Trustless liquidity providers fulfill the transfer without ever custodying your funds, and the entire flow executes through onchain contracts under verifiable rules. The user remains in control of their assets throughout.
+
+This matters because cross-chain UX improvements often come at the cost of trust assumptions. Users gain convenience but hand custody to a bridge or relayer. With EIL, the Forwarding Address delivers the same seamless experience while preserving the security guarantees users expect from Ethereum itself.
+
+## Build With Us
+
+We're looking for wallet teams who want to offer seamless cross-chain receiving to their users. If you're building a wallet where users need to consolidate funds from multiple chains or receive assets regardless of which chain the sender is on, we want to talk.
+
+Early partners will get direct integration support and the opportunity to shape the product based on real user needs. In return, we're looking for teams who can commit engineering resources and provide concrete feedback on how the Forwarding Address fits their UX.
+
+Reach out directly on Telegram: **[@heymarcopolo](https://t.me/heymarcopolo)**
+
+If you're still evaluating whether this fits your roadmap, we're happy to walk through the technical details and discuss how it would work in your specific context.
+
+---
+
+*Technical questions? Reach out on [Discord](https://discord.gg/MfbK7aNWsY) or [GitHub](https://github.com/candidelabs)*
