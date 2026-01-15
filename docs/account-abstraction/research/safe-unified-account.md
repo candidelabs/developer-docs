@@ -93,12 +93,6 @@ EIL's power extends beyond moving tokens from one chain to another. The same pri
 
 The EIL specification describes these as "dependency graphs" where sometimes operations can run in parallel when there's no dependency, and sometimes there's a strict sequence where one UserOperation uses the proceeds from another. Safe Unified Account provides the signature infrastructure that makes this possible.
 
-### EIL Timeline
-
-EIL is currently live on testnet as of November 2025, with mainnet deployment expected after further auditing and community feedback. The Ethereum Foundation's roadmap targets significant latency improvements, with cross-chain finality dropping from the current 13-19 minutes to 15-30 seconds by early 2026.
-
-Safe Unified Account is designed to be EIL-compatible from the start. The Merkle-rooted signature scheme we implement matches EIL's specification precisely, so when EIL reaches mainnet, Safe accounts with this module won't need upgrades.
-
 ## Multichain Account Sync
 
 While EIL enables trustless token movements, the same signature primitive solves a more immediate problem: keeping your Safe configuration consistent across chains.
