@@ -504,6 +504,11 @@ const sidebars = {
           id: "account-abstraction/research/safe-policies",
           label: "Safe Policies"
         },
+        {
+          type: "doc",
+          id: "account-abstraction/research/safe-simulation",
+          label: "Safe Simulation"
+        },
       ],
     },
   ],
