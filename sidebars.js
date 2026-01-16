@@ -487,7 +487,7 @@ const sidebars = {
       type: "category",
       collapsible: false,
       className: "category-not-collapsible",
-      label: "Research",
+      label: "Labs",
       items: [
         {
           type: "doc",
@@ -498,6 +498,11 @@ const sidebars = {
           type: "doc",
           id: "account-abstraction/research/multichain-deposit-address",
           label: "Forwarding Address"
+        },
+        {
+          type: "doc",
+          id: "account-abstraction/research/safe-policies",
+          label: "Safe Policies"
         },
       ],
     },

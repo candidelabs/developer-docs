@@ -165,7 +165,7 @@ const config = {
           {
             to: '/account-abstraction/research/safe-unified-account',
             position: 'left',
-            label: 'Research',
+            label: 'Labs',
           },
           {
             to: 'https://dashboard.candide.dev',
