@@ -170,6 +170,12 @@ export const ethereumList = [
     address: "0x68749665FF8D2d112Fa859AA293F07A622782F38",
     blockExplorer: "https://etherscan.io/token/",
   },
+  {
+    token: "USA₮",
+    logo: "/img/tokens/usat-logo.svg",
+    address: "0x07041776f5007aca2a54844f50503a18a72a8b68",
+    blockExplorer: "https://etherscan.io/token/",
+  },
 ];
 
 export const gnosisList = [
