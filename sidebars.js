@@ -490,9 +490,17 @@ const sidebars = {
       label: "Labs",
       items: [
         {
-          type: "doc",
-          id: "account-abstraction/research/safe-unified-account",
-          label: "Safe Unified Account"
+          type: "category",
+          label: "Safe Unified Account",
+          collapsed: true,
+          link: { type: "doc", id: "account-abstraction/research/safe-unified-account" },
+          items: [
+            {
+              type: "doc",
+              id: "account-abstraction/research/safe-unified-account-getting-started",
+              label: "Getting Started"
+            },
+          ],
         },
         {
           type: "doc",
