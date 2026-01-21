@@ -69,7 +69,7 @@ flowchart TB
 
 ## EIL: Trustless Cross-Chain Token Movements
 
-The Ethereum Foundation's [Interoperability Layer](https://blog.ethereum.org/2025/11/18/eil) represents the most significant shift in how cross-chain transactions will work. EIL enables trustless token transfers between L2s without bridges, custodians, or trust assumptions beyond Ethereum itself.
+The Ethereum Foundation's [Interoperability Layer](https://blog.ethereum.org/2025/11/18/eil) represents the most significant shift in how cross-chain transactions will work. EIL enables trustless token transfers between L2s without bridges, custodians, or trust assumptions beyond Ethereum itself. For a broader overview of EIL and what it means for wallets, see our [EIL overview](/account-abstraction/research/eil).
 
 The core insight is that cross-chain transfers can be reduced to coordinated operations on multiple chains, all verified by a single signature. The [EIL specification](https://ethresear.ch/t/eil-trust-minimized-cross-l2-interop/23437) describes the approach:
 

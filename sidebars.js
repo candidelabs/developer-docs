@@ -504,6 +504,11 @@ const sidebars = {
         },
         {
           type: "doc",
+          id: "account-abstraction/research/eil",
+          label: "Ethereum Interoperability Layer"
+        },
+        {
+          type: "doc",
           id: "account-abstraction/research/multichain-deposit-address",
           label: "Forwarding Address"
         },

@@ -37,7 +37,7 @@ Before starting, make sure you have:
 - **Basic TypeScript knowledge**
 
 :::tip Complete Example
-You can [fork the complete code](https://github.com/candidelabs/abstractionkit-examples/blob/main/chain-abstraction/add-owner.ts) and follow along.
+You can [fork the complete code](https://github.com/candidelabs/abstractionkit-examples/pull/3) and follow along.
 :::
 
 ## Step 1: Project Setup
