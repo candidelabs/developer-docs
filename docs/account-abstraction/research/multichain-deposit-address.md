@@ -29,6 +29,8 @@ The problem compounds as users spread across more L2s. Managing receiving addres
 
 A Forwarding Address is a single address that works on any supported chain. Assets sent to this address are automatically routed to the user's destination chain. The sender doesn't need to know or care which chain the recipient uses.
 
+The system is fully self-custodial. The user is the sole owner of their Forwarding Address—no third party holds custody of funds at any point. When assets arrive, they route directly to the user's destination wallet without passing through intermediary accounts.
+
 The mechanism is straightforward: when funds arrive on the source chain, a smart contract deploys instantly and routes them to the destination. The sender sends to one address, the recipient receives on their preferred chain, and the routing happens automatically.
 
 Consider a concrete example. A user's primary wallet is on Base, but they need to receive 100 USDT from someone on Arbitrum. Instead of coordinating chains or bridging manually, the sender simply sends to the user's Forwarding Address on Arbitrum. The funds are automatically routed to Base and appear in the user's wallet moments later.
@@ -54,31 +56,18 @@ Organizations and individuals making payments across different ecosystems encoun
 
 ## How It Works
 
-The Forwarding Address uses CREATE2 to generate a deterministic address that exists identically across all supported chains. When a user creates their Forwarding Address, the system computes an address that can be deployed on any chain at the same location. The sender can send funds to this address on any chain, even though the contract doesn't exist there yet.
+The Forwarding Address uses a deterministic address that exists identically across all supported chains. When a user creates their Forwarding Address, they get one address that works everywhere. The sender can send funds to this address on any chain.
 
-When funds arrive on the source chain, the receiving transaction triggers contract deployment at the predetermined address. The deployed contract is a lightweight forwarder that immediately initiates cross-chain routing to the user's destination chain. This deployment happens atomically with the incoming transfer, requiring no manual intervention.
+When funds arrive on the source chain, routing to the user's destination chain happens automatically. The sender sends to one address, the recipient receives on their preferred chain, and the cross-chain movement is handled behind the scenes.
 
-The routing mechanism leverages the Ethereum Interoperability Layer's trustless liquidity provider network. The forwarder contract signals a cross-chain intent: "send X USDT from Arbitrum, receive X USDT on Base." Trustless liquidity providers (XLPs) observe this intent and fulfill it by releasing funds to the user on Base while claiming the locked funds on Arbitrum. 
-
-From the user's perspective, they share one address, someone sends funds to it on any chain, and moments later the funds appear on their destination chain. The deployment, routing coordination, and XLP fulfillment all happen automatically.
-
-## EIL Integration
-
-The Forwarding Address is designed around the Ethereum Foundation's [Interoperability Layer (EIL)](https://blog.ethereum.org/2025/11/18/eil), making cross-chain routing trustless and self-custodial.
-
-Traditional bridges require trusting a bridge operator or multi-party relayer network. The Forwarding Address eliminates this trust assumption by using EIL's XLP network. XLPs are trustless liquidity providers who fulfill cross-chain transfers without ever custodying user funds. They operate under cryptographically enforced rules where fulfillment on the destination chain is atomically linked to claiming funds on the source chain.
-
-When funds arrive at a Forwarding Address, the deployed contract creates a verifiable cross-chain intent. XLPs compete to fulfill this intent, providing the user with funds on their destination chain in exchange for claiming the source chain funds. The entire flow executes through onchain contracts with no trusted intermediaries.
-
-This matters because cross-chain UX improvements often come at the cost of security. Users gain convenience but hand custody to a bridge or relayer. The Forwarding Address delivers seamless cross-chain receiving while preserving the security guarantees users expect from Ethereum itself. Your funds remain under your control throughout, and the routing happens through provably correct onchain execution.
+From the user's perspective: share one address, receive funds from any chain, see them appear on your preferred chain moments later.
 
 ## Current Status
 
 | Component | Status |
 |-----------|--------|
 | Forwarder contract | In Progress |
-| EIL integration | Planned |
-| XLP coordination | Planned |
+| Cross-chain routing | In Progress |
 | SDK integration | Planned |
 | Audit | Planned |
 | Production release | After audit |
