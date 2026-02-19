@@ -13,6 +13,8 @@ import {
     postRecoveriesCreateResponse,
     getRecoveriesFetchByAddress,
     getRecoveriesFetchByAddressResponse,
+    getRecoveriesListByAddress,
+    getRecoveriesListByAddressResponse,
     getRecoveriesFetchById,
     getRecoveriesFetchByIdResponse,
     postRecoveriesSign,
@@ -38,7 +40,7 @@ import {
 | Auto Finalization After Grace Period | A built-in relayer automatically submits signed transactions on behalf of guardians for confirmation and finalization once the grace period has elapsed. |
 
 :::info
-The following API is in a pre-release phase. [Request access here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).    
+To get started, request an API key [here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).
 :::
 
 **/recoveries**
@@ -46,6 +48,8 @@ The following API is in a pre-release phase. [Request access here](https://app.f
   - **POST**: Creates a new recovery request
 - **/recoveries/fetchByAddress**
   - **GET**: Fetches recovery requests
+- **/recoveries/listByAddress**
+  - **GET**: Lists all recovery requests with filtering and pagination
 - **/recoveries/fetchById**
   - **GET**: Fetch a recovery request by ID
 - **/recoveries/sign**
@@ -75,7 +79,7 @@ Creates a new recovery request by a guardian with a lost signer of a Safe accoun
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/create \
+  https://yourcompany.recovery.candide.dev/create \
   -H 'Content-Type: application/json' \
   -d '{
         "account": "0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba",
@@ -105,11 +109,11 @@ curl -X POST \
     "signatures": [],
     "executeData": {
         "sponsored": true,
-        "transactionHash": "",
+        "transactionHash": ""
     },
     "finalizeData": {
         "sponsored": true,
-        "transactionHash": "", 
+        "transactionHash": ""
     },
     "status": "PENDING",
     "discoverable": true,
@@ -135,7 +139,7 @@ Fetches recovery requests created by guardians of the Safe accounts by the safe 
 <TabItem value="example-request" label="Example Request">
 
 ```json
-curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetchByAddress" \
+curl -G "https://yourcompany.recovery.candide.dev/fetchByAddress" \
   --data-urlencode "account=0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba" \
   --data-urlencode "chainId=11155111" \
   --data-urlencode "nonce=0x1"
@@ -159,11 +163,11 @@ curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetc
         "signatures": [],
         "executeData": {
             "sponsored": true,
-            "transactionHash": "", 
+            "transactionHash": ""
         },
         "finalizeData": {
             "sponsored": true,
-            "transactionHash": "", 
+            "transactionHash": ""
         },
         "status": "PENDING",
         "discoverable": true,
@@ -184,11 +188,11 @@ curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetc
         "signatures": [],
         "executeData": {
             "sponsored": true,
-            "transactionHash": "", 
+            "transactionHash": ""
         },
         "finalizeData": {
             "sponsored": true,
-            "transactionHash": "", 
+            "transactionHash": ""
         },
         "status": "PENDING",
         "discoverable": true,
@@ -207,6 +211,63 @@ curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetc
 </TabItem>
 </Tabs>
 
+### List all recoveries by address
+Lists all recovery requests for a Safe account with advanced filtering, pagination, and ordering. The `executed` and `finalized` filters are cross-checked with indexed on-chain data for accuracy.
+#### `GET /recoveries/listByAddress`
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```json
+curl -G "https://yourcompany.recovery.candide.dev/recoveries/listByAddress" \
+  --data-urlencode "account=0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba" \
+  --data-urlencode "chainId=11155111" \
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+```json
+{
+    "recoveries": [
+        {
+            "id": "123456789",
+            "emoji": "🤖😅🥵👻🖖",
+            "account": "0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba",
+            "chainId": 1,
+            "newOwners": [
+                "0x41153290c995c8c4410d50f95D87ee86A1B07eeC",
+                "0xB97A1C3993A551f0Febf030539630ACb77E6832D"
+            ],
+            "newThreshold": 2,
+            "nonce": "1234567890",
+            "signatures": [],
+            "executeData": {
+                "sponsored": true,
+                "transactionHash": ""
+            },
+            "finalizeData": {
+                "sponsored": true,
+                "transactionHash": ""
+            },
+            "status": "PENDING",
+            "discoverable": true,
+            "createdAt": "2023-04-18T12:34:56.789Z",
+            "updatedAt": "2023-04-18T12:34:56.789Z"
+        }
+    ],
+    "total": 1
+}
+```
+</TabItem>
+
+<TabItem value="request" label="Query Parameters">
+    <DataTable items={getRecoveriesListByAddress} />
+</TabItem>
+<TabItem value="response" label="Response">
+    <DataTable items={getRecoveriesListByAddressResponse} />
+</TabItem>
+</Tabs>
+
 ### Fetch recovery by ID
 Fetch a recovery request by ID
 #### `GET /recoveries/fetchById`
@@ -215,7 +276,7 @@ Fetch a recovery request by ID
 <TabItem value="example-request" label="Example Request">
 
 ```json
-curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetchById" \
+curl -G "https://yourcompany.recovery.candide.dev/fetchById" \
   --data-urlencode "id=0x123"
 ```
 
@@ -259,19 +320,17 @@ curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/fetc
 </Tabs>
 
 ### Collect a guardian signature
-Collects a guardian siganture to store for later confirmation and finilization
+Collects a guardian signature to store for later confirmation and finalization
 #### `POST /recoveries/sign`
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/sign \
+  https://yourcompany.recovery.candide.dev/sign \
   -H 'Content-Type: application/json' \
   -d '{
-        "id": 123456789,
-        "signer": "0x0b16b3bD015C1e4C866A88e5Cd3f5836fECe7e8A",
-        "signature": "0x45a915e4fc10f6030065f199c1d9258166eb2b98e5a0fe2c4b2ee3a4ed8d6f0a2c5d6e7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5"
+        "id": 123456789
       }'
 ```
 
@@ -302,10 +361,10 @@ Execute a recovery request by ID
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/execute \
+  https://yourcompany.recovery.candide.dev/execute \
   -H 'Content-Type: application/json' \
   -d '{
-        "id": 123456789,
+        "id": 123456789
       }'
 ```
 
@@ -320,10 +379,10 @@ curl -X POST \
 </TabItem>
 
 <TabItem value="request" label="Request Body">
-    <DataTable items={postRecoveriesExecuteById} / >
+    <DataTable items={postRecoveriesExecuteById} />
 </TabItem>
 <TabItem value="response" label="Response">
-    <DataTable items={postRecoveriesExecuteByIdResponse} / >
+    <DataTable items={postRecoveriesExecuteByIdResponse} />
 </TabItem>
 </Tabs>
 
@@ -336,10 +395,10 @@ Finalize a recovery request by ID
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/finalize \
+  https://yourcompany.recovery.candide.dev/finalize \
   -H 'Content-Type: application/json' \
   -d '{
-        "id": 123456789,
+        "id": 123456789
       }'
 ```
 
@@ -353,10 +412,10 @@ curl -X POST \
 ```
 </TabItem>
 <TabItem value="request" label="Request Body">
-    <DataTable items={postRecoveriesFinalizeById} / >
+    <DataTable items={postRecoveriesFinalizeById} />
 </TabItem>
 <TabItem value="response" label="Response">
-    <DataTable items={postRecoveriesFinalizeByIdResponse} / >
+    <DataTable items={postRecoveriesFinalizeByIdResponse} />
 </TabItem>
 </Tabs>
 
@@ -370,7 +429,7 @@ Creates an inactive alerts subscription for an account, both onchain and offchai
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/subscribe \
+  https://yourcompany.recovery.candide.dev/alerts/subscribe \
   -H 'Content-Type: application/json' \
   -d '{
   "account": "0x...",
@@ -416,7 +475,7 @@ Verifies submitted challenge and activates alerts subscription.
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/activate \
+  https://yourcompany.recovery.candide.dev/alerts/activate \
   -H 'Content-Type: application/json' \
   -d '{
   "subscriptionId": "unique-subscription-id",
@@ -446,7 +505,7 @@ Fetches active alerts subscriptions for an account.
 <TabItem value="example-request" label="Example Request">
 
 ```json
-curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/subscriptions" \
+curl -G "https://yourcompany.recovery.candide.dev/alerts/subscriptions" \
    --data-urlencode "account=0x...",
    --data-urlencode "chainId=0x1",
    --data-urlencode "message=siwe(chainId, statement)",
@@ -490,11 +549,11 @@ Unsubscribes from an active alerts subscription.
 <TabItem value="example-request" label="Example Request">
 
 ```json
-curl -X GET \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/alerts/subscriptions \
+curl -X POST \
+  https://yourcompany.recovery.candide.dev/alerts/unsubscribe \
   -H 'Content-Type: application/json' \
   -d '{
-  "subscriptionId": "unique-subscription-id",
+  "subscriptionId": "unique-subscription-id"
 }'
 ```
 
@@ -503,7 +562,7 @@ curl -X GET \
 
 ```json
 {
-  "success": true,
+  "success": true
 }
 ```
 </TabItem>
@@ -512,7 +571,7 @@ curl -X GET \
 - `subscriptionId`: The unique ID received in the subscription response.
 
 
-## Error Handeling
+## Error Handling
 The API uses standard HTTP status codes to indicate the success or failure of a request.
 Error responses will include a JSON object with the following structure:
 

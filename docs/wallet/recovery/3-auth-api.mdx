@@ -64,7 +64,7 @@ The user will then receive an OTP code to later submit the challenge in `/auth/s
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/auth/register \
+  https://yourcompany.recovery.candide.dev/auth/register \
   -H 'Content-Type: application/json' \
   -d '{
    "account":"0x...",
@@ -112,7 +112,7 @@ Submit the received OTP code to confirm ownership of the target channel.
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/auth/submit \
+  https://yourcompany.recovery.candide.dev/auth/submit \
   -H 'Content-Type: application/json' \
   -d '{
    "challengeId":"unique-challenge-id",
@@ -143,7 +143,7 @@ Fetch the registration of the protected smart account
 <TabItem value="example-request" label="Example Request">
 
 ```json
-curl -G "https://api.candide.dev/recoveries/$version/$network/$your_api_key/auth/registrations" \
+curl -G "https://yourcompany.recovery.candide.dev/auth/registrations" \
    --data-urlencode "account=0x...",
    --data-urlencode "chainId=0x1",
    --data-urlencode "message=siwe(chainId, statement)",
@@ -188,7 +188,7 @@ Deletes a registration
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/auth/delete \
+  https://yourcompany.recovery.candide.dev/auth/delete \
   -H 'Content-Type: application/json' \
   -d '{
    "registrationId":"unique-registration-id",
@@ -221,7 +221,7 @@ See [example guide](#how-to-sign-messages-siwe-eip-4361) how to construct the me
 
 ## Auth Recovery
 ### Request to recover an account
-Request a siganture from the service to recover an account given the new owners and threshold 
+Request a signature from the service to recover an account given the new owners and threshold 
 #### `POST /auth/signature/request`
 
 <Tabs>
@@ -229,7 +229,7 @@ Request a siganture from the service to recover an account given the new owners 
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/execute \
+  https://yourcompany.recovery.candide.dev/auth/signature/request \
   -H 'Content-Type: application/json' \
   -d '{
     "account":"0x...",
@@ -272,7 +272,7 @@ Request to submits the signature with the provided OTP code challenge and id
 
 ```json
 curl -X POST \
-  https://api.candide.dev/recoveries/$version/$network/$your_api_key/auth/signature/submit \
+  https://yourcompany.recovery.candide.dev/auth/signature/submit \
   -H 'Content-Type: application/json' \
   -d '{
     "requestId": "unique-signature-request-id",
