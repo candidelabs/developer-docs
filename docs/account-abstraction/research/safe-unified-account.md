@@ -16,6 +16,10 @@ keywords:
 
 *Execute coordinated operations across all your chains with a single signature, unlocking seamless account sync and compatibility with Ethereum's Interoperability Layer.*
 
+## Demo
+
+Try the live demo at **[unified.candide.dev](https://unified.candide.dev)**
+
 ## The Multichain Problem
 
 You manage a Safe on Base, another on Arbitrum, a third on Optimism, and maybe a fourth on Polygon. This is increasingly common as Ethereum scales through L2s, with the ecosystem now spanning over 55 rollups and that number continuing to grow.
