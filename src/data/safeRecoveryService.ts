@@ -241,3 +241,54 @@ export const postAlertSubscribeResponse = [
         description: "Return true once finilized. Else returns error",
     },
 ];
+
+export const getRecoveriesListByAddress = [
+    {
+        key: "account",
+        type: "string",
+        description: "The Safe account address. Must be a valid Ethereum address",
+    },
+    {
+        key: "chainId",
+        type: "number",
+        description: "The chainId of the network where the Safe account resides",
+    },
+    {
+        key: "status",
+        type: "string",
+        description: "(Optional) Filter by status: PENDING, EXECUTED, FINALIZED, EXECUTION-IN-PROGRESS, FINALIZATION-IN-PROGRESS",
+    },
+    {
+        key: "executed",
+        type: "boolean",
+        description: "(Optional) Filter by executed status. Cross-checked with indexed data",
+    },
+    {
+        key: "finalized",
+        type: "boolean",
+        description: "(Optional) Filter by finalized status. Cross-checked with indexed data",
+    },
+    {
+        key: "orderBy",
+        type: "string",
+        description: "(Optional) Field to order by (e.g., 'createdAt', 'nonce')",
+    },
+    {
+        key: "order",
+        type: "string",
+        description: "(Optional) Order direction: 'asc' or 'desc'. Defaults to 'desc'",
+    },
+];
+
+export const getRecoveriesListByAddressResponse = [
+    {
+        key: "recoveries",
+        type: recoveryRequestSchema,
+        description: "A list of Recovery Requests matching the filters",
+    },
+    {
+        key: "total",
+        type: "number",
+        description: "Total number of recovery requests matching the filters",
+    },
+];
