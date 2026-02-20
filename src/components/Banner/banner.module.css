@@ -1,139 +1,169 @@
-.container {
-    padding-left: 2rem !important;
-}
-
 .banner__container {
+    padding: 4rem 1.5rem;
     display: flex;
+    justify-content: center;
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(231, 0, 115, 0.12) 0%, transparent 70%);
+    border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.banner__inner {
+    max-width: 680px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(to right, var(--ifm-background-color), var(--ifm-background-color)) padding-box,
-        linear-gradient(to right, transparent, transparent, var(--ifm-color-gray-600)) border-box;
-    border-radius: 0 1.5rem 1.5rem 0;
-    border: 1px solid transparent;
-    overflow: hidden;
-    min-height: 15rem;
-    max-height: 25rem;
-    width: 50%;
-    margin: 0 auto;
-    margin-top: 1rem;
-    position: relative;
-    isolation: isolate;
+    text-align: center;
+    gap: 1.25rem;
 }
 
-.banner__text {
-    position: relative;
-    z-index: 2;
+.banner__eyebrow {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ifm-color-primary);
+    padding: 0.3rem 0.875rem;
+    border: 1px solid rgba(231, 0, 115, 0.35);
+    border-radius: 999px;
 }
 
-.banner__text h2,
-.banner__text p,
-.banner__text a {
+.banner__title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 0 !important;
+    letter-spacing: -0.02em;
+}
+
+.banner__rotating {
+    color: var(--ifm-color-primary);
+    display: inline-block;
+    transition: opacity 0.28s ease, transform 0.28s ease;
+    white-space: nowrap;
+}
+
+.banner__subtitle {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: var(--ifm-color-emphasis-700);
+    max-width: 520px;
     margin: 0 !important;
 }
 
-.banner__text p {
-    margin-top: 0.5rem !important;
-    max-width: 24rem;
+.banner__install {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--ifm-color-emphasis-300);
+    background: rgba(255, 255, 255, 0.03);
+    font-family: ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.875rem;
 }
 
-.banner__text a {
-    width: fit-content;
-    white-space: pre;
-    padding: 0.5rem 1.125rem;
-    border-radius: 0.875rem;
-    border: none;
-    background: linear-gradient(180deg,
-            var(--ifm-color-primary-lighter) 0%,
-            var(--ifm-color-primary-dark) 100%);
-    box-shadow: 0px 0px 8px -1px var(--ifm-color-primary-darker) inset;
-    color: white !important;
+.banner__prompt {
+    color: var(--ifm-color-primary);
     font-weight: 700;
-    letter-spacing: 0.25px;
+    user-select: none;
+}
+
+.banner__install code {
+    background: none !important;
+    padding: 0 !important;
+    border: none !important;
+    font-size: inherit !important;
+    color: inherit !important;
+}
+
+.banner__actions {
     display: flex;
     align-items: center;
-    gap: 5rem;
-    margin-top: 1.25rem !important;
-    transition: background 0.2s ease-in-out;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-.banner__text a:hover {
-    background: linear-gradient(180deg,
-            var(--ifm-color-primary-light) 0%,
-            var(--ifm-color-primary-darker) 100%);
-}
-
-.banner__text a>svg {
-    width: 1.25rem;
-    height: 1.25rem;
-    transition: transform 0.2s ease-in-out;
-}
-
-.banner__text a:hover>svg {
-    transform: translateX(0.25rem);
-}
-
-.banner__text h2 {
-    font-size: 2.5rem;
-}
-
-.banner__backdrop {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background: linear-gradient(90deg,
-            var(--ifm-background-color) 0%,
-            var(--ifm-background-color) 33%,
-            transparent 100%);
-}
-
-.banner__image {
+.banner__primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    background: linear-gradient(180deg, var(--ifm-color-primary-lighter) 0%, var(--ifm-color-primary-dark) 100%);
+    color: white !important;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none !important;
+    transition: opacity 0.15s ease, transform 0.15s ease;
     border: none;
-    border-radius: 0;
-    height: 100%;
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: 0;
-    object-fit: cover;
 }
 
-@media screen and (max-width: 996px) {
-    .banner__container {
-        height: fit-content;
-    }
+.banner__primary:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
 
-    .container {
-        padding-left: 1rem !important;
-    }
+.banner__primary > svg {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 0.15s ease;
+}
 
-    .banner__text p {
-        max-width: fit-content;
-    }
+.banner__primary:hover > svg {
+    transform: translateX(3px);
+}
+
+.banner__secondary {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--ifm-color-emphasis-300);
+    color: inherit !important;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none !important;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.banner__secondary:hover {
+    border-color: var(--ifm-color-primary);
+    background: rgba(231, 0, 115, 0.06);
+}
+
+.banner__trust {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: var(--ifm-color-emphasis-500);
+    margin-top: 0.25rem;
+}
+
+.banner__dot {
+    color: var(--ifm-color-emphasis-400);
 }
 
 @media screen and (max-width: 660px) {
-    .banner__image {
-        display: none;
-    }
-
     .banner__container {
-        height: fit-content;
-        border-radius: 0;
-        border: none !important;
+        padding: 2.5rem 1rem;
     }
 
-    .banner__backdrop {
-        display: none;
+    .banner__title {
+        font-size: 1.75rem;
     }
 
-    .banner__text a {
-        margin-left: 1rem;
-        margin-right: 1rem;
-        margin-bottom: 1rem;
-        width: calc(100% - 1rem);
+    .banner__actions {
+        flex-direction: column;
+        width: 100%;
     }
 
-    .banner__text a>svg {
-        margin-left: auto;
+    .banner__primary,
+    .banner__secondary {
+        width: 100%;
+        justify-content: center;
     }
 }

@@ -5,95 +5,32 @@ image: /img/posters/atelier-meta.png
 keywords: [erc-4337, account abstraction, paymaster, bundler, Smart Wallets]
 sidebar_position: 1
 ---
+
 # Welcome to Candide
 
-**Build User-Friendly Ethereum apps with Smart Accounts**
+A TypeScript toolkit for building Ethereum smart wallets: gas sponsorship, passkeys, batch transactions, and account recovery, all on top of Safe contracts.
 
-Candide provides a complete developer toolkit for Ethereum Account Abstraction, supporting ERC-4337 and EIP-7702.
-
-## Why Smart Accounts?
-
-Smart accounts eliminate the biggest UX barriers in Web3:
-- No more gas tokens: Users can pay fees in any ERC-20 token or have fees sponsored
-- Simplified onboarding: Login with email, social accounts, or passkeys instead of managing seed phrases  
-- Enhanced security: Built-in recovery, multisig support, and spending limits
-- Batch transactions: Execute multiple operations atomically in a single transaction
-
-## Core Features
-
-### Gas Abstraction
-- Gasless transactions: [Sponsor user fees](/wallet/guides/send-gasless-tx/) with flexible rules and policies
-- ERC-20 gas payments: Let users [pay gas in any token](/wallet/guides/pay-gas-in-erc20/) (USDC, DAI, etc.)
-
-### Modern Authentication
-- Passkey integration: [Onchain WebAuthn](/wallet/plugins/passkeys/) support for biometric login
-- Social login: [Email and OAuth](/wallet/guides/authentication/#social--email) integration
-
-### Advanced Transactions  
-- Batch operations: [Execute multiple transactions](/wallet/guides/getting-started/#step-4-create-useroperation) atomically
-- Spending controls: [Set limits and policies](/wallet/plugins/allowance) for subscriptions and recurring payments
-
-### Security
-- Account recovery: [Social Recovery](/wallet/plugins/recovery-with-guardians) or [traditional](/wallet/recovery/auth-api/) recovery options
-- Multi-signature: A single account controlled with [multiple signatures](/wallet/guides/multisig/)
-
-*Smart accounts are programmable contracts, unlocking transaction capabilities impossible with traditional EOAs.*
-
-## Developer Tools
-
-### AbstractionKit SDK
-TypeScript library for building and sending UserOperations with native support for Safe (Gnosis Safe) Accounts and EIP-7702 Accounts. 
-Includes utilities for transaction batching, gas estimation, and account deployment. Learn more on [why you should 
-choose abstractionkit](/wallet/abstractionkit/introduction/).
-
-### Infrastructure APIs
-- [Bundler](/wallet/bundler/rpc-methods/): ERC-4337 compliant nodes on all major EVM chains for submitting UserOperations to the mempool
-- [Paymaster](/wallet/paymaster/rpc-methods/): Gas abstraction service supporting both sponsorship and ERC-20 token payments with configurable policies
-- [Account Recovery Service](/wallet/recovery/overview/): Offer users the ability to secure their accounts using email/sms coupled with an alert system
-
-Access [Candide's Dashboard](https://dashboard.candide.dev) to manage your API keys and configure your integration.
-
-### InstaGas  
-No-code platform for configuring gas sponsorship policies. Set spending limits, whitelist contracts, and manage paymaster rules without deploying custom smart contracts.
-[Learn more on InstaGas](/instagas/overview/)
-
-## Chains supported
-
-Candide is available on all major EVM equivalent networks. If you would like to see a network supported, reach out to us.
-
-import { NetworkList } from "/src/components/NetworkList";
-
-<NetworkList />
-
-## Support & Feedback
-
-You can reach out to us at any time for questions, issues, concerns, product ideas, or random thoughts. Here are some ways to do so:
-
-- Join our [Discord](https://discord.gg/7R4g9XcxDQ)
-- Follow us on Twitter (X) [@candidelabs](https://twitter.com/candidelabs)
-- Email us at team@candidelabs.com
-- Reach us on telegram [@heymarcopolo](https://t.me/heymarcopolo)
-
-We have night owls and early birds on our team, so you can expect to hear back from us at any time, regardless of where you are in the world.
-
-## Getting Started
-
-import CardList from "/src/components/CardList";
-
-### Quick Start
-
-Get started in under 5 minutes:
+## Quick Start
 
 ```bash
 npm install abstractionkit
 ```
 
-### Starter Guides
+```typescript
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+
+const account = SafeAccount.initializeNewAccount([ownerPublicKey]);
+console.log(account.accountAddress); // 0x… deterministic smart wallet address
+```
+
+import CardList from "/src/components/CardList";
+import Callout from "/src/components/Callout";
+
 export const GETTING_STARTED_ITEMS = [
   {
     title: "Send your First Gasless Transaction",
     description:
-      "Create a smart account and submit your first Gasless UserOperation with batched transactions",
+      "Create a smart account and submit your first gasless UserOperation with batched transactions",
     route: "/wallet/guides/getting-started",
   },
   {
@@ -112,3 +49,63 @@ export const GETTING_STARTED_ITEMS = [
 
 <CardList items={GETTING_STARTED_ITEMS} />
 
+<Callout title="Using AI to build faster">
+  Every page has a <strong>Copy Page</strong> button in the toolbar. Paste it directly into Claude or ChatGPT with a pre-filled prompt. For agents and IDE integrations like Claude Code or Cursor, point them to <a href="https://docs.candide.dev/llms.txt"><code>/llms.txt</code></a> for a full index of the docs.
+</Callout>
+
+## Why Smart Accounts?
+
+Smart accounts eliminate the biggest UX barriers in Web3:
+- **No gas tokens**: Users pay fees in any ERC-20 or have them sponsored entirely
+- **Modern onboarding**: Login with passkeys, email, or social accounts. No seed phrases
+- **Built-in security**: Account recovery, multisig support, and spending limits
+- **Batch transactions**: Execute multiple operations atomically in a single transaction
+
+*Smart accounts are programmable contracts, unlocking capabilities impossible with traditional EOAs.*
+
+## Core Features
+
+### Gas Abstraction
+- Gasless transactions: [Sponsor user fees](/wallet/guides/send-gasless-tx/) with flexible rules and policies
+- ERC-20 gas payments: Let users [pay gas in any token](/wallet/guides/pay-gas-in-erc20/) (USDC, DAI, etc.)
+
+### Modern Authentication
+- Passkey integration: [Onchain WebAuthn](/wallet/plugins/passkeys/) support for biometric login
+- Social login: [Email and OAuth](/wallet/guides/authentication/#social--email) integration
+
+### Advanced Transactions
+- Batch operations: [Execute multiple transactions](/wallet/guides/getting-started/#step-4-create-useroperation) atomically
+- Spending controls: [Set limits and policies](/wallet/plugins/allowance) for subscriptions and recurring payments
+
+### Security
+- Account recovery: [Social Recovery](/wallet/plugins/recovery-with-guardians) or [traditional](/wallet/recovery/auth-api/) recovery options
+- Multi-signature: A single account controlled with [multiple signatures](/wallet/guides/multisig/)
+
+## Developer Tools
+
+| Tool | What it does |
+|------|-------------|
+| [AbstractionKit SDK](/wallet/abstractionkit/introduction/) | TypeScript library for building and sending UserOperations. First-class support for Safe and EIP-7702 accounts. |
+| [Bundler](/wallet/bundler/rpc-methods/) | ERC-4337 compliant nodes for submitting UserOperations on all major EVM chains |
+| [Paymaster](/wallet/paymaster/rpc-methods/) | Sponsor gas or accept ERC-20 token payments with configurable policies |
+| [InstaGas](/instagas/overview/) | No-code dashboard to set gas sponsorship rules. No Solidity required |
+| [Account Recovery](/wallet/recovery/overview/) | Email/SMS recovery with an alert system and automatic on-chain execution |
+
+Access [Candide's Dashboard](https://dashboard.candide.dev) to get API keys and configure your integration.
+
+## Chains Supported
+
+Candide is available on all major EVM equivalent networks. Reach out if you need a network added.
+
+import { NetworkList } from "/src/components/NetworkList";
+
+<NetworkList />
+
+## Support & Feedback
+
+- Join our [Discord](https://discord.gg/7R4g9XcxDQ)
+- Twitter: [@candidelabs](https://twitter.com/candidelabs)
+- Email: team@candidelabs.com
+- Telegram: [@heymarcopolo](https://t.me/heymarcopolo)
+
+We have night owls and early birds on the team. Expect a reply regardless of your timezone.

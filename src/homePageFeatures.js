@@ -1,45 +1,54 @@
 export default [
   {
     title: 'AbstractionKit SDK',
+    iconName: 'code',
     rows: [
       {
+        iconName: 'bookOpen',
         title: 'Guides',
-        description: 'Step by step guides on how to create, customize and offer Smart Wallets for your users',
+        description: 'Step-by-step guides to create smart accounts, batch transactions, and deliver gasless UX to your users',
         to: './wallet/atelier-intro'
       },
       {
+        iconName: 'squares',
         title: 'Plugins',
-        description: "Safe modules including Passkeys, Account Recovery and Spending Limits",
+        description: 'Extend accounts with Safe modules: Passkeys for biometric login, Account Recovery, and Spending Limits',
         to: './wallet/plugins/passkeys/',
       },
     ],
   },
   {
-    title: 'InstaGas',
+    title: 'Gas Sponsorship',
+    iconName: 'bolt',
     rows: [
       {
-        title: 'Gas Policies Guides',
-        description: 'No-Code Gas Sponsorship for Dapps on over 10+ chains with a setup time in minutes',
+        iconName: 'bolt',
+        title: 'InstaGas',
+        description: 'No-code gas sponsorship policies for dapps on 10+ chains. Spending limits and contract whitelisting with zero Solidity required',
         to: './instagas/overview',
+      },
+      {
+        iconName: 'creditCard',
+        title: 'Paymaster API',
+        description: 'Programmatic gas sponsorship and ERC-20 gas payments. Build custom policies and per-app spending rules via API',
+        to: './wallet/paymaster/rpc-methods',
       },
     ],
   },
   {
-    title: 'Infra API',
+    title: 'Infrastructure',
+    iconName: 'circleStack',
     rows: [
       {
-        title: 'Paymaster',
-        description: 'Get gas sponsorship from hundreds of dApps and allow for gas payments in popular ERC-20 tokens',
-        to: './wallet/paymaster/rpc-methods',
-      },
-      {
+        iconName: 'cube',
         title: 'Bundler',
-        description: 'Connect to the Unified Bundler Mempool to send ERC-4337 AA UserOperations',
+        description: 'ERC-4337 compliant bundler nodes for submitting UserOperations across all major EVM networks',
         to: './wallet/bundler/rpc-methods',
       },
       {
+        iconName: 'key',
         title: 'Account Recovery Service',
-        description: 'Diverse set of recovery methods like email/SMS, an alert system and automatic recovery execution',
+        description: 'Email and SMS-based recovery with an alert system and automatic on-chain execution for Safe accounts',
         to: './wallet/recovery/overview/',
       },
     ],
