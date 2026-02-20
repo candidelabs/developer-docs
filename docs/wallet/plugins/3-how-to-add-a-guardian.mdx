@@ -90,8 +90,8 @@ let userOperation = await smartAccount.createUserOperation(
 );
 ```
 
-> Learn more: [`createEnableModuleMetaTransaction`](/wallet/plugins/recovery-with-guardians/#createenablemodulemetatransaction) | 
-[`createAddGuardianWithThresholdMetaTransaction`](/wallet/plugins/recovery-with-guardians/#createaddguardianwiththresholdmetatransaction)
+> Learn more: [`createEnableModuleMetaTransaction`](/wallet/plugins/recovery-module-reference/#createenablemodulemetatransaction) |
+[`createAddGuardianWithThresholdMetaTransaction`](/wallet/plugins/recovery-module-reference/#createaddguardianwiththresholdmetatransaction)
 
 </TabItem>
 
@@ -262,3 +262,8 @@ Set up trusted individuals or devices as guardians:
 - **Consider Candide Guardian** as one of multiple guardians for user-friendly recovery
 - **Keep guardian list updated** as relationships change
 :::
+
+## What's Next
+
+- [Recovery Flow Guide](/wallet/plugins/recovery-flow-guide/): implement the full recovery flow once guardians are set up
+- [Add Candide Guardian](/wallet/plugins/add-candide-guardian/): use Candide's managed guardian service for email/SMS recovery instead of self-managed keys

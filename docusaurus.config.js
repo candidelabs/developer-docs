@@ -32,7 +32,7 @@ const config = {
   markdown: {
     mermaid: true,
   },
-  themes: ['@docusaurus/theme-mermaid'],
+  themes: ['@docusaurus/theme-mermaid', '@saucelabs/theme-github-codeblock'],
 
   presets: [
     [

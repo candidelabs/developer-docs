@@ -1,13 +1,13 @@
 ---
-title: Add Candide Guardian to Safe Account
-description: Learn how to add Candide Guardian service to your Safe account for secure, user-friendly account recovery using email/SMS verification
+title: Enable Email / SMS Recovery
+description: Learn how to enable email and SMS recovery for your Safe account using Candide Guardian, a managed guardian service for secure, user-friendly account recovery
 keywords: [candide-guardian, account-recovery, safe-module, recovery-service, email-recovery, sms-recovery, guardian-service]
 ---
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-# Add Candide Guardian to Safe Account
+# Enable Email / SMS Recovery
 
 Integrate [Candide Guardian](/wallet/recovery/auth-api/) as a trusted recovery service for user Safe accounts. Candide Guardian provides secure account recovery through email and SMS verification.
 
@@ -86,26 +86,20 @@ Generate a SIWE (Sign-In with Ethereum) statement for guardian registration. Mak
 <TabItem value="email" label="Email Registration">
 
 ```ts
-// Create registration statement for email recovery
 const siweStatementToSign = await custodialGuardianService.createRegistrationToEmailRecoverySiweStatementToSign(
   smartAccount.accountAddress,
   "user@example.com"
 );
-
-console.log("SIWE Statement:", siweStatementToSign.statement);
 ```
 
 </TabItem>
 <TabItem value="sms" label="SMS Registration">
 
 ```ts
-// Create registration statement for SMS recovery
 const siweStatementToSign = await custodialGuardianService.createRegistrationToSmsRecoverySiweStatementToSign(
   smartAccount.accountAddress,
   "+1234567890"
 );
-
-console.log("SIWE Statement:", siweStatementToSign.statement);
 ```
 
 </TabItem>
@@ -127,7 +121,6 @@ import {
 import { TypedDataDomain } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
-// safe owner account
 const ownerAccount = privateKeyToAccount(ownerPrivateKey);
 
 const emailSafeTypedData = getSafeMessageEip712Data(
@@ -147,7 +140,6 @@ const emailRegistrationSignature = SafeAccountV0_3_0.buildSignaturesFromSingerSi
     { signer: ownerAccount.address, signature: emailOwnerSignature }
 ]);
 
-// Create email registration
 const emailRegistrationChallengeId = await custodialGuardianService.createRegistrationToEmailRecovery(
     smartAccount.accountAddress,
     userEmail,
@@ -168,7 +160,6 @@ import {
 import { TypedDataDomain } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 
-// safe owner account
 const ownerAccount = privateKeyToAccount(ownerPrivateKey);
 
 const smsSafeTypedData = getSafeMessageEip712Data(
@@ -184,7 +175,6 @@ const smsOwnerSignature = await ownerAccount.signTypedData({
     message: smsSafeTypedData.messageValue
 });
 
-// Build signature for single-owner Safe
 const smsRegistrationSignature = SafeAccountV0_3_0.buildSignaturesFromSingerSignaturePairs([
     { signer: ownerAccount.address, signature: smsOwnerSignature }
 ]);
@@ -205,18 +195,38 @@ const smsRegistrationChallengeId = await custodialGuardianService.createRegistra
 
 Submit the OTP code received via email or SMS:
 
-```ts
-// User enters OTP code from email/SMS
-const otpCode = "123456"; // Replace with actual OTP
+<Tabs>
+<TabItem value="email" label="Email Verification">
 
-// Submit challenge verification
+```ts
+// User enters OTP from email
+const otpCode = "123456";
+
 const verificationResponse = await custodialGuardianService.submitRegistrationChallenge(
-  registrationResponse.challengeId,
+  emailRegistrationChallengeId, // returned by createRegistrationToEmailRecovery()
   otpCode
 );
 
 const candideGuardianAddress = verificationResponse.guardianAddress;
 ```
+
+</TabItem>
+<TabItem value="sms" label="SMS Verification">
+
+```ts
+// User enters OTP from SMS
+const otpCode = "123456";
+
+const verificationResponse = await custodialGuardianService.submitRegistrationChallenge(
+  smsRegistrationChallengeId, // returned by createRegistrationToSmsRecovery()
+  otpCode
+);
+
+const candideGuardianAddress = verificationResponse.guardianAddress;
+```
+
+</TabItem>
+</Tabs>
 
 ## Step 5: Enable Recovery Module and Add Guardian
 
@@ -253,3 +263,18 @@ For maximum security, recommend Candide Guardian alongside personal guardians in
 :::
 
 That's it! Your Safe account is now protected by Candide Guardian. In case of key loss, you can use it as one of the Guardians setup using your registered email/phone verification to recover your account.
+
+## Complete Working Example
+
+<details>
+<summary>Full Working Example</summary>
+
+```ts reference title="examples/01-enable-email-sms-recovery/index.ts"
+https://github.com/candidelabs/safe-recovery-service-sdk/blob/main/examples/01-enable-email-sms-recovery/index.ts
+```
+
+</details>
+
+## What's Next
+
+- [Recovery Flow](/wallet/plugins/recover-account-candide-guardian/): walk through the full recovery flow using your registered email/SMS to regain access to a lost account

@@ -1,13 +1,13 @@
 ---
-title: Recover Account using Candide Guardian
-description: Learn how to recover your Safe account using Candide Guardian service when you've lost access to your owner keys
+title: Recover via Email / SMS
+description: Learn how to recover your Safe account via email or SMS verification when you've lost access to your owner keys
 keywords: [candide-guardian, account-recovery, safe-recovery, lost-keys, guardian-recovery, email-recovery, sms-recovery]
 ---
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-# Recover Account using Candide Guardian
+# Recover via Email / SMS
 
 Recover your Safe account using [Candide Guardian](/wallet/recovery/auth-api/) when you've lost access to your owner keys. This guide covers the complete recovery process using email and SMS verification.
 
@@ -200,3 +200,18 @@ const recoveryService = new RecoveryByGuardian(
 // Finalize the recovery
 const finalizationResult = await recoveryService.finalizeRecoveryRequest(recoveryRequest.id);
 ```
+
+## Complete Working Example
+
+<details>
+<summary>Full Recovery Flow Example</summary>
+
+```ts reference title="examples/03-recovery-flow/index.ts"
+https://github.com/candidelabs/safe-recovery-service-sdk/blob/main/examples/03-recovery-flow/index.ts
+```
+
+</details>
+
+## What's Next
+
+- [Recovery Alerts Guide](/wallet/plugins/recovery-alerts-guide/): set up email and SMS notifications so account owners are alerted if a recovery is ever initiated

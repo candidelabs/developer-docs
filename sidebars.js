@@ -322,29 +322,48 @@ const sidebars = {
           link: { type: "doc", id: "wallet/plugins/recovery-with-guardians" },
           items: [
             {
-              type: "doc",
-              id: "wallet/plugins/how-to-add-a-guardian",
-              label: "How to add a Guardian"
+              type: "category",
+              label: "Personal Guardians",
+              collapsible: false,
+              items: [
+                {
+                  type: "doc",
+                  id: "wallet/plugins/how-to-add-a-guardian",
+                  label: "Add a Guardian"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/plugins/recovery-flow-guide",
+                  label: "Recovery Flow"
+                },
+              ],
             },
             {
-              type: "doc",
-              id: "wallet/plugins/recovery-flow-guide",
-              label: "How to Recover an Account"
+              type: "category",
+              label: "Email / SMS Recovery",
+              collapsible: false,
+              items: [
+                {
+                  type: "doc",
+                  id: "wallet/plugins/add-candide-guardian",
+                  label: "Enable Email / SMS Recovery"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/plugins/recover-account-candide-guardian",
+                  label: "Recovery Flow"
+                },
+              ],
             },
             {
               type: "doc",
               id: "wallet/plugins/recovery-alerts-guide",
-              label: "How to Activate Recovery Alerts"
+              label: "Recovery Alerts"
             },
             {
               type: "doc",
-              id: "wallet/plugins/add-candide-guardian",
-              label: "Add Candide Guardian"
-            },
-            {
-              type: "doc",
-              id: "wallet/plugins/recover-account-candide-guardian",
-              label: "Recover with Candide Guardian"
+              id: "wallet/plugins/recovery-module-reference",
+              label: "SDK Reference"
             },
           ],
         },
