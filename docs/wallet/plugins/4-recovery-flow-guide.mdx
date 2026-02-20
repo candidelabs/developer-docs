@@ -61,7 +61,7 @@ GUARDIAN_2_PRIVATE_KEY=
 
 ## Recovery Steps
 
-> Fork the [recovery example](https://github.com/candidelabs/safe-recovery-service-sdk/tree/main/examples/01-recovery-flow) to follow along.
+> Fork the [recovery example](https://github.com/candidelabs/safe-recovery-service-sdk/tree/main/examples/03-recovery-flow) to follow along.
 
 ### Step 1: Initialize Services
 
@@ -83,7 +83,7 @@ import {
   SocialRecoveryModule,
   SocialRecoveryModuleGracePeriodSelector,
 } from "abstractionkit";
-import { RecoveryByGuardianService } from "safe-recovery-service-sdk";
+import { RecoveryByGuardian } from "safe-recovery-service-sdk";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 const recoveryServiceURL = process.env.RECOVERY_SERVICE_URL as string;
@@ -103,7 +103,7 @@ const guardian2Account = privateKeyToAccount(guardian2PrivateKey);
 // Initialize social recovery module instance
 const srm = new SocialRecoveryModule(SocialRecoveryModuleGracePeriodSelector.After3Minutes); 
 
-const recoveryService = new RecoveryByGuardianService(
+const recoveryService = new RecoveryByGuardian(
   recoveryServiceURL,
   chainId,
   SocialRecoveryModuleGracePeriodSelector.After3Minutes
@@ -165,7 +165,7 @@ const guardian2Signature = await guardian2Account.signTypedData({
 });
 
 // Submit the second guardian's signature
-await recoveryService.submitGuardianSignature(
+await recoveryService.submitGuardianSignatureForRecoveryRequest(
     recoveryRequest.id,
     guardian2Account.address,
     guardian2Signature
@@ -204,24 +204,16 @@ After the grace period has elapsed, anyone can finalize the recovery. Here's how
 ```ts title="recovery-finalization.ts"
 console.log("Waiting for grace period, typically 3-7 days. 3 mins during testing...");
 
-// Check if ready for finalization
-const finalStatus = await recoveryService.getRecoveryRequestStatus(
+// Finalize recovery after grace period has elapsed
+const finalizationResult = await recoveryService.finalizeRecoveryRequest(
   recoveryRequest.id
 );
 
-if (finalStatus.readyForFinalization) {
-  // Finalize recovery
-  const finalizationResult = await recoveryService.finalizeRecovery(
-    recoveryRequest.id,
+// Verify no more pending/executed requests
+const pendingRequests = await recoveryService.getPendingRecoveryRequestsForLatestNonce(
+    nodeUrl,
     smartAccountAddress
-  );
-  
-  // Verify no more pending/executed requests
-  const pendingRequests = await recoveryService.getPendingRecoveryRequestsForLatestNonce(
-      nodeUrl,
-      smartAccountAddress
-  );
-}
+);
 ```
 
 ## Complete Working Example
@@ -251,7 +243,7 @@ import {
     SocialRecoveryModule,
     SocialRecoveryModuleGracePeriodSelector,
 } from "abstractionkit";
-import { RecoveryByGuardianService } from "safe-recovery-service-sdk";
+import { RecoveryByGuardian } from "safe-recovery-service-sdk";
 import * as dotenv from 'dotenv';
 
 async function main() {
@@ -345,7 +337,7 @@ async function main() {
 
     // --------- 4. Create Recovery Request ---------
     // Using 3-minute grace period for demo purposes (use longer periods in production)
-    const recoveryService = new RecoveryByGuardianService(
+    const recoveryService = new RecoveryByGuardian(
         serviceUrl,
         chainId,
         SocialRecoveryModuleGracePeriodSelector.After3Minutes

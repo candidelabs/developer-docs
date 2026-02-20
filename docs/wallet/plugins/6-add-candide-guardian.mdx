@@ -25,7 +25,7 @@ Candide Guardian is a managed recovery service acting as a trusted guardian for 
 
 ## Quickstart
 
-> You can also [fork the complete code](https://github.com/candidelabs/safe-recovery-service-sdk/blob/main/examples/03-candide-guardian-recovery/index.ts) and follow along.
+> You can also [fork the complete code](https://github.com/candidelabs/safe-recovery-service-sdk/blob/main/examples/01-enable-email-sms-recovery/index.ts) and follow along.
 
 ### Installation
 
@@ -87,7 +87,7 @@ Generate a SIWE (Sign-In with Ethereum) statement for guardian registration. Mak
 
 ```ts
 // Create registration statement for email recovery
-const siweStatementToSign = await recoveryService.createRegistrationToEmailRecoverySiweStatementToSign(
+const siweStatementToSign = await custodialGuardianService.createRegistrationToEmailRecoverySiweStatementToSign(
   smartAccount.accountAddress,
   "user@example.com"
 );
@@ -100,7 +100,7 @@ console.log("SIWE Statement:", siweStatementToSign.statement);
 
 ```ts
 // Create registration statement for SMS recovery
-const siweStatementToSign = await recoveryService.createRegistrationToSmsRecoverySiweStatementToSign(
+const siweStatementToSign = await custodialGuardianService.createRegistrationToSmsRecoverySiweStatementToSign(
   smartAccount.accountAddress,
   "+1234567890"
 );
@@ -210,7 +210,7 @@ Submit the OTP code received via email or SMS:
 const otpCode = "123456"; // Replace with actual OTP
 
 // Submit challenge verification
-const verificationResponse = await recoveryService.submitRegistrationChallenge(
+const verificationResponse = await custodialGuardianService.submitRegistrationChallenge(
   registrationResponse.challengeId,
   otpCode
 );
