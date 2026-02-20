@@ -173,14 +173,13 @@ const config = {
             label: 'Dashboard↗',
           },
           {
-            to: 'https://candide.dev/blog',
+            label: 'Company',
             position: 'right',
-            label: 'Blog↗',
-          },
-          {
-            to: 'https://t.me/heymarcopolo',
-            position: 'right',
-            label: 'Contact us↗',
+            items: [
+              { to: '/wallet/pricing', label: 'Pricing' },
+              { to: 'https://candide.dev/blog', label: 'Blog↗' },
+              { to: 'https://t.me/heymarcopolo', label: 'Contact Us↗' },
+            ],
           },
           {
             to: '/blog',

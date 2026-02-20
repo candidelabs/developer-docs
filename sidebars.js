@@ -19,6 +19,11 @@ const sidebars = {
   aaSideBar: ["account-abstraction/intro"],
   infraSideBar: [
     {
+      type: "doc",
+      id: "wallet/pricing",
+      label: "Pricing"
+    },
+    {
       type: "category",
       label: "Bundler",
       className: "category-not-collapsible",
