@@ -63,7 +63,8 @@ export function PaymasterSupportedToken({ items }) {
     <Table
       items={items}
       leftHeading="Token"
-      rightHeading="Address"
+      centerHeading="Address"
+      rightHeading="Website"
       renderLeftItem={(item) => (
         <div
           style={{
@@ -81,7 +82,7 @@ export function PaymasterSupportedToken({ items }) {
           <span>{item.token}</span>
         </div>
       )}
-      renderRightItem={(item) => (
+      renderCenterItem={(item) => (
         <a
           href={`${item.blockExplorer}${item.address}`}
           target="_blank"
@@ -90,6 +91,17 @@ export function PaymasterSupportedToken({ items }) {
           {item.address}
         </a>
       )}
+      renderRightItem={(item) =>
+        item.website ? (
+          <a
+            href={item.website}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {new URL(item.website).hostname.replace('www.', '')}
+          </a>
+        ) : null
+      }
     />
   );
 }

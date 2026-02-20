@@ -28,6 +28,11 @@ import {
 
 List of ERC-20 Tokens accepted by Candide's Paymaster. Visit the [dashboard](https://dashboard.candide.dev) to get an API key. 
 
+We constantly add support for new ERC-20 tokens as gas payments. To check for the latest list of supported tokens, developers can:
+
+- Call the [`pm_supportedERC20Tokens`](/wallet/paymaster/rpc-methods/#pm_supportederc20tokens) API endpoint
+- Use the SDK's [`fetchSupportedERC20TokensAndPaymasterMetadata`](https://docs.candide.dev/wallet/abstractionkit/safe-account/#fetchsupportederc20tokensandpaymastermetadata) method
+
 :::info
 If you would like to see a token or network supported, email team@candidelabs.com
 :::
