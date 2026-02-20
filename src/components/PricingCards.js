@@ -42,7 +42,7 @@ const plans = [
       "All mainnet chains",
       "Unlimited gas policies + custom rules",
       "15 team seats, 5 environments",
-      "1 Account Plugin included",
+      "1 Account Plugin included* (Small tier, $300/mo or under)",
       "99.0% uptime SLA",
       "Slack/Telegram support (4h)",
     ],
