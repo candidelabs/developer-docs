@@ -9,11 +9,29 @@ export default [
         description: 'Step-by-step guides to create smart accounts, batch transactions, and deliver gasless UX to your users',
         to: './wallet/atelier-intro'
       },
+    ],
+  },
+  {
+    title: 'Safe Plugins',
+    iconName: 'squares',
+    rows: [
       {
-        iconName: 'squares',
-        title: 'Plugins',
-        description: 'Extend accounts with Safe modules: Passkeys for biometric login, Account Recovery, and Spending Limits',
+        iconName: 'key',
+        title: 'Passkeys',
+        description: 'Biometric login with WebAuthn. Let users sign transactions with Face ID or fingerprint, no seed phrases',
         to: './wallet/plugins/passkeys/',
+      },
+      {
+        iconName: 'shieldCheck',
+        title: 'Account Recovery',
+        description: 'Social recovery with personal guardians or email and SMS backup. Includes automatic on-chain execution',
+        to: './wallet/plugins/recovery-with-guardians/',
+      },
+      {
+        iconName: 'creditCard',
+        title: 'Allowance',
+        description: 'Set spending limits and recurring payment policies. Grant delegated access to specific tokens or amounts',
+        to: './wallet/plugins/allowance/',
       },
     ],
   },

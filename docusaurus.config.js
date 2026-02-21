@@ -153,14 +153,14 @@ const config = {
             label: 'SDK',
           },
           {
+            to: '/wallet/plugins/passkeys',
+            position: 'left',
+            label: 'Plugins',
+          },
+          {
             to: '/wallet/bundler/rpc-endpoints',
             position: 'left',
             label: 'API',
-          },
-          {
-            to: '/instagas/overview',
-            position: 'left',
-            label: 'InstaGas',
           },
           {
             to: '/account-abstraction/research/safe-unified-account',

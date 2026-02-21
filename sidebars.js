@@ -280,38 +280,10 @@ const sidebars = {
       ]
     },
   ],
-  walletSideBar: [
-    {
-      type: "doc",
-      id: "wallet/atelier-intro",
-      label: "Intro to Candide"
-    },
+  pluginsSideBar: [
     {
       type: "category",
-      label: "Starter Guides",
-      collapsible: false,
-      className: "category-not-collapsible",
-      items: [
-        {
-          type: "doc",
-          id: "wallet/guides/getting-started",
-          label: "Send Your First Transaction"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/send-gasless-tx",
-          label: "Gas Sponsorship"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/pay-gas-in-erc20",
-          label: "Pay Gas in ERC-20"
-        },
-      ],
-    },
-    {
-      type: "category",
-      label: "Safe Plugins",
+      label: "Passkeys",
       collapsible: false,
       className: "category-not-collapsible",
       items: [
@@ -320,10 +292,18 @@ const sidebars = {
           id: "wallet/plugins/passkeys",
           label: "Passkeys"
         },
+      ],
+    },
+    {
+      type: "category",
+      label: "Account Recovery",
+      collapsible: false,
+      className: "category-not-collapsible",
+      items: [
         {
           type: "category",
           label: "Account Recovery",
-          collapsed: true,
+          collapsed: false,
           link: { type: "doc", id: "wallet/plugins/recovery-with-guardians" },
           items: [
             {
@@ -372,6 +352,14 @@ const sidebars = {
             },
           ],
         },
+      ],
+    },
+    {
+      type: "category",
+      label: "Allowance",
+      collapsible: false,
+      className: "category-not-collapsible",
+      items: [
         {
           type: "doc",
           id: "wallet/plugins/allowance",
@@ -379,16 +367,37 @@ const sidebars = {
         },
       ],
     },
+  ],
+  walletSideBar: [
+    {
+      type: "doc",
+      id: "wallet/atelier-intro",
+      label: "Intro to Candide"
+    },
     {
       type: "category",
-      label: "Advanced Guides",
+      label: "Guides",
       collapsible: false,
       className: "category-not-collapsible",
       items: [
         {
           type: "doc",
+          id: "wallet/guides/getting-started",
+          label: "Send Your First Transaction"
+        },
+        {
+          type: "doc",
+          id: "wallet/guides/send-gasless-tx",
+          label: "Gas Sponsorship"
+        },
+        {
+          type: "doc",
+          id: "wallet/guides/pay-gas-in-erc20",
+          label: "Pay Gas in ERC-20"
+        },
+        {
+          type: "doc",
           id: "wallet/guides/authentication",
-
           label: "Authentication"
         },
         {
@@ -412,29 +421,6 @@ const sidebars = {
           label: "Simulate Transaction"
         },
       ],
-    },
-    {
-      type: "category",
-      label: "EIP-7702 (EOA Upgrades)",
-      collapsible: false,
-      className: "category-not-collapsible",
-      items: [
-        {
-          type: "doc",
-          id: "wallet/guides/getting-started-eip-7702",
-          label: "EIP-7702 Quickstart"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/send-gasless-eip-7702",
-          label: "Gasless Transactions"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/pay-gas-in-erc20-eip-7702",
-          label: "Gas in ERC-20"
-        },
-      ]
     },
     {
       type: "category",
@@ -467,11 +453,6 @@ const sidebars = {
         },
         {
           type: "doc",
-          id: "wallet/abstractionkit/simple-7702-account",
-          label: "Simple 7702 Account"
-        },
-        {
-          type: "doc",
           id: "wallet/abstractionkit/bundler",
           label: "Bundler"
         },
@@ -489,8 +470,34 @@ const sidebars = {
     },
     {
       type: "category",
-      collapsible: false,
-      className: "category-not-collapsible",
+      label: "EOA Upgrades (EIP-7702)",
+      collapsed: true,
+      items: [
+        {
+          type: "doc",
+          id: "wallet/guides/getting-started-eip-7702",
+          label: "Quickstart"
+        },
+        {
+          type: "doc",
+          id: "wallet/guides/send-gasless-eip-7702",
+          label: "Gasless Transactions"
+        },
+        {
+          type: "doc",
+          id: "wallet/guides/pay-gas-in-erc20-eip-7702",
+          label: "Gas in ERC-20"
+        },
+        {
+          type: "doc",
+          id: "wallet/abstractionkit/simple-7702-account",
+          label: "Simple 7702 Account"
+        },
+      ]
+    },
+    {
+      type: "category",
+      collapsed: true,
       label: "Technical Reference",
       items: [
         {
