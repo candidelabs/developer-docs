@@ -44,13 +44,13 @@ export function ChainListTable({ items }) {
             justifyContent: "flex-start center",
           }}
         >
-          <img
+          {item.logo && <img
             src={item.logo}
             style={{
               width: "25px",
               marginRight: "10px",
             }}
-          />
+          />}
           <span>{item.network}</span>
         </div>
       )}

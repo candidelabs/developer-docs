@@ -1,7 +1,7 @@
 ---
 slug: rpc-endpoints
-title: Candide's Bundler Supported Networks
-description: Explore Candide's ERC-4337 Bundler RPC endpoints to enable powerful interactions for Smart Wallets and seamless blockchain transactions. Learn how to integrate and leverage these endpoints for enhanced Dapp experiences
+title: Candide's Supported Networks
+description: Candide supports 10+ EVM chains and growing. 
 image: /img/posters/voltaire-meta.png
 authors: [sherif]
 ---
@@ -155,19 +155,44 @@ export const testChainList = [
   },
 ];
 
-# Bundler Supported Networks
+export const exclusiveChainList = [
+  { network: "zkSync Era", chainId: 324 },
+  { network: "Linea", chainId: 59144 },
+  { network: "Ink", chainId: 57073 },
+  { network: "Unichain", chainId: 130 },
+  { network: "Mantle", chainId: 5000 },
+  { network: "Blast", chainId: 81457 },
+  { network: "Scroll", chainId: 534352 },
+  { network: "Sonic", chainId: 146 },
+  { network: "Berachain", chainId: 80094 },
+  { network: "Cronos", chainId: 25 },
+  { network: "Polygon zkEVM", chainId: 1101 },
+  { network: "Taiko", chainId: 167000 },
+  { network: "Metis Andromeda", chainId: 1088 },
+  { network: "Mode", chainId: 34443 },
+  { network: "Abstract", chainId: 2741 },
+  { network: "Zora Network", chainId: 7777777 },
+  { network: "Moonbeam", chainId: 1284 },
+  { network: "Fraxtal", chainId: 252 },
+  { network: "Kava EVM", chainId: 2222 },
+  { network: "Aurora", chainId: 1313161554 },
+  { network: "Morph", chainId: 2818 },
+  { network: "Plume", chainId: 98866 },
+  { network: "Derive", chainId: 957 },
+  { network: "Lisk", chainId: 1135 },
+];
 
-Candide's Bundler endpoint includes methods for ERC-4337 and EIP-7702. See all the full RPC spec in [Bundler API](./2-rpc-methods.mdx).
-
-## Supported Networks
-
-:::tip 
-If you require a specific network not listed below, send us a note and we will let you know if we can support it.
-:::
+# Supported Networks
 
 ### Mainnet
 <ChainListTable items={chainList} />
 
 ### Testnet
 <ChainListTable items={testChainList} />
+
+## Exclusive Networks
+
+These networks are available as an add-on by request. Don't see yours? We can evaluate support for any EVM-equivalent chain on demand. [Contact us](https://t.me/heymarcopolo) to request access.
+
+<ChainListTable items={exclusiveChainList} />
 
