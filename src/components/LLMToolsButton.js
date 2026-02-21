@@ -61,8 +61,8 @@ export default function LLMToolsButton() {
   // Evaluated lazily inside event handlers — never called during SSR
   const getLocalMdUrl = () => window.location.origin + permalink.replace(/\/$/, '') + '.md';
   // Production URL for LLM prompt (always points to the live site)
-  const prodMdUrl = siteConfig.url + permalink.replace(/\/$/, '') + '.md';
-  const prompt = `I'm building with Candide's Account Abstraction stack (AbstractionKit SDK, ERC-4337 Bundler & Paymaster APIs).
+  const prodMdUrl = siteConfig.url + permalink.replace(/\/$/, '');
+  const prompt = `I'm building with Candide's Smart Account stack (AbstractionKit SDK, ERC-4337 Bundler & Paymaster APIs).
 
 Read this docs page: ${prodMdUrl}
 

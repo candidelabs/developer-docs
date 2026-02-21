@@ -46,7 +46,7 @@ const Banner = () => {
           {" "}on Ethereum
         </h1>
         <p className={styles.banner__subtitle}>
-          Open-source toolkit for Account Abstraction: gas sponsorship,
+          Open source toolkit for Smart Accounts: gas sponsorship,
           passkeys, batch transactions, and account recovery.
         </p>
         <div className={styles.banner__install}>
