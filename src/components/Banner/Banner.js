@@ -6,7 +6,7 @@ const LABELS = [
   "Dollar Savings Apps",
   "Remittance Apps",
   "Onchain Treasuries",
-  "Creator Tipping Apps",
+  "Creator Tipping",
 ];
 
 const Banner = () => {
