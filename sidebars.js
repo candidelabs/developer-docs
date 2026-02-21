@@ -347,7 +347,12 @@ const sidebars = {
         {
           type: "doc",
           id: "wallet/plugins/allowance",
-          label: "Allowance"
+          label: "Allowance Guide"
+        },
+        {
+          type: "doc",
+          id: "wallet/plugins/allowance-reference",
+          label: "SDK Reference"
         },
       ],
     },
@@ -455,7 +460,7 @@ const sidebars = {
     {
       type: "category",
       label: "EOA Upgrades (EIP-7702)",
-      collapsed: true,
+      collapsed: false,
       items: [
         {
           type: "doc",

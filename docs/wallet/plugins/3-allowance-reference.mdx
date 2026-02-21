@@ -1,0 +1,237 @@
+---
+title: Allowance Module SDK Reference
+description: Complete API reference for the Safe Allowance Module methods, helpers, and advanced functions in AbstractionKit
+keywords: [allowance, safe, sdk, reference, api, abstractionkit]
+image: /img/posters/abstractionkit-meta.png
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+import { metaTransactionType } from "../../../src/data/accountParamAndReturnData";
+import { createEnableModuleParams } from "/src/data/safeModule";
+import {
+    createOneTimeAllowanceParams,
+    createAddDelegateParams,
+    createAllowanceTransferParams,
+    createBaseExecuteAllowanceTransferParams,
+    createBaseSetAllowanceParams,
+    createDeleteAllowanceParams,
+    createRecurringAllowanceParams,
+    createRemoveDelegateParams,
+    createRenewAllowanceParams,
+    getTokensParams,
+    getTokensReturn,
+    getTokensAllowanceParams,
+    getTokensAllowanceReturn,
+    getDelegatesParams,
+    getDelegatesReturn,
+    baseGetDelegatesParams,
+    baseGetDelegatesReturn
+} from "/src/data/allowanceModule";
+
+# Allowance Module SDK Reference
+
+This page documents all methods available on the `AllowanceModule` class in AbstractionKit. For a step-by-step implementation guide, see [How to Enable Spend Permissions](/wallet/plugins/allowance).
+
+AbstractionKit provides two types of methods:
+1. **Recommended methods**: Simplified interfaces with clear naming, documented under [Methods](#methods) below.
+2. **Advanced methods**: Prefixed with `createBase`, these match exact contract method names and parameters. Documented under [Advanced Methods](#advanced-methods).
+
+The recommended methods cover most use cases. Use the advanced methods only when you need direct contract-level control.
+
+## Methods
+
+### createEnableModuleMetaTransaction
+
+Creates a MetaTransaction to enable the Allowance Module for a Safe account. This only needs to be called once per Safe.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createEnableModuleParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+    <DataTable items={metaTransactionType} />
+</TabItem>
+</Tabs>
+
+### createAddDelegateMetaTransaction
+
+Creates a MetaTransaction that adds a delegate to the account. The delegate can then be granted allowances to spend tokens.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createAddDelegateParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+    <DataTable items={metaTransactionType} />
+</TabItem>
+</Tabs>
+
+### createOneTimeAllowanceMetaTransaction
+
+Creates a MetaTransaction that sets a one-time allowance for a delegate. The allowance does not reset after use. An optional start delay can be configured.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createOneTimeAllowanceParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+    <DataTable items={metaTransactionType} />
+</TabItem>
+</Tabs>
+
+### createRecurringAllowanceMetaTransaction
+
+Creates a MetaTransaction that sets a recurring allowance for a delegate. The allowance automatically resets after the specified validity period. An optional start delay can be configured.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createRecurringAllowanceParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+    <DataTable items={metaTransactionType} />
+</TabItem>
+</Tabs>
+
+### createAllowanceTransferMetaTransaction
+
+Creates a MetaTransaction that executes a token transfer using the delegate's allowance. The delegate calls this to move tokens from the source Safe to a recipient.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createAllowanceTransferParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={metaTransactionType} />
+</TabItem>
+</Tabs>
+
+### createRenewAllowanceMetaTransaction
+
+Creates a MetaTransaction that resets (renews) the allowance for a specific delegate and token. This lets the account owner extend the delegate's allowance without deleting and recreating it.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createRenewAllowanceParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+    <DataTable items={metaTransactionType} />
+</TabItem>
+</Tabs>
+
+### createDeleteAllowanceMetaTransaction
+
+Creates a MetaTransaction that removes the allowance for a specific delegate and token. This sets all values except the `nonce` to 0, revoking the delegate's permission.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createDeleteAllowanceParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+    <DataTable items={metaTransactionType} />
+</TabItem>
+</Tabs>
+
+## Helpers
+
+### getDelegates
+
+Retrieves a list of delegates associated with a Safe account. Supports pagination for large sets of delegates.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getDelegatesParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={getDelegatesReturn} />
+</TabItem>
+</Tabs>
+
+### getTokensAllowance
+
+Retrieves the allowance details for a specific delegate and token. Returns the amount, spent, reset time, last reset time, and nonce.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getTokensAllowanceParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={getTokensAllowanceReturn} />
+</TabItem>
+</Tabs>
+
+### getTokens
+
+Retrieves the list of delegated token addresses for a specific delegate on a Safe account.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getTokensParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+    <DataTable items={getTokensReturn} />
+</TabItem>
+</Tabs>
+
+### IsModuleEnabled
+
+Checks if a specified module is enabled for a given Safe account. Returns a boolean.
+
+See the method [IsModuleEnabled](/wallet/abstractionkit/safe-account-v3/#ismoduleenabled) in the Safe Account reference.
+
+### createRemoveDelegateMetaTransaction
+
+Creates a MetaTransaction that removes a delegate from the Safe account. Can also remove all associated allowances if specified.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createRemoveDelegateParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+    <DataTable items={metaTransactionType} />
+</TabItem>
+</Tabs>
+
+## Advanced Methods
+
+### createBaseSetAllowanceMetaTransaction
+
+Creates a MetaTransaction to update the allowance for a specified token. This can only be executed via a Safe transaction. Use this when you need direct control over the `resetTimeMin` and `resetBaseMin` parameters.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createBaseSetAllowanceParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+    <DataTable items={metaTransactionType} />
+</TabItem>
+</Tabs>
+
+### createBaseExecuteAllowanceTransferMetaTransaction
+
+Creates a MetaTransaction that executes a transfer using the allowance. This is the low-level version of `createAllowanceTransferMetaTransaction` with explicit payment token and delegate signature parameters.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createBaseExecuteAllowanceTransferParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+    <DataTable items={metaTransactionType} />
+</TabItem>
+</Tabs>
+
+## Advanced Helpers
+
+### baseGetDelegates
+
+Retrieves a list of delegates associated with a Safe account. This is the low-level version with explicit pagination parameters (`start` and `pageSize`).
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={baseGetDelegatesParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+    <DataTable items={baseGetDelegatesReturn} />
+</TabItem>
+</Tabs>
