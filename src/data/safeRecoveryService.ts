@@ -52,7 +52,7 @@ const recoveryRequestSchema = [
                 description: "The transaction hash of the recovery execution",
             },
         ],
-        description: "An object field representing the finilization recovery transaction",
+        description: "An object field representing the finalization recovery transaction",
     },
     {
         key: "finalizeData",
@@ -60,14 +60,14 @@ const recoveryRequestSchema = [
             {
                 key: "sponsored",
                 type: "boolean",
-                description: "If the recovery finilization tx after the grace period ends is gas-sponsored or not",
+                description: "If the recovery finalization tx after the grace period ends is gas-sponsored or not",
             }, {
                 key: "transactionHash",
                 type: "string",
-                description: "The transaction hash of the finilization execution",
+                description: "The transaction hash of the finalization execution",
             },
         ],
-        description: "An object field representing the finilization recovery transaction",
+        description: "An object field representing the finalization recovery transaction",
     },
     {
         key: "status",
