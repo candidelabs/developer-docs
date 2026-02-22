@@ -330,7 +330,9 @@ curl -X POST \
   https://yourcompany.recovery.candide.dev/sign \
   -H 'Content-Type: application/json' \
   -d '{
-        "id": 123456789
+        "id": "123456789",
+        "signer": "0x795B9cD1E5419C54B07768d4AD09809407dfAF5b",
+        "signature": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
       }'
 ```
 
@@ -454,7 +456,7 @@ curl -X POST \
 
 -   `account`: The smart account address requesting registration.
 -   `chainId`: The chain id in which the account resides (this is used to verify the signature field only, the alert will trigger for any action for this account across any chain)
--   `channel`: Either `"email"` or `"sms"` (defines the delievery channel).
+-   `channel`: Either `"email"` or `"sms"` (defines the delivery channel).
 -   `target`: The email or phone number for authentication.
 -   `message`: SIWE (EIP-4361) message statement. Statement: 
 
@@ -466,7 +468,7 @@ I agree to receive Social Recovery Module alert notifications for my account add
 
 See [example guide](/wallet/recovery/auth-api/#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign in With Ethereum (SIWE)
 
-### Alerts: Activate subscripton to recovery requests
+### Alerts: Activate subscription to recovery requests
 #### `POST /alerts/activate`
 Verifies submitted challenge and activates alerts subscription.
 
