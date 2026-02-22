@@ -297,3 +297,206 @@ export const getRecoveriesListByAddressResponse = [
         description: "Total number of recovery requests matching the filters",
     },
 ];
+
+// Auth API Data Types
+
+export const postAuthRegister = [
+    {
+        key: "account",
+        type: "string",
+        description: "The smart account address requesting registration",
+    },
+    {
+        key: "chainId",
+        type: "number",
+        description: "The chain ID where the account resides",
+    },
+    {
+        key: "channel",
+        type: "string",
+        description: "Authentication channel: 'email' or 'sms'",
+    },
+    {
+        key: "target",
+        type: "string",
+        description: "The email or phone number for authentication",
+    },
+    {
+        key: "message",
+        type: "string",
+        description: "SIWE (EIP-4361) message signed by the account",
+    },
+    {
+        key: "signature",
+        type: "string",
+        description: "Signature proving the request is initiated from the account",
+    },
+];
+
+export const postAuthRegisterResponse = [
+    {
+        key: "challengeId",
+        type: "string",
+        description: "Unique challenge ID for the registration, used in /auth/submit",
+    },
+];
+
+export const postAuthSubmit = [
+    {
+        key: "challengeId",
+        type: "string",
+        description: "The unique challenge ID received from /auth/register",
+    },
+    {
+        key: "challenge",
+        type: "string",
+        description: "The OTP code received via email/SMS",
+    },
+];
+
+export const postAuthSubmitResponse = [
+    {
+        key: "registrationId",
+        type: "string",
+        description: "Unique registration ID for the authenticated channel",
+    },
+    {
+        key: "guardianAddress",
+        type: "string",
+        description: "The guardian address added to the Safe account",
+    },
+];
+
+export const getAuthRegistrations = [
+    {
+        key: "account",
+        type: "string",
+        description: "The Safe account address",
+    },
+    {
+        key: "chainId",
+        type: "number",
+        description: "The chain ID where the account resides",
+    },
+    {
+        key: "message",
+        type: "string",
+        description: "SIWE message signed by the account",
+    },
+    {
+        key: "signature",
+        type: "string",
+        description: "Signature proving the request",
+    },
+];
+
+export const getAuthRegistrationsResponse = [
+    {
+        key: "registrations",
+        type: "array",
+        description: "List of active registrations",
+    },
+];
+
+export const postAuthDelete = [
+    {
+        key: "registrationId",
+        type: "string",
+        description: "The registration ID to delete",
+    },
+    {
+        key: "message",
+        type: "string",
+        description: "SIWE message signed by the account",
+    },
+    {
+        key: "signature",
+        type: "string",
+        description: "Signature proving the request",
+    },
+];
+
+export const postAuthDeleteResponse = [
+    {
+        key: "success",
+        type: "boolean",
+        description: "True if deletion was successful",
+    },
+];
+
+export const postAuthSignatureRequest = [
+    {
+        key: "account",
+        type: "string",
+        description: "The smart account address to be recovered",
+    },
+    {
+        key: "newOwners",
+        type: "string[]",
+        description: "The new owners for the Safe account",
+    },
+    {
+        key: "newThreshold",
+        type: "number",
+        description: "The new threshold for the Safe account",
+    },
+    {
+        key: "chainId",
+        type: "number",
+        description: "Chain ID for the recovery request",
+    },
+];
+
+export const postAuthSignatureRequestResponse = [
+    {
+        key: "requestId",
+        type: "string",
+        description: "Unique signature request ID",
+    },
+    {
+        key: "requiredVerifications",
+        type: "number",
+        description: "Minimum number of OTP challenges required",
+    },
+    {
+        key: "auths",
+        type: "array",
+        description: "List of authentication methods to verify",
+    },
+];
+
+export const postAuthSignatureSubmit = [
+    {
+        key: "requestId",
+        type: "string",
+        description: "The unique ID from /auth/signature/request",
+    },
+    {
+        key: "challengeId",
+        type: "string",
+        description: "The challenge ID specific to the authentication method",
+    },
+    {
+        key: "challenge",
+        type: "string",
+        description: "The OTP code received via email/SMS",
+    },
+];
+
+export const postAuthSignatureSubmitResponse = [
+    {
+        key: "success",
+        type: "boolean",
+        description: "True if verification was successful",
+    },
+    {
+        key: "signer",
+        type: "string",
+        description: "Guardian address (available only if sufficient verifications collected)",
+    },
+    {
+        key: "signature",
+        type: "string",
+        description: "Recovery signature (available only if sufficient verifications collected)",
+    },
+];
