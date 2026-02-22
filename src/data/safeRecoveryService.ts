@@ -115,6 +115,11 @@ export const postRecoveriesCreate = [
         description: "The chainId of the network where the Safe account resides",
     },
     {
+        key: "signer",
+        type: "string",
+        description: "The guardian public address initiating the recovery request",
+    },
+    {
         key: "signature",
         type: "string",
         description: "A signature from the guardian for a message containing the address of the safe, new owners of the Safe, chainId, module address, and a nonce",
