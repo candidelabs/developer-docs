@@ -80,4 +80,27 @@ flowchart TD
 - [Module SDK](/wallet/plugins/recovery-with-guardians)
 - [Module contracts and audits](https://github.com/candidelabs/candide-contracts)
 - [Source code](https://github.com/candidelabs/safe-recovery-service)
+- [Recovery Service SDK](https://github.com/candidelabs/safe-recovery-service-sdk)
 
+## Recovery Request States
+
+A recovery request goes through the following states:
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING
+    PENDING --> EXECUTION_IN_PROGRESS: All signatures collected
+    EXECUTION_IN_PROGRESS --> EXECUTED: Transaction confirmed
+    EXECUTED --> FINALIZATION_IN_PROGRESS: Grace period ended
+    FINALIZATION_IN_PROGRESS --> FINALIZED: Finalization confirmed
+    FINALIZED --> [*]
+    PENDING --> EXECUTED: Auto-execute enabled
+```
+
+| State | Description |
+|-------|-------------|
+| `PENDING` | Recovery request created, waiting for guardian signatures |
+| `EXECUTION-IN-PROGRESS` | All signatures collected, executing on-chain |
+| `EXECUTED` | Recovery confirmed, new owners set. Waiting for grace period |
+| `FINALIZATION-IN-PROGRESS` | Grace period ended, finalizing on-chain |
+| `FINALIZED` | Recovery complete, new owners take control |

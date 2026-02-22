@@ -40,8 +40,20 @@ import {
 | Auto Finalization After Grace Period | A built-in relayer automatically submits signed transactions on behalf of guardians for confirmation and finalization once the grace period has elapsed. |
 
 :::info
-To get started, request an API key [here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).
+To get started, request access [here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).
 :::
+
+## Authentication
+
+All API requests require a Bearer token in the Authorization header:
+
+```bash
+curl -X POST \
+  https://yourcompany.recovery.candide.dev/recoveries/create \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+  -d '{...}'
+```
 
 **/recoveries**
 - **/recoveries/create**
@@ -267,6 +279,11 @@ curl -G "https://yourcompany.recovery.candide.dev/recoveries/listByAddress" \
     <DataTable items={getRecoveriesListByAddressResponse} />
 </TabItem>
 </Tabs>
+
+:::tip When to use fetchByAddress vs listByAddress
+- **`/recoveries/fetchByAddress`**: Use when you know the exact nonce. Ideal for checking a specific pending request or looking up the current recovery state.
+- **`/recoveries/listByAddress`**: Use when you need to query multiple requests with filtering, pagination, or sorting. Better for dashboard UIs showing recovery history.
+:::
 
 ### Fetch recovery by ID
 Fetch a recovery request by ID
@@ -574,14 +591,35 @@ curl -X POST \
 
 
 ## Error Handling
-The API uses standard HTTP status codes to indicate the success or failure of a request.
-Error responses will include a JSON object with the following structure:
+
+The API uses standard HTTP status codes to indicate the success or failure of a request. Error responses include a JSON object with the following structure:
 
 ```json
-​​{
-​​  "error": {
-​​    "code": 404,
-​​    "message": "Recovery request not found"
-​​  }
-​​}
+{
+  "error": {
+    "code": 404,
+    "message": "Recovery request not found"
+  }
+}
 ```
+
+### HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Success |
+| 400 | Bad Request - Invalid parameters or missing required fields |
+| 401 | Unauthorized - Invalid or missing Bearer token |
+| 404 | Not Found - Resource not found |
+| 429 | Too Many Requests - Rate limit exceeded |
+| 500 | Internal Server Error - Something went wrong on the server |
+
+### Common Error Messages
+
+| Message | Description |
+|---------|-------------|
+| Recovery request not found | The requested recovery ID does not exist |
+| Invalid signature | The signature verification failed |
+| Guardian not found | The signer is not a registered guardian |
+| Insufficient signatures | Not enough guardian signatures collected |
+| Rate limit exceeded | Too many requests, please try again later |

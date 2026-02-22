@@ -23,6 +23,18 @@ import {
     postRecoveriesExecuteByIdResponse,
     postAlertSubscribe,
     postAlertSubscribeResponse,
+    postAuthRegister,
+    postAuthRegisterResponse,
+    postAuthSubmit,
+    postAuthSubmitResponse,
+    getAuthRegistrations,
+    getAuthRegistrationsResponse,
+    postAuthDelete,
+    postAuthDeleteResponse,
+    postAuthSignatureRequest,
+    postAuthSignatureRequestResponse,
+    postAuthSignatureSubmit,
+    postAuthSignatureSubmitResponse,
 } from "/src/data/safeRecoveryService";
 
 # Authentication-Based Recovery API (Email / SMS)
@@ -31,8 +43,20 @@ A Safe guardian service that uses email and phone verification to facilitate acc
 with other guardians (such as hardware wallets or trusted contacts) to create a customized recovery threshold.
 
 :::info
-To get started, request an API key [here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).
+To get started, request access [here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).
 :::
+
+## Authentication
+
+All API requests require a Bearer token in the Authorization header:
+
+```bash
+curl -X POST \
+  https://yourcompany.recovery.candide.dev/auth/register \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+  -d '{...}'
+```
 
 **/auth** (Registration)
 - **/auth/register**
@@ -86,6 +110,12 @@ curl -X POST \
 ```
 
 </TabItem>
+<TabItem value="request" label="Request Body">
+    <DataTable items={postAuthRegister} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={postAuthRegisterResponse} />
+</TabItem>
 </Tabs>
 
 -   `account`: The smart account address requesting registration.
@@ -129,13 +159,15 @@ curl -X POST \
 }
 ```
 </TabItem>
-
+<TabItem value="request" label="Request Body">
+    <DataTable items={postAuthSubmit} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={postAuthSubmitResponse} />
+</TabItem>
 </Tabs>
 
--   `challengeId`: The unique challenge ID received in the registration response.
--   `challenge`: The code received via email/SMS.
-
-### Get active registration 
+### Get active registration
 Fetch the registration of the protected smart account
 ####  `GET /auth/registrations`
 
@@ -165,17 +197,13 @@ curl -G "https://yourcompany.recovery.candide.dev/auth/registrations" \
 }
 ```
 </TabItem>
+<TabItem value="request" label="Query Parameters">
+    <DataTable items={getAuthRegistrations} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={getAuthRegistrationsResponse} />
+</TabItem>
 </Tabs>
-
--   `account`: The safe account address.
--   `chainId`: The chain id in which your account resides.
--   `message`: SIWE (EIP-4361) message statement. Statement: 
-
-```
-I request to retrieve all authentication methods currently registered to my account with Safe Recovery Service
-```
-
--   `signature`: signature proving the request is initiated from the account
 
 See [example guide](#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign in With Ethereum (SIWE)
 
@@ -206,16 +234,13 @@ curl -X POST \
 }
 ```
 </TabItem>
+<TabItem value="request" label="Request Body">
+    <DataTable items={postAuthDelete} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={postAuthDeleteResponse} />
+</TabItem>
 </Tabs>
-
--   `registrationId`: The registration id.
--   `message`: SIWE (EIP-4361) message statement. Statement: 
-
-```
-I request to remove the authentication method with registration ID {{id}} from my account on Safe Recovery Service
-```
-
--   `signature`: signature proving the request is initiated from the account
 
 See [example guide](#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign in With Ethereum (SIWE)
 
@@ -245,7 +270,7 @@ curl -X POST \
 ```json
 {
    "requestId":"unique-signature-request-id",
-   "requiredVerifications": 1, // minimum number of required challenges that should be submitted for this signature request
+   "requiredVerifications": 1,
    "auths": [
       {
          "challengeId": "unique-challenge-id",
@@ -256,12 +281,13 @@ curl -X POST \
 }
 ```
 </TabItem>
+<TabItem value="request" label="Request Body">
+    <DataTable items={postAuthSignatureRequest} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={postAuthSignatureRequestResponse} />
+</TabItem>
 </Tabs>
-
--   `account`: The smart account address to be recovered.
--   `newOwners`: The new owners to the safe account
--   `newThreshold`: The new threshold to the safe account
--   `chainId`: chain id for the recovery request signature
 
 ### Confirm recovery with OTP challenge
 Request to submits the signature with the provided OTP code challenge and id
@@ -287,16 +313,18 @@ curl -X POST \
 ```json
 {
    "success": true,
-   "signer": "0x...", // available only if sufficient verifications were collected
-   "signature": "0x...", // available only if sufficient verifications were collected
+   "signer": "0x...",
+   "signature": "0x..."
 }
 ```
 </TabItem>
+<TabItem value="request" label="Request Body">
+    <DataTable items={postAuthSignatureSubmit} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={postAuthSignatureSubmitResponse} />
+</TabItem>
 </Tabs>
-
--   `requestId`: The unique ID received in the signature request response.
--   `challengeId`: The unique challenge ID specific to a authentication method, received in the signature request response.
--   `challenge`: The code received via email/SMS.
 
 ## How to Sign Messages (SIWE EIP-4361)
 
@@ -376,3 +404,37 @@ Issued At: 2025-03-13T15:47:08.746Z
 </TabItem>
 
 </Tabs>
+
+## Error Handling
+
+The API uses standard HTTP status codes to indicate the success or failure of a request. Error responses include a JSON object with the following structure:
+
+```json
+{
+  "error": {
+    "code": 404,
+    "message": "Registration not found"
+  }
+}
+```
+
+### HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Success |
+| 400 | Bad Request - Invalid parameters or missing required fields |
+| 401 | Unauthorized - Invalid or missing Bearer token |
+| 404 | Not Found - Resource not found |
+| 429 | Too Many Requests - Rate limit exceeded |
+| 500 | Internal Server Error - Something went wrong on the server |
+
+### Common Error Messages
+
+| Message | Description |
+|---------|-------------|
+| Registration not found | The requested registration ID does not exist |
+| Invalid signature | The SIWE signature verification failed |
+| Challenge expired | The OTP challenge has expired |
+| Invalid challenge | The OTP code provided is incorrect |
+| Rate limit exceeded | Too many requests, please try again later |
