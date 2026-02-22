@@ -46,19 +46,8 @@ const createMultiConfirmRecoveryParams = [
     description: "The new threshold for the safe.",
   },
   {
-    key: "signatureData",
-    type: [
-      {
-        key: "signer",
-        type: "bigint",
-        description: "signer",
-      },
-      {
-        key: "signature",
-        type: "string[]",
-        description: "signature",
-      },
-    ],
+    key: "signaturePairList",
+    type: "RecoverySignaturePair[]",
     description: "The guardians signers and signatures pair list.",
   },
   {
@@ -111,10 +100,14 @@ const createAddGuardianWithThresholdParams = [
 
 const createRevokeGuardianWithThresholdParams = [
   {
-    key: "prevGuardianAddress",
+    key: "nodeRpcUrl",
     type: "string",
-    description:
-      "The previous guardian linking to the guardian in the linked list.",
+    description: "The JSON-RPC API url for the target chain (to get the prevGuardian parameter).",
+  },
+  {
+    key: "accountAddress",
+    type: "string",
+    description: "The target account.",
   },
   {
     key: "guardianAddress",
@@ -124,8 +117,30 @@ const createRevokeGuardianWithThresholdParams = [
   {
     key: "threshold",
     type: "bigint",
-    description:
-      "The new threshold that will be set after execution of revokation.",
+    description: "The new threshold that will be set after execution of revocation.",
+  },
+  {
+    key: "overrides",
+    type: "object",
+    description: "Optional overrides object with prevGuardianAddress.",
+  },
+];
+
+const createStandardRevokeGuardianWithThresholdParams = [
+  {
+    key: "prevGuardianAddress",
+    type: "string",
+    description: "The previous guardian linking to the guardian in the linked list.",
+  },
+  {
+    key: "guardianAddress",
+    type: "string",
+    description: "The guardian to revoke.",
+  },
+  {
+    key: "threshold",
+    type: "bigint",
+    description: "The new threshold that will be set after execution of revocation.",
   },
 ];
 
@@ -140,9 +155,9 @@ const createChangeThresholdMetaTransactionParams = [
 
 const getRecoveryHashParams = [
   {
-    key: "nodeUrl",
+    key: "nodeRpcUrl",
     type: "string",
-    description: "The Node URL of the Ethereum RPC endpoint.",
+    description: "The JSON-RPC API url for the target chain.",
   },
   {
     key: "accountAddress",
@@ -162,7 +177,40 @@ const getRecoveryHashParams = [
   {
     key: "nonce",
     type: "bigint",
-    description: "",
+    description: "Recovery nonce.",
+  },
+];
+
+const getRecoveryRequestEip712DataParams = [
+  {
+    key: "rpcNode",
+    type: "string",
+    description: "Node to fetch the recovery nonce.",
+  },
+  {
+    key: "chainId",
+    type: "bigint",
+    description: "Chain ID of the target network.",
+  },
+  {
+    key: "accountAddress",
+    type: "string",
+    description: "Address of account to recover.",
+  },
+  {
+    key: "newOwners",
+    type: "string[]",
+    description: "New owners to recover to.",
+  },
+  {
+    key: "newThreshold",
+    type: "bigint",
+    description: "New threshold.",
+  },
+  {
+    key: "overrides",
+    type: "object",
+    description: "Optional overrides with recoveryNonce.",
   },
 ];
 
@@ -323,6 +371,19 @@ const RecoveryRequestParams = [
   },
 ];
 
+const RecoverySignaturePairParams = [
+  {
+    key: "signer",
+    type: "string",
+    description: "Guardian address that produced the signature.",
+  },
+  {
+    key: "signature",
+    type: "string",
+    description: "Hex-encoded signature bytes.",
+  },
+];
+
 const sendEthCallRequestParams = [
   {
     key: "nodeRpcUrl",
@@ -350,8 +411,10 @@ export {
   createCancelRecoveryParams,
   createAddGuardianWithThresholdParams,
   createRevokeGuardianWithThresholdParams,
+  createStandardRevokeGuardianWithThresholdParams,
   createChangeThresholdMetaTransactionParams,
   getRecoveryHashParams,
+  getRecoveryRequestEip712DataParams,
   getRecoveryRequestParams,
   getRecoveryApprovalsParams,
   hasGuardianApprovedParams,
@@ -361,5 +424,6 @@ export {
   getGuardiansParams,
   nonceParams,
   RecoveryRequestParams,
+  RecoverySignaturePairParams,
   sendEthCallRequestParams,
 };

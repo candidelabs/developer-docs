@@ -16,8 +16,10 @@ import {
   createCancelRecoveryParams,
   createAddGuardianWithThresholdParams,
   createRevokeGuardianWithThresholdParams,
+  createStandardRevokeGuardianWithThresholdParams,
   createChangeThresholdMetaTransactionParams,
   getRecoveryHashParams,
+  getRecoveryRequestEip712DataParams,
   getRecoveryRequestParams,
   getRecoveryApprovalsParams,
   hasGuardianApprovedParams,
@@ -27,6 +29,7 @@ import {
   getGuardiansParams,
   nonceParams,
   RecoveryRequestParams,
+  RecoverySignaturePairParams,
   sendEthCallRequestParams
 } from "../../../src/data/recoveryParams";
 import { metaTransactionType } from "../../../src/data/accountParamAndReturnData";
@@ -164,11 +167,42 @@ Creates a MetaTransaction that lets the owner add a guardian for its account.
 
 ### createRevokeGuardianWithThresholdMetaTransaction
 
-Creates a MetaTransaction that lets the owner revoke a guardian from its account.
+Creates a MetaTransaction that lets the owner revoke a guardian from its account. This async version auto-detects the previous guardian by querying the node.
 
 <Tabs>
   <TabItem value="Param type" label="Param Types">
     <DataTable items={createRevokeGuardianWithThresholdParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <table>
+      <thead>
+        <th align="left">Param Name</th>
+        <th align="left">Param Type</th>
+        <th align="left">Description</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Promise&lt;MetaTransaction&gt;</td>
+          <td align="left">
+            <p><font color="#22c916">MetaTransaction</font></p>
+            <DataTable items={metaTransactionType} />
+          </td>
+          <td align="left">
+            MetaTransaction is the type of a transaction to construct a Safe operation.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </TabItem>
+</Tabs>
+
+### createStandardRevokeGuardianWithThresholdMetaTransaction
+
+Creates a MetaTransaction that lets the owner revoke a guardian from its account. This synchronous version requires the previous guardian address to be provided manually.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createStandardRevokeGuardianWithThresholdParams} />
   </TabItem>
   <TabItem value="Return type" label="Return Types">
     <table>
@@ -493,3 +527,38 @@ Get the module nonce for an account.
     <p>BigInt</p>
   </TabItem>
 </Tabs>
+
+### getRecoveryHash
+
+Generates the recovery hash that should be signed by the guardian to authorize a recovery.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={getRecoveryHashParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p>Promise&lt;string&gt;</p>
+  </TabItem>
+</Tabs>
+
+### getRecoveryRequestEip712Data
+
+Creates recovery request EIP-712 data for signing by guardians.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={getRecoveryRequestEip712DataParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p>Promise&lt;object&gt;</p>
+    <p>Object containing domain, types, and messageValue for EIP-712 signing.</p>
+  </TabItem>
+</Tabs>
+
+## Types
+
+### RecoverySignaturePair
+
+A guardian address paired with its EIP-712 signature authorizing a recovery.
+
+<DataTable items={RecoverySignaturePairParams} />
