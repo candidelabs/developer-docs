@@ -310,9 +310,21 @@ const sidebars = {
           label: "Recovery Alerts"
         },
         {
-          type: "doc",
-          id: "wallet/plugins/recovery-module-reference",
-          label: "SDK Reference"
+          type: "category",
+          label: "SDK Reference",
+          collapsed: true,
+          items: [
+            {
+              type: "doc",
+              id: "wallet/plugins/recovery-module-reference",
+              label: "Module"
+            },
+            {
+              type: "doc",
+              id: "wallet/plugins/recovery-service-sdk-reference",
+              label: "Service"
+            },
+          ],
         },
         {
           type: "category",

@@ -1,0 +1,721 @@
+---
+title: Recovery Service SDK Reference
+description: Complete API reference for the Safe Recovery Service SDK covering RecoveryByGuardian, RecoveryByCustodialGuardian, and Alerts classes for managing account recovery flows.
+keywords: [recovery, guardian, email-recovery, sms-recovery, alerts, sdk-reference, safe-recovery-service-sdk]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+import {
+  recoveryByGuardianConstructorParams,
+  createRecoveryRequestParams,
+  submitGuardianSignatureParams,
+  executeRecoveryRequestParams,
+  finalizeRecoveryRequestParams,
+  getRecoveryRequestsParams,
+  getRecoveryRequestsForLatestNonceParams,
+  getPendingRecoveryRequestsForLatestNonceParams,
+  recoveryByGuardianRequestType,
+  custodialGuardianConstructorParams,
+  getRegistrationsSiweParams,
+  getRegistrationsParams,
+  createRegistrationToEmailRecoverySiweParams,
+  createRegistrationToEmailRecoveryParams,
+  createRegistrationToSmsRecoverySiweParams,
+  createRegistrationToSmsRecoveryParams,
+  createRegistrationToRecoverySiweParams,
+  createRegistrationToRecoveryParams,
+  submitRegistrationChallengeParams,
+  submitRegistrationChallengeReturn,
+  deleteRegistrationSiweParams,
+  deleteRegistrationParams,
+  requestCustodialGuardianSignatureChallengeParams,
+  submitCustodialGuardianSignatureChallengeParams,
+  submitCustodialGuardianSignatureChallengeReturn,
+  createAndExecuteRecoveryRequestParams,
+  registrationType,
+  signatureRequestType,
+  alertsConstructorParams,
+  getSubscriptionsSiweParams,
+  getActiveSubscriptionsParams,
+  createEmailSubscriptionSiweParams,
+  createEmailSubscriptionParams,
+  createSubscriptionSiweParams,
+  createSubscriptionParams,
+  activateSubscriptionParams,
+  unsubscribeSiweParams,
+  unsubscribeParams,
+  alertsSubscriptionType,
+  generateSIWEMessageParams,
+  safeRecoveryServiceSdkErrorType,
+  socialRecoveryModuleGracePeriodSelectorType,
+} from "../../../src/data/safeRecoveryServiceSdk";
+
+# Recovery Service SDK Reference
+
+The Safe Recovery Service SDK provides TypeScript classes for interacting with the [Safe Recovery Service](/wallet/recovery/overview). It covers three main workflows: self-managed guardian recovery, custodial guardian recovery (email/SMS), and recovery alert notifications.
+
+:::tip
+Looking for the on-chain Social Recovery Module SDK? See the [Module SDK Reference](/wallet/plugins/recovery-module-reference).
+:::
+
+## Install
+
+<Tabs>
+<TabItem value="npm" label="npm">
+
+```bash
+npm i safe-recovery-service-sdk
+```
+
+</TabItem>
+<TabItem value="yarn" label="yarn">
+
+```bash
+yarn add safe-recovery-service-sdk
+```
+
+</TabItem>
+</Tabs>
+
+## Import
+
+```ts
+import {
+  RecoveryByGuardian,
+  RecoveryByCustodialGuardian,
+  Alerts,
+  generateSIWEMessage,
+  SafeRecoveryServiceSdkError,
+  SocialRecoveryModuleGracePeriodSelector,
+} from "safe-recovery-service-sdk";
+```
+
+---
+
+## RecoveryByGuardian
+
+Service client for managing recovery flows using self-managed guardians. Handles creating recovery requests, collecting guardian signatures, and executing/finalizing recovery.
+
+### Initialize
+
+```ts
+import { RecoveryByGuardian, SocialRecoveryModuleGracePeriodSelector } from "safe-recovery-service-sdk";
+
+const recoveryService = new RecoveryByGuardian(
+  "https://safe-recovery.candide.dev",
+  1n, // chainId
+  SocialRecoveryModuleGracePeriodSelector.After3Days
+);
+```
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={recoveryByGuardianConstructorParams} />
+  </TabItem>
+</Tabs>
+
+### createRecoveryRequest
+
+Creates a new recovery request with the specified new owners and threshold. Requires a guardian signature authorizing the recovery.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createRecoveryRequestParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;RecoveryByGuardianRequest&gt;</font></p>
+    <DataTable items={recoveryByGuardianRequestType} />
+  </TabItem>
+</Tabs>
+
+### submitGuardianSignatureForRecoveryRequest
+
+Submits an additional guardian signature for an existing recovery request. Used when multiple guardian approvals are required.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={submitGuardianSignatureParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;boolean&gt;</font></p>
+    <p>Returns true if the signature was accepted.</p>
+  </TabItem>
+</Tabs>
+
+### executeRecoveryRequest
+
+Triggers the execution of a recovery request. Once executed, the grace period countdown begins before the recovery can be finalized.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={executeRecoveryRequestParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;boolean&gt;</font></p>
+    <p>Returns true once the execution transaction is submitted.</p>
+  </TabItem>
+</Tabs>
+
+### finalizeRecoveryRequest
+
+Finalizes a recovery request after the grace period has elapsed. This completes the ownership transfer.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={finalizeRecoveryRequestParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;boolean&gt;</font></p>
+    <p>Returns true once the finalization transaction is submitted.</p>
+  </TabItem>
+</Tabs>
+
+### getRecoveryRequests
+
+Queries recovery requests for a specific account and nonce.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={getRecoveryRequestsParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;RecoveryByGuardianRequest[]&gt;</font></p>
+    <DataTable items={recoveryByGuardianRequestType} />
+  </TabItem>
+</Tabs>
+
+### getRecoveryRequestsForLatestNonce
+
+Fetches recovery requests for the latest on-chain nonce, filtered by status. Automatically queries the RPC node for the current nonce.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={getRecoveryRequestsForLatestNonceParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;RecoveryByGuardianRequest[]&gt;</font></p>
+    <DataTable items={recoveryByGuardianRequestType} />
+  </TabItem>
+</Tabs>
+
+### getPendingRecoveryRequestsForLatestNonce
+
+Convenience method that fetches pending recovery requests for the latest nonce.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={getPendingRecoveryRequestsForLatestNonceParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;RecoveryByGuardianRequest[]&gt;</font></p>
+    <DataTable items={recoveryByGuardianRequestType} />
+  </TabItem>
+</Tabs>
+
+### getExecutedRecoveryRequestForLatestNonce
+
+Fetches the executed recovery request for the latest nonce, if one exists.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={getPendingRecoveryRequestsForLatestNonceParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;RecoveryByGuardianRequest | null&gt;</font></p>
+    <DataTable items={recoveryByGuardianRequestType} />
+  </TabItem>
+</Tabs>
+
+### getFinalizedRecoveryRequestForLatestNonce
+
+Fetches the finalized recovery request for the latest nonce, if one exists.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={getPendingRecoveryRequestsForLatestNonceParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;RecoveryByGuardianRequest | null&gt;</font></p>
+    <DataTable items={recoveryByGuardianRequestType} />
+  </TabItem>
+</Tabs>
+
+---
+
+## RecoveryByCustodialGuardian
+
+Interface for managing recovery using custodial guardians via email or SMS. Handles channel registration, OTP verification, and recovery execution through Candide's custodial guardian service.
+
+### Initialize
+
+```ts
+import { RecoveryByCustodialGuardian } from "safe-recovery-service-sdk";
+
+const custodialRecovery = new RecoveryByCustodialGuardian(
+  "https://safe-recovery.candide.dev",
+  1n, // chainId
+);
+```
+
+You can optionally override the SIWE domain and URI:
+
+```ts
+const custodialRecovery = new RecoveryByCustodialGuardian(
+  "https://safe-recovery.candide.dev",
+  1n,
+  { siweDomain: "myapp.com", siweUri: "https://myapp.com" }
+);
+```
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={custodialGuardianConstructorParams} />
+  </TabItem>
+</Tabs>
+
+### Registration Management
+
+#### getRegistrationsSiweStatementToSign
+
+Returns the SIWE statement string that needs to be signed to fetch registrations.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={getRegistrationsSiweParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">string</font></p>
+    <p>The SIWE statement to sign.</p>
+  </TabItem>
+</Tabs>
+
+#### getRegistrations
+
+Fetches active email/SMS recovery registrations for a Safe account.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={getRegistrationsParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;Registration[]&gt;</font></p>
+    <DataTable items={registrationType} />
+  </TabItem>
+</Tabs>
+
+#### createRegistrationToEmailRecoverySiweStatementToSign
+
+Returns the SIWE statement for registering an email recovery method.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createRegistrationToEmailRecoverySiweParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">string</font></p>
+    <p>The SIWE statement to sign.</p>
+  </TabItem>
+</Tabs>
+
+#### createRegistrationToEmailRecovery
+
+Registers an email address as a recovery channel. Returns a challenge ID for OTP verification.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createRegistrationToEmailRecoveryParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;string&gt;</font></p>
+    <p>The challenge ID to use with submitRegistrationChallenge.</p>
+  </TabItem>
+</Tabs>
+
+#### createRegistrationToSmsRecoverySiweStatementToSign
+
+Returns the SIWE statement for registering an SMS recovery method.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createRegistrationToSmsRecoverySiweParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">string</font></p>
+    <p>The SIWE statement to sign.</p>
+  </TabItem>
+</Tabs>
+
+#### createRegistrationToSmsRecovery
+
+Registers a phone number as a recovery channel. Returns a challenge ID for OTP verification.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createRegistrationToSmsRecoveryParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;string&gt;</font></p>
+    <p>The challenge ID to use with submitRegistrationChallenge.</p>
+  </TabItem>
+</Tabs>
+
+#### createRegistrationToRecoverySiweStatementToSign
+
+Generic method that returns the SIWE statement for registering any recovery channel.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createRegistrationToRecoverySiweParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">string</font></p>
+    <p>The SIWE statement to sign.</p>
+  </TabItem>
+</Tabs>
+
+#### createRegistrationToRecovery
+
+Generic method that registers a recovery channel. Returns a challenge ID for OTP verification.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createRegistrationToRecoveryParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;string&gt;</font></p>
+    <p>The challenge ID to use with submitRegistrationChallenge.</p>
+  </TabItem>
+</Tabs>
+
+#### submitRegistrationChallenge
+
+Submits the OTP code to verify a registration. Returns the registration ID and the assigned custodial guardian address.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={submitRegistrationChallengeParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;object&gt;</font></p>
+    <DataTable items={submitRegistrationChallengeReturn} />
+  </TabItem>
+</Tabs>
+
+#### deleteRegistrationSiweStatementToSign
+
+Returns the SIWE statement for deleting a registration.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={deleteRegistrationSiweParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">string</font></p>
+    <p>The SIWE statement to sign.</p>
+  </TabItem>
+</Tabs>
+
+#### deleteRegistration
+
+Removes an email or SMS recovery registration.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={deleteRegistrationParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;boolean&gt;</font></p>
+    <p>Returns true if the deletion was successful.</p>
+  </TabItem>
+</Tabs>
+
+### Recovery Flow
+
+#### requestCustodialGuardianSignatureChallenge
+
+Initiates a recovery request through the custodial guardian. Sends OTP challenges to all registered recovery channels.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={requestCustodialGuardianSignatureChallengeParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;SignatureRequest&gt;</font></p>
+    <DataTable items={signatureRequestType} />
+  </TabItem>
+</Tabs>
+
+#### submitCustodialGuardianSignatureChallenge
+
+Submits an OTP code for a specific authentication challenge. When all required verifications are collected, returns the custodial guardian address and signature.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={submitCustodialGuardianSignatureChallengeParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;object&gt;</font></p>
+    <DataTable items={submitCustodialGuardianSignatureChallengeReturn} />
+  </TabItem>
+</Tabs>
+
+#### createAndExecuteRecoveryRequest
+
+Creates a recovery request and immediately triggers execution using the custodial guardian's signature. Combines createRecoveryRequest and executeRecoveryRequest into a single call.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createAndExecuteRecoveryRequestParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;RecoveryByGuardianRequest&gt;</font></p>
+    <DataTable items={recoveryByGuardianRequestType} />
+  </TabItem>
+</Tabs>
+
+---
+
+## Alerts
+
+Service class for managing email and SMS alert subscriptions for recovery events on Safe accounts. Account owners receive notifications when recovery actions are initiated.
+
+### Initialize
+
+```ts
+import { Alerts } from "safe-recovery-service-sdk";
+
+const alerts = new Alerts(
+  "https://safe-recovery.candide.dev",
+  1n, // chainId
+);
+```
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={alertsConstructorParams} />
+  </TabItem>
+</Tabs>
+
+### createEmailSubscriptionSiweStatementToSign
+
+Returns the SIWE statement for creating an email alert subscription.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createEmailSubscriptionSiweParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">string</font></p>
+    <p>The SIWE statement to sign.</p>
+  </TabItem>
+</Tabs>
+
+### createEmailSubscription
+
+Creates an email alert subscription. Returns a subscription ID for OTP activation.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createEmailSubscriptionParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;string&gt;</font></p>
+    <p>The subscription ID to use with activateSubscription.</p>
+  </TabItem>
+</Tabs>
+
+### createSubscriptionSiweStatementToSign
+
+Generic method that returns the SIWE statement for creating an alert subscription on any channel.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createSubscriptionSiweParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">string</font></p>
+    <p>The SIWE statement to sign.</p>
+  </TabItem>
+</Tabs>
+
+### createSubscription
+
+Generic method that creates an alert subscription on any channel. Returns a subscription ID for OTP activation.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={createSubscriptionParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;string&gt;</font></p>
+    <p>The subscription ID to use with activateSubscription.</p>
+  </TabItem>
+</Tabs>
+
+### activateSubscription
+
+Verifies and activates a subscription using the OTP code sent to the email or phone number.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={activateSubscriptionParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;boolean&gt;</font></p>
+    <p>Returns true if the subscription was activated.</p>
+  </TabItem>
+</Tabs>
+
+### getSubscriptionsSiweStatementToSign
+
+Returns the SIWE statement for fetching active subscriptions.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={getSubscriptionsSiweParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">string</font></p>
+    <p>The SIWE statement to sign.</p>
+  </TabItem>
+</Tabs>
+
+### getActiveSubscriptions
+
+Fetches all active alert subscriptions for a Safe account.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={getActiveSubscriptionsParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;AlertsSubscription[]&gt;</font></p>
+    <DataTable items={alertsSubscriptionType} />
+  </TabItem>
+</Tabs>
+
+### unsubscribeSiweStatementToSign
+
+Returns the SIWE statement for removing a subscription.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={unsubscribeSiweParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">string</font></p>
+    <p>The SIWE statement to sign.</p>
+  </TabItem>
+</Tabs>
+
+### unsubscribe
+
+Removes an alert subscription.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={unsubscribeParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">Promise&lt;boolean&gt;</font></p>
+    <p>Returns true if the unsubscription was successful.</p>
+  </TabItem>
+</Tabs>
+
+---
+
+## Utility Functions
+
+### generateSIWEMessage
+
+Generates a Sign-In with Ethereum (EIP-4361) message. Used internally by `RecoveryByCustodialGuardian` and `Alerts`, but also available for custom integrations.
+
+<Tabs>
+  <TabItem value="Param type" label="Param Types">
+    <DataTable items={generateSIWEMessageParams} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
+    <p><font color="#22c916">string</font></p>
+    <p>The formatted SIWE message ready for signing.</p>
+  </TabItem>
+</Tabs>
+
+---
+
+## Types
+
+### RecoveryByGuardianRequest
+
+Represents a recovery request with its current state and metadata.
+
+<DataTable items={recoveryByGuardianRequestType} />
+
+### Registration
+
+Represents an email or SMS recovery channel registration.
+
+<DataTable items={registrationType} />
+
+### SignatureRequest
+
+Represents a custodial guardian signature request with its OTP challenges.
+
+<DataTable items={signatureRequestType} />
+
+### AlertsSubscription
+
+Represents an active alert subscription.
+
+<DataTable items={alertsSubscriptionType} />
+
+### SocialRecoveryModuleGracePeriodSelector
+
+Enum of deployed Social Recovery Module addresses with different grace periods.
+
+<DataTable items={socialRecoveryModuleGracePeriodSelectorType} />
+
+---
+
+## Error Handling
+
+### SafeRecoveryServiceSdkError
+
+All SDK methods throw `SafeRecoveryServiceSdkError` on failure. The error includes a code, message, and optional context for debugging.
+
+```ts
+import { SafeRecoveryServiceSdkError } from "safe-recovery-service-sdk";
+
+try {
+  await recoveryService.createRecoveryRequest(/* ... */);
+} catch (error) {
+  if (error instanceof SafeRecoveryServiceSdkError) {
+    console.log(error.code);     // e.g. "HTTP_BAD_REQUEST"
+    console.log(error.message);  // Human-readable message
+    console.log(error.context);  // Additional context
+    console.log(error.stringify()); // Serialized error (useful for React Native)
+  }
+}
+```
+
+<DataTable items={safeRecoveryServiceSdkErrorType} />
+
+**Error Codes:**
+
+| Code | Description |
+|------|-------------|
+| `UNKNOWN_ERROR` | An unexpected error occurred |
+| `TIMEOUT` | The request timed out |
+| `SIWE_ERROR` | Error generating or validating SIWE message |
+| `BAD_DATA` | Invalid data provided |
+| `HTTP_BAD_REQUEST` | 400: Invalid request parameters |
+| `HTTP_UNAUTHORIZED` | 401: Authentication required |
+| `HTTP_FORBIDDEN` | 403: Insufficient permissions |
+| `HTTP_NOT_FOUND` | 404: Resource not found |
+| `HTTP_CONFLICT` | 409: Conflicting request |
+| `HTTP_TOO_MANY_REQUESTS` | 429: Rate limit exceeded |
+| `HTTP_INTERNAL_ERROR` | 500: Server error |
+| `HTTP_BAD_GATEWAY` | 502: Bad gateway |
+| `HTTP_SERVICE_UNAVAILABLE` | 503: Service temporarily unavailable |
+| `HTTP_GATEWAY_TIMEOUT` | 504: Gateway timeout |
