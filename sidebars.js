@@ -478,9 +478,22 @@ const sidebars = {
           label: "Gas in ERC-20"
         },
         {
-          type: "doc",
-          id: "wallet/abstractionkit/simple-7702-account",
-          label: "Simple 7702 Account"
+          type: "category",
+          label: "Simple 7702 Account",
+          collapsed: true,
+          link: { type: "doc", id: "wallet/abstractionkit/simple-7702-account" },
+          items: [
+            {
+              type: "doc",
+              id: "wallet/abstractionkit/simple-7702-account-v08",
+              label: "EntryPoint v0.8"
+            },
+            {
+              type: "doc",
+              id: "wallet/abstractionkit/simple-7702-account-v09",
+              label: "EntryPoint v0.9"
+            },
+          ],
         },
       ]
     },

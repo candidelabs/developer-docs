@@ -10,6 +10,292 @@ import TabItem from "@theme/TabItem";
 
 The Bundler exposes the standard ERC-4337 JSON-RPC API.
 
+## EntryPoint v0.9
+
+EntryPoint v0.9 maintains ABI compatibility with v0.8, requiring no changes to existing Accounts and Paymasters unless adopting new features. Key additions include:
+
+- **Parallelizable Paymaster Signing**: A new `paymasterSignature` field allows passing data to Paymasters after UserOperation signing, eliminating delays between user action and confirmation.
+- **Block Number-Based Validity Ranges**: The highest bit of `validAfter` and `validUntil` now indicates block number-based validity instead of timestamps.
+- **Flexible InitCode Handling**: `initCode` is silently ignored if the Account already exists, enabling two-dimensional nonce usage.
+- **UserOp Hash Query**: New `getCurrentUserOpHash` function exposes the current UserOperation hash during execution for third-party contracts.
+
+### eth_sendUserOperation
+
+`eth_sendUserOperation` asks the bundler to sign and submit a UserOperation.
+
+#### Example Request
+```json
+{
+    jsonrpc: "2.0",
+    id: 1,
+    method: "eth_sendUserOperation",
+    "params": [
+      {
+        'sender': '0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31',
+        'nonce': '0x13',
+        'callData': '0x34fcd5be...',
+        'callGasLimit': '0x2c3d',
+        'verificationGasLimit': '0x15881',
+        'preVerificationGas': '0xb7f8',
+        'maxFeePerGas': '0x2c05b3',
+        'maxPriorityFeePerGas': '0x2c05a2',
+        'signature': '0x62f505...',
+        'factory': None,
+        'factoryData': None,
+        'paymaster': None,
+        'paymasterVerificationGasLimit': None,
+        'paymasterPostOpGasLimit': None,
+        'paymasterData': None,
+        'paymasterSignature': None, // new in v0.9: allows parallelizable paymaster signing
+        // highlight-start
+        'eip7702auth': {
+          'chainId': '0x4268',
+          'address': '0xa46cc63eBF4Bd77888AA327837d20b23A63a56B5',
+          'nonce': '0x0f',
+          'yParity': '0x00',
+          'r': '0xf37fca7f67bc0b336adfeefe42a8856ca1e6dee48b1ce7748a4044acfe283b01',
+          's': '0x60ab7d22e278dc43b0b37afada54666c0bf9e0beb9f0cd0159de007d127f3406'
+        }
+        // highlight-end
+      },
+      // highlight-next-line
+      '0x433709009B8330FDa32311DF1C2AFA402eD8D009',
+    ]
+}
+```
+
+#### Response
+It returns the hash of the User Operation. In case of an error, it returns the error message.
+
+<Tabs>
+  <TabItem value="success" label="success">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": "0x1234...5678" // UserOpHash
+}
+```
+
+  </TabItem>
+  <TabItem value="error" label="example error">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "message": "AA21 didn't pay prefund",
+    "code": -32500
+  }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+### eth_estimateUserOperationGas
+`eth_estimateUserOperationGas` generates and returns an estimate of how much gas is necessary to allow the transaction to complete, given a `UserOperation`.
+
+The signature field is ignored by the wallet, so that the operation will not require the user's approval. Still, it might require putting a "semi-valid" signature (e.g. a signature in the right length)
+
+#### Example Request
+```json
+{
+  jsonrpc: "2.0",
+  id: 1,
+  method: "eth_estimateUserOperationGas",
+  "params": [
+  [
+   {
+      sender, // address
+      nonce, // uint256
+      factory, // address
+      factoryData, // bytes
+      callData, // bytes
+      callGasLimit, // uint256
+      verificationGasLimit, // uint256
+      preVerificationGas, // uint256
+      maxFeePerGas, // uint256
+      maxPriorityFeePerGas, // uint256
+      paymaster, // address
+      paymasterVerificationGasLimit, // uint256
+      paymasterPostOpGasLimit, // uint256
+      paymasterData, // bytes
+      paymasterSignature, // bytes (new in v0.9: parallelizable paymaster signing)
+      signature // bytes
+      // highlight-start
+      'eip7702auth': {
+        'chainId': '0x4268',
+        'address': '0xa46cc63eBF4Bd77888AA327837d20b23A63a56B5', // must be valid delegation address for simulation
+        'nonce': '0x0f',
+        'yParity': '0x00',
+        'r': '0xf37fca7f67bc0b336adfeefe42a8856ca1e6dee48b1ce7748a4044acfe283b01', // can pass a dummy signature during estimates
+        's': '0x60ab7d22e278dc43b0b37afada54666c0bf9e0beb9f0cd0159de007d127f3406' // can pass a dummy signature during estimates
+      }
+    // highlight-end
+    }
+    // highlight-next-line
+    '0x433709009B8330FDa32311DF1C2AFA402eD8D009'
+  ]
+}
+```
+
+#### Response
+It returns estimates for a UserOperation Gas parameters for:
+
+- `preVerificationGas`
+- `verificationGasLimit`
+- `paymasterVerificationGasLimit` (if the UserOperation defines a Paymaster address)
+- `callGasLimit`
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": {
+        callGasLimit, // uint256
+        preVerificationGas, // uint256
+        paymasterVerificationGasLimit, // uint256
+        verificationGas, // uint256
+    },
+}
+```
+
+### eth_getUserOperationByHash
+
+`eth_getUserOperationByHash` returns a UserOperation by its hash returned from `eth_sendUserOperation`
+
+#### Request
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "eth_getUserOperationByHash",
+  "params": ["0x123..456"] // userop hash
+}
+```
+
+#### Response
+If the userOp is included in a block: returns a full userOp, with the addition of `entryPoint`, `blockNumber`, `blockHash` and `transactionHash`.
+
+Other status can be one of the following:
+
+| **UserOp Status**    | **Response**                                                 |
+| --------------       | -----------------------------------------------------------     |
+| Pending in mempool   | Returns only the `userOp` + `entrypoint`                      |
+| Submitted            | Returns the `userop` + ``entrypoint`` + `transactionHash`       |
+| Included             | Returns `userOp`+ `entrypoint` + `transactionHash` + `blockNumber` + `blockHash` |
+| Error                | Returns standard error code and message                                                     |
+| Other                | Returns `null`                                                    |
+
+
+### eth_getUserOperationReceipt
+
+`eth_getUserOperationReceipt` returns the receipt of a UserOperation by its hash returned from `eth_sendUserOperation`. Returns `null` in case the UserOperation is not yet included in a block.
+
+#### Request
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "eth_getUserOperationReceipt",
+  "params": [userOpHash]
+}
+```
+
+#### Response
+
+<Tabs>
+  <TabItem value="success" label="success">
+
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": {
+        userOpHash,
+        sender,
+        nonce,
+        paymaster,
+        actualGasCost, // actual (gas price * gas used) of the user operation
+        actualGasUsed, // actual gas used of the user operation
+        success, // user operation revert status
+        reason, // If reverted, user operation revert reason
+        logs,
+        receipt, // The TransactionReceipt object. Note that the returned TransactionReceipt is for the entire bundle, not only for this UserOperation
+    }
+}
+```
+
+  </TabItem>
+  <TabItem value="error" label="error">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "error": {
+      "code": -000000,
+      "message": "AAxx error message"
+  }
+}
+```
+
+  </TabItem>
+</Tabs>
+
+### eth_chainId
+
+`eth_chainId` returns the chain ID of the current network
+
+#### Request
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "eth_chainId",
+  "params": []
+}
+```
+
+#### Response
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": "0x1", // Chain ID
+}
+```
+
+### eth_supportedEntryPoints
+
+`eth_supportedEntryPoints` returns an array of the entryPoint addresses supported by the bundler. A Bundler can support multiple entrypoints.
+
+#### Request
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "eth_supportedEntryPoints",
+  "params": []
+}
+```
+
+#### Response
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    "0x433709009B8330FDa32311DF1C2AFA402eD8D009",
+    "0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108",
+    "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+  ]
+}
+```
+
 ## EntryPoint v0.8
 
 EIP-7702 support is added with EntryPoint v0.8. The main ERC-4337 RPC calls are `eth_estimateUserOperationGas` and `eth_sendUserOperation`,

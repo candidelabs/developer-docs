@@ -1,0 +1,384 @@
+---
+title: AbstractionKit EIP-7702 Simple Account for EntryPoint v0.9 SDK Reference
+description: Learn how to upgrade EOAs to Smart Accounts using Simple7702AccountV09 with EntryPoint v0.9
+keywords: [simple7702account, "7702", sdk, account-abstraction, entrypoint-v09]
+---
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+
+import {
+  createUserOperationParam,
+  createUserOperationReturn,
+  signUserOperationParam,
+  signUserOperationReturn,
+  sendUserOperationParam,
+  sendUserOperationReturn,
+  createAccountCallDataParam,
+  createAccountCallDataReturn,
+  createAccountCallDataSingleTransactionParam,
+  createAccountCallDataBatchTransactionsParam,
+  estimateUserOperationGasParam,
+  estimateUserOperationGasReturn,
+  simpleMetaTransactionType
+} from "/src/data/simple7702AccountParams";
+import { sendUseroperationResponseType, bundlerJsonRpcErrorType } from "/src/requestRpcData";
+import { userOperationReceiptResultType } from "/src/data/userOperation";
+
+# Simple 7702 Account (EntryPoint v0.9)
+
+The `Simple7702AccountV09` is a minimalist smart contract account for EIP-7702, targeting **EntryPoint v0.9** (`0x433709009B8330FDa32311DF1C2AFA402eD8D009`). It shares the same audited contract implementation and API surface as `Simple7702Account`, with type specialization for `UserOperationV9`.
+
+EntryPoint v0.9 maintains ABI compatibility with v0.8 while adding:
+
+- **Parallelizable Paymaster Signing**: New `paymasterSignature` field allows passing data to Paymasters after UserOperation signing.
+- **Block Number-Based Validity Ranges**: `validAfter` and `validUntil` can now specify block numbers instead of timestamps.
+- **Flexible InitCode Handling**: `initCode` is silently ignored if the Account already exists, enabling two-dimensional nonce usage.
+- **UserOp Hash Query**: New `getCurrentUserOpHash` function exposes the current UserOperation hash during execution.
+
+The following ERCs are supported:
+
+- ERC-165
+- ERC-721
+- ERC-1155
+- ERC-1271
+- ERC-4337 v0.9
+
+:::info Full Example
+A complete working example is available on GitHub: [upgrade-eoa-to-7702-smart-account-EP-v09.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/upgrade-eoa-to-7702-smart-account-EP-v09.ts)
+:::
+
+:::caution Paymaster Not Yet Supported
+Candide paymaster does not yet support EntryPoint v0.9. Gas sponsorship and ERC-20 gas payment features are unavailable for this entrypoint version. Use `Simple7702Account` (EP v0.8) if you need paymaster support.
+:::
+
+## Smart Contracts and Audits
+
+The contracts were developed by the Ethereum Foundation Account Abstraction Team and audited by Cantina.
+
+- [Smart Contracts](https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/accounts/Simple7702Account.sol)
+- [Audit](https://github.com/eth-infinitism/account-abstraction/blob/develop/audits/ERC-4337%20Account%20Abstraction%20v0.9%20Security%20Review%20-%20Cantina.pdf)
+
+## How to Use
+
+### Prerequisites
+
+Before using `Simple7702AccountV09`, you must have:
+
+- **Node.js**: Version 18.0 or higher.
+- **EIP-7702 Compatible Network**: Ethereum mainnet, Sepolia, or other EIP-7702 enabled chains with EP v0.9 support.
+- **Private Key Access**: Required for signing authorizations and user operations.
+
+### Installation
+
+```bash
+npm install abstractionkit
+```
+
+### Usage
+
+```ts
+import { Simple7702AccountV09 } from "abstractionkit";
+
+const delegatorPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31"; // EOA public key
+const smartAccount = new Simple7702AccountV09(delegatorPublicAddress);
+```
+
+**Constructor defaults:**
+- `entrypointAddress`: `0x433709009B8330FDa32311DF1C2AFA402eD8D009` (EntryPoint v0.9)
+- `delegateeAddress`: `0xa46cc63eBF4Bd77888AA327837d20b23A63a56B5`
+
+Both can be overridden by passing an `overrides` object as the second constructor argument.
+
+## Essential Methods
+
+### createUserOperation
+
+Creates a UserOperation for EIP-7702 accounts that can be sent to bundlers for execution.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { Simple7702AccountV09 } from "abstractionkit";
+
+const delegatorPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
+const smartAccount = new Simple7702AccountV09(delegatorPublicAddress);
+
+const transactions = [
+  {
+    to: "0x...",
+    value: 0n,
+    data: "0x...",
+  },
+];
+
+// highlight-start
+const userOperation = await smartAccount.createUserOperation(
+  transactions,
+  "https://ethereum-sepolia-rpc.publicnode.com", // provider RPC
+  "https://your-ep-v09-bundler-rpc", // bundler RPC (must support EP v0.9)
+  {
+    eip7702Auth: {
+      chainId, // chainId at which the account will be authorized
+    },
+    // Optional overrides
+    maxFeePerGas: 20000000000n,
+    maxPriorityFeePerGas: 2000000000n,
+  }
+);
+// highlight-end
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createUserOperationParam} />
+  SimpleMetaTransaction
+  <DataTable items={simpleMetaTransactionType} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createUserOperationReturn} />
+</TabItem>
+
+</Tabs>
+
+### signUserOperation
+
+Signs a UserOperation with the provided private key for the EIP-7702 account.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const signature = smartAccount.signUserOperation(
+  userOperation,
+  "0x...private-key",
+  11155111n // chain ID
+);
+
+userOperation.signature = signature;
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={signUserOperationParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={signUserOperationReturn} />
+</TabItem>
+
+</Tabs>
+
+### sendUserOperation
+
+Sends a signed UserOperation to the bundler for execution on-chain.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const response = await smartAccount.sendUserOperation(
+  userOperation,
+  "https://your-ep-v09-bundler-rpc" // bundler URL (must support EP v0.9)
+);
+
+console.log("UserOperation hash:", response.userOperationHash);
+
+// Wait for the transaction to be included
+const receipt = await response.included();
+console.log("Transaction receipt:", receipt);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={sendUserOperationParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={sendUserOperationReturn} />
+  SendUseroperationResponse
+  <DataTable items={sendUseroperationResponseType} />
+  BundlerJsonRpcError
+  <DataTable items={bundlerJsonRpcErrorType} />
+  UserOperationReceiptResult
+  <DataTable items={userOperationReceiptResultType} />
+</TabItem>
+
+</Tabs>
+
+## Advanced Methods
+
+### createAccountCallData
+
+Creates call data for a basic transaction with specified target, value, and data.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const callData = Simple7702AccountV09.createAccountCallData(
+  "0x...", // to address
+  1000000000000000000n, // value in wei
+  "0x..." // transaction data
+);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createAccountCallDataParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAccountCallDataReturn} />
+</TabItem>
+
+</Tabs>
+
+### createAccountCallDataSingleTransaction
+
+Creates call data for a single SimpleMetaTransaction.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const metaTransaction = {
+  to: "0x...",
+  value: 0n,
+  data: "0x...",
+};
+
+const callData = Simple7702AccountV09.createAccountCallDataSingleTransaction(metaTransaction);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createAccountCallDataSingleTransactionParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAccountCallDataReturn} />
+</TabItem>
+
+</Tabs>
+
+### createAccountCallDataBatchTransactions
+
+Creates call data for batching multiple SimpleMetaTransactions together.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const transactions = [
+  { to: "0x...", value: 0n, data: "0x..." },
+  { to: "0x...", value: 0n, data: "0x..." },
+];
+
+const callData = Simple7702AccountV09.createAccountCallDataBatchTransactions(transactions);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createAccountCallDataBatchTransactionsParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAccountCallDataReturn} />
+</TabItem>
+
+</Tabs>
+
+### estimateUserOperationGas
+
+Estimates gas limits for a UserOperation using the bundler.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const [callGasLimit, verificationGasLimit, preVerificationGas] =
+  await smartAccount.estimateUserOperationGas(
+    userOperation,
+    "https://your-ep-v09-bundler-rpc",
+    {
+      // Optional overrides
+      stateOverrideSet: {...},
+      dummySignature: "0x...",
+    }
+  );
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={estimateUserOperationGasParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={estimateUserOperationGasReturn} />
+</TabItem>
+
+</Tabs>
+
+## Error Handling & Common Issues
+
+<Tabs>
+<TabItem value="auth-errors" label="Authorization Errors">
+
+```typescript
+// Missing eip7702Auth on the first UserOperation authorization
+const userOperation = await smartAccount.createUserOperation(
+  transactions,
+  providerRpc,
+  bundlerRpc,
+  {
+    eip7702Auth: { chainId: 11155111n }, // Required for EIP-7702
+  }
+);
+```
+
+</TabItem>
+
+<TabItem value="gas-errors" label="Gas Estimation Issues">
+
+```typescript
+// Use multipliers if gas prices are volatile
+const userOperation = await smartAccount.createUserOperation(
+  transactions,
+  providerRpc,
+  bundlerRpc,
+  {
+    eip7702Auth: { chainId: 11155111n },
+    maxFeePerGasPercentageMultiplier: 120, // 20% above current network conditions
+    maxPriorityFeePerGasPercentageMultiplier: 150, // 50% above current network conditions
+  }
+);
+```
+
+</TabItem>
+
+<TabItem value="network-errors" label="Network Mismatches">
+
+```typescript
+// Ensure chainId, RPC, and bundler all target the same network
+const userOperation = await smartAccount.createUserOperation(
+  transactions,
+  "https://ethereum-sepolia-rpc.publicnode.com", // Sepolia RPC
+  "https://your-ep-v09-bundler-rpc", // Sepolia EP v0.9 bundler
+  {
+    eip7702Auth: { chainId: 11155111n }, // Sepolia chainId
+  }
+);
+```
+
+</TabItem>
+</Tabs>
