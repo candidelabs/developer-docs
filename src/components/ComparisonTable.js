@@ -13,7 +13,7 @@ const groups = [
   {
     label: "Usage",
     rows: [
-      { feature: "Mainnet UserOps", values: ["2,500 Ops — 90-Day Trial", "100,000/mo", "500,000/mo", "Unlimited"] },
+      { feature: "Mainnet UserOps", values: ["2,500 Ops — 90 Day Trial", "100,000/mo", "500,000/mo", "Unlimited"] },
       { feature: "Testnet Usage", values: ["Unlimited", "Unlimited", "Unlimited", "Unlimited"] },
       { feature: "Mainnet Chains", values: ["2", "7", "All", "All"] },
       { feature: "Exclusive Networks", values: [null, "Add-on", "1 Included", "Custom"] },
@@ -34,14 +34,14 @@ const groups = [
       { feature: "Gas Policies", values: ["2", "10", "Unlimited + Custom Rules", "Unlimited + Custom Rules"] },
       { feature: "Team Seats", values: ["1", "3", "15", "Unlimited"] },
       { feature: "Included Capacity", values: ["25,000 API Req (total)", "1M API Req/mo", "5M API Req/mo", "Unlimited / Dedicated"] },
-      { feature: "Account Plugins", values: ["SDK", "Add-on", "1 Included", "Custom"] },
+      { feature: "Account Plugins", values: ["SDK", "Add-on", "1 Included (Small tier, $300/mo or under)", "Custom"] },
     ],
   },
   {
     label: "Gas Sponsorship",
     rows: [
       { feature: "Included Ops", values: ["1,000 Ops", "5,000 Ops/mo", "25,000 Ops/mo", "Unlimited"] },
-      { feature: "Fee After Included", values: ["$0.02/op", "$0.01/op", "$0.005/op", "Zero Markup"] },
+      { feature: "Fee After Included", values: ["$0.02/op", "$0.01/op", "$0.005/op", "Zero"] },
     ],
   },
   {

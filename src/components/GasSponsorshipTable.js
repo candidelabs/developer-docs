@@ -4,7 +4,7 @@ const rows = [
   { plan: "Starter", included: "1,000 Ops", fee: "$0.02 per op", featured: false },
   { plan: "Launch", included: "5,000 Ops/mo", fee: "$0.01 per op", featured: false },
   { plan: "Grow", included: "25,000 Ops/mo", fee: "$0.005 per op", featured: true },
-  { plan: "Enterprise", included: "Unlimited", fee: "Zero Markup", featured: false },
+  { plan: "Enterprise", included: "Unlimited", fee: "Zero", featured: false },
 ];
 
 export default function GasSponsorshipTable() {

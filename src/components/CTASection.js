@@ -23,7 +23,7 @@ export default function CTASection() {
           to="mailto:team@candidelabs.com"
           className="border border-[rgba(255,255,255,0.2)] dark:text-white text-black px-6 py-2.5 rounded font-medium text-sm hover:no-underline hover:opacity-70 transition-opacity"
         >
-          Contact Enterprise Sales
+          Contact Sales
         </Link>
       </div>
     </div>
