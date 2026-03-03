@@ -1,0 +1,368 @@
+---
+title: Forwarding Address AI Agent Skill
+description: Reference document for AI agents integrating with the Forwarding Address API via tool/function calling. Covers all methods, workflows, validation rules, and constraints.
+keywords:
+  - forwarding-address
+  - ai-agent
+  - llm
+  - tool-calling
+  - function-calling
+  - cross-chain
+  - api
+---
+
+# Forwarding Address AI Agent Skill
+
+This document is designed to be dropped into an AI agent's system prompt or knowledge base. It teaches LLM-based agents how to use the Forwarding Address API via tool/function calling.
+
+## Check for Updates
+
+This API is actively evolving. Before using the methods below, fetch the latest API reference to check for breaking changes, new methods, or updated parameters:
+
+```
+https://docs.candide.dev/account-abstraction/research/forwarding-address-api/
+```
+
+If your environment supports it, you can also fetch the full docs index at `https://docs.candide.dev/llms.txt` to discover all available documentation.
+
+---
+
+## API Protocol
+
+All calls are JSON-RPC 2.0 over HTTP POST. Parameters are a single object inside a one-element array.
+
+```
+POST {FORWARDING_API_URL}
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "<method>",
+  "params": [{ <params_object> }]
+}
+```
+
+Successful responses have a `result` field. Errors have an `error` field with a `message` string.
+
+---
+
+## Available Tools
+
+### 1. `forwarding_getRoutes`
+
+Returns all supported source-to-destination chain pairs with accepted tokens, minimum amounts, and fees. Always call this first. It is the single source of truth for what is supported.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `sourceChainId` | number | No | Filter by source chain |
+| `destinationChainId` | number | No | Filter by destination chain |
+
+Response shape:
+
+```json
+{
+  "routes": [
+    {
+      "sourceChainId": 1,
+      "sourceChainName": "Ethereum",
+      "destinationChainId": 42161,
+      "destinationChainName": "Arbitrum One",
+      "tokens": [
+        {
+          "address": "0x0000000000000000000000000000000000000000",
+          "symbol": "ETH",
+          "decimals": 18,
+          "minAmount": "10000000000000000",
+          "feeBps": 50
+        }
+      ]
+    }
+  ]
+}
+```
+
+Key fields:
+
+- `tokens[].minAmount`: minimum deposit in smallest unit. Deposits below this are NOT forwarded.
+- `tokens[].feeBps`: service fee in basis points (50 = 0.5%).
+- `tokens[].address`: `0x0000000000000000000000000000000000000000` means native ETH.
+
+---
+
+### 2. `forwarding_getAddress`
+
+Deterministic, pure computation. Same inputs always return the same address. No side effects.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `recipient` | address | Yes | Destination address that receives forwarded tokens |
+| `custodialWithdrawer` | address | Yes | Address that can withdraw stuck funds (with timelock). Set to `recipient` for non-custodial use |
+| `destinationChainId` | number | Yes | Chain ID where tokens are delivered |
+| `salt` | bytes32 | No | Use different salts for multiple addresses per recipient |
+
+Response: `{ "address": "0x..." }`
+
+---
+
+### 3. `forwarding_activate`
+
+Activates deposit monitoring on specified source chains with a TTL. Idempotent: calling again resets the TTL.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `recipient` | address | Yes | Destination recipient |
+| `custodialWithdrawer` | address | Yes | Same value used in getAddress |
+| `destinationChainId` | number | Yes | Same value used in getAddress |
+| `sourceChainIds` | number[] | Yes | Source chains to monitor |
+| `salt` | bytes32 | No | Must match salt used in getAddress if one was used |
+
+Response: `{ "address": "0x...", "active": true, "expiresAt": 1741132800 }`
+
+- `expiresAt` is a Unix timestamp (seconds). The relayer stops monitoring after this time.
+- Call activate again before expiry to keep the address alive.
+
+---
+
+### 4. `forwarding_getActivation`
+
+Checks whether the relayer is currently monitoring a forwarding address. This does NOT track deposit completion, only activation status.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `address` | address | Yes | The forwarding address |
+
+Response:
+
+```json
+{
+  "address": "0x...",
+  "sourceChains": [
+    { "sourceChainId": 1, "status": "active", "expiresAt": 1741132800 },
+    { "sourceChainId": 42161, "status": "expired", "expiredAt": 1740528000 }
+  ]
+}
+```
+
+---
+
+### 5. `forwarding_estimateOutput`
+
+Estimates what the recipient receives after fees. Does not require an activated address.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `sourceChainId` | number | Yes | Source chain |
+| `destinationChainId` | number | Yes | Destination chain |
+| `token` | address | Yes | Token address on source chain |
+| `amount` | string | Yes | Input amount in smallest unit (decimal string) |
+
+Response:
+
+```json
+{
+  "destinationChainId": 42161,
+  "outputToken": "0x...",
+  "outputTokenSymbol": "ETH",
+  "outputTokenDecimals": 18,
+  "outputAmount": "990000000000000000",
+  "forwarderFee": "5000000000000000",
+  "bridgeFee": "5000000000000000"
+}
+```
+
+- Output = input minus forwarderFee minus bridgeFee
+- `outputTokenDecimals` may differ from input token decimals. Use it for formatting.
+
+---
+
+### 6. `forwarding_deploy`
+
+Deploys the proxy contract on source chains for manual fund recovery. Not needed in normal flow. The relayer auto-deploys on first deposit. Only use this if funds are stuck.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `recipient` | address | Yes | Destination recipient |
+| `custodialWithdrawer` | address | Yes | Withdrawal-authorized address |
+| `destinationChainId` | number | Yes | Target chain ID |
+| `sourceChainIds` | number[] | No | Chains to deploy on (default: all) |
+
+Response: `{ "1": "0x...txhash" }` (map of chainId to tx hash)
+
+---
+
+## Workflows
+
+### Generate a forwarding address (standard flow)
+
+```
+Step 1: forwarding_getRoutes
+         Learn which source-to-destination pairs exist and which tokens are accepted.
+         Extract sourceChainIds and destinationChainId.
+
+Step 2: forwarding_getAddress
+         Pass recipient, custodialWithdrawer, destinationChainId.
+         Receive the deterministic forwarding address.
+
+Step 3: forwarding_activate
+         Pass same params + sourceChainIds array.
+         Relayer starts monitoring. Note expiresAt.
+
+Step 4: Return the forwarding address to the user.
+         Tell them which tokens and source chains are accepted.
+         Warn about minimum amounts.
+
+Step 5: Detect deposit arrival.
+         Poll recipient's token balance on destination chain.
+         Expect ~10-20 sec latency after deposit.
+```
+
+### Estimate fees before deposit
+
+```
+Step 1: forwarding_getRoutes (if not cached)
+         Get token address, decimals, minAmount for the route.
+
+Step 2: forwarding_estimateOutput
+         Pass sourceChainId, destinationChainId, token, amount.
+         Show user: outputAmount, forwarderFee, bridgeFee.
+```
+
+### Reactivate an expired address
+
+```
+Step 1: forwarding_getActivation
+         Check which source chains are expired.
+
+Step 2: forwarding_activate
+         Pass the same original params + expired sourceChainIds.
+         TTL resets. Relayer resumes monitoring.
+         Any pending deposits will now be processed.
+```
+
+### Recover stuck funds
+
+```
+Step 1: forwarding_deploy
+         Deploy proxy contract on the source chain where funds are stuck.
+
+Step 2: Recipient calls withdraw(token, amount) or withdrawETH(amount)
+         on the deployed contract directly on-chain.
+         This requires an on-chain transaction from the recipient's wallet.
+```
+
+---
+
+## Decision Logic
+
+Use this to decide which tool to call:
+
+| User intent | Tool to call |
+|---|---|
+| "What chains/tokens are supported?" | `forwarding_getRoutes` |
+| "Generate a deposit address for me" | `getRoutes` then `getAddress` then `activate` |
+| "How much will I receive after fees?" | `forwarding_estimateOutput` |
+| "Is my address still being monitored?" | `forwarding_getActivation` |
+| "My address expired, reactivate it" | `forwarding_activate` |
+| "Funds are stuck / not forwarded" | `forwarding_deploy` + guide on-chain withdrawal |
+| "I need multiple addresses for one recipient" | Use `salt` parameter in `getAddress` + `activate` |
+
+---
+
+## Validation Rules
+
+Apply these checks BEFORE making API calls:
+
+1. Addresses must match `^0x[0-9a-fA-F]{40}$`
+2. Chain IDs must appear in `forwarding_getRoutes` results. Do not guess or hardcode.
+3. Token addresses must come from the route's `tokens` array for the chosen source-to-destination pair.
+4. Amounts must be decimal strings in smallest unit (no floating point). Must be greater than or equal to `minAmount` from routes.
+5. `custodialWithdrawer`: set to `recipient` unless the user explicitly specifies a custodial setup.
+6. `salt`: only pass if the user needs multiple addresses for the same recipient + destination.
+
+---
+
+## Critical Constraints
+
+These are hard rules. Do not skip them.
+
+1. Always call `forwarding_getRoutes` before any other call to verify the route exists. Never assume chain IDs, tokens, or fees.
+
+2. Never suggest sending unsupported tokens. Only tokens from the route's `tokens` array will be forwarded. Anything else gets stuck.
+
+3. Never suggest sending below `minAmount`. These deposits are not forwarded. Convert `minAmount` to human-readable using the token's `decimals` when presenting to users.
+
+4. Never suggest sending on the destination chain. The forwarding address receives on source chains only.
+
+5. Activation is required. An address that is not activated (or has expired) will not have deposits forwarded. Always activate after computing the address.
+
+6. No completion tracking via API. `forwarding_getActivation` checks if monitoring is active, not if a deposit was forwarded. To confirm arrival, check the recipient's balance on the destination chain.
+
+7. Amounts are always in smallest unit. 1 ETH = `"1000000000000000000"` (18 decimals). 1 USDT = `"1000000"` (6 decimals). Use the token's `decimals` field for conversion.
+
+---
+
+## Formatting Helpers
+
+When displaying amounts to users, convert between smallest unit and human-readable:
+
+```
+Human to smallest unit:
+  "1.5" ETH (18 decimals)  ->  "1500000000000000000"
+  "100" USDT (6 decimals)  ->  "100000000"
+
+Smallest unit to human:
+  "10000000000000000" (18 decimals)  ->  "0.01"
+  "1000000" (6 decimals)             ->  "1"
+
+Fee display:
+  feeBps 50   ->  "0.5%"
+  feeBps 100  ->  "1%"
+```
+
+---
+
+## Example: Complete Interaction
+
+User: "I want to receive funds from Ethereum to Arbitrum"
+
+```
+1. Call forwarding_getRoutes with { destinationChainId: 42161 }
+   Verify Ethereum (chainId 1) to Arbitrum (42161) route exists.
+   Note accepted tokens: ETH (min 0.01), USDT (min 1.0), etc.
+
+2. Ask user for their recipient address on Arbitrum.
+
+3. Call forwarding_getAddress with {
+     recipient: "0x<user_address>",
+     custodialWithdrawer: "0x<user_address>",
+     destinationChainId: 42161
+   }
+   Receive forwarding address.
+
+4. Call forwarding_activate with {
+     recipient: "0x<user_address>",
+     custodialWithdrawer: "0x<user_address>",
+     destinationChainId: 42161,
+     sourceChainIds: [1]
+   }
+   Monitoring active until expiresAt.
+
+5. Present to user:
+   "Send ETH or USDT to 0x<forwarding_address> on Ethereum.
+    Minimum: 0.01 ETH or 1 USDT. Fee: 0.5%.
+    Funds arrive on Arbitrum in ~10-20 seconds.
+    Funds typically arrive in ~10-20 seconds."
+```

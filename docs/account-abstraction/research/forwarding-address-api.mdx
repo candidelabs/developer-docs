@@ -1,0 +1,411 @@
+---
+title: Forwarding Address API Reference
+description: JSON-RPC API reference for the Forwarding Address service. Compute deterministic deposit addresses, activate monitoring, estimate output, and recover funds.
+keywords:
+  - forwarding-address
+  - api
+  - json-rpc
+  - cross-chain
+  - deposit-address
+  - alpha
+---
+
+# Forwarding Address API Reference
+
+## Protocol
+
+The API uses JSON-RPC 2.0 over HTTP POST with `Content-Type: application/json`.
+
+---
+
+## Discovery
+
+### `forwarding_getRoutes`
+
+Returns all supported source-to-destination routes with token metadata. This is the single source of truth for which chains and tokens are supported. Routes, tokens, fees, and minimums can change dynamically.
+
+Parameters (all optional):
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `sourceChainId` | `number` | No | Filter routes by source chain |
+| `destinationChainId` | `number` | No | Filter routes by destination chain |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_getRoutes",
+  "params": [{}]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "routes": [
+      {
+        "sourceChainId": 1,
+        "sourceChainName": "Ethereum",
+        "destinationChainId": 42161,
+        "destinationChainName": "Arbitrum One",
+        "tokens": [
+          {
+            "address": "0x0000000000000000000000000000000000000000",
+            "symbol": "ETH",
+            "decimals": 18,
+            "minAmount": "10000000000000000",
+            "feeBps": 50
+          },
+          {
+            "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+            "symbol": "USDT",
+            "decimals": 6,
+            "minAmount": "1000000",
+            "feeBps": 50
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Token fields:
+
+| Field | Description |
+|-------|-------------|
+| `address` | Token contract address on the source chain. `0x000...000` represents native ETH |
+| `symbol` | Human-readable token symbol |
+| `decimals` | Token decimal places |
+| `minAmount` | Minimum deposit in smallest unit. Deposits below this threshold are not forwarded |
+| `feeBps` | Service fee in basis points (50 = 0.5%) |
+
+---
+
+## Core
+
+### `forwarding_getAddress`
+
+Computes the deterministic CREATE2 proxy address for a given parameter set. Pure computation with no side effects. Safe to call repeatedly. The same inputs always produce the same address.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `recipient` | `address` | Yes | Destination address that receives forwarded tokens |
+| `custodialWithdrawer` | `address` | Yes | Address authorized to withdraw stuck funds after a timelock. Set equal to `recipient` for non-custodial setups. See [custodialWithdrawer](./forwarding-address-guide.mdx#the-custodialwithdrawer-role) |
+| `destinationChainId` | `number` | Yes | Target chain ID where assets will be delivered |
+| `salt` | `bytes32` | No | Optional 32-byte hex value. Use different salts to generate multiple forwarding addresses for the same recipient |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_getAddress",
+  "params": [{
+    "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
+    "custodialWithdrawer": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
+    "destinationChainId": 10
+  }]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "address": "0xDEF456..."
+  }
+}
+```
+
+---
+
+### `forwarding_activate`
+
+Activates relayer monitoring for a forwarding address on specified source chains. Returns the address, active status, and TTL expiration timestamp.
+
+Key behaviors:
+- Idempotent: calling again resets the TTL. Use this to keep an address active.
+- TTL-based: monitoring expires after the TTL. The address must be reactivated to resume forwarding.
+- Reusable: call activate again after expiration.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `recipient` | `address` | Yes | Destination recipient address |
+| `custodialWithdrawer` | `address` | Yes | Withdrawal-authorized address. See [custodialWithdrawer](./forwarding-address-guide.mdx#the-custodialwithdrawer-role) |
+| `destinationChainId` | `number` | Yes | Target chain ID |
+| `sourceChainIds` | `number[]` | Yes | Array of source chain IDs to activate monitoring on |
+| `salt` | `bytes32` | No | Optional salt (must match the one used in `forwarding_getAddress`) |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_activate",
+  "params": [{
+    "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
+    "custodialWithdrawer": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
+    "destinationChainId": 10,
+    "sourceChainIds": [1, 42161]
+  }]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "address": "0xDEF456...",
+    "active": true,
+    "expiresAt": 1741132800
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `expiresAt` | Unix timestamp (seconds) when monitoring expires. Do not hardcode this value; the default TTL may change |
+
+---
+
+### `forwarding_getActivation`
+
+Checks the activation status of a forwarding address across all source chains it was registered on.
+
+:::note
+This endpoint tracks activation status (whether the relayer is monitoring this address), not deposit or forwarding completion status.
+:::
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `address` | `address` | Yes | The forwarding address to check |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_getActivation",
+  "params": [{
+    "address": "0xDEF456..."
+  }]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "address": "0xDEF456...",
+    "sourceChains": [
+      {
+        "sourceChainId": 1,
+        "status": "active",
+        "expiresAt": 1741132800
+      },
+      {
+        "sourceChainId": 42161,
+        "status": "expired",
+        "expiredAt": 1740528000
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Estimation
+
+### `forwarding_estimateOutput`
+
+Estimates the output amount a recipient will receive after service fee and bridge fee. This method is decoupled from forwarding addresses: it takes chain IDs directly and does not require the address to be activated.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `sourceChainId` | `number` | Yes | Source chain where the deposit originates |
+| `destinationChainId` | `number` | Yes | Destination chain ID |
+| `token` | `address` | Yes | Token address on source chain (`0x000...000` for native ETH) |
+| `amount` | `string` | Yes | Input amount in smallest unit (e.g. `"1000000000000000000"` for 1 ETH) |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_estimateOutput",
+  "params": [{
+    "sourceChainId": 1,
+    "destinationChainId": 42161,
+    "token": "0x0000000000000000000000000000000000000000",
+    "amount": "1000000000000000000"
+  }]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "destinationChainId": 42161,
+    "outputToken": "0x...",
+    "outputTokenSymbol": "ETH",
+    "outputTokenDecimals": 18,
+    "outputAmount": "990000000000000000",
+    "forwarderFee": "5000000000000000",
+    "bridgeFee": "5000000000000000"
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `outputAmount` | Input amount minus `forwarderFee` minus `bridgeFee`. In smallest unit |
+| `outputTokenDecimals` | May differ from the input token's decimals. Use this value when formatting the output amount |
+| `forwarderFee` | Service fee in smallest unit |
+| `bridgeFee` | Bridge fee in smallest unit |
+
+---
+
+## Emergency Recovery
+
+### `forwarding_deploy`
+
+Deploys the CREATE2 proxy contract on specified source chains.
+
+In normal operation, the relayer auto-deploys the contract on first deposit, so integrators typically do not need to call this. It is exposed for emergency fund recovery: if tokens are stuck in the forwarding address (e.g. the relayer did not process them), the contract must be deployed before the recipient can withdraw directly on-chain.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `recipient` | `address` | Yes | Destination recipient address |
+| `custodialWithdrawer` | `address` | Yes | Withdrawal-authorized address |
+| `destinationChainId` | `number` | Yes | Target chain ID |
+| `sourceChainIds` | `number[]` | No | Source chains to deploy on. If omitted, deploys on all supported source chains |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_deploy",
+  "params": [{
+    "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
+    "custodialWithdrawer": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
+    "destinationChainId": 10,
+    "sourceChainIds": [1]
+  }]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "1": "0xabc123...txhash"
+  }
+}
+```
+
+Returns a map of `sourceChainId` to deployment transaction hash.
+
+---
+
+## TypeScript Types
+
+These types match the API response shapes and can serve as a reference for building your integration.
+
+```typescript
+interface RouteToken {
+  address: string;
+  symbol: string;
+  decimals: number;
+  minAmount: string;   // smallest unit, decimal string
+  feeBps: number;      // basis points (50 = 0.5%)
+}
+
+interface Route {
+  sourceChainId: number;
+  sourceChainName: string;
+  destinationChainId: number;
+  destinationChainName: string;
+  tokens: RouteToken[];
+}
+
+interface RoutesResult {
+  routes: Route[];
+}
+
+interface AddressResult {
+  address: string;
+}
+
+interface ActivationResult {
+  address: string;
+  active: boolean;
+  expiresAt: number;   // Unix timestamp (seconds)
+}
+
+interface SourceChainActivation {
+  sourceChainId: number;
+  status: "active" | "expired";
+  expiresAt?: number;   // present when active
+  expiredAt?: number;   // present when expired
+}
+
+interface ActivationStatus {
+  address: string;
+  sourceChains: SourceChainActivation[];
+}
+
+interface EstimateResult {
+  destinationChainId: number;
+  outputToken: string;
+  outputTokenSymbol: string;
+  outputTokenDecimals?: number;
+  outputAmount: string;       // smallest unit
+  forwarderFee: string;       // smallest unit
+  bridgeFee: string;          // smallest unit
+}
+
+interface DeployResult {
+  [sourceChainId: string]: string;  // chainId -> txHash
+}
+```

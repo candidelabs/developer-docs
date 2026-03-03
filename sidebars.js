@@ -366,6 +366,11 @@ const sidebars = {
           id: "wallet/plugins/allowance-reference",
           label: "SDK Reference"
         },
+        {
+          type: "doc",
+          id: "wallet/plugins/allowance-migration",
+          label: "Migration to v1.0.0"
+        },
       ],
     },
   ],
@@ -538,8 +543,12 @@ const sidebars = {
           type: "category",
           label: "Safe Unified Account",
           collapsed: true,
-          link: { type: "doc", id: "account-abstraction/research/safe-unified-account" },
           items: [
+            {
+              type: "doc",
+              id: "account-abstraction/research/safe-unified-account",
+              label: "Overview"
+            },
             {
               type: "doc",
               id: "account-abstraction/research/safe-unified-account-getting-started",
@@ -548,14 +557,36 @@ const sidebars = {
           ],
         },
         {
-          type: "doc",
-          id: "account-abstraction/research/eil",
-          label: "Ethereum Interoperability Layer"
+          type: "category",
+          label: "Forwarding Address",
+          collapsed: true,
+          items: [
+            {
+              type: "doc",
+              id: "account-abstraction/research/multichain-deposit-address",
+              label: "Overview"
+            },
+            {
+              type: "doc",
+              id: "account-abstraction/research/forwarding-address-api",
+              label: "API Reference"
+            },
+            {
+              type: "doc",
+              id: "account-abstraction/research/forwarding-address-guide",
+              label: "Integration Guide"
+            },
+            {
+              type: "doc",
+              id: "account-abstraction/research/forwarding-address-agent-skill",
+              label: "AI Agent Skill"
+            },
+          ],
         },
         {
           type: "doc",
-          id: "account-abstraction/research/multichain-deposit-address",
-          label: "Forwarding Address"
+          id: "account-abstraction/research/eil",
+          label: "Ethereum Interoperability Layer"
         },
         {
           type: "doc",

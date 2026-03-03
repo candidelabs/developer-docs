@@ -17,6 +17,8 @@ keywords:
 
 <img src="/img/posters/forwarding-address.png" alt="Forwarding-Address" width="500" />
 
+Ready to integrate? See the [API Reference](./forwarding-address-api.mdx), [Integration Guide](./forwarding-address-guide.mdx), and [AI Agent Skill](./forwarding-address-agent-skill.mdx).
+
 ## The Cross-Chain Receiving Problem
 
 Users hold assets across multiple chains. When they need to consolidate funds or receive a payment, the sender's chain rarely matches the recipient's preferred chain. Today, handling this requires the recipient to share a chain-specific address, then manually bridge assets afterward, or ask the sender to bridge first. Neither option is practical.
@@ -29,7 +31,7 @@ The problem compounds as users spread across more L2s. Managing receiving addres
 
 A Forwarding Address is a single address that works on any supported chain. Assets sent to this address are automatically routed to the user's destination chain. The sender doesn't need to know or care which chain the recipient uses.
 
-The system is fully self-custodial. The user is the sole owner of their Forwarding Address—no third party holds custody of funds at any point. When assets arrive, they route directly to the user's destination wallet without passing through intermediary accounts.
+The system is fully self-custodial. The user is the sole owner of their Forwarding Address. No third party holds custody of funds at any point. When assets arrive, they route directly to the user's destination wallet without passing through intermediary accounts.
 
 The mechanism is straightforward: when funds arrive on the source chain, a smart contract deploys instantly and routes them to the destination. The sender sends to one address, the recipient receives on their preferred chain, and the routing happens automatically.
 
@@ -66,8 +68,9 @@ From the user's perspective: share one address, receive funds from any chain, se
 
 | Component | Status |
 |-----------|--------|
-| Forwarder contract | In Progress |
-| Cross-chain routing | In Progress |
+| Forwarder contract | Alpha |
+| Cross-chain routing | Alpha |
+| API | Alpha (partner access) |
 | SDK integration | Planned |
 | Audit | Planned |
 | Production release | After audit |
