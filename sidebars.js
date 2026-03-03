@@ -366,11 +366,6 @@ const sidebars = {
           id: "wallet/plugins/allowance-reference",
           label: "SDK Reference"
         },
-        {
-          type: "doc",
-          id: "wallet/plugins/allowance-migration",
-          label: "Migration to v1.0.0"
-        },
       ],
     },
   ],
