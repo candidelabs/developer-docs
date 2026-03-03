@@ -17,6 +17,10 @@ keywords:
 
 <img src="/img/posters/forwarding-address.png" alt="Forwarding-Address" width="500" />
 
+## Demo
+
+[forwarding-address.candidelabs.com](https://forwarding-address.candidelabs.com)
+
 Ready to integrate? See the [API Reference](./forwarding-address-api.mdx), [Integration Guide](./forwarding-address-guide.mdx), and [AI Agent Skill](./forwarding-address-agent-skill.mdx).
 
 ## The Cross-Chain Receiving Problem
