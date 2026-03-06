@@ -10,6 +10,31 @@ Social Recovery allows users to regain control of their accounts by replacing th
 
 The Candide Social Recovery Module accepts any Ethereum address as a guardian: family and friends' wallets, hardware wallets, institutions, or email/SMS cloud wallets.
 
+## How Recovery Works
+
+Recovery replaces a lost or compromised owner key with a new one, authorized by a quorum of trusted guardians.
+
+### Guardians and Thresholds
+
+The account owner chooses their guardians and sets a threshold: the minimum number of guardians required to approve a recovery. A typical setup is 3 guardians with a threshold of 2, ensuring no single guardian can take over the account.
+
+Guardians can be any Ethereum address. They do not need to hold any funds, and they have no control over the account during normal operations.
+
+### The Recovery Flow
+
+1. A guardian (or the recovery service) submits a recovery request specifying new owner(s)
+2. Other guardians sign to approve the request until the threshold is met
+3. The recovery is executed, starting a **grace period**
+4. After the grace period, anyone can finalize the recovery to complete the ownership transfer
+
+### Grace Period
+
+The grace period is a time delay between execution and finalization. It gives the current owner a window to cancel unauthorized recovery attempts. If the owner still controls the account, they can call `cancelRecovery` at any point during this period.
+
+### Privacy
+
+Guardians are encouraged to use fresh Ethereum addresses. This keeps their identity private and prevents malicious guardians from coordinating against the owner. Since guardians never need to hold funds or submit on-chain transactions during normal operation, fresh addresses have no cost.
+
 ## Recovery Methods
 
 Both recovery methods can be used independently or combined. For maximum security, use both. For example, a 2-of-3 setup with two personal guardians and email/SMS recovery as the third.

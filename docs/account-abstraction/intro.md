@@ -1,57 +1,57 @@
 ---
 title: Intro to Ethereum Account Abstraction and Smart Accounts
-description: Enabling the use of smart contract accounts over EOAs for better UX.
+description: What Account Abstraction is, how ERC-4337 works, and how UserOperations, Bundlers, Paymasters, and the EntryPoint fit together.
 image: "/img/erc4337-bundler.png"
+keywords: [erc-4337, account abstraction, smart accounts, userOperation, bundler, paymaster, entrypoint]
 tags: ["4337", account-abstraction]
 ---
 
-# Intro to Account Abstraction
+# Account Abstraction
 
-Account Abstraction enables the use of smart contract accounts instead of traditional externally owned accounts (EOAs).
+Account Abstraction enables the use of smart contract accounts instead of traditional externally owned accounts (EOAs). It separates ownership from control: unlike EOAs where the private key is tightly coupled to the account, smart accounts abstract the account from the signer.
 
-:::info Did you know?
-A smart account separates ownership from control. Unlike EOAs where the private key is tightly coupled to the account, smart accounts abstract the account from the signer—hence the term "Account Abstraction."
-:::
+## The Problem with EOAs
 
-## The Problem with Wallets Today
-Almost every Ethereum wallet today has significant limitations:
+- **Gas fees create onboarding barriers.** Users must hold ETH before they can do anything.
+- **Common interactions require multiple transactions.** An approve-and-swap on Uniswap is two separate confirmations.
+- **Security is fragile.** A single seed phrase controls everything with no recovery, no spending limits, and no way to revoke access.
+- **Automation is impossible.** EOAs require a human to sign every transaction.
 
-- **Gas Fees**: Without Account Abstraction, users must hold ETH to pay gas fees. This creates a major onboarding barrier for newcomers, who must complete KYC procedures and acquire ETH before using any decentralized application.
+## ERC-4337: How It Works
 
-    This also degrades the user experience for existing users, who must constantly maintain an ETH balance for gas fees—even when they have sufficient ERC-20 tokens to cover their desired transactions.
+[ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) brings smart accounts to Ethereum without protocol changes. It introduces a parallel transaction flow built on these components:
 
-- **Multi-Step Transactions**: Common interactions require multiple signatures and transaction submissions. For example, swapping on Uniswap requires two separate transactions: `Approve` ERC-20 spend, then `Deposit`—each requiring user confirmation.
+| Component | Role |
+|-----------|------|
+| **Smart Account** | A contract that holds assets and defines its own validation logic |
+| **UserOperation** | A data structure packaging the user's intent, gas details, and signature |
+| **Bundler** | A node that collects UserOperations and submits them to the blockchain |
+| **EntryPoint** | A singleton contract that verifies and executes each UserOperation |
+| **Paymaster** | An optional contract that sponsors gas or accepts ERC-20 tokens as payment |
 
-- **Security**: Traditional wallets carry the risk of lost or stolen seed phrases and offer limited recovery mechanisms. As the ecosystem grows and attracts more users, wallets must implement more robust, multi-layered security measures to protect user accounts.
+```mermaid
+sequenceDiagram
+    participant App
+    participant Bundler
+    participant EntryPoint
+    participant Paymaster
+    participant Account
 
-Smart Wallets address many EOA limitations by embedding custom logic in smart contracts. However, because every Ethereum transaction must originate from an ECDSA-secured EOA, building and scaling Smart Wallets remains challenging. 
+    App->>Bundler: Submit UserOperation
+    Bundler->>EntryPoint: Bundle and send transaction
+    EntryPoint->>Account: Validate signature and nonce
+    EntryPoint->>Paymaster: Validate gas sponsorship
+    EntryPoint->>Account: Execute calldata
+    EntryPoint->>Paymaster: Post-execution gas settlement
+```
 
-This is where Account Abstraction and Candide come in.
+1. The app constructs a UserOperation and sends it to a Bundler
+2. The Bundler bundles it with others and submits a transaction to the EntryPoint
+3. The EntryPoint verifies the account's signature and confirms gas payment (from the account or a Paymaster)
+4. The EntryPoint executes the account's calldata
 
-## What is Account Abstraction
+## Next Steps
 
-[ERC-4337](https://eips.ethereum.org/EIPS/eip-4337) is a standard for building Smart Wallets without requiring consensus-layer protocol changes. It introduces a new transaction type called [`UserOperation`](https://eips.ethereum.org/EIPS/eip-4337#definitions) that packages user intent and execution instructions. A UserOperation contains the account owner, calldata, gas payment details, user signature, and gas parameters.
-
-Smart wallets provide capabilities that EOAs fundamentally cannot:
-
-### Sponsored Transactions
-
-Abstract gas payments from end users to minimize UX friction:
-
-- **Gasless Transactions**: Enable seamless onboarding by allowing dapps or wallets to subsidize gas costs for new users
-- **ERC-20 Gas Payments**: Let users pay gas fees in ERC-20 tokens such as stablecoins or governance tokens
-- **Off-Chain Gas Payment**: Allow users to pay for gas via credit card
-- **Cross-Chain Gas Payment**: Enable users to pay for gas through L2 rollups
-- **Privacy**: Support ETH-less token withdrawals to stealth addresses and privacy-focused accounts
-
-### Account Security
-
-- **Arbitrary Verification Logic**: Support diverse verification methods including single-signature, multi-signature, and custom signature schemes tailored to your application's requirements.
-
-- **Security Plugins**: Enhance account security with social recovery, time-locks, and withdrawal limits. These features increase user confidence while protecting their assets.
-
-### Seamless App Experience
-
-- **Session Keys**: Provide a popup-free experience for users. Session keys authenticate users, authorize specific in-app actions, and grant limited permissions to web3 accounts.
-
-- **Atomic Multi-Operations**: Execute multiple transactions in a single on-chain operation.
+- [Send your first gasless transaction](/wallet/guides/getting-started/) to see this flow in practice
+- Browse the [SDK Reference](/wallet/abstractionkit/introduction/) for the full API
+- Read the [ERC-4337 specification](https://eips.ethereum.org/EIPS/eip-4337) for the complete standard

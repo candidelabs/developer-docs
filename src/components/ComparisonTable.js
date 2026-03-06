@@ -31,7 +31,7 @@ const groups = [
     label: "Developer Experience",
     rows: [
       { feature: "API Key Environments", values: ["1", "3 (Prod + Staging + Test)", "5", "Unlimited"] },
-      { feature: "Gas Policies", values: ["2", "10", "Unlimited + Custom Rules", "Unlimited + Custom Rules"] },
+      { feature: "Gas Policies", values: ["2 (2 mainnets, trial)", "10", "Unlimited + Custom Rules", "Unlimited + Custom Rules"] },
       { feature: "Team Seats", values: ["1", "3", "15", "Unlimited"] },
       { feature: "Included Capacity", values: ["25,000 API Req (total)", "1M API Req/mo", "5M API Req/mo", "Unlimited / Dedicated"] },
       { feature: "Account Plugins", values: ["SDK", "Add-on", "1 Included (Small tier, $300/mo or under)", "Custom"] },

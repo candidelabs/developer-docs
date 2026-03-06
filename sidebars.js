@@ -307,7 +307,7 @@ const sidebars = {
         {
           type: "doc",
           id: "wallet/plugins/recovery-alerts-guide",
-          label: "Recovery Alerts"
+          label: "Set Up Recovery Alerts"
         },
         {
           type: "category",
@@ -377,7 +377,7 @@ const sidebars = {
     },
     {
       type: "category",
-      label: "Guides",
+      label: "Getting Started",
       collapsible: false,
       className: "category-not-collapsible",
       items: [
@@ -386,10 +386,31 @@ const sidebars = {
           id: "wallet/guides/getting-started",
           label: "Send Your First Transaction"
         },
+      ],
+    },
+    {
+      type: "category",
+      label: "Concepts",
+      collapsible: false,
+      className: "category-not-collapsible",
+      items: [
+        {
+          type: "doc",
+          id: "account-abstraction/intro",
+          label: "Account Abstraction"
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "Guides",
+      collapsible: false,
+      className: "category-not-collapsible",
+      items: [
         {
           type: "doc",
           id: "wallet/guides/send-gasless-tx",
-          label: "Gas Sponsorship"
+          label: "Sponsor Gas"
         },
         {
           type: "doc",
@@ -399,22 +420,22 @@ const sidebars = {
         {
           type: "doc",
           id: "wallet/guides/authentication",
-          label: "Authentication"
+          label: "Add Authentication"
         },
         {
           type: "doc",
           id: "wallet/guides/multisig",
-          label: "Multisig"
+          label: "Set Up Multisig"
         },
         {
           type: "doc",
           id: "wallet/guides/signing",
-          label: "Signing Messages"
+          label: "Sign Messages"
         },
         {
           type: "doc",
           id: "wallet/guides/onchain-identifiers",
-          label: "Onchain Tracking"
+          label: "Add Onchain Tracking"
         },
         {
           type: "doc",
@@ -606,7 +627,7 @@ const sidebars = {
         {
           type: "doc",
           id: "instagas/overview",
-          label: "Overview"
+          label: "Quickstart"
         },
         {
           type: "doc",
@@ -623,7 +644,7 @@ const sidebars = {
       items: [{
         type: "doc",
         id: "instagas/batch-sponsor-transactions",
-        label: "Batch & Sponsor",
+        label: "Batch and Sponsor Transactions",
       },
       ],
     },
@@ -636,7 +657,7 @@ const sidebars = {
         {
           type: "doc",
           id: "instagas/introduction",
-          label: "Introduction"
+          label: "Why Gas Sponsorship"
         },
         {
           type: "doc",

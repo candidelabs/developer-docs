@@ -12,6 +12,7 @@ const plans = [
       "Full AbstractionKit SDK",
       "All account features (Passkeys, Social Recovery, Spend Permission)",
       "2 mainnet chains",
+      "Gas policies limited to 2 mainnets",
       "Community support (Discord)",
     ],
     cta: { label: "Start Building Free", href: "https://dashboard.candide.dev" },

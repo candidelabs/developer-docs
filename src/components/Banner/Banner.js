@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import styles from "./banner.module.css";
 
 const LABELS = [
-  "Neobanks",
-  "Dollar Savings Apps",
+  "Onchain Neobanks",
+  "Dollar Savings",
+  "Agent Wallets",
   "Remittance Apps",
   "Onchain Treasuries",
   "Creator Tipping",
