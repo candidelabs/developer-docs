@@ -75,6 +75,7 @@ Response shape:
           "address": "0x0000000000000000000000000000000000000000",
           "symbol": "ETH",
           "decimals": 18,
+          "destinationAddress": "0x0000000000000000000000000000000000000000",
           "minAmount": "10000000000000000",
           "feeBps": 50
         }
@@ -89,6 +90,7 @@ Key fields:
 - `tokens[].minAmount`: minimum deposit in smallest unit. Deposits below this are NOT forwarded.
 - `tokens[].feeBps`: service fee in basis points (50 = 0.5%).
 - `tokens[].address`: `0x0000000000000000000000000000000000000000` means native ETH.
+- `tokens[].destinationAddress`: token address on the destination chain. Use for verifying arrival or displaying the output token.
 
 ---
 
@@ -198,6 +200,7 @@ Parameters:
 | `custodialWithdrawer` | address | Yes | Withdrawal-authorized address |
 | `destinationChainId` | number | Yes | Target chain ID |
 | `sourceChainIds` | number[] | No | Chains to deploy on (default: all) |
+| `salt` | bytes32 | No | Must match salt used in getAddress if one was used |
 
 Response: `{ "1": "0x...txhash" }` (map of chainId to tx hash)
 

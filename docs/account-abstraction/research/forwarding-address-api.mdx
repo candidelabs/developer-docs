@@ -60,6 +60,7 @@ Response:
             "address": "0x0000000000000000000000000000000000000000",
             "symbol": "ETH",
             "decimals": 18,
+            "destinationAddress": "0x0000000000000000000000000000000000000000",
             "minAmount": "10000000000000000",
             "feeBps": 50
           },
@@ -67,6 +68,7 @@ Response:
             "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
             "symbol": "USDT",
             "decimals": 6,
+            "destinationAddress": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
             "minAmount": "1000000",
             "feeBps": 50
           }
@@ -83,7 +85,8 @@ Token fields:
 |-------|-------------|
 | `address` | Token contract address on the source chain. `0x000...000` represents native ETH |
 | `symbol` | Human-readable token symbol |
-| `decimals` | Token decimal places |
+| `decimals` | Token decimal places (source chain) |
+| `destinationAddress` | Token contract address on the destination chain. Use this when verifying arrival or displaying the output token |
 | `minAmount` | Minimum deposit in smallest unit. Deposits below this threshold are not forwarded |
 | `feeBps` | Service fee in basis points (50 = 0.5%) |
 
@@ -315,6 +318,7 @@ Parameters:
 | `custodialWithdrawer` | `address` | Yes | Withdrawal-authorized address |
 | `destinationChainId` | `number` | Yes | Target chain ID |
 | `sourceChainIds` | `number[]` | No | Source chains to deploy on. If omitted, deploys on all supported source chains |
+| `salt` | `bytes32` | No | Must match the salt used in `forwarding_getAddress` if one was used |
 
 Request:
 
@@ -357,6 +361,7 @@ interface RouteToken {
   address: string;
   symbol: string;
   decimals: number;
+  destinationAddress: string;  // token address on destination chain
   minAmount: string;   // smallest unit, decimal string
   feeBps: number;      // basis points (50 = 0.5%)
 }
@@ -399,7 +404,7 @@ interface EstimateResult {
   destinationChainId: number;
   outputToken: string;
   outputTokenSymbol: string;
-  outputTokenDecimals?: number;
+  outputTokenDecimals: number;
   outputAmount: string;       // smallest unit
   forwarderFee: string;       // smallest unit
   bridgeFee: string;          // smallest unit
