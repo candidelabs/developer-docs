@@ -1,0 +1,158 @@
+---
+title: "Allowance Module v1.0.0 Migration Guide"
+description: Upgrade from Allowance Module v0.1.1 to v1.0.0. Same SDK API, new security-hardened contract address. No code changes required for most developers.
+keywords: [allowance, migration, upgrade, safe, spend-permissions, v1.0.0]
+image: /img/posters/abstractionkit-meta.png
+---
+
+# Allowance Module v1.0.0 Migration Guide
+
+The Allowance Module v1.0.0 is a security fix release of the Safe Allowance Module. The SDK API is identical to v0.1.1: same methods, same parameters, same types. The underlying contract has been updated with three security fixes.
+
+The new contract address is `0x691f59471Bfd2B7d639DCF74671a2d648ED1E331`, replacing the previous `0xAA46724893dedD72658219405185Fb0Fc91e091C`. Audited by [Certora and Ackee](#audits--references).
+
+## For New Projects
+
+No special steps. Install the latest version of AbstractionKit and use the default constructor:
+
+```bash title="terminal"
+npm install abstractionkit@0.2.38
+```
+
+```ts
+import { AllowanceModule } from "abstractionkit";
+
+const allowanceModule = new AllowanceModule(); // uses v1.0.0 by default
+```
+
+Follow the [Allowance Guide](/wallet/plugins/allowance) as-is. The [example script](https://github.com/candidelabs/abstractionkit-examples/blob/main/spend-permission/spend-permission.ts) works without modification.
+
+## For Existing Code
+
+**If you use the default constructor** (`new AllowanceModule()`): bump `abstractionkit` to the latest version. The new address is picked up automatically.
+
+**If you were passing the old address explicitly**, remove it or switch to the default:
+
+```ts
+// Before (explicit old address)
+const allowanceModule = new AllowanceModule("0xAA46724893dedD72658219405185Fb0Fc91e091C");
+
+// After (use the default)
+const allowanceModule = new AllowanceModule();
+```
+
+No other code changes are needed. All method signatures and types remain the same.
+
+## For Existing Safes with v0.1.1 Enabled
+
+If your Safe already has the v0.1.1 module enabled, the owner must enable the new v1.0.0 module separately and re-create delegates and allowances on the new contract. The old module can be disabled afterward.
+
+### Step 1: Enable the v1.0.0 Module
+
+```ts
+import { AllowanceModule } from "abstractionkit";
+
+const allowanceModule = new AllowanceModule(); // v1.0.0
+
+const enableModuleMetaTx = allowanceModule.createEnableModuleMetaTransaction(
+  safeAccountAddress,
+);
+```
+
+### Step 2: Re-create Delegates
+
+Each delegate must be registered on the new module.
+
+```ts
+const addDelegateMetaTx = allowanceModule.createAddDelegateMetaTransaction(
+  delegateAddress,
+);
+```
+
+### Step 3: Re-create Allowances
+
+Set up the same allowances on the new contract.
+
+```ts
+// Recurring allowance
+const setAllowanceMetaTx = allowanceModule.createRecurringAllowanceMetaTransaction(
+  delegateAddress,
+  tokenAddress,
+  allowanceAmount,
+  resetPeriodInMinutes,
+  0n, // start delay
+);
+```
+
+### Step 4: Disable the Old Module
+
+Disable the v0.1.1 module so it can no longer be used to execute transfers.
+
+```ts
+const disableOldModuleMetaTx = await safeAccount.createDisableModuleMetaTransaction(
+  nodeUrl,
+  "0xAA46724893dedD72658219405185Fb0Fc91e091C", // v0.1.1 address
+  safeAccountAddress,
+);
+```
+
+### Step 5: Submit as a Batched UserOperation
+
+All four steps can be batched into a single UserOperation:
+
+```ts
+const userOp = await safeAccount.createUserOperation(
+  [
+    enableModuleMetaTx,
+    addDelegateMetaTx,
+    setAllowanceMetaTx,
+    disableOldModuleMetaTx,
+  ],
+  nodeUrl,
+  bundlerUrl,
+);
+
+userOp.signature = safeAccount.signUserOperation(
+  userOp,
+  [ownerPrivateKey],
+  chainId,
+);
+
+const response = await safeAccount.sendUserOperation(userOp, bundlerUrl);
+const receipt = await response.included();
+```
+
+## What Changed
+
+The three fixes below are all security improvements. Only the nonce limit introduces a new constraint that could affect application logic.
+
+### Nonce Limit: 65,534 Transfers per Delegate/Token
+
+v1.0.0 adds overflow protection on the `uint16` nonce. Each delegate can execute at most 65,534 `executeAllowanceTransfer` calls for a given token on a given Safe. After that, the contract reverts.
+
+:::warning Nonce Limit
+After 65,534 transfers, the delegate can no longer execute transfers for that token. The workaround is to register a new delegate address. This is unlikely to affect most use cases, but high-frequency automated delegates should account for it.
+:::
+
+### Failed ERC-20 Transfers Now Revert
+
+In v0.1.1, if an ERC-20 token's `transfer()` returned `false` instead of reverting (allowed by the ERC-20 spec), the allowance state was still updated. The delegate's spent amount increased even though no tokens moved.
+
+v1.0.0 fixes this by checking the return data. No developer action needed.
+
+### Delegate Collision Safety in `removeDelegate`
+
+v1.0.0 adds a `require(current.delegate == delegate)` check in `removeDelegate` to prevent accidentally removing the wrong delegate when two addresses share the same first 6 bytes (`uint48` key collision). No developer action needed.
+
+## Compatibility
+
+v1.0.0 uses `execTransactionFromModuleReturnData`, which was introduced in Safe v1.1.1. This means v1.0.0 is not compatible with Safe v1.0.0.
+
+AbstractionKit targets Safe v1.4.1, so this is not a concern for current users.
+
+## Audits & References
+
+- [Certora Audit Report](https://github.com/safe-fndn/safe-modules/tree/main/modules/allowances/docs/v1.0.0)
+- [safe-modules CHANGELOG](https://github.com/safe-global/safe-modules/blob/main/modules/allowances/CHANGELOG.md)
+- [Allowance Module Guide](/wallet/plugins/allowance)
+- [Allowance Module SDK Reference](/wallet/plugins/allowance-reference)
