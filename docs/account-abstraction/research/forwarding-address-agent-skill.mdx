@@ -168,6 +168,7 @@ Parameters:
 | `destinationChainId` | number | Yes | Destination chain |
 | `token` | address | Yes | Token address on source chain |
 | `amount` | string | Yes | Input amount in smallest unit (decimal string) |
+| `mode` | string | No | `"fast"` (default) or `"slow"`. Selects bridge routing strategy |
 
 Response:
 
@@ -176,19 +177,35 @@ Response:
   "destinationChainId": 42161,
   "outputToken": "0x...",
   "outputTokenSymbol": "ETH",
-  "outputTokenDecimals": 18,
   "outputAmount": "990000000000000000",
-  "forwarderFee": "5000000000000000",
-  "bridgeFee": "5000000000000000"
+  "relayerBotFee": "5000000000000000",
+  "bridgeProtocolFee": "5000000000000000"
 }
 ```
 
-- Output = input minus forwarderFee minus bridgeFee
-- `outputTokenDecimals` may differ from input token decimals. Use it for formatting.
+- Output = input minus relayerBotFee minus bridgeProtocolFee
 
 ---
 
-### 6. `forwarding_deploy`
+### 6. `forwarding_setMode`
+
+Sets the bridging mode for a monitored forwarding address. Use this to switch between fast (higher fees, instant) and slow (lower fees, delayed) bridge routing.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `address` | address | Yes | The forwarding proxy address |
+| `mode` | string | Yes | `"fast"` or `"slow"` |
+| `sourceChainIds` | number[] | No | Specific source chains to update (all if omitted) |
+
+Response: `{ "address": "0x...", "mode": "fast", "updated": 2 }`
+
+- `updated` is the number of source chain entries that were changed.
+
+---
+
+### 7. `forwarding_deploy`
 
 Deploys the proxy contract on source chains for manual fund recovery. Not needed in normal flow. The relayer auto-deploys on first deposit. Only use this if funds are stuck.
 
@@ -239,8 +256,8 @@ Step 1: forwarding_getRoutes (if not cached)
          Get token address, decimals, minAmount for the route.
 
 Step 2: forwarding_estimateOutput
-         Pass sourceChainId, destinationChainId, token, amount.
-         Show user: outputAmount, forwarderFee, bridgeFee.
+         Pass sourceChainId, destinationChainId, token, amount (and optionally mode).
+         Show user: outputAmount, relayerBotFee, bridgeProtocolFee.
 ```
 
 ### Reactivate an expired address
@@ -279,6 +296,7 @@ Use this to decide which tool to call:
 | "How much will I receive after fees?" | `forwarding_estimateOutput` |
 | "Is my address still being monitored?" | `forwarding_getActivation` |
 | "My address expired, reactivate it" | `forwarding_activate` |
+| "Switch to fast/slow bridging mode" | `forwarding_setMode` |
 | "Funds are stuck / not forwarded" | `forwarding_deploy` + guide on-chain withdrawal |
 | "I need multiple addresses for one recipient" | Use `salt` parameter in `getAddress` + `activate` |
 

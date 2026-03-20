@@ -258,6 +258,7 @@ Parameters:
 | `destinationChainId` | `number` | Yes | Destination chain ID |
 | `token` | `address` | Yes | Token address on source chain (`0x000...000` for native ETH) |
 | `amount` | `string` | Yes | Input amount in smallest unit (e.g. `"1000000000000000000"` for 1 ETH) |
+| `mode` | `string` | No | `"fast"` (default) or `"slow"`. Selects the bridge routing strategy |
 
 Request:
 
@@ -270,7 +271,8 @@ Request:
     "sourceChainId": 1,
     "destinationChainId": 42161,
     "token": "0x0000000000000000000000000000000000000000",
-    "amount": "1000000000000000000"
+    "amount": "1000000000000000000",
+    "mode": "fast"
   }]
 }
 ```
@@ -285,20 +287,66 @@ Response:
     "destinationChainId": 42161,
     "outputToken": "0x...",
     "outputTokenSymbol": "ETH",
-    "outputTokenDecimals": 18,
     "outputAmount": "990000000000000000",
-    "forwarderFee": "5000000000000000",
-    "bridgeFee": "5000000000000000"
+    "relayerBotFee": "5000000000000000",
+    "bridgeProtocolFee": "5000000000000000"
   }
 }
 ```
 
 | Field | Description |
 |-------|-------------|
-| `outputAmount` | Input amount minus `forwarderFee` minus `bridgeFee`. In smallest unit |
-| `outputTokenDecimals` | May differ from the input token's decimals. Use this value when formatting the output amount |
-| `forwarderFee` | Service fee in smallest unit |
-| `bridgeFee` | Bridge fee in smallest unit |
+| `outputAmount` | Input amount minus `relayerBotFee` minus `bridgeProtocolFee`. In smallest unit |
+| `relayerBotFee` | Relayer service fee in smallest unit |
+| `bridgeProtocolFee` | Bridge protocol fee in smallest unit |
+
+---
+
+## Mode Control
+
+### `forwarding_setMode`
+
+Sets the bridging mode for a monitored forwarding address. Optionally targets specific source chains.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `address` | `address` | Yes | The forwarding proxy address to update |
+| `mode` | `string` | Yes | `"fast"` or `"slow"` |
+| `sourceChainIds` | `number[]` | No | Specific source chains to update. If omitted, updates all source chains for this address |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_setMode",
+  "params": [{
+    "address": "0xDEF456...",
+    "mode": "fast"
+  }]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "address": "0xDEF456...",
+    "mode": "fast",
+    "updated": 2
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `updated` | Number of source chain entries that were updated |
 
 ---
 
@@ -404,10 +452,15 @@ interface EstimateResult {
   destinationChainId: number;
   outputToken: string;
   outputTokenSymbol: string;
-  outputTokenDecimals: number;
-  outputAmount: string;       // smallest unit
-  forwarderFee: string;       // smallest unit
-  bridgeFee: string;          // smallest unit
+  outputAmount: string;            // smallest unit
+  relayerBotFee: string;           // smallest unit
+  bridgeProtocolFee: string;       // smallest unit
+}
+
+interface SetModeResult {
+  address: string;
+  mode: "fast" | "slow";
+  updated: number;
 }
 
 interface DeployResult {

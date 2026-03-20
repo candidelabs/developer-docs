@@ -73,5 +73,5 @@ The `custodialWithdrawer` parameter enables a custodial recovery pattern for exc
 - Deposits below `minAmount` from `forwarding_getRoutes` are not forwarded. Display minimums clearly in your UI.
 - Only tokens listed in the route's `tokens` array are forwarded. Unsupported tokens sent to the address require manual recovery.
 - Do not send to the forwarding address on the destination chain or on unsupported source chains. Funds will not be forwarded.
-- The output token on the destination chain may have different decimals than the input token. Use `outputTokenDecimals` from [`forwarding_estimateOutput`](./forwarding-address-api.mdx#forwarding_estimateoutput) when formatting.
+- The output token on the destination chain may have different decimals than the input token. Use the token's `decimals` from [`forwarding_getRoutes`](./forwarding-address-api.mdx#forwarding_getroutes) when formatting amounts.
 - Cache `forwarding_getRoutes` on app load and refresh periodically. Routes, fees, and supported tokens can change.
