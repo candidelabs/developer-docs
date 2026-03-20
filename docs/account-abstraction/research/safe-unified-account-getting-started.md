@@ -1,6 +1,6 @@
 ---
 title: "Getting Started"
-description: "Add an owner to your Safe on multiple chains with a single signature using Safe Unified Account"
+description: "Add a new owner to your Safe on multiple chains with a single signature using Safe Unified Account"
 keywords:
   - multichain
   - unified-account
@@ -54,7 +54,7 @@ npx tsc --init
 
 ```bash
 npm install typescript ts-node --save-dev
-npm install abstractionkit@0.2.34 dotenv viem
+npm install abstractionkit@0.2.38 dotenv viem
 ```
 
 **What each package does:**
@@ -99,14 +99,14 @@ main().catch(console.error)
 
 ## Step 2: Initialize the Multi-Chain Safe Account
 
-#### Understanding SafeMultiChainSigAccount
+#### Understanding ExperimentalSafeMultiChainSigAccount
 
-`SafeMultiChainSigAccount` extends the standard Safe account with multi-chain signature capabilities. It uses a Merkle tree to batch multiple UserOperations across chains into a single signable root.
+`ExperimentalSafeMultiChainSigAccount` extends the standard Safe account with multi-chain signature capabilities. It uses a Merkle tree to batch multiple UserOperations across chains into a single signable root.
 
 ```ts title="index.ts"
 import * as dotenv from 'dotenv'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
-import { SafeMultiChainSigAccount as SafeAccount } from "abstractionkit"
+import { ExperimentalSafeMultiChainSigAccount as SafeAccount } from "abstractionkit"
 
 async function main(): Promise<void> {
     dotenv.config()
@@ -118,7 +118,7 @@ async function main(): Promise<void> {
 
     console.log("Owner:", ownerPublicAddress)
 
-    // Initialize SafeMultiChainSigAccount
+    // Initialize ExperimentalSafeMultiChainSigAccount
     const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress])
 
     console.log("Safe Account Address:", smartAccount.accountAddress)
@@ -162,7 +162,7 @@ const addOwnerTx = smartAccount.createStandardAddOwnerWithThresholdMetaTransacti
 Now we create a UserOperation for each chain. The transaction is identical, but gas parameters differ per chain.
 
 ```ts title="index.ts"
-import { AllowAllPaymaster } from "abstractionkit"
+import { ExperimentalAllowAllParallelPaymaster } from "abstractionkit"
 
 // Chain configuration from .env
 const chainId1 = BigInt(process.env.CHAIN_ID1 as string)
@@ -173,7 +173,7 @@ const nodeUrl1 = process.env.NODE_URL1 as string
 const nodeUrl2 = process.env.NODE_URL2 as string
 
 // Set up gas sponsorship
-const paymaster = new AllowAllPaymaster()
+const paymaster = new ExperimentalAllowAllParallelPaymaster()
 const [paymasterFields1, paymasterFields2] = await Promise.all([
     paymaster.getPaymasterFieldsInitValues(chainId1),
     paymaster.getPaymasterFieldsInitValues(chainId2),
@@ -187,13 +187,19 @@ const [userOperation1, userOperation2] = await Promise.all([
         [addOwnerTx],
         nodeUrl1,
         bundlerUrl1,
-        { ...paymasterFields1, preVerificationGasPercentageMultiplier: 120 }
+        {
+            parallelPaymasterInitValues: paymasterFields1,
+            preVerificationGasPercentageMultiplier: 120,
+        }
     ),
     smartAccount.createUserOperation(
         [addOwnerTx],
         nodeUrl2,
         bundlerUrl2,
-        { ...paymasterFields2, preVerificationGasPercentageMultiplier: 120 }
+        {
+            parallelPaymasterInitValues: paymasterFields2,
+            preVerificationGasPercentageMultiplier: 120,
+        }
     ),
 ])
 ```
@@ -236,6 +242,8 @@ console.log("  Single signing operation generated", signatures.length, "signatur
 Submit both UserOperations to their respective chains and verify the owner was added.
 
 ```ts title="index.ts"
+import { UserOperationV9 } from "abstractionkit"
+
 console.log("[3/3] Submitting to both chains...")
 
 // Submit in parallel
@@ -245,6 +253,8 @@ await Promise.all([
 ])
 
 // Verify owners on both chains
+console.log("\nVerifying owners on both chains...")
+
 const [owners1, owners2] = await Promise.all([
     smartAccount.getOwners(nodeUrl1),
     smartAccount.getOwners(nodeUrl2)
@@ -253,14 +263,27 @@ const [owners1, owners2] = await Promise.all([
 console.log("\nOwners on Chain 1:", owners1)
 console.log("Owners on Chain 2:", owners2)
 
+const hasNewOwner1 = owners1.map(o => o.toLowerCase()).includes(newOwnerAddress.toLowerCase())
+const hasNewOwner2 = owners2.map(o => o.toLowerCase()).includes(newOwnerAddress.toLowerCase())
+
+if (hasNewOwner1 && hasNewOwner2) {
+    console.log("\nNew owner successfully added on BOTH chains with ONE signature!")
+}
+
 // Helper function
-async function sendAndMonitor(userOp: any, bundlerUrl: string, name: string) {
-    const account = new SafeAccount(userOp.sender)
-    const response = await account.sendUserOperation(userOp, bundlerUrl)
+async function sendAndMonitor(
+    userOperation: UserOperationV9,
+    bundlerUrl: string,
+    name: string
+): Promise<void> {
+    const account = new SafeAccount(userOperation.sender)
+    const response = await account.sendUserOperation(userOperation, bundlerUrl)
     console.log(`  [${name}] Submitted. Waiting...`)
     const receipt = await response.included()
     if (receipt.success) {
         console.log(`  [${name}] Success! Tx: ${receipt.receipt.transactionHash}`)
+    } else {
+        console.log(`  [${name}] Execution failed`)
     }
 }
 ```
@@ -288,146 +311,19 @@ New owner to add: 0x...
 
 Owners on Chain 1: ['0x...', '0x...']
 Owners on Chain 2: ['0x...', '0x...']
+
+New owner successfully added on BOTH chains with ONE signature!
 ```
 
 ## Full Example
 
 <details>
-<summary>Complete index.ts</summary>
+<summary>Complete add-owner.ts</summary>
 
-```ts
-import * as dotenv from 'dotenv'
-import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
-import {
-    SafeMultiChainSigAccount as SafeAccount,
-    AllowAllPaymaster,
-} from "abstractionkit"
+The complete script below ties all the steps together. You can also find it in the [abstractionkit-examples repo](https://github.com/candidelabs/abstractionkit-examples/blob/main/chain-abstraction/add-owner.ts).
 
-async function main(): Promise<void> {
-    dotenv.config()
-
-    // Chain configuration
-    const chainId1 = BigInt(process.env.CHAIN_ID1 as string)
-    const chainId2 = BigInt(process.env.CHAIN_ID2 as string)
-    const bundlerUrl1 = process.env.BUNDLER_URL1 as string
-    const bundlerUrl2 = process.env.BUNDLER_URL2 as string
-    const nodeUrl1 = process.env.NODE_URL1 as string
-    const nodeUrl2 = process.env.NODE_URL2 as string
-
-    // Auto-generate keys if not provided
-    const ownerPrivateKey = (process.env.PRIVATE_KEY || generatePrivateKey()) as `0x${string}`
-    const ownerAccount = privateKeyToAccount(ownerPrivateKey)
-    const ownerPublicAddress = process.env.PUBLIC_ADDRESS || ownerAccount.address
-
-    // Generate a new owner address to add
-    const newOwnerAccount = privateKeyToAccount(generatePrivateKey())
-    const newOwnerAddress = newOwnerAccount.address
-
-    console.log("=".repeat(60))
-    console.log("ADD OWNER ACROSS CHAINS - SINGLE SIGNATURE DEMO")
-    console.log("=".repeat(60))
-    console.log("\nOriginal owner:", ownerPublicAddress)
-    console.log("New owner to add:", newOwnerAddress)
-
-    // Initialize SafeMultiChainSigAccount
-    const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress])
-
-    console.log("\nSafe Account (same on both chains):", smartAccount.accountAddress)
-    console.log("\nTarget chains:")
-    console.log("  - Chain 1:", chainId1.toString())
-    console.log("  - Chain 2:", chainId2.toString())
-
-    // Create add owner transaction
-    const addOwnerTx = smartAccount.createStandardAddOwnerWithThresholdMetaTransaction(
-        newOwnerAddress,
-        1
-    )
-
-    // Set up paymaster
-    const paymaster = new AllowAllPaymaster()
-    const [paymasterFields1, paymasterFields2] = await Promise.all([
-        paymaster.getPaymasterFieldsInitValues(chainId1),
-        paymaster.getPaymasterFieldsInitValues(chainId2),
-    ])
-
-    console.log("\n[1/3] Creating UserOperations for both chains...")
-
-    const [userOperation1, userOperation2] = await Promise.all([
-        smartAccount.createUserOperation(
-            [addOwnerTx],
-            nodeUrl1,
-            bundlerUrl1,
-            { ...paymasterFields1, preVerificationGasPercentageMultiplier: 120 }
-        ),
-        smartAccount.createUserOperation(
-            [addOwnerTx],
-            nodeUrl2,
-            bundlerUrl2,
-            { ...paymasterFields2, preVerificationGasPercentageMultiplier: 120 }
-        ),
-    ])
-
-    console.log("[2/3] Signing for BOTH chains with ONE signature...")
-
-    const [signatures, paymasterData1, paymasterData2] = await Promise.all([
-        smartAccount.signUserOperations(
-            [
-                { userOperation: userOperation1, chainId: chainId1 },
-                { userOperation: userOperation2, chainId: chainId2 }
-            ],
-            [ownerPrivateKey],
-        ),
-        paymaster.getApprovedPaymasterData(userOperation1),
-        paymaster.getApprovedPaymasterData(userOperation2)
-    ])
-
-    userOperation1.signature = signatures[0]
-    userOperation2.signature = signatures[1]
-    userOperation1.paymasterData = paymasterData1
-    userOperation2.paymasterData = paymasterData2
-
-    console.log("  Single signing operation generated", signatures.length, "signatures!")
-
-    console.log("[3/3] Submitting to both chains...")
-
-    await Promise.all([
-        sendAndMonitor(userOperation1, bundlerUrl1, "Chain 1"),
-        sendAndMonitor(userOperation2, bundlerUrl2, "Chain 2"),
-    ])
-
-    // Verify
-    const [owners1, owners2] = await Promise.all([
-        smartAccount.getOwners(nodeUrl1),
-        smartAccount.getOwners(nodeUrl2)
-    ])
-
-    console.log("\n" + "=".repeat(60))
-    console.log("VERIFICATION COMPLETE")
-    console.log("=".repeat(60))
-    console.log("\nOwners on Chain 1:", owners1)
-    console.log("Owners on Chain 2:", owners2)
-
-    const hasNewOwner1 = owners1.map(o => o.toLowerCase()).includes(newOwnerAddress.toLowerCase())
-    const hasNewOwner2 = owners2.map(o => o.toLowerCase()).includes(newOwnerAddress.toLowerCase())
-
-    if (hasNewOwner1 && hasNewOwner2) {
-        console.log("\nNew owner successfully added on BOTH chains with ONE signature!")
-    }
-}
-
-async function sendAndMonitor(userOp: any, bundlerUrl: string, name: string) {
-    const account = new SafeAccount(userOp.sender)
-    const response = await account.sendUserOperation(userOp, bundlerUrl)
-    console.log(`  [${name}] Submitted. Waiting...`)
-    const receipt = await response.included()
-    if (receipt.success) {
-        console.log(`  [${name}] Success! Tx: ${receipt.receipt.transactionHash}`)
-    } else {
-        console.log(`  [${name}] Execution failed`)
-    }
-}
-
-main().catch(console.error)
+```ts reference title="add-owner.ts"
+https://github.com/candidelabs/abstractionkit-examples/blob/main/chain-abstraction/add-owner.ts
 ```
 
 </details>
@@ -436,7 +332,7 @@ main().catch(console.error)
 
 Now that you've seen the core pattern, explore more use cases:
 
-- **Sync recovery setup** - Add Guardians on all chains with one signature.
+- **Sync recovery setup** - Add guardians on all chains with one signature.
 - **Batch threshold updates** - Change your multisig threshold across your entire chain footprint.
 - **EIL token transfers** - When EIL launches, use the same pattern for trustless cross-chain transfers.
 
