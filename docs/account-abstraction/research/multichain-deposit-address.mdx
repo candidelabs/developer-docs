@@ -28,14 +28,14 @@ Paste this into your agent to integrate the Forwarding Address API:
 <TabItem value="claude" label="Claude Code">
 
 ```bash
-claude -p "Read https://docs.candide.dev/forwarding-address-agent-skill.md and integrate the Forwarding Address API"
+curl -s https://docs.candide.dev/forwarding-address-agent-skill.md | claude -p "Integrate the Forwarding Address API using this skill reference"
 ```
 
 </TabItem>
 <TabItem value="codex" label="Codex CLI">
 
 ```bash
-codex "Read https://docs.candide.dev/forwarding-address-agent-skill.md and integrate the Forwarding Address API"
+curl -s https://docs.candide.dev/forwarding-address-agent-skill.md | codex -q "Integrate the Forwarding Address API using this skill reference"
 ```
 
 </TabItem>
