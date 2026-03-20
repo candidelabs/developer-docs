@@ -103,7 +103,7 @@ Parameters:
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | `recipient` | `address` | Yes | Destination address that receives forwarded tokens |
-| `custodialWithdrawer` | `address` | Yes | Address authorized to withdraw stuck funds after a timelock. Set equal to `recipient` for non-custodial setups. See [custodialWithdrawer](./forwarding-address-guide.mdx#the-custodialwithdrawer-role) |
+| `custodialWithdrawer` | `address` | Yes | Emergency recovery address that can withdraw stuck funds after a timelock. For most integrations, use the platform's address. See [custodialWithdrawer](./forwarding-address-guide.mdx#the-custodialwithdrawer-role) |
 | `destinationChainId` | `number` | Yes | Target chain ID where assets will be delivered |
 | `salt` | `bytes32` | No | Optional 32-byte hex value. Use different salts to generate multiple forwarding addresses for the same recipient |
 

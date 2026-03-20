@@ -49,17 +49,24 @@ Use the optional `salt` parameter in `forwarding_getAddress` and `forwarding_act
 
 ## The `custodialWithdrawer` Role
 
-The `custodialWithdrawer` parameter enables a custodial recovery pattern for exchanges and managed wallets.
+The `custodialWithdrawer` is the emergency recovery address. If funds get stuck in a forwarding address (e.g. the relayer did not process them), both the `recipient` and the `custodialWithdrawer` can withdraw directly from the deployed contract on the source chain. The recipient can always withdraw immediately. The `custodialWithdrawer` can withdraw after a timelock.
+
+This matters for every integration, not just custodial ones. If a user funds their forwarding address from an exchange or a wallet they don't control on the source chain, they may not be able to send a withdrawal transaction on that chain. Without a separate `custodialWithdrawer`, those funds are stuck permanently.
 
 | Scenario | `recipient` | `custodialWithdrawer` | Behavior |
 |----------|-------------|------------------------|----------|
-| Non-custodial (wallets, dapps) | User's address | Same as `recipient` | User has sole control. No timelock needed |
-| Custodial (exchanges, neobanks) | End-user's address | Platform's address | Platform can withdraw stuck funds on behalf of the user, subject to a timelock |
+| Wallet or dapp (recommended) | User's address | Platform's address | Platform can recover stuck funds on behalf of the user after a timelock. User can always withdraw immediately |
+| Fully self-managed | User's address | Same as `recipient` | Only the user can recover stuck funds. If they cannot transact on the source chain, funds are unrecoverable |
+| Custodial (exchanges, neobanks) | End-user's address | Platform's address | Platform can withdraw stuck funds on behalf of the user after a timelock |
+
+:::caution
+Setting `custodialWithdrawer` to the same address as `recipient` means only the recipient can recover stuck funds. If users fund the forwarding address from an exchange or any source they don't control, and funds get stuck, there is no fallback recovery path. For most integrations, set `custodialWithdrawer` to your platform's address.
+:::
 
 ### Withdrawal priority
 
-- The recipient can always withdraw immediately from the deployed contract (no timelock)
-- The `custodialWithdrawer` can withdraw after a timelock period, providing a safety net when the recipient cannot send transactions (common for exchange users who do not control their keys directly)
+- The `recipient` can always withdraw immediately from the deployed contract (no timelock)
+- The `custodialWithdrawer` can withdraw after a timelock period, providing a recovery path when the recipient cannot transact on the source chain
 
 ### On-chain withdrawal (emergency recovery)
 
