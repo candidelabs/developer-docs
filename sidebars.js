@@ -592,11 +592,6 @@ const sidebars = {
               id: "account-abstraction/research/forwarding-address-guide",
               label: "Integration Guide"
             },
-            {
-              type: "doc",
-              id: "account-abstraction/research/forwarding-address-agent-skill",
-              label: "AI Agent Skill"
-            },
           ],
         },
         {
