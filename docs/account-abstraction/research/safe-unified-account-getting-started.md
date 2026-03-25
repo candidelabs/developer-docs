@@ -54,7 +54,7 @@ npx tsc --init
 
 ```bash
 npm install typescript ts-node --save-dev
-npm install abstractionkit@0.2.38 dotenv viem
+npm install abstractionkit@0.2.39 dotenv viem
 ```
 
 **What each package does:**
