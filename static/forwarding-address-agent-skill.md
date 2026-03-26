@@ -24,7 +24,7 @@ Before writing any code, ask the developer:
 3. **Does your company have a secure wallet that can serve as a recovery safety net?** This wallet becomes the `custodialWithdrawer`: a company-controlled address that can recover stuck funds on behalf of users. See the "Company Recovery Wallet" section below.
 4. **One destination chain or multichain?** If the app has one main destination chain, default all forwarding addresses to it. If users pick their destination chain, the integration needs a chain selector backed by `forwarding_getRoutes`.
 5. **One address per user, or one per transaction?** Determines whether to use the `salt` parameter.
-6. **Long-lived or short-lived addresses?** Determines TTL management strategy.
+6. **Long-lived or short-lived addresses?** Long-lived addresses need a TTL check before each use to re-activate if expired.
 
 Do not proceed until you have clear answers. These choices shape the entire integration.
 
@@ -35,7 +35,7 @@ Based on their answers, propose an approach before writing code. Cover:
 - Where the API calls happen (backend service, frontend, serverless function)
 - How forwarding addresses are generated and stored
 - Whether `destinationChainId` is fixed or user-selected
-- TTL renewal strategy (if long-lived)
+- TTL handling: re-activate on demand when the address is needed
 - How deposit arrival is detected (polling recipient balance on destination chain)
 - Error handling and edge cases
 
@@ -51,7 +51,7 @@ Follow this implementation order:
 2. Query `forwarding_getRoutes` to discover supported routes
 3. Implement address generation (`forwarding_getAddress` + `forwarding_activate`)
 4. Add fee estimation if needed (`forwarding_estimateOutput`)
-5. Add TTL renewal logic if long-lived addresses
+5. Add TTL check: re-activate if expired before presenting the address to the user
 6. Add deposit arrival detection (poll recipient balance on destination chain)
 
 ---
@@ -130,7 +130,7 @@ Do not skip these.
 - **Forgetting to activate.** Computing an address with `forwarding_getAddress` does not start monitoring. You must call `forwarding_activate` or deposits will not be forwarded.
 - **Confusing `forwarding_getActivation` with deposit tracking.** It only checks whether the relayer is monitoring, not whether a deposit arrived. Poll the recipient's balance on the destination chain instead.
 - **Setting `custodialWithdrawer` to the user's address in a non-custodial app.** If the user funded from an exchange, they cannot recover stuck funds. Use the company's secure wallet.
-- **Ignoring TTL expiration.** For long-lived addresses, set up a background job to call `forwarding_activate` before the TTL expires.
+- **Ignoring TTL expiration.** Before presenting a forwarding address, check activation status and call `forwarding_activate` again if the TTL has expired.
 
 ## Validation Rules
 
