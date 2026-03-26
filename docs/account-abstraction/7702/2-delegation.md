@@ -63,18 +63,75 @@ let userOperation = await smartAccount.createUserOperation(
 
 ## Sign the Delegate Authorization
 
-Sign the `eip7702Auth` tuple to delegate the authorization to the smart account. This is only called once, during the upgrade transaction of the EOA.
+Sign the `eip7702Auth` tuple to delegate the authorization to the smart account. This is only needed during the first upgrade transaction. If the EOA is already delegated, `eip7702Auth` will be `null` and signing can be skipped.
+
+### With a Private Key
 
 ```ts
 import { createAndSignEip7702DelegationAuthorization } from "abstractionkit";
 
-userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
-    BigInt(userOperation.eip7702Auth.chainId),
-    userOperation.eip7702Auth.address,
-    BigInt(userOperation.eip7702Auth.nonce),
-    eoaDelegatorPrivateKey
-);
+if (userOperation.eip7702Auth) {
+    userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
+        BigInt(userOperation.eip7702Auth.chainId),
+        userOperation.eip7702Auth.address,
+        BigInt(userOperation.eip7702Auth.nonce),
+        eoaDelegatorPrivateKey
+    );
+}
 ```
 
+### With an External Signer (Callback Pattern)
 
-In this guide, we've shown you how to upgrade an Externally Owned Account (EOA) by delegating its authorization to a designated smart contract address using EIP-7702. To run a complete example, visit [EIP-7702 Getting Started](/wallet/guides/getting-started-eip-7702).
+Instead of passing a private key directly, you can pass a callback function for signing. This lets you use any signer: hardware wallets, WalletConnect, browser extensions, or custom signers via viem's `toAccount()`.
+
+```ts
+import { createAndSignEip7702DelegationAuthorization } from "abstractionkit";
+import { privateKeyToAccount } from "viem/accounts";
+
+const account = privateKeyToAccount(eoaDelegatorPrivateKey as `0x${string}`);
+
+if (userOperation.eip7702Auth) {
+    userOperation.eip7702Auth = await createAndSignEip7702DelegationAuthorization(
+        BigInt(userOperation.eip7702Auth.chainId),
+        userOperation.eip7702Auth.address,
+        BigInt(userOperation.eip7702Auth.nonce),
+        async (hash: string) => {
+            // Raw hash signing. Use account.sign(), NOT signMessage()
+            // (signMessage adds an EIP-191 prefix and produces a different recovered address)
+            return await account.sign({ hash: hash as `0x${string}` });
+        }
+    );
+}
+```
+
+See the [full external signer example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/02-upgrade-eoa-external-signer.ts) on GitHub.
+
+## Revoke Delegation
+
+To revoke an EIP-7702 delegation and return the EOA to a regular account, use `createRevokeDelegationTransaction`. This creates a signed transaction that delegates to `address(0)`, effectively removing the smart account code from the EOA.
+
+Revoking requires the EOA to have native tokens to pay for gas, since this is a regular Ethereum transaction (not a UserOperation).
+
+```ts
+import { Simple7702Account } from "abstractionkit";
+
+const smartAccount = new Simple7702Account(eoaDelegatorPublicAddress);
+
+// Check if the EOA is currently delegated
+const isDelegated = await smartAccount.isDelegatedToThisAccount(nodeUrl);
+
+if (isDelegated) {
+    const signedTransaction = await smartAccount.createRevokeDelegationTransaction(
+        eoaDelegatorPrivateKey,
+        nodeUrl,
+    );
+
+    // Send the signed transaction using your preferred method (e.g., viem, ethers)
+}
+```
+
+See the [full revoke delegation example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/05-revoke-delegation.ts) on GitHub.
+
+---
+
+To run a complete upgrade example, visit [EIP-7702 Getting Started](/wallet/guides/getting-started-eip-7702).

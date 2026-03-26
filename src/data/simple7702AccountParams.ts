@@ -326,3 +326,79 @@ export const prependTokenPaymasterApproveToCallDataReturn = [
     description: "Call data with token approval prepended",
   },
 ];
+
+// Delegation Methods
+export const isDelegatedToThisAccountParam = [
+  {
+    key: "providerRpc",
+    type: "string",
+    description: "Ethereum JSON-RPC node URL",
+  },
+];
+
+export const isDelegatedToThisAccountReturn = [
+  {
+    key: "isDelegated",
+    type: "boolean",
+    description: "true if the EOA is delegated to the expected address, false otherwise",
+  },
+];
+
+export const createRevokeDelegationTransactionOverrides = [
+  {
+    key: "nonce?",
+    type: "bigint",
+    description: "Transaction nonce override",
+  },
+  {
+    key: "authorizationNonce?",
+    type: "bigint",
+    description: "EIP-7702 authorization nonce override",
+  },
+  {
+    key: "maxFeePerGas?",
+    type: "bigint",
+    description: "Maximum fee per gas (EIP-1559)",
+  },
+  {
+    key: "maxPriorityFeePerGas?",
+    type: "bigint",
+    description: "Maximum priority fee per gas (EIP-1559)",
+  },
+  {
+    key: "gasLimit?",
+    type: "bigint",
+    description: "Gas limit for the transaction",
+  },
+  {
+    key: "chainId?",
+    type: "bigint",
+    description: "Chain ID override",
+  },
+];
+
+export const createRevokeDelegationTransactionParam = [
+  {
+    key: "eoaPrivateKey",
+    type: "string",
+    description: "The EOA's private key (signs both the authorization and the transaction)",
+  },
+  {
+    key: "providerRpc",
+    type: "string",
+    description: "JSON-RPC endpoint for nonce, gas price, and chain ID queries",
+  },
+  {
+    key: "overrides?",
+    type: createRevokeDelegationTransactionOverrides,
+    description: "Optional overrides for transaction fields",
+  },
+];
+
+export const createRevokeDelegationTransactionReturn = [
+  {
+    key: "signedTransaction",
+    type: "string",
+    description: "Signed raw transaction hex, ready for eth_sendRawTransaction",
+  },
+];

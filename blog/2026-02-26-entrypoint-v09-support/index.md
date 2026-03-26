@@ -73,7 +73,7 @@ let userOperation = await smartAccount.createUserOperation(
 );
 ```
 
-View the [Simple7702AccountV09 SDK Reference](/wallet/abstractionkit/simple-7702-account-v09/) and a complete [working example on GitHub](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/upgrade-eoa-to-7702-smart-account-EP-v09.ts).
+View the [Simple7702AccountV09 SDK Reference](/wallet/abstractionkit/simple-7702-account-v09/) and a complete [working example on GitHub](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/04-upgrade-eoa-ep-v09.ts).
 
 ## Paymaster Support
 

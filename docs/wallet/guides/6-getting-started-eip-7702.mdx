@@ -22,7 +22,7 @@ This guide demonstrates how to upgrade your EOA to a Smart Account for batching 
 - Sepolia Bundler and Paymaster endpoints from the [Dashboard](https://dashboard.candide.dev)
 - Node and a package manager (yarn or npm)
 
-Here's the [complete code](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/upgrade-eoa-to-7702-smart-account-sponsored-gas.ts) for you to reference if you prefer to run directly.
+Here's the [complete code](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/01-upgrade-eoa.ts) for you to reference if you prefer to run directly.
 
 ## Step 1: Get setup
 
@@ -162,17 +162,19 @@ console.log("Please fund the sender account : " + userOperation.sender +" with m
 
 ## Step 5: Sign the Authorization
 
-Sign the `eip7702Auth` tuple to authorize the smart account code at your EOA address. This is called during the authorization transaction of the EOA.
+Sign the `eip7702Auth` tuple to authorize the smart account code at your EOA address. This is only needed during the first upgrade transaction. If the EOA is already delegated, `eip7702Auth` will be `null` and signing can be skipped.
 
 ```ts
 import { createAndSignEip7702DelegationAuthorization } from "abstractionkit"
 
-userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
-    BigInt(userOperation.eip7702Auth.chainId),
-    userOperation.eip7702Auth.address,
-    BigInt(userOperation.eip7702Auth.nonce),
-    eoaDelegatorPrivateKey
-)
+if (userOperation.eip7702Auth) {
+    userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
+        BigInt(userOperation.eip7702Auth.chainId),
+        userOperation.eip7702Auth.address,
+        BigInt(userOperation.eip7702Auth.nonce),
+        eoaDelegatorPrivateKey
+    )
+}
 ```
 
 ## Step 6: Get Paymaster data (Optional)
@@ -270,109 +272,7 @@ EOA upgraded to a Smart Account and minted two NFTs! The transaction hash is : 0
 You can look up the hash on explorers that support user operations like [Blockscout](https://www.blockscout.com/).
 
 ## Full Example
-Below is the complete example code that you can copy directly to implement the functionality described in the tutorial.
-<details>
-<summary>index.ts</summary>
 
-```ts
-import * as dotenv from 'dotenv'
-import {
-    Simple7702Account,
-    getFunctionSelector,
-    createCallData,
-    createAndSignEip7702DelegationAuthorization,
-    CandidePaymaster,
-} from "abstractionkit";
-import { Wallet } from 'ethers';
-
-async function main(): Promise<void> {
-    //get values from .env
-    dotenv.config()
-    const chainId = BigInt(process.env.CHAIN_ID as string)
-    const bundlerUrl = process.env.BUNDLER_URL as string
-    const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string;
-    const paymasterUrl = process.env.PAYMASTER_URL as string;
-
-    const eoaDelegator = Wallet.createRandom();
-    const eoaDelegatorPublicAddress = eoaDelegator.address;
-    const eoaDelegatorPrivateKey = eoaDelegator.privateKey;
-
-    // initiate the smart account
-    const smartAccount = new Simple7702Account(eoaDelegatorPublicAddress);
-
-    // We will be minting two random NFTs in a single tx
-    const nftContractAddress = "0x9a7af758aE5d7B6aAE84fe4C5Ba67c041dFE5336";
-    const mintFunctionSignature = 'mint(address)';
-    const mintFunctionSelector = getFunctionSelector(mintFunctionSignature);
-    const mintTransactionCallData = createCallData(
-        mintFunctionSelector,
-        ["address"],
-        [smartAccount.accountAddress]
-    );
-    const transaction1 = {
-        to: nftContractAddress,
-        value: 0n,
-        data: mintTransactionCallData,
-    }
-
-    const transaction2 = {
-        to: nftContractAddress,
-        value: 0n,
-        data: mintTransactionCallData,
-    }
-
-    let userOperation = await smartAccount.createUserOperation(
-        [transaction1, transaction2],
-        jsonRpcNodeProvider,
-        bundlerUrl,
-        {
-            eip7702Auth:{
-                chainId: chainId, // chainId at which the account will be authorized
-            }
-        }
-    );
-    
-    userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
-        BigInt(userOperation.eip7702Auth.chainId),
-        userOperation.eip7702Auth.address,
-        BigInt(userOperation.eip7702Auth.nonce),
-        eoaDelegatorPrivateKey
-    )
-
-    let paymaster: CandidePaymaster = new CandidePaymaster(
-        paymasterUrl
-    )
-
-    let [paymasterUserOperation, _sponsorMetadata] = await paymaster.createSponsorPaymasterUserOperation(
-        userOperation, bundlerUrl)
-    userOperation = paymasterUserOperation; 
-
-    userOperation.signature = smartAccount.signUserOperation(
-        userOperation,
-        eoaDelegatorPrivateKey,
-        chainId,
-    );
-    
-    let sendUserOperationResponse = await smartAccount.sendUserOperation(
-        userOperation, bundlerUrl
-    );
-
-    console.log("userOperation: ", userOperation)
-    console.log("userOp sent! Waiting for inclusion...");
-    console.log("userOp Hash: ", sendUserOperationResponse.userOperationHash);
-
-    let userOperationReceiptResult = await sendUserOperationResponse.included();
-
-    console.log("Useroperation receipt received.")
-    console.log(userOperationReceiptResult)
-    if (userOperationReceiptResult.success) {
-        console.log("EOA upgraded to a Smart Account and minted two NFTs! The transaction hash is : " + userOperationReceiptResult.receipt.transactionHash)
-    } else {
-        console.log("Useroperation execution failed")
-    }
-}
-
-main()
+```ts reference title="01-upgrade-eoa.ts"
+https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/01-upgrade-eoa.ts
 ```
-
-</details>

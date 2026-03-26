@@ -20,6 +20,10 @@ import {
   createAccountCallDataBatchTransactionsParam,
   estimateUserOperationGasParam,
   estimateUserOperationGasReturn,
+  isDelegatedToThisAccountParam,
+  isDelegatedToThisAccountReturn,
+  createRevokeDelegationTransactionParam,
+  createRevokeDelegationTransactionReturn,
   simpleMetaTransactionType
 } from "/src/data/simple7702AccountParams";
 import { sendUseroperationResponseType, bundlerJsonRpcErrorType } from "/src/requestRpcData";
@@ -45,7 +49,7 @@ The following ERCs are supported:
 - ERC-4337 v0.9
 
 :::info Full Example
-A complete working example is available on GitHub: [upgrade-eoa-to-7702-smart-account-EP-v09.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/upgrade-eoa-to-7702-smart-account-EP-v09.ts)
+A complete working example is available on GitHub: [upgrade-eoa-ep-v09.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/04-upgrade-eoa-ep-v09.ts)
 :::
 
 :::caution Paymaster Not Yet Supported
@@ -325,6 +329,77 @@ const [callGasLimit, verificationGasLimit, preVerificationGas] =
 
 <TabItem value="Return Type" label="Return Type">
   <DataTable items={estimateUserOperationGasReturn} />
+</TabItem>
+
+</Tabs>
+
+## Delegation Methods
+
+### isDelegatedToThisAccount
+
+Checks if the EOA is currently delegated to the expected smart account address via EIP-7702. Returns `true` only when delegated to the account's `delegateeAddress`.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const isDelegated = await smartAccount.isDelegatedToThisAccount(
+  "https://ethereum-sepolia-rpc.publicnode.com"
+);
+
+if (isDelegated) {
+  console.log("EOA is delegated to this smart account");
+} else {
+  console.log("EOA is not delegated");
+}
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={isDelegatedToThisAccountParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={isDelegatedToThisAccountReturn} />
+</TabItem>
+
+</Tabs>
+
+### createRevokeDelegationTransaction
+
+Creates a signed EIP-7702 transaction that revokes the delegation, restoring the EOA to a regular account. The transaction delegates to `address(0)`, removing the smart account code from the EOA.
+
+This is a regular Ethereum transaction (type `0x04`), not a UserOperation. The EOA needs native tokens to pay for gas.
+
+:::note
+Revocation cannot be done via a UserOperation because the authorization list is processed before execution, which would remove the account's code mid-transaction.
+:::
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const signedTransaction = await smartAccount.createRevokeDelegationTransaction(
+  "0x...private-key",
+  "https://ethereum-sepolia-rpc.publicnode.com",
+);
+
+// Send using your preferred method (e.g., viem, ethers)
+// const txHash = await client.request({
+//   method: 'eth_sendRawTransaction',
+//   params: [signedTransaction],
+// });
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createRevokeDelegationTransactionParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createRevokeDelegationTransactionReturn} />
 </TabItem>
 
 </Tabs>
