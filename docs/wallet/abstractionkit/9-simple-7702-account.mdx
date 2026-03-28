@@ -20,6 +20,16 @@ The following ERCs are supported:
 - ERC-1271
 - ERC-4337
 
+## When to Use Simple 7702 Account
+
+- You need a straightforward EOA upgrade with minimal overhead
+- Single signer (EOA private key) is sufficient
+- You don't need key management, passkey support, or per-key hooks
+- Lightweight: fewer methods, simpler API surface
+- Audited by Spearbit (v0.8) and Cantina (v0.9)
+
+For multi-key support, passkeys, or per-key hooks, see [Calibur Account](/wallet/abstractionkit/calibur-account).
+
 ## Import
 
 ### EntryPoint v0.8

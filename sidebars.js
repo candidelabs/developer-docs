@@ -516,6 +516,11 @@ const sidebars = {
           label: "Gas in ERC-20"
         },
         {
+          type: "doc",
+          id: "wallet/guides/getting-started-calibur",
+          label: "Calibur Quickstart"
+        },
+        {
           type: "category",
           label: "Simple 7702 Account",
           collapsed: true,
@@ -532,6 +537,11 @@ const sidebars = {
               label: "EntryPoint v0.9"
             },
           ],
+        },
+        {
+          type: "doc",
+          id: "wallet/abstractionkit/calibur-account",
+          label: "Calibur Account"
         },
       ]
     },
