@@ -1,6 +1,6 @@
 ---
 title: Why use AbstractionKit to build Smart Accounts
-description: AbstractionKit is a typescript library to easily build and send UserOperations, with first class support for Safe Accounts and Simple EIP-7702 Accounts
+description: AbstractionKit is a typescript library to easily build and send UserOperations, with first class support for Safe Accounts, Calibur Accounts, and Simple EIP-7702 Accounts
 image: /img/posters/abstractionkit-meta.png
 keywords: [typescript, sdk, userOperation, library]
 ---
@@ -9,7 +9,7 @@ keywords: [typescript, sdk, userOperation, library]
 
 ![image](/img/posters/abstractionkit-poster.png)
 
-A TypeScript library for building and sending ERC-4337 UserOperations with first-class support for Safe Accounts and Simple EIP-7702 Accounts.
+A TypeScript library for building and sending ERC-4337 UserOperations with first-class support for Safe Accounts, Calibur Accounts, and Simple EIP-7702 Accounts.
 
 AbstractionKit abstracts the complexities of the ERC-4337 standard while providing developers with maximum flexibility to build Smart Wallets.
 Use Safe Accounts, construct callData, estimate and sponsor gas (fully or with ERC-20 tokens), and send UserOperations to Bundlers – all with full type safety.
@@ -30,7 +30,9 @@ We achieve this by using cryptographic techniques to calculate complex smart acc
 infrastructure costs while delivering a significantly faster user experience. Don't just take our word for it—verify the results yourself by comparing AbstractionKit's performance against other account abstraction libraries in the [AA-SDK-Benchmark](https://aa-sdk-benchmark.on-fleek.app/).
 
 ### Secure Smart Accounts
-AbstractionKit supports [Safe Accounts](/wallet/abstractionkit/safe-account/), the battle-tested smart accounts securing billions of dollars in assets across Ethereum and other EVM-compatible chains. We chose Safe for its unparalleled security track record, extensive audits, and widespread community trust—making it the industry standard for secure smart contract wallets. AbstractionKit also supports [Simple7702Account](/wallet/abstractionkit/simple-7702-account/), developed by the Account Abstraction specification authors to enable EOAs to upgrade to Smart Accounts.
+AbstractionKit supports [Safe Accounts](/wallet/abstractionkit/safe-account/), the battle-tested smart accounts securing billions of dollars in assets across Ethereum and other EVM-compatible chains. We chose Safe for its unparalleled security track record, extensive audits, and widespread community trust, making it the industry standard for secure smart contract wallets.
+
+For EIP-7702 EOA upgrades, AbstractionKit supports [Calibur Account](/wallet/abstractionkit/calibur-account/) (by Uniswap, audited by OpenZeppelin and Cantina) with passkey authentication, multi-key management, and per-key hooks, as well as [Simple7702Account](/wallet/abstractionkit/simple-7702-account/) for lightweight single-signer upgrades.
 
 ### Extensible
 
