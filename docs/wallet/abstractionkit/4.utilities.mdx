@@ -22,8 +22,10 @@ A set of utilities for ERC-4337 Account Abstraction to help you with your develo
 [createPackedUserOperationV7](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L100C17-L100C44)
 
 ### fetchAccountNonce
+Fetches the current nonce for a smart account from the EntryPoint. Accepts an optional `key` parameter (default 0) that enables parallel nonce channels, allowing multiple independent UserOperations to be submitted concurrently.
+
 #### Source code
-[fetchAccountNonce](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L273)
+[fetchAccountNonce](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts#L468)
 
 ### calculateUserOperationMaxGasCost
 #### Source code
@@ -36,7 +38,24 @@ Returns the balance of an account in the EntryPoint contract.
 [getBalance](https://github.com/candidelabs/abstractionkit/blob/b1826217624c1f7105fef58f56c3ffab93a57a4b/src/utils.ts#L457)
 
 ### simulateUserOperationWithTenderlyAndCreateShareLink
-Simulates a UserOperation with Tenderly and returns a shareable link.
+Simulates a UserOperation via the EntryPoint's handleOps on Tenderly and returns a shareable dashboard link.
+
+**Parameters:** `tenderlyAccountSlug`, `tenderlyProjectSlug`, `tenderlyAccessKey`, `chainId`, `entrypointAddress`, `userOperation` (V6/V7/V8/V9), `blockNumber` (optional), `stateOverrides` (optional).
+
+#### Source code
+[simulateUserOperationWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/main/src/utilsTenderly.ts#L91)
+
+### simulateUserOperationCallDataWithTenderlyAndCreateShareLink
+Simulates UserOperation callData with Tenderly and returns shareable links. Unlike `simulateUserOperationWithTenderlyAndCreateShareLink`, this simulates the inner call data rather than the full EntryPoint handleOps flow.
+
+#### Source code
+[simulateUserOperationCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/main/src/utilsTenderly.ts#L403)
+
+### simulateSenderCallDataWithTenderlyAndCreateShareLink
+Simulates sender callData directly with Tenderly and returns shareable links. Useful for simulating the execution of callData from a specific sender address without wrapping it in a full UserOperation.
+
+#### Source code
+[simulateSenderCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/main/src/utilsTenderly.ts#L619)
 
 ### getDepositInfo
 Returns the full deposit information of an account in the EntryPoint contract.
@@ -69,8 +88,10 @@ Returns the full deposit information of an account in the EntryPoint contract.
 [getFunctionSelector](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L261)
 
 ### sendJsonRpcRequest
+Sends a JSON-RPC request to the given URL. Accepts optional `headers` (defaults to `{"Content-Type": "application/json"}`) and an optional `paramsKeyName` for non-standard JSON-RPC endpoints.
+
 #### Source code
-[sendJsonRpcRequest](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L194C23-L194C41)
+[sendJsonRpcRequest](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts#L384)
 
 ### sendEthCallRequest
 #### Source code
@@ -79,4 +100,36 @@ Returns the full deposit information of an account in the EntryPoint contract.
 ### sendEthGetCodeRequest
 #### Source code
 [sendEthGetCodeRequest](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L424)
+
+## EIP-7702 Utilities
+
+### createAndSignEip7702DelegationAuthorization
+Creates and signs an EIP-7702 delegation authorization, allowing an EOA to delegate its code to a specified contract address. Accepts either a hex-encoded private key string or an async signer callback `(hash: string) => Promise<string>` for use with viem, ethers Signers, hardware wallets, or MPC signers.
+
+#### Source code
+[createAndSignEip7702DelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/main/src/utils7702.ts#L131)
+
+### createRevokeDelegationAuthorization
+Creates a signed authorization that revokes an existing EIP-7702 delegation by setting the delegatee address to the zero address, restoring the EOA to a normal account.
+
+#### Source code
+[createRevokeDelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/main/src/utils7702.ts#L187)
+
+### createEip7702DelegationAuthorizationHash
+Computes the keccak256 hash of an EIP-7702 delegation authorization using the MAGIC prefix (0x05) as defined in the EIP-7702 spec. Useful when signing the authorization externally.
+
+#### Source code
+[createEip7702DelegationAuthorizationHash](https://github.com/candidelabs/abstractionkit/blob/main/src/utils7702.ts#L206)
+
+### createAndSignEip7702RawTransaction
+Creates and signs a raw EIP-7702 (set-code, type 0x04) transaction with an authorization list. The transaction is RLP-encoded and includes the type prefix.
+
+#### Source code
+[createAndSignEip7702RawTransaction](https://github.com/candidelabs/abstractionkit/blob/main/src/utils7702.ts#L258)
+
+### createEip7702TransactionHash
+Computes the keccak256 hash of an EIP-7702 transaction for signing purposes, using the type 0x04 prefix and RLP encoding.
+
+#### Source code
+[createEip7702TransactionHash](https://github.com/candidelabs/abstractionkit/blob/main/src/utils7702.ts#L323)
 

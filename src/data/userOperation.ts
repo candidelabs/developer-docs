@@ -123,13 +123,13 @@ export const userOperationParamV07 = [
   },
   {
     key: "paymasterVerificationGasLimit",
-    type: "string",
+    type: "bigint | null",
     description:
       "The amount of gas to allocate for the paymaster post-operation code",
   },
   {
     key: "paymasterPostOpGasLimit",
-    type: "string",
+    type: "bigint | null",
     description:
       "The amount of gas to allocate for the paymaster post-operation code",
   },
@@ -226,6 +226,12 @@ export const userOperationParamV08 = [
     type: "string",
     description: "Data passed into the account to verify authorization. Resolves to '0x' when the user did not provide their signature yet",
   },
+];
+
+// UserOperationV9 is structurally identical to V8
+// (see abstractionkit/src/types.ts: UserOperationV9 extends UserOperationV8 {})
+export const userOperationParamV09 = [
+  ...userOperationParamV08,
 ];
 
 export const authorization7702HexType = [
