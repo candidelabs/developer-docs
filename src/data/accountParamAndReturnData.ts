@@ -66,7 +66,7 @@ export const initCodeOverrides = [
     description: "Address of the Safe 4337 module.",
   },
   {
-    key: "safeModuleSetupddress?",
+    key: "safeModuleSetupAddress?",
     type: "string",
     description: "Address used for setting up the Safe module.",
   },
@@ -206,7 +206,7 @@ export const createInitializerCallDataParamV2 = [
         description: "Address of the Safe 4337 module.",
       },
       {
-        key: "safeModuleSetupddress?",
+        key: "safeModuleSetupAddress?",
         type: "string",
         description: "Address used for setting up the Safe module.",
       },
@@ -422,7 +422,7 @@ export const getUserOperationEip712HashParamV3 = [
       {
         key: "entrypointAddress?",
         type: "string",
-        description: "Target entrypoint. Defaults to EP v0.6",
+        description: "Target entrypoint. Defaults to EP v0.7",
       },
       {
         key: "safe4337ModuleAddress?",
@@ -737,6 +737,16 @@ export const createBaseUserOperationOverrides = [
     type: PolygonChainType,
     description: "To specify the polygon network",
   },
+  {
+    key: "isMultiChainSignature?",
+    type: "boolean",
+    description: "Whether this is a multi-chain signature using Merkle proofs",
+  },
+  {
+    key: "parallelPaymasterInitValues?",
+    type: "ParallelPaymasterInitValues",
+    description: "Paymaster fields for parallel signing (EntryPoint v0.9)",
+  },
 ];
 
 export const createUserOperationV6Overrides =
@@ -942,7 +952,7 @@ export const estimateUserOperationGasParamV7 = [
       {
         key: "stateOverrideSet?",
         type: stateOverrideSetType,
-        description: "Timestamp the signature will be valid after",
+        description: "Pass state overrides for gas estimation",
       },
       {
         key: "dummySignerSignaturePairs?",
@@ -954,6 +964,36 @@ export const estimateUserOperationGasParamV7 = [
         type: signerType,
         description:
           "The expected signers that will sign over the transaction. This improves the gas estimates.",
+      },
+      {
+        key: "webAuthnSharedSigner?",
+        type: "string",
+        description: "Specify the WebAuthn shared signer",
+      },
+      {
+        key: "webAuthnSignerFactory?",
+        type: "string",
+        description: "Specify the WebAuthn signer factory",
+      },
+      {
+        key: "webAuthnSignerSingleton?",
+        type: "string",
+        description: "Specify the WebAuthn signer singleton",
+      },
+      {
+        key: "webAuthnSignerProxyCreationCode?",
+        type: "string",
+        description: "Specify the WebAuthn signer proxy creation code",
+      },
+      {
+        key: "eip7212WebAuthnPrecompileVerifier?",
+        type: "string",
+        description: "Specify the EIP-7212 WebAuthn precompile verifier",
+      },
+      {
+        key: "eip7212WebAuthnContractVerifier?",
+        type: "string",
+        description: "Specify the EIP-7212 WebAuthn contract verifier",
       },
     ],
     description: "overrides for the default values",
@@ -1024,6 +1064,16 @@ export const formatEip712SignaturesToUseroperationSignatureParam = [
         key: "validUntil?",
         type: "bigint",
         description: "Timestamp the signature will be valid until",
+      },
+      {
+        key: "isMultiChainSignature?",
+        type: "boolean",
+        description: "Whether this is a multi-chain signature using Merkle proofs",
+      },
+      {
+        key: "merkleProof?",
+        type: "string",
+        description: "Merkle proof for multi-chain signature verification",
       },
     ],
     description: "overrides for the default values",
