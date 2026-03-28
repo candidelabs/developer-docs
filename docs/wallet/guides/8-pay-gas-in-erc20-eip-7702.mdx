@@ -36,7 +36,7 @@ const paymaster = new CandidePaymaster(paymasterRPC)
 
 const tokensSupported = await paymaster.fetchSupportedERC20TokensAndPaymasterMetadata();
 const tokenSelected = tokensSupported.tokens.find(
-    token => token.address.toLocaleLowerCase() === tokenAddress.toLowerCase()
+    token => token.address.toLowerCase() === tokenAddress.toLowerCase()
 );
 
 if (tokenSelected) {

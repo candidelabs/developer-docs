@@ -138,7 +138,7 @@ To use MagicSigner in your app's client, you must ensure the `window` object is 
 <TabItem value="ethers" label="ethers">
 
 ```ts
-import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit";
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 
 const initiateRecoveryMetaTx = createConfirmRecoveryMetaTransaction(
     smartAccount.address, 
@@ -161,7 +161,7 @@ const sendTx1 = guardianSigner.sendTransaction({
 <TabItem value="viem" label="viem">
 
 ```ts 
-import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit";
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 import { createWalletClient, http } from "viem";
 
 const initiateRecoveryMetaTx = createConfirmRecoveryMetaTransaction(
