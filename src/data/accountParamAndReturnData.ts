@@ -105,6 +105,16 @@ export const initCodeOverrides = [
     description:
       "Contract verifier for WebAuthn-based shared signer, compliant with EIP-7212.",
   },
+  {
+    key: "onChainIdentifierParams?",
+    type: "OnChainIdentifierParamsType",
+    description: "Parameters for on-chain identifier tracking.",
+  },
+  {
+    key: "onChainIdentifier?",
+    type: "string",
+    description: "Pre-computed on-chain identifier string.",
+  },
 ];
 
 export const createInitCodeParamV2 = [
@@ -930,6 +940,36 @@ export const estimateUserOperationGasParamV6 = [
         description:
           "The expected signers that will sign over the transaction. This improves the gas estimates.",
       },
+      {
+        key: "webAuthnSharedSigner?",
+        type: "string",
+        description: "Specify the WebAuthn shared signer",
+      },
+      {
+        key: "webAuthnSignerFactory?",
+        type: "string",
+        description: "Specify the WebAuthn signer factory",
+      },
+      {
+        key: "webAuthnSignerSingleton?",
+        type: "string",
+        description: "Specify the WebAuthn signer singleton",
+      },
+      {
+        key: "webAuthnSignerProxyCreationCode?",
+        type: "string",
+        description: "Specify the WebAuthn signer proxy creation code",
+      },
+      {
+        key: "eip7212WebAuthnPrecompileVerifier?",
+        type: "string",
+        description: "Specify the EIP-7212 WebAuthn precompile verifier",
+      },
+      {
+        key: "eip7212WebAuthnContractVerifier?",
+        type: "string",
+        description: "Specify the EIP-7212 WebAuthn contract verifier",
+      },
     ],
     description: "overrides for the default values",
   },
@@ -1589,5 +1629,106 @@ export const getUserOperationEip712DataReturn = [
     key: "messageValue",
     type: safeUserOperationTypedMessageValueType,
     description: "Safe userOperation typed message value",
+  },
+];
+
+export const constructorV2Param = [
+  {
+    key: "accountAddress",
+    type: "string",
+    description: "The on-chain address of the deployed Safe account.",
+  },
+  {
+    key: "overrides?",
+    type: [
+      {
+        key: "safe4337ModuleAddress?",
+        type: "string",
+        description: "Override the default Safe 4337 module address.",
+      },
+      {
+        key: "entrypointAddress?",
+        type: "string",
+        description: "Override the default EntryPoint address.",
+      },
+      {
+        key: "onChainIdentifierParams?",
+        type: "OnChainIdentifierParamsType",
+        description: "Parameters for on-chain identifier tracking.",
+      },
+      {
+        key: "onChainIdentifier?",
+        type: "string",
+        description: "Pre-computed on-chain identifier string.",
+      },
+    ],
+    description: "Optional overrides for module and EntryPoint addresses.",
+  },
+];
+
+export const constructorV2Return = [
+  {
+    key: "SafeAccountV0_2_0",
+    type: "SafeAccountV0_2_0",
+    description: "An instance of the SafeAccountV0_2_0 class connected to the existing account.",
+  },
+];
+
+export const createMigrateToV3Param = [
+  {
+    key: "nodeRpcUrl",
+    type: "string",
+    description: "The JSON-RPC API URL for the target chain.",
+  },
+  {
+    key: "overrides?",
+    type: [
+      {
+        key: "safeV06ModuleAddress?",
+        type: "string",
+        description: "Override the Safe v0.6 module address to disable.",
+      },
+      {
+        key: "safeV07ModuleAddress?",
+        type: "string",
+        description: "Override the Safe v0.7 module address to enable.",
+      },
+      {
+        key: "pageSize?",
+        type: "bigint",
+        description: "Page size for the module pagination query.",
+      },
+      {
+        key: "modulesStart?",
+        type: "string",
+        description: "Starting address for the module pagination query.",
+      },
+    ],
+    description: "Optional overrides for contract addresses and pagination.",
+  },
+];
+
+export const createMigrateToV3Return = [
+  {
+    key: "MetaTransaction[]",
+    type: [
+      {
+        key: "to",
+        type: "string",
+        description: "The target address for the meta-transaction.",
+      },
+      {
+        key: "data",
+        type: "string",
+        description: "The encoded function call data.",
+      },
+      {
+        key: "value",
+        type: "bigint",
+        description: "The value to send with the meta-transaction (0n for these operations).",
+      },
+    ],
+    description:
+      "Array of meta-transactions that disable the v0.6 module, enable the v0.7 module, and update the fallback handler.",
   },
 ];
