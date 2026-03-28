@@ -1,0 +1,401 @@
+---
+title: Key Management with Calibur
+description: Learn how to register, use, update, and revoke keys on a Calibur smart account
+keywords: [calibur, key-management, session-keys, eip-7702, multi-signer]
+---
+
+# Key Management with Calibur
+
+Calibur supports multiple signers on a single account. You can register secondary keys (EOA addresses, passkeys, P256 keys), each with their own settings: expiration time, per-key hooks, and admin or non-admin privileges. This guide demonstrates the full key lifecycle: listing, registering, signing with a secondary key, updating settings, and revoking.
+
+Key concepts to understand before starting:
+
+- **Three key types**: `Secp256k1` (standard EOA keys), `WebAuthnP256` (passkeys), and `P256` (raw secp256r1 keys).
+- **Root key**: The EOA's own key has `keyHash = bytes32(0)` and is always admin. It cannot be revoked.
+- **Admin keys only**: Only admin keys can call management functions (register, update, revoke). Non-admin keys can sign regular transactions but cannot modify the account's key configuration.
+
+## Prerequisites
+
+- Sepolia Bundler and Paymaster endpoints from the [Dashboard](https://dashboard.candide.dev)
+- Node and a package manager (yarn or npm)
+- An EOA already delegated to Calibur. Run the [Calibur quickstart](/wallet/guides/getting-started-calibur) first if you haven't done this.
+
+Here's the [complete code](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/03-manage-keys.ts) for you to reference if you prefer to run it directly.
+
+---
+
+## Step 1: Setup and list existing keys
+
+1. Install dependencies:
+
+```bash
+npm i abstractionkit@0.2.39 dotenv
+```
+
+2. Configure environment variables. Create a `.env` file:
+
+```bash title=".env"
+CHAIN_ID=11155111
+JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
+BUNDLER_URL=https://api.candide.dev/public/v3/sepolia
+PAYMASTER_URL=https://api.candide.dev/public/v3/sepolia
+PRIVATE_KEY=your_eoa_private_key_here
+```
+
+3. Create your script file with imports and initialization:
+
+```ts title="index.ts"
+import { Wallet } from "ethers";
+import {
+    Calibur7702Account,
+    CandidePaymaster,
+    CaliburKeyType,
+    ZeroAddress,
+} from "abstractionkit";
+
+const chainId = BigInt(process.env.CHAIN_ID as string);
+const bundlerUrl = process.env.BUNDLER_URL as string;
+const paymasterUrl = process.env.PAYMASTER_URL as string;
+const nodeUrl = process.env.JSON_RPC_NODE_PROVIDER as string;
+const privateKey = process.env.PRIVATE_KEY as string;
+
+const eoaWallet = new Wallet(privateKey);
+const eoaAddress = eoaWallet.address;
+
+const smartAccount = new Calibur7702Account(eoaAddress);
+const paymaster = new CandidePaymaster(paymasterUrl);
+
+// This guide requires an already-delegated account.
+const delegated = await smartAccount.isDelegated(nodeUrl);
+if (!delegated) {
+    console.log("EOA is not yet delegated to Calibur. Run the quickstart first.");
+    process.exit(1);
+}
+```
+
+4. List all registered keys and their settings:
+
+```ts title="index.ts"
+const keyTypeNames = {
+    [CaliburKeyType.P256]: "P256",
+    [CaliburKeyType.WebAuthnP256]: "WebAuthn",
+    [CaliburKeyType.Secp256k1]: "Secp256k1",
+};
+
+const keys = await smartAccount.listKeys(nodeUrl);
+console.log("Registered keys:\n");
+
+for (const key of keys) {
+    const keyHash = Calibur7702Account.getKeyHash(key);
+    const settings = await smartAccount.getKeySettings(nodeUrl, keyHash);
+
+    console.log(`  Key: ${keyHash.slice(0, 18)}...`);
+    console.log(`    Type:    ${keyTypeNames[key.keyType] ?? key.keyType}`);
+    console.log(`    Admin:   ${settings.isAdmin}`);
+    console.log(`    Expires: ${settings.expiration === 0 ? "never" : new Date(settings.expiration * 1000).toISOString()}`);
+    console.log(`    Hook:    ${settings.hook === ZeroAddress ? "none" : settings.hook}`);
+    console.log();
+}
+```
+
+`listKeys` returns all currently registered keys. `getKeySettings` returns a key's expiration timestamp, hook address, and admin flag.
+
+Run the code to verify:
+
+```cli title="Terminal"
+npx ts-node index.ts
+```
+
+<details>
+<summary>Result example</summary>
+
+```terminal
+Registered keys:
+
+  Key: 0x0000000000000000...
+    Type:    Secp256k1
+    Admin:   true
+    Expires: never
+    Hook:    none
+```
+
+</details>
+
+The zero-hash entry is the root key (your EOA). It is always admin and never expires.
+
+---
+
+## Step 2: Register a secondary secp256k1 key
+
+Generate a new keypair and register it as a secondary signer. In practice this would be a session key, a co-signer address, or a key stored in a different device.
+
+```ts title="index.ts"
+import { generatePrivateKey, privateKeyToAddress } from "viem/accounts";
+
+// Generate a new keypair for the secondary signer.
+const secondaryPrivateKey = generatePrivateKey();
+const secondaryAddress = privateKeyToAddress(secondaryPrivateKey);
+console.log("Registering secondary key:", secondaryAddress);
+
+// Build the key descriptor from the address.
+const newKey = Calibur7702Account.createSecp256k1Key(secondaryAddress);
+const newKeyHash = Calibur7702Account.getKeyHash(newKey);
+```
+
+`createSecp256k1Key` takes an Ethereum address and returns the key descriptor Calibur expects. `getKeyHash` computes the unique identifier used to reference the key later.
+
+Registration requires **two transactions** (register + update) that must be submitted in the same UserOperation. `createRegisterKeyMetaTransactions` returns both:
+
+```ts title="index.ts"
+const registerTxs = Calibur7702Account.createRegisterKeyMetaTransactions(
+    newKey,
+    {
+        // Key expires in 30 days
+        expiration: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+    }
+);
+```
+
+Build the UserOperation, sponsor gas, sign with the admin (root) key, and send:
+
+```ts title="index.ts"
+import { calculateUserOperationMaxGasCost } from "abstractionkit";
+
+let registerOp = await smartAccount.createUserOperation(
+    registerTxs,
+    nodeUrl,
+    bundlerUrl,
+);
+
+const cost = calculateUserOperationMaxGasCost(registerOp);
+console.log("This UserOperation may cost up to: " + cost + " wei");
+
+let [sponsoredRegisterOp] = await paymaster.createSponsorPaymasterUserOperation(
+    registerOp,
+    bundlerUrl,
+);
+registerOp = sponsoredRegisterOp;
+
+// Must be signed by an admin key. The root EOA key is always admin.
+registerOp.signature = smartAccount.signUserOperation(
+    registerOp,
+    privateKey,
+    chainId,
+);
+
+console.log("Sending registration UserOperation...");
+const registerResponse = await smartAccount.sendUserOperation(registerOp, bundlerUrl);
+const registerReceipt = await registerResponse.included();
+
+if (registerReceipt.success) {
+    console.log("Key registered! Tx:", registerReceipt.receipt.transactionHash);
+} else {
+    console.log("Registration failed:", registerReceipt);
+    process.exit(1);
+}
+
+// Verify the key is now registered on-chain.
+const isRegistered = await smartAccount.isKeyRegistered(nodeUrl, newKeyHash);
+console.log("Registered on-chain:", isRegistered); // true
+```
+
+<details>
+<summary>Result example</summary>
+
+```terminal
+Registering secondary key: 0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B
+This UserOperation may cost up to: 712040000000000 wei
+Sending registration UserOperation...
+Key registered! Tx: 0x4a1b2c3d...
+Registered on-chain: true
+```
+
+</details>
+
+---
+
+## Step 3: Sign a transaction with the secondary key
+
+Non-admin keys can sign regular transactions independently. Pass the secondary key's private key and the `keyHash` option to `signUserOperation`:
+
+```ts title="index.ts"
+import { getFunctionSelector, createCallData, MetaTransaction } from "abstractionkit";
+
+const nftContractAddress = "0x9a7af758aE5d7B6aAE84fe4C5Ba67c041dFE5336";
+const mintCallData = createCallData(
+    getFunctionSelector("mint(address)"),
+    ["address"],
+    [eoaAddress],
+);
+
+const mintTx: MetaTransaction = { to: nftContractAddress, value: 0n, data: mintCallData };
+
+let secondaryOp = await smartAccount.createUserOperation(
+    [mintTx],
+    nodeUrl,
+    bundlerUrl,
+);
+
+let [sponsoredSecondaryOp] = await paymaster.createSponsorPaymasterUserOperation(
+    secondaryOp,
+    bundlerUrl,
+);
+secondaryOp = sponsoredSecondaryOp;
+
+// Sign with the secondary key's private key.
+// The keyHash option tells Calibur which registered key is signing.
+secondaryOp.signature = smartAccount.signUserOperation(
+    secondaryOp,
+    secondaryPrivateKey,
+    chainId,
+    { keyHash: newKeyHash },
+);
+
+console.log("Sending transaction signed by secondary key...");
+const secondaryResponse = await smartAccount.sendUserOperation(secondaryOp, bundlerUrl);
+const secondaryReceipt = await secondaryResponse.included();
+
+if (secondaryReceipt.success) {
+    console.log("Transaction confirmed! Tx:", secondaryReceipt.receipt.transactionHash);
+} else {
+    console.log("Transaction failed:", secondaryReceipt);
+}
+```
+
+The `keyHash` override wraps the signature so Calibur verifies it against the correct registered key rather than the root key.
+
+<details>
+<summary>Result example</summary>
+
+```terminal
+Sending transaction signed by secondary key...
+Transaction confirmed! Tx: 0x9f8e7d6c...
+```
+
+</details>
+
+---
+
+## Step 4: Update key settings
+
+An admin key can update the settings of any registered key at any time. This is useful for extending an expiration, changing the hook, or modifying other attributes:
+
+```ts title="index.ts"
+const updateTx = Calibur7702Account.createUpdateKeySettingsMetaTransaction(
+    newKeyHash,
+    {
+        // Extend expiration to 1 year from now
+        expiration: Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60,
+    }
+);
+
+let updateOp = await smartAccount.createUserOperation(
+    [updateTx],
+    nodeUrl,
+    bundlerUrl,
+);
+
+let [sponsoredUpdateOp] = await paymaster.createSponsorPaymasterUserOperation(
+    updateOp,
+    bundlerUrl,
+);
+updateOp = sponsoredUpdateOp;
+
+// Admin signature required.
+updateOp.signature = smartAccount.signUserOperation(
+    updateOp,
+    privateKey,
+    chainId,
+);
+
+const updateResponse = await smartAccount.sendUserOperation(updateOp, bundlerUrl);
+const updateReceipt = await updateResponse.included();
+
+if (updateReceipt.success) {
+    const updatedSettings = await smartAccount.getKeySettings(nodeUrl, newKeyHash);
+    console.log(
+        "Expiration updated to:",
+        new Date(updatedSettings.expiration * 1000).toISOString()
+    );
+    console.log("Tx:", updateReceipt.receipt.transactionHash);
+} else {
+    console.log("Update failed:", updateReceipt);
+}
+```
+
+A non-admin key attempting this call will be rejected on-chain.
+
+<details>
+<summary>Result example</summary>
+
+```terminal
+Expiration updated to: 2027-03-28T12:00:00.000Z
+Tx: 0x1a2b3c4d...
+```
+
+</details>
+
+---
+
+## Step 5: Revoke a key
+
+Use `createRevokeKeyMetaTransaction` to permanently remove a key. Like register and update, revoke requires an admin key signature:
+
+```ts title="index.ts"
+const revokeTx = Calibur7702Account.createRevokeKeyMetaTransaction(newKeyHash);
+
+let revokeOp = await smartAccount.createUserOperation(
+    [revokeTx],
+    nodeUrl,
+    bundlerUrl,
+);
+
+let [sponsoredRevokeOp] = await paymaster.createSponsorPaymasterUserOperation(
+    revokeOp,
+    bundlerUrl,
+);
+revokeOp = sponsoredRevokeOp;
+
+// Admin signature required.
+revokeOp.signature = smartAccount.signUserOperation(
+    revokeOp,
+    privateKey,
+    chainId,
+);
+
+const revokeResponse = await smartAccount.sendUserOperation(revokeOp, bundlerUrl);
+const revokeReceipt = await revokeResponse.included();
+
+if (revokeReceipt.success) {
+    const stillRegistered = await smartAccount.isKeyRegistered(nodeUrl, newKeyHash);
+    console.log("Key still registered:", stillRegistered); // false
+    console.log("Tx:", revokeReceipt.receipt.transactionHash);
+} else {
+    console.log("Revocation failed:", revokeReceipt);
+}
+```
+
+After revocation, `isKeyRegistered` returns `false` and any UserOperation signed with that key will be rejected.
+
+<details>
+<summary>Result example</summary>
+
+```terminal
+Key still registered: false
+Tx: 0x5e6f7a8b...
+```
+
+</details>
+
+---
+
+## Full Example
+
+```ts reference title="03-manage-keys.ts"
+https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/03-manage-keys.ts
+```
+
+## Next Steps
+
+- Explore the [Calibur SDK reference](/wallet/abstractionkit/calibur-account) for the full API
+- Add passkey authentication: [Passkey Authentication with Calibur](/wallet/guides/calibur-passkeys)
