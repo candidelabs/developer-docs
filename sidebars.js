@@ -479,21 +479,6 @@ const sidebars = {
           ],
         },
         {
-          type: "doc",
-          id: "wallet/abstractionkit/bundler",
-          label: "Bundler"
-        },
-        {
-          type: "doc",
-          id: "wallet/abstractionkit/paymaster",
-          label: "Paymaster"
-        },
-        {
-          type: "doc",
-          id: "wallet/abstractionkit/utilities",
-          label: "Utilities"
-        },
-        {
           type: "category",
           label: "Simple 7702 Account",
           collapsed: true,
@@ -515,6 +500,21 @@ const sidebars = {
           type: "doc",
           id: "wallet/abstractionkit/calibur-account",
           label: "Calibur Account"
+        },
+        {
+          type: "doc",
+          id: "wallet/abstractionkit/bundler",
+          label: "Bundler"
+        },
+        {
+          type: "doc",
+          id: "wallet/abstractionkit/paymaster",
+          label: "Paymaster"
+        },
+        {
+          type: "doc",
+          id: "wallet/abstractionkit/utilities",
+          label: "Utilities"
         },
       ],
     },
