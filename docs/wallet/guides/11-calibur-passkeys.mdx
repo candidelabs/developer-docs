@@ -1,0 +1,334 @@
+---
+title: Passkey Authentication with Calibur
+description: Learn how to register a WebAuthn passkey on a Calibur smart account and sign transactions with it
+keywords: [calibur, passkeys, webauthn, eip-7702, authentication, biometric]
+---
+
+# Passkey Authentication with Calibur
+
+Calibur supports WebAuthn passkeys (Face ID, fingerprint, security keys) as secondary signers. This guide shows how to register a passkey on a Calibur account and use it to sign a transaction.
+
+Key points to understand before starting:
+
+- Passkey registration must be signed by an admin key (the EOA root key), because only admin keys can call key management functions.
+- Once registered, the passkey can sign regular transactions independently without the root key.
+- Each registered key has its own settings: expiration time, hook, and admin flag.
+
+## Prerequisites
+
+- Sepolia Bundler and Paymaster endpoints from the [Dashboard](https://dashboard.candide.dev)
+- Node and a package manager (yarn or npm)
+- An EOA already delegated to Calibur. Run the [Calibur quickstart](/wallet/guides/getting-started-calibur) first if you haven't done this.
+
+Here's the [complete code](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/02-passkeys.ts) for you to reference if you prefer to run it directly.
+
+---
+
+## Part 1: Register a Passkey
+
+## Step 1: Setup and imports
+
+1. Install dependencies:
+
+```bash
+npm i abstractionkit@0.2.39 dotenv
+```
+
+2. Configure environment variables. Create a `.env` file:
+
+```bash title=".env"
+CHAIN_ID=11155111
+JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
+BUNDLER_URL=https://api.candide.dev/public/v3/sepolia
+PAYMASTER_URL=https://api.candide.dev/public/v3/sepolia
+PRIVATE_KEY=your_eoa_private_key_here
+```
+
+3. Create your script file with the imports and initialization:
+
+```ts title="index.ts"
+import * as crypto from "crypto";
+import { Wallet } from "ethers";
+import { toBytes, toHex } from "viem";
+import {
+  Calibur7702Account,
+  CandidePaymaster,
+  createAndSignEip7702DelegationAuthorization,
+  WebAuthnSignatureData,
+} from "abstractionkit";
+
+const chainId = BigInt(process.env.CHAIN_ID as string);
+const bundlerUrl = process.env.BUNDLER_URL as string;
+const paymasterUrl = process.env.PAYMASTER_URL as string;
+const nodeUrl = process.env.JSON_RPC_NODE_PROVIDER as string;
+const privateKey = process.env.PRIVATE_KEY as string;
+
+const eoaWallet = new Wallet(privateKey);
+const eoaAddress = eoaWallet.address;
+
+const smartAccount = new Calibur7702Account(eoaAddress);
+const paymaster = new CandidePaymaster(paymasterUrl);
+
+// Check if the EOA is already delegated to Calibur.
+// isDelegated() returns true only if delegated to this account's delegateeAddress.
+const alreadyDelegated = await smartAccount.isDelegated(nodeUrl);
+console.log("Already delegated:", alreadyDelegated);
+```
+
+## Step 2: Create a WebAuthn credential
+
+Create a passkey credential. In a real browser application, this call triggers a biometric prompt (Face ID, fingerprint, or security key). The example below uses the browser's native `navigator.credentials` API shape.
+
+```ts title="index.ts"
+// In a browser, navigator.credentials is available globally.
+// Call navigator.credentials.create() with your relying party details.
+const credential = await navigator.credentials.create({
+  publicKey: {
+    rp: { name: "My Wallet", id: window.location.hostname },
+    user: {
+      id: crypto.getRandomValues(new Uint8Array(32)),
+      name: "user@example.com",
+      displayName: "My Account",
+    },
+    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+  },
+});
+
+// Extract the P-256 public key coordinates from the credential.
+// x and y are the BigInt coordinates of the passkey's public key.
+const { x, y } = extractPublicKey(credential.response);
+console.log("Passkey public key:");
+console.log("  x:", toHex(x));
+console.log("  y:", toHex(y));
+```
+
+The `extractPublicKey` function parses the CBOR-encoded attestation response and returns the `x` and `y` coordinates of the P-256 public key. These coordinates are what gets registered on-chain.
+
+## Step 3: Build key registration transactions
+
+Use the public key coordinates to create a `CaliburKey` struct and compute its hash. Then build the registration transactions.
+
+```ts title="index.ts"
+// createWebAuthnP256Key wraps the x, y coordinates into a CaliburKey struct.
+const webAuthnKey = Calibur7702Account.createWebAuthnP256Key(x, y);
+
+// getKeyHash computes the on-chain identifier for this key.
+const keyHash = Calibur7702Account.getKeyHash(webAuthnKey);
+console.log("Key hash:", keyHash);
+
+// createRegisterKeyMetaTransactions returns two MetaTransactions that
+// MUST be included in the same UserOperation: register() and update().
+// Splitting them across separate UserOperations will revert.
+const registerTxs = Calibur7702Account.createRegisterKeyMetaTransactions(
+  webAuthnKey,
+  {
+    // Key expires in 1 year. Set expiration to 0 for no expiration.
+    expiration: Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60,
+  }
+);
+```
+
+The key is registered as non-admin by default. Non-admin keys can sign regular transactions but cannot call key management functions (register, revoke, or update settings). Only admin keys can perform those operations.
+
+## Step 4: Create, sponsor, sign, and send the registration UserOperation
+
+Build the UserOperation from the registration transactions. If the EOA is not yet delegated to Calibur, include `eip7702Auth` to delegate in the same UserOperation.
+
+```ts title="index.ts"
+let registerOp = await smartAccount.createUserOperation(
+  registerTxs,
+  nodeUrl,
+  bundlerUrl,
+  {
+    // Include eip7702Auth only if not yet delegated.
+    eip7702Auth: alreadyDelegated ? undefined : { chainId },
+  }
+);
+
+// Sign the delegation authorization if this is the first UserOperation.
+if (!alreadyDelegated) {
+  registerOp.eip7702Auth = createAndSignEip7702DelegationAuthorization(
+    BigInt(registerOp.eip7702Auth.chainId),
+    registerOp.eip7702Auth.address,
+    BigInt(registerOp.eip7702Auth.nonce),
+    privateKey,
+  );
+}
+
+// Sponsor gas with the paymaster.
+let [sponsoredRegisterOp] = await paymaster.createSponsorPaymasterUserOperation(
+  registerOp,
+  bundlerUrl,
+);
+registerOp = sponsoredRegisterOp;
+
+// Sign with the root key (EOA private key). Only admin keys can register
+// new keys, so the root key must sign this UserOperation.
+registerOp.signature = smartAccount.signUserOperation(
+  registerOp,
+  privateKey,
+  chainId,
+);
+
+console.log(
+  alreadyDelegated ? "Registering passkey..." : "Registering passkey and delegating EOA..."
+);
+const registerResponse = await smartAccount.sendUserOperation(registerOp, bundlerUrl);
+const registerReceipt = await registerResponse.included();
+
+if (!registerReceipt.success) {
+  console.log("Registration failed:", registerReceipt);
+  return;
+}
+console.log("Passkey registered! Tx:", registerReceipt.receipt.transactionHash);
+
+// Verify the key is registered on-chain.
+const isRegistered = await smartAccount.isKeyRegistered(nodeUrl, keyHash);
+console.log("Key registered on-chain:", isRegistered);
+
+const settings = await smartAccount.getKeySettings(nodeUrl, keyHash);
+console.log("Key settings:", {
+  isAdmin: settings.isAdmin,
+  expiration: new Date(settings.expiration * 1000).toISOString(),
+  hook: settings.hook,
+});
+```
+
+<details>
+<summary>Result example</summary>
+
+```terminal
+Passkey registered! Tx: 0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a
+Key registered on-chain: true
+Key settings: { isAdmin: false, expiration: '2027-03-28T00:00:00.000Z', hook: '0x0000000000000000000000000000000000000000' }
+```
+
+</details>
+
+---
+
+## Part 2: Sign a Transaction with the Passkey
+
+## Step 5: Create a UserOperation with a dummy WebAuthn signature
+
+WebAuthn signatures are larger than ECDSA signatures, so the bundler needs an accurate dummy signature to estimate gas correctly. Use `createDummyWebAuthnSignature` and pass it as the `dummySignature` override.
+
+```ts title="index.ts"
+import { getFunctionSelector, createCallData } from "abstractionkit";
+
+const nftContractAddress = "0x9a7af758aE5d7B6aAE84fe4C5Ba67c041dFE5336";
+const mintFunctionSelector = getFunctionSelector("mint(address)");
+const mintCallData = createCallData(
+  mintFunctionSelector,
+  ["address"],
+  [eoaAddress],
+);
+
+// Provide a dummy WebAuthn signature so the bundler can estimate gas accurately.
+// WebAuthn signatures are larger than ECDSA, and underestimating gas will cause
+// the UserOperation to revert on-chain.
+const dummyWebAuthnSig = Calibur7702Account.createDummyWebAuthnSignature(keyHash);
+
+let userOperation = await smartAccount.createUserOperation(
+  [{ to: nftContractAddress, value: 0n, data: mintCallData }],
+  nodeUrl,
+  bundlerUrl,
+  { dummySignature: dummyWebAuthnSig },
+);
+
+// Sponsor gas before signing. In ERC-4337 v0.8, paymaster data is included
+// in the UserOperation hash, so it must be set before the passkey signs.
+let [sponsoredUserOperation] = await paymaster.createSponsorPaymasterUserOperation(
+  userOperation,
+  bundlerUrl,
+);
+userOperation = sponsoredUserOperation;
+```
+
+## Step 6: Get the UserOperation hash and sign with the passkey
+
+Compute the UserOperation hash and pass it as the WebAuthn challenge. In a browser, this triggers the biometric prompt for the user to sign.
+
+```ts title="index.ts"
+// getUserOperationHash returns the hash that the passkey will sign.
+const userOpHash = smartAccount.getUserOperationHash(userOperation, chainId);
+
+// In a browser, navigator.credentials.get() triggers the biometric prompt.
+const assertion = await navigator.credentials.get({
+  publicKey: {
+    challenge: toBytes(userOpHash as `0x${string}`),
+    rpId: window.location.hostname,
+    allowCredentials: [{
+      type: "public-key",
+      id: new Uint8Array(credential.rawId),
+    }],
+  },
+});
+
+// Extract r and s from the DER-encoded signature in the assertion response.
+const { r, s } = extractSignature(assertion.response);
+const clientDataJSON = new TextDecoder().decode(assertion.response.clientDataJSON);
+
+// Build the WebAuthnSignatureData struct from the assertion fields.
+const webAuthnSignatureData: WebAuthnSignatureData = {
+  authenticatorData: toHex(new Uint8Array(assertion.response.authenticatorData)),
+  clientDataJSON,
+  challengeIndex: BigInt(clientDataJSON.indexOf('"challenge"')),
+  typeIndex: BigInt(clientDataJSON.indexOf('"type"')),
+  r,
+  s,
+};
+
+// formatWebAuthnSignature encodes the signature into the Calibur format:
+// abi.encode(keyHash, webAuthnAuth, hookData)
+userOperation.signature = smartAccount.formatWebAuthnSignature(
+  keyHash,
+  webAuthnSignatureData,
+);
+```
+
+`challengeIndex` and `typeIndex` are byte offsets within the `clientDataJSON` string. The Calibur on-chain verifier uses them to locate the `"challenge"` and `"type"` fields without parsing the full JSON.
+
+## Step 7: Send the passkey-signed transaction
+
+Send the UserOperation and wait for on-chain inclusion.
+
+```ts title="index.ts"
+console.log("Sending passkey-signed UserOperation...");
+const response = await smartAccount.sendUserOperation(userOperation, bundlerUrl);
+console.log("UserOp hash:", response.userOperationHash);
+
+const receipt = await response.included();
+if (receipt.success) {
+  console.log("NFT minted with passkey signature!");
+  console.log("Transaction:", receipt.receipt.transactionHash);
+} else {
+  console.log("UserOperation failed:", receipt);
+}
+```
+
+<details>
+<summary>Result example</summary>
+
+```terminal
+Sending passkey-signed UserOperation...
+UserOp hash: 0x89a5111d40c4ca45977a28419a08ca33e496a88e973bc995ec6a5a28da564cb5
+NFT minted with passkey signature!
+Transaction: 0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a
+```
+
+</details>
+
+You can look up the hash on explorers that support user operations like [Blockscout](https://www.blockscout.com/).
+
+## Full Example
+
+```ts reference title="02-passkeys.ts"
+https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/02-passkeys.ts
+```
+
+## Next Steps
+
+- Explore the [Calibur SDK reference](/wallet/abstractionkit/calibur-account) for the full API
+- Manage registered keys and permissions: [03-manage-keys.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/03-manage-keys.ts)

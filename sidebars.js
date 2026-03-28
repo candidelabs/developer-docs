@@ -521,6 +521,11 @@ const sidebars = {
           label: "Calibur Quickstart"
         },
         {
+          type: "doc",
+          id: "wallet/guides/calibur-passkeys",
+          label: "Calibur Passkeys"
+        },
+        {
           type: "category",
           label: "Simple 7702 Account",
           collapsed: true,
