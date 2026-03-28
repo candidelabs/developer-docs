@@ -1,0 +1,264 @@
+---
+title: Getting Started with Calibur Account
+description: Learn how to upgrade an EOA to a Calibur smart account with EIP-7702, batch transactions, and gas sponsorship
+keywords: [calibur, eip-7702, smart-account, batching, gas-sponsorship, passkeys]
+---
+
+# Calibur Account Quickstart
+
+Calibur turns your EOA into a smart account via EIP-7702 delegation. After delegation, the address stays the same but gains batching, gas sponsorship, and key management capabilities including passkey authentication.
+
+This guide demonstrates how to upgrade your EOA to a Calibur smart account and batch two NFT mints in a single sponsored transaction.
+
+## Prerequisites
+
+- Sepolia Bundler and Paymaster endpoints from the [Dashboard](https://dashboard.candide.dev)
+- Node and a package manager (yarn or npm)
+
+Here's the [complete code](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/01-upgrade-eoa.ts) for you to reference if you prefer to run directly.
+
+## Step 1: Get setup
+
+1. Create a new directory for your project:
+
+```bash
+mkdir candide-calibur-quickstart
+cd candide-calibur-quickstart
+npx tsc --init
+```
+
+2. Install dependencies
+
+```bash
+npm i typescript --save-dev
+npm i abstractionkit dotenv
+```
+
+3. Configure Environment Variables
+
+- Create a `.env` file and add the following environment variables with your own values
+
+```bash title=".env"
+CHAIN_ID=11155111
+JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
+BUNDLER_URL=https://api.candide.dev/public/v3/sepolia
+PAYMASTER_URL=https://api.candide.dev/public/v3/sepolia
+PRIVATE_KEY=your_eoa_private_key_here
+```
+
+4. Create an empty file and a function to run your script
+
+```ts title="index.ts"
+async function main(): Promise<void> {
+  // Rest of the code will go here...
+}
+
+main();
+```
+
+## Step 2: Initialize Account and Paymaster
+
+Initialize the [Calibur7702Account](/wallet/abstractionkit/calibur-account) using your EOA address. The account address stays the same after delegation.
+
+```ts title="index.ts"
+import { Calibur7702Account, CandidePaymaster } from "abstractionkit";
+
+const chainId = BigInt(process.env.CHAIN_ID as string);
+const bundlerUrl = process.env.BUNDLER_URL as string;
+const paymasterUrl = process.env.PAYMASTER_URL as string;
+const nodeUrl = process.env.JSON_RPC_NODE_PROVIDER as string;
+const privateKey = process.env.PRIVATE_KEY as string;
+
+// Derive the EOA public address from the private key
+import { Wallet } from "ethers";
+const eoaWallet = new Wallet(privateKey);
+const eoaAddress = eoaWallet.address;
+
+// The account address is your EOA address. After delegation, it becomes
+// a smart account while keeping the same address.
+const smartAccount = new Calibur7702Account(eoaAddress);
+
+console.log("Smart account address: " + smartAccount.accountAddress);
+
+// Check if the EOA is already delegated to Calibur
+const alreadyDelegated = await smartAccount.isDelegated(nodeUrl);
+
+// CandidePaymaster sponsors gas so the EOA doesn't need native tokens.
+const paymaster = new CandidePaymaster(paymasterUrl);
+```
+
+Run the code to verify the account address:
+
+```cli title="Terminal"
+npx ts-node index.ts
+```
+
+<details>
+<summary>Result example</summary>
+Smart account address: 0x32afdcfa1e3bfe70d03ecb55b5c8045c26515c9d
+</details>
+
+## Step 3: Build Transactions
+
+Batch two NFT mints into a single UserOperation to demonstrate the smart account's batching capability.
+
+```ts title="index.ts"
+import {
+  getFunctionSelector,
+  createCallData,
+  MetaTransaction,
+} from "abstractionkit";
+
+const nftContractAddress = "0x9a7af758aE5d7B6aAE84fe4C5Ba67c041dFE5336";
+const mintFunctionSelector = getFunctionSelector('mint(address)');
+const mintCallData = createCallData(
+    mintFunctionSelector,
+    ["address"],
+    [eoaAddress],
+);
+
+const mintNft1: MetaTransaction = { to: nftContractAddress, value: 0n, data: mintCallData };
+const mintNft2: MetaTransaction = { to: nftContractAddress, value: 0n, data: mintCallData };
+```
+
+## Step 4: Create UserOperation with EIP-7702 Delegation
+
+Call `createUserOperation` to build the unsigned UserOperation. Pass `eip7702Auth` on the first delegation. If the EOA is already delegated, skip the authorization by passing `undefined`.
+
+```ts title="index.ts"
+import { calculateUserOperationMaxGasCost } from "abstractionkit";
+
+// eip7702Auth tells the bundler to include a delegation authorization
+// in the transaction. Only needed for the first UserOperation.
+let userOperation = await smartAccount.createUserOperation(
+    [mintNft1, mintNft2],
+    nodeUrl,
+    bundlerUrl,
+    {
+        eip7702Auth: alreadyDelegated ? undefined : { chainId },
+    },
+);
+
+const cost = calculateUserOperationMaxGasCost(userOperation);
+console.log("This UserOperation may cost up to: " + cost + " wei");
+```
+
+## Step 5: Sign the Delegation Authorization
+
+Sign the `eip7702Auth` tuple to authorize the Calibur singleton at your EOA address. This is only required during the first upgrade transaction.
+
+```ts title="index.ts"
+import { createAndSignEip7702DelegationAuthorization } from "abstractionkit";
+
+// Option A: Pass private key string directly
+if (!alreadyDelegated) {
+    userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
+        BigInt(userOperation.eip7702Auth.chainId),
+        userOperation.eip7702Auth.address,
+        BigInt(userOperation.eip7702Auth.nonce),
+        privateKey,
+    );
+}
+
+// Option B: Use a viem signer callback (private key never leaves the client)
+// import { privateKeyToAccount } from "viem/accounts";
+// const viemAccount = privateKeyToAccount(privateKey as `0x${string}`);
+// if (!alreadyDelegated) {
+//     userOperation.eip7702Auth = await createAndSignEip7702DelegationAuthorization(
+//         BigInt(userOperation.eip7702Auth.chainId),
+//         userOperation.eip7702Auth.address,
+//         BigInt(userOperation.eip7702Auth.nonce),
+//         async (hash) => viemAccount.sign({ hash: hash as `0x${string}` }),
+//     );
+// }
+```
+
+## Step 6: Sponsor Gas
+
+Optionally [sponsor gas](/wallet/guides/send-gasless-eip-7702/) for your user. In ERC-4337 v0.8, paymaster data is included in the UserOperation hash, so it must be set before signing.
+
+```ts title="index.ts"
+let [sponsoredUserOperation] = await paymaster.createSponsorPaymasterUserOperation(
+    userOperation,
+    bundlerUrl,
+);
+userOperation = sponsoredUserOperation;
+```
+
+## Step 7: Sign the UserOperation
+
+Sign the UserOperation with the EOA's root key.
+
+```ts title="index.ts"
+// Option A: Pass private key string
+userOperation.signature = smartAccount.signUserOperation(
+    userOperation,
+    privateKey,
+    chainId,
+);
+
+// Option B: Use a viem signer callback
+// userOperation.signature = await smartAccount.signUserOperationWithSigner(
+//     userOperation,
+//     async (hash) => viemAccount.sign({ hash: hash as `0x${string}` }),
+//     chainId,
+// );
+```
+
+## Step 8: Send and Wait for Inclusion
+
+Send the UserOperation to the bundler and wait for on-chain inclusion.
+
+```ts title="index.ts"
+console.log("Sending sponsored UserOperation...");
+const response = await smartAccount.sendUserOperation(userOperation, bundlerUrl);
+console.log("UserOp hash:", response.userOperationHash);
+
+const receipt = await response.included();
+
+if (receipt.success) {
+    if (!alreadyDelegated) {
+        console.log("EOA upgraded to Calibur smart account!");
+    }
+    console.log("Minted 2 NFTs in a single batched UserOperation!");
+    console.log("Gas was sponsored by CandidePaymaster.");
+    console.log("Transaction:", receipt.receipt.transactionHash);
+} else {
+    console.log("UserOperation execution failed");
+    console.log(receipt);
+}
+```
+
+Run the script:
+
+```cli title="Terminal"
+npx ts-node index.ts
+```
+
+<details>
+<summary>Result</summary>
+
+```terminal
+Sending sponsored UserOperation...
+UserOp hash: 0x89a5111d40c4ca45977a28419a08ca33e496a88e973bc995ec6a5a28da564cb5
+EOA upgraded to Calibur smart account!
+Minted 2 NFTs in a single batched UserOperation!
+Gas was sponsored by CandidePaymaster.
+Transaction: 0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a
+```
+
+</details>
+
+You can look up the hash on explorers that support user operations like [Blockscout](https://www.blockscout.com/).
+
+## Full Example
+
+```ts reference title="01-upgrade-eoa.ts"
+https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/01-upgrade-eoa.ts
+```
+
+## Next Steps
+
+- Explore the [Calibur SDK reference](/wallet/abstractionkit/calibur-account) for the full API
+- Add passkey authentication: [02-passkeys.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/02-passkeys.ts)
+- Manage keys and permissions: [03-manage-keys.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/03-manage-keys.ts)
