@@ -90,9 +90,29 @@ import { userOperationReceiptResultType } from "/src/data/userOperation";
 
 | Type | Description |
 |------|-------------|
-| `Secp256k1` | Standard Ethereum EOA key (keyType = 2) |
-| `WebAuthnP256` | WebAuthn-wrapped P-256 passkey (keyType = 1) |
-| `P256` | Raw P-256 / secp256r1 key (keyType = 0) |
+| `Secp256k1` | Standard Ethereum EOA key (keyType = 2). Used for EOA private keys and secondary signers. |
+| `WebAuthnP256` | P-256 key signed through the browser's WebAuthn API (keyType = 1). Used for passkeys, Face ID, fingerprint, and security keys. The signature includes WebAuthn metadata (`authenticatorData`, `clientDataJSON`) that the contract parses before verifying the underlying P-256 signature. |
+| `P256` | Raw P-256 / secp256r1 key (keyType = 0). Same elliptic curve as WebAuthnP256, but with a raw `(r, s)` signature format. Used when you have direct access to a P-256 key (e.g., from a secure enclave or HSM) without the WebAuthn wrapper. |
+
+export const GUIDE_ITEMS = [
+    {
+        title: "Calibur Quickstart",
+        description: "Upgrade an EOA to a Calibur smart account with batch transactions and gas sponsorship",
+        route: "/wallet/guides/getting-started-calibur/",
+    },
+    {
+        title: "Passkey Authentication",
+        description: "Register a WebAuthn passkey and sign transactions with it",
+        route: "/wallet/guides/calibur-passkeys/",
+    },
+    {
+        title: "Key Management",
+        description: "Register, update, and revoke keys on a Calibur account",
+        route: "/wallet/guides/calibur-key-management/",
+    },
+];
+
+<CardList items={GUIDE_ITEMS} />
 
 ## Smart Contracts and Audits
 

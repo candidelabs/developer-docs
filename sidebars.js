@@ -479,6 +479,29 @@ const sidebars = {
           ],
         },
         {
+          type: "category",
+          label: "Simple 7702 Account",
+          collapsed: true,
+          link: { type: "doc", id: "wallet/abstractionkit/simple-7702-account" },
+          items: [
+            {
+              type: "doc",
+              id: "wallet/abstractionkit/simple-7702-account-v08",
+              label: "EntryPoint v0.8"
+            },
+            {
+              type: "doc",
+              id: "wallet/abstractionkit/simple-7702-account-v09",
+              label: "EntryPoint v0.9"
+            },
+          ],
+        },
+        {
+          type: "doc",
+          id: "wallet/abstractionkit/calibur-account",
+          label: "Calibur Account"
+        },
+        {
           type: "doc",
           id: "wallet/abstractionkit/bundler",
           label: "Bundler"
@@ -501,47 +524,48 @@ const sidebars = {
       collapsed: false,
       items: [
         {
-          type: "doc",
-          id: "wallet/guides/getting-started-eip-7702",
-          label: "Quickstart"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/send-gasless-eip-7702",
-          label: "Gasless Transactions"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/pay-gas-in-erc20-eip-7702",
-          label: "Gas in ERC-20"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/getting-started-calibur",
-          label: "Calibur Quickstart"
-        },
-        {
           type: "category",
-          label: "Simple 7702 Account",
-          collapsed: true,
-          link: { type: "doc", id: "wallet/abstractionkit/simple-7702-account" },
+          label: "Simple Account",
+          collapsible: false,
           items: [
             {
               type: "doc",
-              id: "wallet/abstractionkit/simple-7702-account-v08",
-              label: "EntryPoint v0.8"
+              id: "wallet/guides/getting-started-eip-7702",
+              label: "Quickstart"
             },
             {
               type: "doc",
-              id: "wallet/abstractionkit/simple-7702-account-v09",
-              label: "EntryPoint v0.9"
+              id: "wallet/guides/send-gasless-eip-7702",
+              label: "Gasless Transactions"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/pay-gas-in-erc20-eip-7702",
+              label: "Gas in ERC-20"
             },
           ],
         },
         {
-          type: "doc",
-          id: "wallet/abstractionkit/calibur-account",
-          label: "Calibur Account"
+          type: "category",
+          label: "Calibur Account",
+          collapsible: false,
+          items: [
+            {
+              type: "doc",
+              id: "wallet/guides/getting-started-calibur",
+              label: "Quickstart"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/calibur-passkeys",
+              label: "Passkeys"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/calibur-key-management",
+              label: "Key Management"
+            },
+          ],
         },
       ]
     },
