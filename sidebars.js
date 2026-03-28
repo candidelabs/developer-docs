@@ -493,43 +493,6 @@ const sidebars = {
           id: "wallet/abstractionkit/utilities",
           label: "Utilities"
         },
-      ],
-    },
-    {
-      type: "category",
-      label: "EOA Upgrades (EIP-7702)",
-      collapsed: false,
-      items: [
-        {
-          type: "doc",
-          id: "wallet/guides/getting-started-eip-7702",
-          label: "Quickstart"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/send-gasless-eip-7702",
-          label: "Gasless Transactions"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/pay-gas-in-erc20-eip-7702",
-          label: "Gas in ERC-20"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/getting-started-calibur",
-          label: "Calibur Quickstart"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/calibur-passkeys",
-          label: "Calibur Passkeys"
-        },
-        {
-          type: "doc",
-          id: "wallet/guides/calibur-key-management",
-          label: "Calibur Key Management"
-        },
         {
           type: "category",
           label: "Simple 7702 Account",
@@ -552,6 +515,57 @@ const sidebars = {
           type: "doc",
           id: "wallet/abstractionkit/calibur-account",
           label: "Calibur Account"
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "EOA Upgrades (EIP-7702)",
+      collapsed: false,
+      items: [
+        {
+          type: "category",
+          label: "Simple Account",
+          collapsible: false,
+          items: [
+            {
+              type: "doc",
+              id: "wallet/guides/getting-started-eip-7702",
+              label: "Quickstart"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/send-gasless-eip-7702",
+              label: "Gasless Transactions"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/pay-gas-in-erc20-eip-7702",
+              label: "Gas in ERC-20"
+            },
+          ],
+        },
+        {
+          type: "category",
+          label: "Calibur Account",
+          collapsible: false,
+          items: [
+            {
+              type: "doc",
+              id: "wallet/guides/getting-started-calibur",
+              label: "Quickstart"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/calibur-passkeys",
+              label: "Passkeys"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/calibur-key-management",
+              label: "Key Management"
+            },
+          ],
         },
       ]
     },
