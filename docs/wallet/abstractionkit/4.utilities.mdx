@@ -1,82 +1,818 @@
 ---
-title: AbstractionKit Utilities SDK Reference 
-description: A set of utilities for Account Abstraction to help you focus on what matters 
+title: AbstractionKit Utilities SDK Reference
+description: A set of utilities for Account Abstraction to help you focus on what matters
 keywords: [utilities, "4337", sdk, account-abstraction, helpers]
 ---
 
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+import {
+  createUserOperationHashParams,
+  createUserOperationHashReturn,
+  createPackedUserOperationV6Params,
+  createPackedUserOperationV6Return,
+  createPackedUserOperationV7Params,
+  createPackedUserOperationV7Return,
+  fetchAccountNonceParams,
+  fetchAccountNonceReturn,
+  calculateUserOperationMaxGasCostParams,
+  calculateUserOperationMaxGasCostReturn,
+  getBalanceOfParams,
+  getBalanceOfReturn,
+  getDepositInfoParams,
+  getDepositInfoReturn,
+  depositInfoType,
+  simulateUserOperationWithTenderlyParams,
+  simulateUserOperationWithTenderlyReturn,
+  simulateUserOperationCallDataWithTenderlyParams,
+  simulateUserOperationCallDataWithTenderlyReturn,
+  simulateSenderCallDataWithTenderlyParams,
+  simulateSenderCallDataWithTenderlyReturn,
+  encodeMultiSendCallDataParams,
+  encodeMultiSendCallDataReturn,
+  metaTransactionType,
+  decodeMultiSendCallDataParams,
+  decodeMultiSendCallDataReturn,
+  fetchGasPriceParams,
+  fetchGasPriceReturn,
+  createCallDataParams,
+  createCallDataReturn,
+  getFunctionSelectorParams,
+  getFunctionSelectorReturn,
+  sendJsonRpcRequestParams,
+  sendJsonRpcRequestReturn,
+  sendEthCallRequestParams,
+  sendEthCallRequestReturn,
+  sendEthGetCodeRequestParams,
+  sendEthGetCodeRequestReturn,
+  getDelegatedAddressParams,
+  getDelegatedAddressReturn,
+  createAndSignEip7702DelegationAuthorizationParams,
+  createAndSignEip7702DelegationAuthorizationReturn,
+  authorization7702HexReturnType,
+  createRevokeDelegationAuthorizationParams,
+  createRevokeDelegationAuthorizationReturn,
+  createEip7702DelegationAuthorizationHashParams,
+  createEip7702DelegationAuthorizationHashReturn,
+  createAndSignEip7702RawTransactionParams,
+  createAndSignEip7702RawTransactionReturn,
+  createEip7702TransactionHashParams,
+  createEip7702TransactionHashReturn,
+} from "/src/data/utilityParams";
+
 # Utilities
+
 A set of utilities for ERC-4337 Account Abstraction to help you with your development.
 
 ## UserOperation utils
 
 ### createUserOperationHash
+
+Computes the hash of a UserOperation, which is used as the unique identifier for the operation on-chain.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { createUserOperationHash } from "abstractionkit";
+
+const userOpHash = createUserOperationHash(
+  userOperation,
+  "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+  11155111n
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createUserOperationHashParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createUserOperationHashReturn} />
+</TabItem>
+</Tabs>
+
 #### Source code
-[createUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L28C17-L28C40)
+[createUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
 
 ### createPackedUserOperationV6
+
+Encodes a UserOperationV6 into its packed ABI representation, suitable for hashing or on-chain verification.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { createPackedUserOperationV6 } from "abstractionkit";
+
+const packed = createPackedUserOperationV6(userOperationV6);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createPackedUserOperationV6Params} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createPackedUserOperationV6Return} />
+</TabItem>
+</Tabs>
+
 #### Source code
-[createPackedUserOperationV6](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L60C17-L60C44)
+[createPackedUserOperationV6](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
 
 ### createPackedUserOperationV7
+
+Encodes a UserOperationV7 into its packed ABI representation, suitable for hashing or on-chain verification.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { createPackedUserOperationV7 } from "abstractionkit";
+
+const packed = createPackedUserOperationV7(userOperationV7);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createPackedUserOperationV7Params} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createPackedUserOperationV7Return} />
+</TabItem>
+</Tabs>
+
 #### Source code
-[createPackedUserOperationV7](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L100C17-L100C44)
+[createPackedUserOperationV7](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
 
 ### fetchAccountNonce
+
+Fetches the current nonce for a smart account from the EntryPoint. Accepts an optional `key` parameter (default 0) that enables parallel nonce channels, allowing multiple independent UserOperations to be submitted concurrently.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { fetchAccountNonce } from "abstractionkit";
+
+const nonce = await fetchAccountNonce(
+  "https://ethereum-sepolia-rpc.publicnode.com",
+  "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+  "0xYourSmartAccountAddress"
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={fetchAccountNonceParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={fetchAccountNonceReturn} />
+</TabItem>
+</Tabs>
+
 #### Source code
-[fetchAccountNonce](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L273)
+[fetchAccountNonce](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
 
 ### calculateUserOperationMaxGasCost
+
+Calculates the maximum possible gas cost (in wei) for a UserOperation based on its gas limits and fee parameters.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { calculateUserOperationMaxGasCost } from "abstractionkit";
+
+const maxCost = calculateUserOperationMaxGasCost(userOperation);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={calculateUserOperationMaxGasCostParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={calculateUserOperationMaxGasCostReturn} />
+</TabItem>
+</Tabs>
+
 #### Source code
-[calculateUserOperationMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L349C17-L349C49)
+[calculateUserOperationMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
 
-### getBalance
-Returns the balance of an account in the EntryPoint contract.
+### getBalanceOf
+
+Returns the balance of an account deposited in the EntryPoint contract.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { getBalanceOf } from "abstractionkit";
+
+const balance = await getBalanceOf(
+  "https://ethereum-sepolia-rpc.publicnode.com",
+  "0xYourAccountAddress",
+  "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={getBalanceOfParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={getBalanceOfReturn} />
+</TabItem>
+</Tabs>
 
 #### Source code
-[getBalance](https://github.com/candidelabs/abstractionkit/blob/b1826217624c1f7105fef58f56c3ffab93a57a4b/src/utils.ts#L457)
-
-### simulateUserOperationWithTenderlyAndCreateShareLink
-Simulates a UserOperation with Tenderly and returns a shareable link.
+[getBalanceOf](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
 
 ### getDepositInfo
-Returns the full deposit information of an account in the EntryPoint contract.
+
+Returns the full deposit information of an account in the EntryPoint contract, including deposit balance, stake status, and unstake delay.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { getDepositInfo } from "abstractionkit";
+
+const info = await getDepositInfo(
+  "https://ethereum-sepolia-rpc.publicnode.com",
+  "0xYourAccountAddress",
+  "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={getDepositInfoParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={getDepositInfoReturn} />
+  DepositInfo
+  <DataTable items={depositInfoType} />
+</TabItem>
+</Tabs>
 
 #### Source code
-[getDepositInfo](https://github.com/candidelabs/abstractionkit/blob/b1826217624c1f7105fef58f56c3ffab93a57a4b/src/utils.ts#L468)
+[getDepositInfo](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
+
+## Simulation utils
+
+### simulateUserOperationWithTenderlyAndCreateShareLink
+
+Simulates a UserOperation via the EntryPoint's `handleOps` on Tenderly and returns a shareable dashboard link.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { simulateUserOperationWithTenderlyAndCreateShareLink } from "abstractionkit";
+
+const { simulation, simulationShareLink } =
+  await simulateUserOperationWithTenderlyAndCreateShareLink(
+    "my-account",
+    "my-project",
+    "my-access-key",
+    11155111n,
+    "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+    userOperation
+  );
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={simulateUserOperationWithTenderlyParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={simulateUserOperationWithTenderlyReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+[simulateUserOperationWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/main/src/utilsTenderly.ts)
+
+### simulateUserOperationCallDataWithTenderlyAndCreateShareLink
+
+Simulates UserOperation callData with Tenderly and returns shareable links. Unlike `simulateUserOperationWithTenderlyAndCreateShareLink`, this simulates the inner call data rather than the full EntryPoint `handleOps` flow.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { simulateUserOperationCallDataWithTenderlyAndCreateShareLink } from "abstractionkit";
+
+const { simulation, callDataSimulationShareLink } =
+  await simulateUserOperationCallDataWithTenderlyAndCreateShareLink(
+    "my-account",
+    "my-project",
+    "my-access-key",
+    11155111n,
+    "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+    userOperation
+  );
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={simulateUserOperationCallDataWithTenderlyParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={simulateUserOperationCallDataWithTenderlyReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+[simulateUserOperationCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/main/src/utilsTenderly.ts)
+
+### simulateSenderCallDataWithTenderlyAndCreateShareLink
+
+Simulates sender callData directly with Tenderly and returns shareable links. Useful for simulating the execution of callData from a specific sender address without wrapping it in a full UserOperation.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { simulateSenderCallDataWithTenderlyAndCreateShareLink } from "abstractionkit";
+
+const { simulation, callDataSimulationShareLink } =
+  await simulateSenderCallDataWithTenderlyAndCreateShareLink(
+    "my-account",
+    "my-project",
+    "my-access-key",
+    11155111n,
+    "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+    "0xSenderAddress",
+    "0xCallData"
+  );
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={simulateSenderCallDataWithTenderlyParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={simulateSenderCallDataWithTenderlyReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+[simulateSenderCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/main/src/utilsTenderly.ts)
 
 ## Multicall utils
 
 ### encodeMultiSendCallData
+
+Encodes an array of MetaTransactions into a single callData payload for the MultiSend contract.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { encodeMultiSendCallData } from "abstractionkit";
+
+const callData = encodeMultiSendCallData([
+  {
+    to: "0xTokenAddress",
+    value: 0n,
+    data: "0xTransferCallData",
+    operation: 0,
+  },
+  {
+    to: "0xAnotherContract",
+    value: 0n,
+    data: "0xAnotherCallData",
+    operation: 0,
+  },
+]);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={encodeMultiSendCallDataParams} />
+  MetaTransaction
+  <DataTable items={metaTransactionType} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={encodeMultiSendCallDataReturn} />
+</TabItem>
+</Tabs>
+
 #### Source code
-[encodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/multisend.ts#L25)
+[encodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/multisend.ts)
 
 ### decodeMultiSendCallData
+
+Decodes encoded MultiSend callData back into a readable representation.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { decodeMultiSendCallData } from "abstractionkit";
+
+const decoded = decodeMultiSendCallData(encodedCallData);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={decodeMultiSendCallDataParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={decodeMultiSendCallDataReturn} />
+</TabItem>
+</Tabs>
+
 #### Source code
-[decodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/multisend.ts#L33C17-L33C40)
+[decodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/multisend.ts)
 
 ## Generic Ethereum utils
 
 ### fetchGasPrice
+
+Fetches the current gas price from an Ethereum node, returning maxFeePerGas and maxPriorityFeePerGas for a given gas level.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { fetchGasPrice, GasOption } from "abstractionkit";
+
+const [maxFeePerGas, maxPriorityFeePerGas] = await fetchGasPrice(
+  "https://ethereum-sepolia-rpc.publicnode.com",
+  GasOption.Medium
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={fetchGasPriceParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={fetchGasPriceReturn} />
+</TabItem>
+</Tabs>
+
 #### Source code
-[fetchGasPrice](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L333)
+[fetchGasPrice](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
 
 ### createCallData
+
+Encodes a function call into ABI-encoded call data by combining a function selector with its encoded parameters.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { createCallData } from "abstractionkit";
+
+const callData = createCallData(
+  "0xa9059cbb", // transfer(address,uint256) selector
+  ["address", "uint256"],
+  ["0xRecipientAddress", 1000000n]
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createCallDataParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createCallDataReturn} />
+</TabItem>
+</Tabs>
+
 #### Source code
-[createCallData](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L179)
+[createCallData](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
 
 ### getFunctionSelector
+
+Computes the 4-byte function selector from a Solidity function signature string.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { getFunctionSelector } from "abstractionkit";
+
+const selector = getFunctionSelector("transfer(address,uint256)");
+// Returns "0xa9059cbb"
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={getFunctionSelectorParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={getFunctionSelectorReturn} />
+</TabItem>
+</Tabs>
+
 #### Source code
-[getFunctionSelector](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L261)
+[getFunctionSelector](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
 
 ### sendJsonRpcRequest
+
+Sends a JSON-RPC request to the given URL. Accepts optional `headers` (defaults to `{"Content-Type": "application/json"}`) and an optional `paramsKeyName` for non-standard JSON-RPC endpoints.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { sendJsonRpcRequest } from "abstractionkit";
+
+const result = await sendJsonRpcRequest(
+  "https://ethereum-sepolia-rpc.publicnode.com",
+  "eth_blockNumber",
+  []
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={sendJsonRpcRequestParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={sendJsonRpcRequestReturn} />
+</TabItem>
+</Tabs>
+
 #### Source code
-[sendJsonRpcRequest](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L194C23-L194C41)
+[sendJsonRpcRequest](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
 
 ### sendEthCallRequest
+
+Executes an `eth_call` against an Ethereum node and returns the result. Useful for reading contract state without submitting a transaction.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { sendEthCallRequest } from "abstractionkit";
+
+const result = await sendEthCallRequest(
+  "https://ethereum-sepolia-rpc.publicnode.com",
+  {
+    to: "0xContractAddress",
+    data: "0xCallData",
+  },
+  "latest"
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={sendEthCallRequestParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={sendEthCallRequestReturn} />
+</TabItem>
+</Tabs>
+
 #### Source code
-[sendEthCallRequest](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L383)
+[sendEthCallRequest](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
 
 ### sendEthGetCodeRequest
-#### Source code
-[sendEthGetCodeRequest](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/utils.ts#L424)
 
+Retrieves the bytecode deployed at a given contract address using `eth_getCode`.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { sendEthGetCodeRequest } from "abstractionkit";
+
+const code = await sendEthGetCodeRequest(
+  "https://ethereum-sepolia-rpc.publicnode.com",
+  "0xContractAddress",
+  "latest"
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={sendEthGetCodeRequestParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={sendEthGetCodeRequestReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+[sendEthGetCodeRequest](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
+
+### getDelegatedAddress
+
+Checks whether an EOA has an active EIP-7702 delegation and returns the delegated address, or null if the account is not delegated.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { getDelegatedAddress } from "abstractionkit";
+
+const delegatee = await getDelegatedAddress(
+  "0xYourEOAAddress",
+  "https://ethereum-sepolia-rpc.publicnode.com"
+);
+
+if (delegatee) {
+  console.log("Delegated to:", delegatee);
+} else {
+  console.log("Not delegated");
+}
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={getDelegatedAddressParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={getDelegatedAddressReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+[getDelegatedAddress](https://github.com/candidelabs/abstractionkit/blob/main/src/utils.ts)
+
+## EIP-7702 Utilities
+
+### createAndSignEip7702DelegationAuthorization
+
+Creates and signs an EIP-7702 delegation authorization, allowing an EOA to delegate its code to a specified contract address. Accepts either a hex-encoded private key string for synchronous signing, or an async signer callback `(hash: string) => Promise<string>` for use with viem, ethers Signers, hardware wallets, or MPC signers.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { createAndSignEip7702DelegationAuthorization } from "abstractionkit";
+
+// With a private key (synchronous)
+const authorization = createAndSignEip7702DelegationAuthorization(
+  11155111n,
+  "0xDelegateeContractAddress",
+  0n,
+  "0xYourPrivateKey"
+);
+
+// With an async signer callback
+const authorization = await createAndSignEip7702DelegationAuthorization(
+  11155111n,
+  "0xDelegateeContractAddress",
+  0n,
+  async (hash) => {
+    // Sign the hash using your preferred method
+    return await wallet.signMessage(hash);
+  }
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createAndSignEip7702DelegationAuthorizationParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAndSignEip7702DelegationAuthorizationReturn} />
+  Authorization7702Hex
+  <DataTable items={authorization7702HexReturnType} />
+</TabItem>
+</Tabs>
+
+#### Source code
+[createAndSignEip7702DelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/main/src/utils7702.ts)
+
+### createRevokeDelegationAuthorization
+
+Creates a signed authorization that revokes an existing EIP-7702 delegation by setting the delegatee address to the zero address, restoring the EOA to a normal account.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { createRevokeDelegationAuthorization } from "abstractionkit";
+
+const revokeAuth = createRevokeDelegationAuthorization(
+  11155111n,
+  0n,
+  "0xYourPrivateKey"
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createRevokeDelegationAuthorizationParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createRevokeDelegationAuthorizationReturn} />
+  Authorization7702Hex
+  <DataTable items={authorization7702HexReturnType} />
+</TabItem>
+</Tabs>
+
+#### Source code
+[createRevokeDelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/main/src/utils7702.ts)
+
+### createEip7702DelegationAuthorizationHash
+
+Computes the keccak256 hash of an EIP-7702 delegation authorization using the MAGIC prefix (0x05) as defined in the EIP-7702 spec. Useful when signing the authorization externally.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { createEip7702DelegationAuthorizationHash } from "abstractionkit";
+
+const hash = createEip7702DelegationAuthorizationHash(
+  11155111n,
+  "0xDelegateeContractAddress",
+  0n
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createEip7702DelegationAuthorizationHashParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createEip7702DelegationAuthorizationHashReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+[createEip7702DelegationAuthorizationHash](https://github.com/candidelabs/abstractionkit/blob/main/src/utils7702.ts)
+
+### createAndSignEip7702RawTransaction
+
+Creates and signs a raw EIP-7702 (set-code, type 0x04) transaction with an authorization list. The transaction is RLP-encoded and includes the type prefix, ready for `eth_sendRawTransaction`.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { createAndSignEip7702RawTransaction } from "abstractionkit";
+
+const rawTx = createAndSignEip7702RawTransaction(
+  11155111n,       // chainId
+  0n,              // nonce
+  2000000000n,     // maxPriorityFeePerGas
+  20000000000n,    // maxFeePerGas
+  21000n,          // gasLimit
+  "0xDestination", // destination
+  0n,              // value
+  "0x",            // data
+  [],              // accessList
+  [authorization], // authorizationList
+  "0xYourPrivateKey"
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createAndSignEip7702RawTransactionParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAndSignEip7702RawTransactionReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+[createAndSignEip7702RawTransaction](https://github.com/candidelabs/abstractionkit/blob/main/src/utils7702.ts)
+
+### createEip7702TransactionHash
+
+Computes the keccak256 hash of an EIP-7702 transaction for signing purposes, using the type 0x04 prefix and RLP encoding.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { createEip7702TransactionHash } from "abstractionkit";
+
+const txHash = createEip7702TransactionHash(
+  11155111n,       // chainId
+  0n,              // nonce
+  2000000000n,     // maxPriorityFeePerGas
+  20000000000n,    // maxFeePerGas
+  21000n,          // gasLimit
+  "0xDestination", // destination
+  0n,              // value
+  "0x",            // data
+  [],              // accessList
+  [authorization]  // authorizationList
+);
+```
+
+</TabItem>
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createEip7702TransactionHashParams} />
+</TabItem>
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createEip7702TransactionHashReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+[createEip7702TransactionHash](https://github.com/candidelabs/abstractionkit/blob/main/src/utils7702.ts)

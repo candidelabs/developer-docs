@@ -77,7 +77,7 @@ View the [Simple7702AccountV09 SDK Reference](/wallet/abstractionkit/simple-7702
 
 ## Paymaster Support
 
-The Candide paymaster does not yet support EntryPoint v0.9. If you need gas sponsorship or ERC-20 gas payments, use `Simple7702Account` with EntryPoint v0.8. Paymaster support for v0.9 is planned for a future release.
+The Candide Paymaster now supports EntryPoint v0.9. Gas sponsorship and ERC-20 gas payments work with `Simple7702AccountV09` using the same `CandidePaymaster` API as other EntryPoint versions.
 
 **Resources:**
 - [Bundler API Reference](/wallet/bundler/rpc-methods/)

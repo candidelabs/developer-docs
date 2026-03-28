@@ -18,6 +18,10 @@ import {
   createAccountCallDataReturn,
   createAccountCallDataSingleTransactionParam,
   createAccountCallDataBatchTransactionsParam,
+  prependTokenPaymasterApproveToCallDataStaticParam,
+  prependTokenPaymasterApproveToCallDataStaticReturn,
+  prependTokenPaymasterApproveToCallDataParam,
+  prependTokenPaymasterApproveToCallDataReturn,
   estimateUserOperationGasParam,
   estimateUserOperationGasReturn,
   isDelegatedToThisAccountParam,
@@ -52,9 +56,6 @@ The following ERCs are supported:
 A complete working example is available on GitHub: [upgrade-eoa-ep-v09.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/04-upgrade-eoa-ep-v09.ts)
 :::
 
-:::caution Paymaster Not Yet Supported
-Candide paymaster does not yet support EntryPoint v0.9. Gas sponsorship and ERC-20 gas payment features are unavailable for this entrypoint version. Use `Simple7702Account` (EP v0.8) if you need paymaster support.
-:::
 
 ## Smart Contracts and Audits
 
@@ -215,6 +216,62 @@ console.log("Transaction receipt:", receipt);
 
 </Tabs>
 
+### prependTokenPaymasterApproveToCallDataStatic
+
+Prepends a token approval transaction to existing call data for use with token paymasters.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const callDataWithApproval = Simple7702AccountV09.prependTokenPaymasterApproveToCallDataStatic(
+  "0x...", // existing call data
+  "0xa0b86a33e6b3e96bb24b8e4b28e80e0fb3a4f4b6", // USDC token address
+  "0x...", // paymaster address
+  1000000n // approve amount (1 USDC)
+);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={prependTokenPaymasterApproveToCallDataStaticParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={prependTokenPaymasterApproveToCallDataStaticReturn} />
+</TabItem>
+
+</Tabs>
+
+### prependTokenPaymasterApproveToCallData
+
+Instance method to prepend token approval to call data for paymaster usage.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const callDataWithApproval = smartAccount.prependTokenPaymasterApproveToCallData(
+  "0x...", // existing call data
+  "0xa0b86a33e6b3e96bb24b8e4b28e80e0fb3a4f4b6", // USDC token address
+  "0x...", // paymaster address
+  1000000n // approve amount
+);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={prependTokenPaymasterApproveToCallDataParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={prependTokenPaymasterApproveToCallDataReturn} />
+</TabItem>
+
+</Tabs>
+
 ## Advanced Methods
 
 ### createAccountCallData
@@ -309,7 +366,7 @@ Estimates gas limits for a UserOperation using the bundler.
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-const [callGasLimit, verificationGasLimit, preVerificationGas] =
+const [preVerificationGas, verificationGasLimit, callGasLimit] =
   await smartAccount.estimateUserOperationGas(
     userOperation,
     "https://your-ep-v09-bundler-rpc",

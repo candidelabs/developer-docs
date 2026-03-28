@@ -81,6 +81,19 @@ const delegatorPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31"; // 
 const smartAccount = new Simple7702Account(delegatorPublicAddress);
 ```
 
+**Constructor defaults:**
+- `entrypointAddress`: `0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108` (EntryPoint v0.8)
+- `delegateeAddress`: `0xe6Cae83BdE06E4c305530e199D7217f42808555B`
+
+Both can be overridden by passing an `overrides` object as the second constructor argument.
+
+```typescript
+const simple7702Account = new Simple7702Account(eoaAddress, {
+  entrypointAddress: "0x...", // optional
+  delegateeAddress: "0x...", // optional
+});
+```
+
 ## Essential Methods
 
 ### createUserOperation
@@ -353,7 +366,7 @@ Estimates gas limits for a UserOperation using the bundler.
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-const [callGasLimit, verificationGasLimit, preVerificationGas] =
+const [preVerificationGas, verificationGasLimit, callGasLimit] =
   await smartAccount.estimateUserOperationGas(
     userOperation,
     "https://api.candide.dev/public/v3/sepolia",
@@ -500,8 +513,8 @@ const userOperation = await smartAccount.createUserOperation(
   {
     eip7702Auth: { chainId: 11155111n },
     // Use higher gas prices
-    maxFeePerGasMultiplier: 120, // 20% higher than current network conditions
-    maxPriorityFeePerGasMultiplier: 150, // 50% higher than current network conditions
+    maxFeePerGasPercentageMultiplier: 120, // 20% higher than current network conditions
+    maxPriorityFeePerGasPercentageMultiplier: 150, // 50% higher than current network conditions
   }
 );
 ```

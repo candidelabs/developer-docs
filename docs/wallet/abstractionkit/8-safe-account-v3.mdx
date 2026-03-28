@@ -133,7 +133,7 @@ Account address(sender) : 0x1a02592A3484c2077d2E5D24482497F85e1980C6
 
 #### Source code
 
-[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccountV0_3_0.ts#L68)
+[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccountV0_3_0.ts#L105)
 
 ### createUserOperation
 
@@ -273,7 +273,7 @@ console.log(userOperation);
 </details>
 
 #### Source code
-[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccountV0_3_0.ts#L212)
+[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccountV0_3_0.ts#L312)
 
 ### signUserOperation
 
@@ -321,7 +321,7 @@ console.log(signature);
 </details>
 
 #### Source code
-[signUserOperation](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccount.ts#L1446)
+[signUserOperation](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccountV0_3_0.ts#L383)
 
 ### sendUserOperation
 
@@ -397,7 +397,7 @@ receipt: {
 </details>
 
 #### Source code
-[sendUserOperation](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccount.ts#L681)
+[sendUserOperation](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccount.ts#L993)
 
 ## Advanced Methods
 
@@ -451,7 +451,7 @@ Account address(sender) : 0x1a02592A3484c2077d2E5D24482497F85e1980C6
 
 #### Source code
 
-[createAccountAddress](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccountV0_3_0.ts#L41)
+[createAccountAddress](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccountV0_3_0.ts#L76)
 
 ### createFactoryAddressAndData
 
@@ -503,7 +503,7 @@ factoryData:  0x1688f0b900000000000000000000000029fcb43b46531bca003ddc8fcb67ffe9
 
 #### Source code
 
-[createFactoryAddressAndData](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccountV0_3_0.ts#L188)
+[createFactoryAddressAndData](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccountV0_3_0.ts#L280)
 
 ### createInitializerCallData
 
@@ -546,7 +546,7 @@ initializeCallData: 0xb63e800d00000000000000000000000000000000000000000000000000
 </details>
 
 #### Source
-[createInitializerCallData](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccountV0_3_0.ts#L151)
+[createInitializerCallData](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccountV0_3_0.ts#L242)
 
 ### createAccountCallDataSingleTransaction
 
@@ -599,7 +599,7 @@ callData : 0xf34308ef000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2
 
 #### Source code
 
-[createAccountCallDataSingleTransaction](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccount.ts#L174)
+[createAccountCallDataSingleTransaction](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccount.ts#L223)
 
 ### createAccountCallDataBatchTransactions
 
@@ -664,7 +664,7 @@ callData : 0xf34308ef000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2
 
 #### Source code
 
-[createAccountCallDataBatchTransactions](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccount.ts#L209C16-L209C54)
+[createAccountCallDataBatchTransactions](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccount.ts#L258)
 
 ### estimateUserOperationGas
 
@@ -734,7 +734,7 @@ const [preVerificationGas, verificationGasLimit, callGasLimit] = await estimateU
 </details>
 
 #### Source code
-[estimateUserOperationGas](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccount.ts#L1002)
+[estimateUserOperationGas](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccountV0_3_0.ts#L348)
 
 ### getUserOperationEip712Hash
 
@@ -778,7 +778,7 @@ console.log(safeUserOpHash);
 </details>
 
 #### Source
-[getUserOperationEip712Hash](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccountV0_3_0.ts#L124)
+[getUserOperationEip712Hash](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccountV0_3_0.ts#L165)
 
 ### formatEip712SignaturesToUseroperationSignature
 
@@ -854,7 +854,7 @@ userOperation.signature = formatedSig;
 </details>
 
 #### Source code
-[formatEip712SignaturesToUseroperationSignature](https://github.com/candidelabs/abstractionkit/blob/98853f30861382a534abf667ced83d47b6c9da0b/src/account/Safe/SafeAccount.ts#L436)
+[formatEip712SignaturesToUseroperationSignature](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccount.ts#L486)
 
 
 ### isModuleEnabled

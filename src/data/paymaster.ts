@@ -173,7 +173,7 @@ export const tokensParametersV2 = [
     description: "Token contract address",
   },
   {
-    key: "decimal",
+    key: "decimals",
     type: "number",
     description: "Decimals of token",
   },
@@ -225,7 +225,7 @@ export const tokensParametersV3 = [
     description: "Token contract address",
   },
   {
-    key: "decimal",
+    key: "decimals",
     type: "number",
     description: "Decimals of token",
   },
@@ -559,8 +559,8 @@ export const pm_getPaymasterDataReturnV07 = [
 export const createSponsorPaymasterUserOperationParam = [
   {
     key: "userOperation",
-    type: "UserOperationV6 | UserOperationV7",
-    description: "UserOperation to Sponsor. Supports EntryPoint v0.6 and v0.7",
+    type: "UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9",
+    description: "UserOperation to Sponsor. Supports EntryPoint v0.6, v0.7, v0.8, and v0.9",
   },
   {
     key: "bundlerUrl",
@@ -577,13 +577,25 @@ export const createSponsorPaymasterUserOperationParam = [
 export const createSponsorPaymasterUserOperationReturn = [
   {
     key: "userOperation",
-    type: "UserOperationV6 | UserOperationV7",
+    type: "UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9",
     description: "UserOperation with paymaster data included",
   },
   ...sponsorMetaDataType,
 ];
 
 export const createPaymasterUserOperationOverridesType = [
+  {
+    key: "entrypoint",
+    type: "string?",
+    description:
+      "Set the EntryPoint address instead of auto-detecting it from the UserOperation structure.",
+  },
+  {
+    key: "resetApproval",
+    type: "boolean?",
+    description:
+      "When true, prepend an approve(0) call before the actual token approval. Required for tokens like USDT that do not allow changing a non-zero allowance directly. Automatically applied for known tokens (e.g. USDT on Ethereum mainnet).",
+  },
   {
     key: "callGasLimit",
     type: "bigint",
@@ -637,7 +649,7 @@ export const createTokenPaymasterUserOperationParam = [
   },
   {
     key: "userOperation",
-    type: "UserOperationV6 | UserOperationV7",
+    type: "UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9",
     description: "The userOperation to sponsor gas with erc-20 paymaster",
   },
   {
@@ -660,7 +672,7 @@ export const createTokenPaymasterUserOperationParam = [
 export const createTokenPaymasterUserOperationReturn = [
   {
     key: "userOperation",
-    type: "Promise<UserOperationV6 | UserOperationV7>",
+    type: "Promise<UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9>",
     description: "The userOperation to sponsor gas with erc-20 paymaster",
   },
 ];
@@ -770,7 +782,7 @@ export const erc20TokenType = [
     description: "The contract address of the ERC20 token.",
   },
   {
-    key: "decimal",
+    key: "decimals",
     type: "number",
     description: "The number of decimal places for the token.",
   },
@@ -816,8 +828,8 @@ export const supportedERC20TokensAndMetadataV6Type = [
 export const calculateUserOperationErc20TokenMaxGasCostParam = [
   {
     key: "userOperation",
-    type: "UserOperationV6 | UserOperationV7",
-    description: "UserOperation to Sponsor. Supports EntryPoint v0.6 and v0.7",
+    type: "UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9",
+    description: "UserOperation to calculate cost for. Supports EntryPoint v0.6, v0.7, v0.8, and v0.9",
   },
   {
     key: "erc20TokenAddress",
