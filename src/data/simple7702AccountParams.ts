@@ -245,7 +245,7 @@ export const estimateUserOperationGasReturn = [
   {
     key: "gasLimits",
     type: "[bigint, bigint, bigint]",
-    description: "Tuple of [callGasLimit, verificationGasLimit, preVerificationGas]",
+    description: "Tuple of [preVerificationGas, verificationGasLimit, callGasLimit]",
   },
 ];
 

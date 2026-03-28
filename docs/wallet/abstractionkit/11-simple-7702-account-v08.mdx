@@ -353,7 +353,7 @@ Estimates gas limits for a UserOperation using the bundler.
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-const [callGasLimit, verificationGasLimit, preVerificationGas] =
+const [preVerificationGas, verificationGasLimit, callGasLimit] =
   await smartAccount.estimateUserOperationGas(
     userOperation,
     "https://api.candide.dev/public/v3/sepolia",
@@ -500,8 +500,8 @@ const userOperation = await smartAccount.createUserOperation(
   {
     eip7702Auth: { chainId: 11155111n },
     // Use higher gas prices
-    maxFeePerGasMultiplier: 120, // 20% higher than current network conditions
-    maxPriorityFeePerGasMultiplier: 150, // 50% higher than current network conditions
+    maxFeePerGasPercentageMultiplier: 120, // 20% higher than current network conditions
+    maxPriorityFeePerGasPercentageMultiplier: 150, // 50% higher than current network conditions
   }
 );
 ```
