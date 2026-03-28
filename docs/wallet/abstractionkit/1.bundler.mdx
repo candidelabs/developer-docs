@@ -19,7 +19,7 @@ import {
   getUserOperationByHashReturn,
   getUserOperationReceiptParam,
 } from '/src/data/bundler';
-import { userOperationReturnParamsV06, userOperationParamV07, userOperationReceiptResultType } from '/src/data/userOperation';
+import { userOperationReturnParamsV06, userOperationParamV07, userOperationParamV08, userOperationReceiptResultType } from '/src/data/userOperation';
 
 # Bundler
 
@@ -164,6 +164,8 @@ const estimation = await bundler.estimateUserOperationGas(userOperation, entryPo
 </TabItem>
 <TabItem value="Param Type" label="Param Type">
   <DataTable items={estimateUserOperationGasParam} />
+  UserOperationV8 / UserOperationV9
+  <DataTable items={userOperationParamV08} />
   UserOperationV7
   <DataTable items={userOperationParamV07} />
   UserOperationV6
@@ -218,6 +220,8 @@ const userOperationHash = await bundler.sendUserOperation(userOperation, entrypo
 </TabItem>
 <TabItem value="Param Type" label="Param Type">
   <DataTable items={sendUserOperationParam} />
+  UserOperationV8 / UserOperationV9
+  <DataTable items={userOperationParamV08} />
   UserOperationV7
   <DataTable items={userOperationParamV07} />
   UserOperationV6
@@ -269,6 +273,8 @@ const userOperation = await bundler.getUserOperationByHash(userOperationHash);
 </TabItem>
 <TabItem value="Return Type" label="Return Type">
   <DataTable items={getUserOperationByHashReturn} />
+  UserOperationV8 / UserOperationV9
+  <DataTable items={userOperationParamV08} />
   UserOperationV7
   <DataTable items={userOperationParamV07} />
   UserOperationV6

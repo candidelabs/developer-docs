@@ -17,14 +17,19 @@ export const supportedEntryPointsReturn = [
 export const estimateUserOperationGasParam = [
   {
     key: "userOperation",
-    type: "UserOperationV6 | UserOperationV7",
+    type: "UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9",
     description:
-      "Supports both UserOperations Type on EntryPoint v0.6 and v0.7",
+      "Supports UserOperations on EntryPoint v0.6, v0.7, v0.8, and v0.9",
   },
   {
     key: "entrypoint address",
     type: "string",
     description: "Target EntryPoint",
+  },
+  {
+    key: "state_override_set?",
+    type: "StateOverrideSet",
+    description: "Optional state overrides to apply during gas estimation",
   },
 ];
 
@@ -50,9 +55,9 @@ export const estimateUserOperationGasReturn = [
 export const sendUserOperationParam = [
   {
     key: "userOperation",
-    type: "UserOperationV6 | UserOperationV7",
+    type: "UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9",
     description:
-      "Supports both UserOperations Type on EntryPoint v0.6 and v0.7",
+      "Supports UserOperations on EntryPoint v0.6, v0.7, v0.8, and v0.9",
   },
   {
     key: "entrypoint address",
@@ -80,9 +85,9 @@ export const getUserOperationByHashParam = [
 export const getUserOperationByHashReturn = [
   {
     key: "userOperation",
-    type: "UserOperationV6 | UserOperationV7",
+    type: "UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9",
     description:
-      "The user operation object, which can be either version 6 or version 7, depending on the entry point version used.",
+      "The user operation object, which can be version 6, 7, 8, or 9, depending on the entry point version used.",
   },
   {
     key: "entryPoint",
