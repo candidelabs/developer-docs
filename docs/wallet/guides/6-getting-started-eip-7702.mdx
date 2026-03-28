@@ -205,7 +205,7 @@ const privateKey = process.env.PRIVATE_KEY as string;
 
 userOperation.signature = smartAccount.signUserOperation(
     userOperation,
-    eoaDelegator.privateKey,
+    privateKey,
     chainId,
 );
 ```

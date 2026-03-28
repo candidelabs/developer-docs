@@ -111,7 +111,7 @@ compatible signature using [`formatEip712SignaturesToUserOperationSignature()`](
 
 1. **Direct Signing of the EIP-712 Hash**
 
-Use this method if you won't displayed more information for the user to validate. This approach is quick using
+Use this method if you don't need to display additional information for the user to validate. This approach is quick using
 [`getUserOperationEip712Hash()`](/wallet/abstractionkit/safe-account-v3/#getuseroperationeip712hash).
 
 <Tabs queryString="library">
@@ -141,7 +141,7 @@ const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(
 const signature = await viemWalletClient.account.sign({ hash: safeUserOpHash });
 
 userOperation.signature = SafeAccount.formatEip712SignaturesToUseroperationSignature(
-  [signer.address], 
+  [viemWalletClient.account.address],
   [signature]
 );
 ```
