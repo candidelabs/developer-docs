@@ -94,6 +94,26 @@ import { userOperationReceiptResultType } from "/src/data/userOperation";
 | `WebAuthnP256` | WebAuthn-wrapped P-256 passkey (keyType = 1) |
 | `P256` | Raw P-256 / secp256r1 key (keyType = 0) |
 
+export const GUIDE_ITEMS = [
+    {
+        title: "Calibur Quickstart",
+        description: "Upgrade an EOA to a Calibur smart account with batch transactions and gas sponsorship",
+        route: "/wallet/guides/getting-started-calibur/",
+    },
+    {
+        title: "Passkey Authentication",
+        description: "Register a WebAuthn passkey and sign transactions with it",
+        route: "/wallet/guides/calibur-passkeys/",
+    },
+    {
+        title: "Key Management",
+        description: "Register, update, and revoke keys on a Calibur account",
+        route: "/wallet/guides/calibur-key-management/",
+    },
+];
+
+<CardList items={GUIDE_ITEMS} />
+
 ## Smart Contracts and Audits
 
 The contracts were developed by Uniswap and audited by OpenZeppelin and Cantina.

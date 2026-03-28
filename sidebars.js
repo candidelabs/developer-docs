@@ -526,6 +526,11 @@ const sidebars = {
           label: "Calibur Passkeys"
         },
         {
+          type: "doc",
+          id: "wallet/guides/calibur-key-management",
+          label: "Calibur Key Management"
+        },
+        {
           type: "category",
           label: "Simple 7702 Account",
           collapsed: true,
