@@ -16,9 +16,6 @@ export default function Home() {
       <Banner />
       <main>
         <div className={styles.container}>
-          <div className={styles.row}>
-            <HomepageFeatures columns={homePageFeatures} />
-          </div>
           <div className={styles.ai_strip}>
             <span className={styles.ai_strip_icon}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" width="14" height="14">
@@ -30,6 +27,9 @@ export default function Home() {
               For agents and IDE integrations like Claude Code or Cursor, use{' '}
               <a href="https://docs.candide.dev/llms.txt" target="_blank" rel="noopener noreferrer">/llms.txt</a>.
             </span>
+          </div>
+          <div className={styles.row}>
+            <HomepageFeatures items={homePageFeatures} />
           </div>
         </div>
       </main>
