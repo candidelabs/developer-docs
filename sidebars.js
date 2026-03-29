@@ -273,7 +273,7 @@ const sidebars = {
         {
           type: "category",
           label: "Personal Guardians",
-          collapsible: false,
+          collapsed: true,
           items: [
             {
               type: "doc",
@@ -290,7 +290,7 @@ const sidebars = {
         {
           type: "category",
           label: "Email / SMS Recovery",
-          collapsible: false,
+          collapsed: true,
           items: [
             {
               type: "doc",
@@ -439,21 +439,71 @@ const sidebars = {
         },
         {
           type: "doc",
+          id: "wallet/guides/simulate-transaction",
+          label: "Simulate Transaction"
+        },
+        {
+          type: "doc",
           id: "wallet/guides/onchain-identifiers",
           label: "Add Onchain Tracking"
         },
         {
-          type: "doc",
-          id: "wallet/guides/simulate-transaction",
-          label: "Simulate Transaction"
+          type: "category",
+          label: "EIP-7702 Upgrades",
+          collapsed: true,
+          items: [
+            {
+              type: "category",
+              label: "Calibur Account",
+              collapsible: false,
+              items: [
+                {
+                  type: "doc",
+                  id: "wallet/guides/getting-started-calibur",
+                  label: "Quickstart"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/guides/calibur-passkeys",
+                  label: "Passkeys"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/guides/calibur-key-management",
+                  label: "Key Management"
+                },
+              ],
+            },
+            {
+              type: "category",
+              label: "Simple Account",
+              collapsible: false,
+              items: [
+                {
+                  type: "doc",
+                  id: "wallet/guides/getting-started-eip-7702",
+                  label: "Quickstart"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/guides/send-gasless-eip-7702",
+                  label: "Gasless Transactions"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/guides/pay-gas-in-erc20-eip-7702",
+                  label: "Gas in ERC-20"
+                },
+              ],
+            },
+          ],
         },
       ],
     },
     {
       type: "category",
       label: "SDK Reference",
-      collapsible: false,
-      className: "category-not-collapsible",
+      collapsed: true,
       items: [
         {
           type: "doc",
@@ -517,57 +567,6 @@ const sidebars = {
           label: "Utilities"
         },
       ],
-    },
-    {
-      type: "category",
-      label: "EOA Upgrades (EIP-7702)",
-      collapsed: false,
-      items: [
-        {
-          type: "category",
-          label: "Simple Account",
-          collapsible: false,
-          items: [
-            {
-              type: "doc",
-              id: "wallet/guides/getting-started-eip-7702",
-              label: "Quickstart"
-            },
-            {
-              type: "doc",
-              id: "wallet/guides/send-gasless-eip-7702",
-              label: "Gasless Transactions"
-            },
-            {
-              type: "doc",
-              id: "wallet/guides/pay-gas-in-erc20-eip-7702",
-              label: "Gas in ERC-20"
-            },
-          ],
-        },
-        {
-          type: "category",
-          label: "Calibur Account",
-          collapsible: false,
-          items: [
-            {
-              type: "doc",
-              id: "wallet/guides/getting-started-calibur",
-              label: "Quickstart"
-            },
-            {
-              type: "doc",
-              id: "wallet/guides/calibur-passkeys",
-              label: "Passkeys"
-            },
-            {
-              type: "doc",
-              id: "wallet/guides/calibur-key-management",
-              label: "Key Management"
-            },
-          ],
-        },
-      ]
     },
     {
       type: "category",

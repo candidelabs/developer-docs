@@ -9,20 +9,23 @@
 @tailwind utilities;
 
 :root {
-  --ifm-color-primary: #E70073; /*#25c2a0;*/
-  --ifm-color-primary-dark: #b10058; /*rgb(33, 175, 144);*/
-  --ifm-color-primary-darker: #7e003f; /*rgb(31, 165, 136);*/
-  --ifm-color-primary-darkest: #430021; /*rgb(26, 136, 112);*/
-  --ifm-color-primary-light: #430021; /*rgb(70, 203, 174);*/
-  --ifm-color-primary-lighter: #b10058; /*rgb(102, 212, 189);*/
-  --ifm-color-primary-lightest: #E70073; /*rgb(146, 224, 208);*/
+  --ifm-color-primary: #E70073;
+  --ifm-color-primary-dark: #d00068;
+  --ifm-color-primary-darker: #b9005c;
+  --ifm-color-primary-darkest: #8a0045;
+  --ifm-color-primary-light: #eb2685;
+  --ifm-color-primary-lighter: #ef4d9a;
+  --ifm-color-primary-lightest: #f599c2;
+  --ifm-font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+  --ifm-heading-font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --ifm-font-family-monospace: ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
   --docusaurus-highlighted-code-line-bg: rgba(72, 77, 91, 0.12);
   --top-category-label-color: #6f6f6f;
-  --ifm-code-font-size: 95%; /*95%;*/
+  --ifm-code-font-size: 95%;
 }
 
 html[data-theme='dark'] .footer {
-  background: linear-gradient(0deg, rgba(0, 0, 0, 1) 99.6%, rgba(231, 0, 115,1) 100%);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 1) 99.6%, rgba(231, 0, 115, 1) 100%);
 }
 
 html[data-theme='dark'] {
@@ -30,6 +33,52 @@ html[data-theme='dark'] {
   --docusaurus-highlighted-code-line-bg: rgba(72, 77, 91, 1);
   --ifm-background-surface-color: #000000;
   --ifm-background-color: #000000;
+  scrollbar-color: #2a2a2e #000000;
+}
+
+/* Heading typography refinements */
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+.markdown h1 {
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.markdown h2 {
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.markdown h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Text selection matches brand */
+::selection {
+  background: rgba(231, 0, 115, 0.25);
+}
+
+html[data-theme='dark'] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html[data-theme='dark'] ::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+html[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #2a2a2e;
+  border-radius: 4px;
+}
+
+html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3e;
 }
 
 /* Adjust footer link colors */
@@ -65,7 +114,9 @@ html[data-theme='dark'] {
 .theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible .menu__link {
   color: var(--top-category-label-color);
   text-transform: uppercase;
-  font-size: 0.9rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   line-height: 1.25rem;
 }
 

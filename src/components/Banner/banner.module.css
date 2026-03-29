@@ -1,8 +1,8 @@
 .banner__container {
-    padding: 4rem 1.5rem;
+    padding: 5rem 1.5rem 4.5rem;
     display: flex;
     justify-content: center;
-    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(231, 0, 115, 0.12) 0%, transparent 70%);
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(231, 0, 115, 0.10) 0%, transparent 70%);
     border-bottom: 1px solid var(--ifm-color-emphasis-200);
 }
 
@@ -28,11 +28,12 @@
 }
 
 .banner__title {
-    font-size: clamp(2rem, 5vw, 3rem);
+    font-size: clamp(2.25rem, 5.5vw, 3.25rem);
     font-weight: 800;
-    line-height: 1.1;
+    line-height: 1.08;
     margin: 0 !important;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
 }
 
 .banner__rotating {
@@ -44,10 +45,12 @@
 
 .banner__subtitle {
     font-size: 1.05rem;
-    line-height: 1.65;
+    font-weight: 400;
+    line-height: 1.7;
     color: var(--ifm-color-emphasis-700);
     max-width: 520px;
     margin: 0 !important;
+    text-wrap: pretty;
 }
 
 .banner__install {
@@ -76,6 +79,24 @@
     color: inherit !important;
 }
 
+.banner__copy {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--ifm-color-emphasis-500);
+    cursor: pointer;
+    padding: 0.2rem;
+    border-radius: 0.25rem;
+    transition: color 0.15s ease;
+    margin-left: 0.25rem;
+}
+
+.banner__copy:hover {
+    color: var(--ifm-color-primary);
+}
+
 .banner__actions {
     display: flex;
     align-items: center;
@@ -88,9 +109,9 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.625rem 1.25rem;
+    padding: 0.7rem 1.5rem;
     border-radius: 0.5rem;
-    background: linear-gradient(180deg, var(--ifm-color-primary-lighter) 0%, var(--ifm-color-primary-dark) 100%);
+    background: linear-gradient(180deg, var(--ifm-color-primary-light) 0%, var(--ifm-color-primary-dark) 100%);
     color: white !important;
     font-weight: 700;
     font-size: 0.9rem;
@@ -117,19 +138,20 @@
 .banner__secondary {
     display: inline-flex;
     align-items: center;
-    padding: 0.625rem 1.25rem;
+    padding: 0.7rem 1.5rem;
     border-radius: 0.5rem;
     border: 1px solid var(--ifm-color-emphasis-300);
     color: inherit !important;
     font-weight: 600;
     font-size: 0.9rem;
     text-decoration: none !important;
-    transition: border-color 0.15s ease, background 0.15s ease;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 
 .banner__secondary:hover {
     border-color: var(--ifm-color-primary);
     background: rgba(231, 0, 115, 0.06);
+    transform: translateY(-1px);
 }
 
 .banner__trust {

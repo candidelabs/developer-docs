@@ -8,8 +8,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        ['inter']: 'Inter',
-        ['roboto']: 'Roboto Mono',
+        ['sans']: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        ['mono']: ['ui-monospace', 'SFMono-Regular', 'SF Mono', 'Consolas', 'Liberation Mono', 'Menlo', 'monospace'],
       },
       screens: {
         ['mobile-nav']: '997px'

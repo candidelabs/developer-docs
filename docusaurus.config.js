@@ -29,6 +29,28 @@ const config = {
     locales: ['en'],
   },
 
+  headTags: [
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossorigin: 'anonymous',
+      },
+    },
+  ],
+
+  stylesheets: [
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
+  ],
+
   markdown: {
     mermaid: true,
   },
@@ -124,8 +146,8 @@ const config = {
         id: 'safe-unified-account',
         content:
           'Safe Unified Account: Sign once, execute on every chain. EIL-compatible multichain signatures for Safe. <a href="/account-abstraction/research/safe-unified-account/">Learn more</a>',
-        backgroundColor: '#f0f6ff',
-        textColor: '#000000',
+        backgroundColor: '#fce7f0',
+        textColor: '#1a1a1a',
         isCloseable: true,
       },
       metadata: [{
