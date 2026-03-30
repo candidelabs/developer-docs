@@ -5,7 +5,7 @@ description: Use when integrating the Forwarding Address API for cross-chain dep
 
 # Forwarding Address Integration Skill
 
-You are integrating the Forwarding Address API: a JSON-RPC service that generates deterministic deposit addresses for cross-chain asset routing. Users send tokens to a forwarding address on any supported source chain, and the tokens are automatically bridged to the recipient's destination chain.
+You are integrating the Forwarding Address API: a JSON-RPC service that generates deterministic deposit addresses for asset routing. Users send tokens to a forwarding address on any supported chain (including the destination chain itself), and the tokens are automatically routed to the recipient's wallet on the destination chain.
 
 ## Documentation
 
@@ -84,7 +84,7 @@ For full parameter tables and response schemas, see the [API Reference](https://
 - **`forwarding_getAddress`**: Computes a deterministic deposit address from `recipient`, `custodialWithdrawer`, `destinationChainId`, and optional `salt`. Pure computation, no side effects. Same inputs always return the same address.
 - **`forwarding_activate`**: Starts relayer monitoring on specified source chains with a TTL. Idempotent: calling again resets the TTL. Required before deposits will be forwarded.
 - **`forwarding_getActivation`**: Checks whether the relayer is monitoring a forwarding address. Tracks activation status only, not deposit completion.
-- **`forwarding_estimateOutput`**: Estimates what the recipient receives after service and bridge fees for a given route, token, and amount. Does not require an activated address.
+- **`forwarding_estimateOutput`**: Estimates what the recipient receives after service and bridge fees for a given route, token, and amount. Returns `outputDecimals` for formatting the output amount. Does not require an activated address.
 - **`forwarding_setMode`**: Sets bridging mode (`"fast"` or `"slow"`) for a monitored forwarding address. Can target specific source chains or update all.
 
 ---
@@ -119,7 +119,7 @@ Do not skip these.
 1. Always call `forwarding_getRoutes` before any other call to verify the route exists. Never assume chain IDs, tokens, or fees.
 2. Never suggest sending unsupported tokens. Only tokens from the route's `tokens` array will be forwarded. Anything else gets stuck.
 3. Never suggest sending below `minAmount`. These deposits are not forwarded. Convert `minAmount` to human-readable using the token's `decimals` when presenting to users.
-4. Never suggest sending on the destination chain. The forwarding address receives on source chains only.
+4. The forwarding address accepts deposits on any supported chain, including the destination chain itself. Check `forwarding_getRoutes` to confirm which chains are supported for a given route.
 5. Activation is required. An address that is not activated (or has expired) will not have deposits forwarded. Always activate after computing the address.
 6. There is no webhook for deposit completion. `forwarding_getActivation` checks if monitoring is active, not if a deposit was forwarded. To confirm arrival, poll the recipient's balance on the destination chain. Typical latency is 10 to 20 seconds.
 7. Amounts are always in smallest unit. 1 ETH = `"1000000000000000000"` (18 decimals). 1 USDT = `"1000000"` (6 decimals). Use the token's `decimals` field for conversion.

@@ -288,6 +288,7 @@ Response:
     "outputToken": "0x...",
     "outputTokenSymbol": "ETH",
     "outputAmount": "990000000000000000",
+    "outputDecimals": 18,
     "relayerBotFee": "5000000000000000",
     "bridgeProtocolFee": "5000000000000000"
   }
@@ -296,9 +297,10 @@ Response:
 
 | Field | Description |
 |-------|-------------|
-| `outputAmount` | Input amount minus `relayerBotFee` minus `bridgeProtocolFee`. In smallest unit |
-| `relayerBotFee` | Relayer service fee in smallest unit |
-| `bridgeProtocolFee` | Bridge protocol fee in smallest unit |
+| `outputAmount` | Amount the recipient receives, scaled to the destination token's decimals. In smallest unit |
+| `outputDecimals` | Decimal places of the output token on the destination chain. Use this when formatting `outputAmount` for display |
+| `relayerBotFee` | Relayer service fee in smallest unit (source token decimals) |
+| `bridgeProtocolFee` | Bridge protocol fee in smallest unit (source token decimals) |
 
 ---
 
@@ -452,9 +454,10 @@ interface EstimateResult {
   destinationChainId: number;
   outputToken: string;
   outputTokenSymbol: string;
-  outputAmount: string;            // smallest unit
-  relayerBotFee: string;           // smallest unit
-  bridgeProtocolFee: string;       // smallest unit
+  outputAmount: string;            // smallest unit, destination token decimals
+  outputDecimals: number;          // decimal places of output token
+  relayerBotFee: string;           // smallest unit, source token decimals
+  bridgeProtocolFee: string;       // smallest unit, source token decimals
 }
 
 interface SetModeResult {
