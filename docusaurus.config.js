@@ -131,6 +131,21 @@ const config = {
         }
       }
     ],
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        redirects: [
+          {
+            from: '/account-abstraction/research/safe-unified-account/',
+            to: '/wallet/guides/chain-abstraction-overview/',
+          },
+          {
+            from: '/account-abstraction/research/safe-unified-account-getting-started/',
+            to: '/wallet/guides/chain-abstraction-getting-started/',
+          },
+        ],
+      },
+    ],
   ],
 
   themeConfig:
