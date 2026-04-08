@@ -498,6 +498,23 @@ const sidebars = {
             },
           ],
         },
+        {
+          type: "category",
+          label: "Chain Abstraction",
+          collapsed: true,
+          items: [
+            {
+              type: "doc",
+              id: "wallet/guides/chain-abstraction-overview",
+              label: "Overview"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/chain-abstraction-getting-started",
+              label: "Getting Started"
+            },
+          ],
+        },
       ],
     },
     {
@@ -553,6 +570,11 @@ const sidebars = {
         },
         {
           type: "doc",
+          id: "wallet/abstractionkit/safe-unified-account",
+          label: "Safe Unified Account"
+        },
+        {
+          type: "doc",
           id: "wallet/abstractionkit/bundler",
           label: "Bundler"
         },
@@ -593,23 +615,6 @@ const sidebars = {
       className: "category-not-collapsible",
       label: "Labs",
       items: [
-        {
-          type: "category",
-          label: "Safe Unified Account",
-          collapsed: true,
-          items: [
-            {
-              type: "doc",
-              id: "account-abstraction/research/safe-unified-account",
-              label: "Overview"
-            },
-            {
-              type: "doc",
-              id: "account-abstraction/research/safe-unified-account-getting-started",
-              label: "Getting Started"
-            },
-          ],
-        },
         {
           type: "category",
           label: "Forwarding Address",
