@@ -535,6 +535,11 @@ const sidebars = {
           items: [
             {
               type: "doc",
+              id: "wallet/abstractionkit/safe-unified-account",
+              label: "Safe Unified Account"
+            },
+            {
+              type: "doc",
               id: "wallet/abstractionkit/safe-account-v3",
               label: "Safe Account V3"
             },
@@ -542,11 +547,6 @@ const sidebars = {
               type: "doc",
               id: "wallet/abstractionkit/safe-account-v2",
               label: "Safe Account V2"
-            },
-            {
-              type: "doc",
-              id: "wallet/abstractionkit/safe-unified-account",
-              label: "Safe Unified Account"
             },
           ],
         },
