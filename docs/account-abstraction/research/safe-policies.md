@@ -101,7 +101,7 @@ This separation keeps complex validation logic offchain where it's flexible and 
 
 ### Integration with Safe Unified Account
 
-Policies work alongside [Safe Unified Account](/account-abstraction/research/safe-unified-account) for multichain deployment. When configuring a Safe across multiple chains, policies can be deployed and configured on all chains with a single signature using the Merkle-rooted signature scheme. This enables consistent security posture where a DeFi Manager has the same permissions on Base, Arbitrum, and Optimism, and spending policies maintain the same caps across networks.
+Policies work alongside [Safe Unified Account](/wallet/guides/chain-abstraction-overview) for multichain deployment. When configuring a Safe across multiple chains, policies can be deployed and configured on all chains with a single signature using the Merkle-rooted signature scheme. This enables consistent security posture where a DeFi Manager has the same permissions on Base, Arbitrum, and Optimism, and spending policies maintain the same caps across networks.
 
 ## Current Status
 

@@ -1,0 +1,357 @@
+---
+title: Safe Unified Account SDK Reference
+description: SDK reference for SafeMultiChainSigAccountV1 providing chain abstraction with multichain Merkle-rooted signatures for Safe Accounts
+keywords: [safe-unified-account, chain-abstraction, multichain, merkle-tree, "4337", sdk, account-abstraction]
+---
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+import {
+  metaTransactionType,
+  ecdsaSignatureType,
+  webauthnSignatureDataType,
+  initializeNewAccountParam,
+  initializeNewAccountReturnV3,
+  signUserOperationsParam,
+  signUserOperationsReturn,
+  userOperationToSignType,
+  getMultiChainEip712HashParam,
+  getMultiChainEip712HashReturn,
+  getMultiChainEip712DataParam,
+  getMultiChainEip712DataReturn,
+  formatSignaturesToUseroperationsSignaturesParam,
+  formatSignaturesToUseroperationsSignaturesReturn,
+} from "../../../src/data/accountParamAndReturnData";
+
+# Safe Unified Account
+
+**SafeMultiChainSigAccountV1** enables chain abstraction for Safe Accounts. It extends the standard Safe Account with multichain signature support via Merkle trees, allowing you to sign UserOperations for multiple chains with a single signature.
+
+Uses EntryPoint v0.9 and EIP-712 typed data with Merkle proofs.
+
+## Audits
+
+- [Audit Report by Nethermind (NM-0874)](https://github.com/candidelabs/safe-4337-multi-chain-signature-module/blob/main/audit/NM_0874_Candide_safe.pdf)
+
+To learn more about the contracts, visit the [Safe 4337 Multi-Chain Signature Module repository](https://github.com/candidelabs/safe-4337-multi-chain-signature-module).
+
+## Import
+
+```ts
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+```
+
+## How to Use
+
+```ts
+const ownerPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+
+console.log("Account address:", smartAccount.accountAddress);
+```
+
+This class inherits all methods from [Safe Account](/wallet/abstractionkit/safe-account). The methods below are specific to multichain operations or override the base class with multichain defaults.
+
+## Methods
+
+### initializeNewAccount
+
+Initializes a new SafeMultiChainSigAccountV1 from a list of owners. Only needed on the first transaction when the account has not been deployed yet.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+
+const ownerPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+
+console.log("Account address (sender): " + smartAccount.accountAddress);
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={initializeNewAccountParam} />
+  <DataTable items={ecdsaSignatureType} />
+   WebauthnPublicKey
+  <DataTable items={webauthnSignatureDataType} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={initializeNewAccountReturnV3} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeMultiChainSigAccount.ts)
+
+### createUserOperation
+
+Creates a UserOperation for multichain signing. This overrides the base SafeAccount method to always set `isMultiChainSignature: true` and use EntryPoint v0.9.
+
+Determines the nonce, fetches gas prices, estimates gas limits, and returns a UserOperation to be signed. You can override any of these values using the overrides parameter.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import {
+    SafeMultiChainSigAccountV1 as SafeAccount,
+    MetaTransaction,
+} from "abstractionkit";
+
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+
+const transaction: MetaTransaction = {
+    to: "0xTargetAddress",
+    value: 0n,
+    data: "0x",
+};
+
+const userOperation = await smartAccount.createUserOperation(
+    [transaction],
+    "https://rpc-node-url",
+    "https://bundler-url",
+);
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={metaTransactionType} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeMultiChainSigAccount.ts)
+
+### signUserOperations
+
+Signs multiple UserOperations across different chains with a single signing session. Builds a Merkle tree from the UserOperation hashes, signs the Merkle root, and returns an array of signatures (one per UserOperation) each containing the Merkle proof for its chain.
+
+If only one UserOperation is provided, falls back to single-chain signing.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+
+// Create UserOperations for each chain
+const userOp1 = await smartAccount.createUserOperation([tx], nodeUrl1, bundlerUrl1);
+const userOp2 = await smartAccount.createUserOperation([tx], nodeUrl2, bundlerUrl2);
+
+// Sign all UserOperations with one signing session
+const signatures = smartAccount.signUserOperations(
+    [
+        { userOperation: userOp1, chainId: 11155111n },
+        { userOperation: userOp2, chainId: 11155420n },
+    ],
+    [ownerPrivateKey],
+);
+
+// Attach signatures
+userOp1.signature = signatures[0];
+userOp2.signature = signatures[1];
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={signUserOperationsParam} />
+
+  UserOperationToSign
+  <DataTable items={userOperationToSignType} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={signUserOperationsReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[signUserOperations](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeMultiChainSigAccount.ts)
+
+### getMultiChainSingleSignatureUserOperationsEip712Hash
+
+Static method. Computes the EIP-712 hash of the Merkle tree root for a set of UserOperations. This is the hash that wallet signers (browser extensions, hardware wallets) sign to approve multiple cross-chain operations at once.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+
+const hash = SafeAccount.getMultiChainSingleSignatureUserOperationsEip712Hash([
+    { userOperation: userOp1, chainId: 11155111n },
+    { userOperation: userOp2, chainId: 11155420n },
+]);
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getMultiChainEip712HashParam} />
+
+  UserOperationToSign
+  <DataTable items={userOperationToSignType} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={getMultiChainEip712HashReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[getMultiChainSingleSignatureUserOperationsEip712Hash](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeMultiChainSigAccount.ts)
+
+### getMultiChainSingleSignatureUserOperationsEip712Data
+
+Static method. Returns the EIP-712 typed data components (domain, types, message value) for a multi-chain Merkle tree root. Use this for wallet-compatible signing via `eth_signTypedData_v4`.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+
+const { domain, types, messageValue } =
+    SafeAccount.getMultiChainSingleSignatureUserOperationsEip712Data([
+        { userOperation: userOp1, chainId: 11155111n },
+        { userOperation: userOp2, chainId: 11155420n },
+    ]);
+
+// Use with a wallet provider
+const signature = await wallet.signTypedData(domain, types, messageValue);
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getMultiChainEip712DataParam} />
+
+  UserOperationToSign
+  <DataTable items={userOperationToSignType} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={getMultiChainEip712DataReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[getMultiChainSingleSignatureUserOperationsEip712Data](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeMultiChainSigAccount.ts)
+
+### formatSignaturesToUseroperationsSignatures
+
+Static method. Formats EIP-712 signatures (from wallet signing) into UserOperation signatures with Merkle proofs. Use this after signing with `getMultiChainSingleSignatureUserOperationsEip712Hash` or `getMultiChainSingleSignatureUserOperationsEip712Data`.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+
+const userOpsToSign = [
+    { userOperation: userOp1, chainId: 11155111n },
+    { userOperation: userOp2, chainId: 11155420n },
+];
+
+const signerSignaturePairs = [
+    { signer: ownerAddress, signature: eip712Signature },
+];
+
+const signatures = SafeAccount.formatSignaturesToUseroperationsSignatures(
+    userOpsToSign,
+    signerSignaturePairs,
+);
+
+userOp1.signature = signatures[0];
+userOp2.signature = signatures[1];
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={formatSignaturesToUseroperationsSignaturesParam} />
+
+  UserOperationToSign
+  <DataTable items={userOperationToSignType} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={formatSignaturesToUseroperationsSignaturesReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeMultiChainSigAccount.ts)
+
+### sendUserOperation
+
+Inherited from [Safe Account](/wallet/abstractionkit/safe-account). Sends a signed UserOperation to the bundler.
+
+```ts title="example.ts"
+const account = new SafeAccount(userOperation.sender);
+const response = await account.sendUserOperation(userOperation, bundlerUrl);
+const receipt = await response.included();
+```
+
+## Gas Sponsorship
+
+Use `CandidePaymaster` for gas sponsorship with multichain operations. The paymaster uses a two-phase flow: **commit** (before signing) and **finalize** (after signing).
+
+```ts title="example.ts"
+import { CandidePaymaster } from "abstractionkit";
+
+// One paymaster instance per chain
+const paymaster1 = new CandidePaymaster("https://api.candide.dev/public/v3/sepolia");
+const paymaster2 = new CandidePaymaster("https://api.candide.dev/public/v3/optimism-sepolia");
+
+// Phase 1: Commit (before signing)
+const commitOverrides = {
+    preVerificationGasPercentageMultiplier: 20,
+    context: { signingPhase: "commit" as const },
+};
+const [[commitOp1], [commitOp2]] = await Promise.all([
+    paymaster1.createSponsorPaymasterUserOperation(
+        smartAccount, userOperation1, bundlerUrl1, undefined, commitOverrides
+    ),
+    paymaster2.createSponsorPaymasterUserOperation(
+        smartAccount, userOperation2, bundlerUrl2, undefined, commitOverrides
+    ),
+]);
+userOperation1 = commitOp1;
+userOperation2 = commitOp2;
+
+// Sign here with signUserOperations...
+
+// Phase 2: Finalize (after signing)
+const finalizeOverrides = { context: { signingPhase: "finalize" as const } };
+const [[finalOp1], [finalOp2]] = await Promise.all([
+    paymaster1.createSponsorPaymasterUserOperation(
+        smartAccount, userOperation1, bundlerUrl1, undefined, finalizeOverrides
+    ),
+    paymaster2.createSponsorPaymasterUserOperation(
+        smartAccount, userOperation2, bundlerUrl2, undefined, finalizeOverrides
+    ),
+]);
+userOperation1 = finalOp1;
+userOperation2 = finalOp2;
+```

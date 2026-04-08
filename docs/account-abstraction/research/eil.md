@@ -69,7 +69,7 @@ Candide is building EIL native infrastructure for wallets, abstracting the proto
 
 One signature authorizes operations across all chains. Users sign once, and coordinated transactions execute across every network where they have a Safe. EIL enables the trustless cross-chain execution that makes this possible.
 
-[Learn more about Safe Unified Account →](/account-abstraction/research/safe-unified-account)
+[Learn more about Chain Abstraction with Safe Unified Account →](/wallet/guides/chain-abstraction-overview)
 
 ### Forwarding Address
 

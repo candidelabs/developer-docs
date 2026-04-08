@@ -1732,3 +1732,128 @@ export const createMigrateToV3Return = [
       "Array of meta-transactions that disable the v0.6 module, enable the v0.7 module, and update the fallback handler.",
   },
 ];
+
+// Safe Unified Account (SafeMultiChainSigAccountV1) types
+
+export const userOperationToSignType = [
+  {
+    key: "chainId",
+    type: "bigint",
+    description: "Target chain ID for this UserOperation",
+  },
+  {
+    key: "userOperation",
+    type: "UserOperationV9",
+    description: "The UserOperation to sign",
+  },
+  {
+    key: "validAfter?",
+    type: "bigint",
+    description: "Timestamp the signature will be valid after",
+  },
+  {
+    key: "validUntil?",
+    type: "bigint",
+    description: "Timestamp the signature will be valid until",
+  },
+];
+
+export const signUserOperationsParam = [
+  {
+    key: "userOperationsToSign",
+    type: "UserOperationToSign[]",
+    description: "Array of UserOperations with their target chain IDs and optional validity windows",
+  },
+  {
+    key: "privateKeys",
+    type: "string[]",
+    description: "Private keys of the Safe owners to sign with",
+  },
+];
+
+export const signUserOperationsReturn = [
+  {
+    key: "signatures",
+    type: "string[]",
+    description:
+      "Array of signatures, one per UserOperation. Each contains the Merkle proof for its respective chain. If only one UserOperation is provided, falls back to single-chain signing.",
+  },
+];
+
+export const getMultiChainEip712HashParam = [
+  {
+    key: "userOperationsToSign",
+    type: "UserOperationToSign[]",
+    description: "Array of UserOperations with their target chain IDs",
+  },
+  {
+    key: "overrides?",
+    type: "object",
+    description: "Optional overrides for the Safe 4337 module address",
+  },
+];
+
+export const getMultiChainEip712HashReturn = [
+  {
+    key: "hash",
+    type: "string",
+    description: "The EIP-712 hash of the Merkle tree root, ready for signing by wallets",
+  },
+];
+
+export const getMultiChainEip712DataParam = [
+  {
+    key: "userOperationsToSign",
+    type: "UserOperationToSign[]",
+    description: "Array of UserOperations with their target chain IDs",
+  },
+  {
+    key: "overrides?",
+    type: "object",
+    description: "Optional overrides for module and entrypoint addresses",
+  },
+];
+
+export const getMultiChainEip712DataReturn = [
+  {
+    key: "domain",
+    type: "{ verifyingContract: string }",
+    description: "The EIP-712 domain with the Safe 4337 module as verifying contract",
+  },
+  {
+    key: "types",
+    type: "Record<string, { name: string; type: string }[]>",
+    description: "The EIP-712 type definitions for multi-chain operations",
+  },
+  {
+    key: "messageValue",
+    type: "{ merkleTreeRoot: string }",
+    description: "The message containing the Merkle tree root of all UserOperation hashes",
+  },
+];
+
+export const formatSignaturesToUseroperationsSignaturesParam = [
+  {
+    key: "userOperationsToSign",
+    type: "UserOperationToSign[]",
+    description: "Array of UserOperations with their target chain IDs",
+  },
+  {
+    key: "signerSignaturePairs",
+    type: "SignerSignaturePair[]",
+    description: "Array of signer address and signature pairs from EIP-712 signing",
+  },
+  {
+    key: "overrides?",
+    type: "WebAuthnSignatureOverrides",
+    description: "Optional overrides for WebAuthn verifier addresses",
+  },
+];
+
+export const formatSignaturesToUseroperationsSignaturesReturn = [
+  {
+    key: "signatures",
+    type: "string[]",
+    description: "Array of formatted signatures with Merkle proofs, one per UserOperation",
+  },
+];
