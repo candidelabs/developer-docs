@@ -433,6 +433,23 @@ const sidebars = {
           label: "Set Up Multisig"
         },
         {
+          type: "category",
+          label: "Chain Abstraction",
+          collapsed: true,
+          items: [
+            {
+              type: "doc",
+              id: "wallet/guides/chain-abstraction-overview",
+              label: "Overview"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/chain-abstraction-getting-started",
+              label: "Getting Started"
+            },
+          ],
+        },
+        {
           type: "doc",
           id: "wallet/guides/signing",
           label: "Sign Messages"
@@ -498,23 +515,6 @@ const sidebars = {
             },
           ],
         },
-        {
-          type: "category",
-          label: "Chain Abstraction",
-          collapsed: true,
-          items: [
-            {
-              type: "doc",
-              id: "wallet/guides/chain-abstraction-overview",
-              label: "Overview"
-            },
-            {
-              type: "doc",
-              id: "wallet/guides/chain-abstraction-getting-started",
-              label: "Getting Started"
-            },
-          ],
-        },
       ],
     },
     {
@@ -543,6 +543,11 @@ const sidebars = {
               id: "wallet/abstractionkit/safe-account-v2",
               label: "Safe Account V2"
             },
+            {
+              type: "doc",
+              id: "wallet/abstractionkit/safe-unified-account",
+              label: "Safe Unified Account"
+            },
           ],
         },
         {
@@ -567,11 +572,6 @@ const sidebars = {
           type: "doc",
           id: "wallet/abstractionkit/calibur-account",
           label: "Calibur Account"
-        },
-        {
-          type: "doc",
-          id: "wallet/abstractionkit/safe-unified-account",
-          label: "Safe Unified Account"
         },
         {
           type: "doc",

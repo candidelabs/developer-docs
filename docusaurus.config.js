@@ -200,11 +200,6 @@ const config = {
             label: 'API',
           },
           {
-            to: '/wallet/guides/chain-abstraction-overview',
-            position: 'left',
-            label: 'Chain Abstraction',
-          },
-          {
             to: '/account-abstraction/research/multichain-deposit-address',
             position: 'left',
             label: 'Labs',
