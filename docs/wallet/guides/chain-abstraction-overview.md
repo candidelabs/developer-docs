@@ -28,6 +28,7 @@ Try the live demo at **[unified.candide.dev](https://unified.candide.dev)**
 | Add recovery guardian on 5 chains | 5 signing sessions | 1 signature |
 | Update multisig threshold on 5 chains | 5 signing sessions | 1 signature |
 | Deploy consistent config to new chains | Manual per-chain setup | 1 signature |
+| Consolidate USDC/USDT to one chain | Bridge from each chain separately | 1 signature triggers transfers via CCTP or LayerZero from all source chains |
 
 ## Audits
 
