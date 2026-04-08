@@ -21,7 +21,7 @@ Try the live demo at **[unified.candide.dev](https://unified.candide.dev)**
 
 ## What is Chain Abstraction?
 
-Chain abstraction removes the complexity of managing accounts across multiple chains. Instead of treating each L2 deployment as a separate account that requires its own signing sessions and gas payments, chain abstraction lets you operate across all chains as if they were one.
+Chain abstraction removes the complexity of managing accounts across multiple chains. Instead of treating each deployment as a separate account that requires its own signing sessions and gas payments, chain abstraction lets you operate across all chains as if they were one. This works across any EVM chain where Safe is deployed: L2 rollups, sidechains like Gnosis Chain, and other L1s.
 
 Safe Unified Account is a Safe module that implements chain abstraction through multichain batch signatures. You construct a UserOperation for each chain, arrange them into a Merkle tree, sign the Merkle root once, and submit each operation to its respective chain with a Merkle proof. Each chain independently verifies the signature. No trusted bridges, no centralized relayers. Pure cryptography.
 
@@ -64,7 +64,7 @@ flowchart TB
 
 ## Why Chain Abstraction Matters
 
-You manage a Safe on Base, another on Arbitrum, a third on Optimism, and maybe a fourth on Polygon. This is increasingly common as Ethereum scales through L2s, with the ecosystem now spanning over 55 rollups and growing.
+You manage a Safe on Base, another on Arbitrum, a third on Gnosis Chain, and maybe a fourth on Polygon. This is increasingly common as the EVM ecosystem grows across rollups, sidechains, and multiple L1s.
 
 Now imagine you need to replace a compromised signer key, add a recovery guardian, or update your multisig threshold from 2-of-3 to 3-of-5. Today, that means four separate signing sessions, four gas payments, four opportunities for human error, and four chances to forget one chain and leave it misconfigured. Inconsistent configurations create security risks where a forgotten chain with outdated owners becomes a vulnerability.
 
