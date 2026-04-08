@@ -158,9 +158,9 @@ const config = {
       },
       image: 'img/posters/atelier-meta.png',
       announcementBar: {
-        id: 'safe-unified-account',
+        id: 'chain-abstraction',
         content:
-          'Safe Unified Account: Sign once, execute on every chain. EIL-compatible multichain signatures for Safe. <a href="/account-abstraction/research/safe-unified-account/">Learn more</a>',
+          'Chain Abstraction: Sign once, execute on every chain. Multichain signatures for Safe, now audited. <a href="/wallet/guides/chain-abstraction-overview/">Learn more</a>',
         backgroundColor: '#fce7f0',
         textColor: '#1a1a1a',
         isCloseable: true,
@@ -200,7 +200,12 @@ const config = {
             label: 'API',
           },
           {
-            to: '/account-abstraction/research/safe-unified-account',
+            to: '/wallet/guides/chain-abstraction-overview',
+            position: 'left',
+            label: 'Chain Abstraction',
+          },
+          {
+            to: '/account-abstraction/research/multichain-deposit-address',
             position: 'left',
             label: 'Labs',
           },
