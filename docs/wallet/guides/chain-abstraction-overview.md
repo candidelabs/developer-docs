@@ -32,7 +32,7 @@ Try the live demo at **[unified.candide.dev](https://unified.candide.dev)**
 
 ## Audits
 
-- [NM-0874 Audit Report](https://github.com/candidelabs/safe-4337-multi-chain-signature-module/blob/main/audit/NM_0874_Candide_safe.pdf)
+- [Audit Report by Nethermind (NM-0874)](https://github.com/candidelabs/safe-4337-multi-chain-signature-module/blob/main/audit/NM_0874_Candide_safe.pdf)
 - [Safe 4337 Multi-Chain Signature Module repository](https://github.com/candidelabs/safe-4337-multi-chain-signature-module)
 
 ## Examples
