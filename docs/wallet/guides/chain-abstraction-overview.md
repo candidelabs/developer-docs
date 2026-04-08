@@ -1,6 +1,6 @@
 ---
 title: "Chain Abstraction with Safe Unified Account"
-description: "Sign once, execute on every chain. Chain abstraction for Safe Accounts using multichain Merkle-rooted signatures, enabling account sync and EIL-compatible cross-chain operations."
+description: "Sign once, execute on every chain. Chain abstraction for Safe Accounts using multichain Merkle-rooted signatures for seamless account sync across chains."
 keywords:
   - chain-abstraction
   - multichain
@@ -8,14 +8,12 @@ keywords:
   - merkle-tree
   - cross-chain
   - account-sync
-  - EIL
   - safe-module
-  - interoperability
 ---
 
 # Chain Abstraction with Safe Unified Account
 
-*Execute coordinated operations across all your chains with a single signature, unlocking seamless account sync and compatibility with Ethereum's Interoperability Layer.*
+*Execute coordinated operations across all your chains with a single signature, unlocking seamless account sync.*
 
 ## Demo
 
@@ -75,8 +73,6 @@ Now imagine you need to replace a compromised signer key, add a recovery guardia
 | Replace owner on 5 chains | 5 signing sessions, 5 transactions | 1 signature, 5 transactions |
 | Add guardian on 5 chains | 5 signing sessions, 5 transactions | 1 signature, 5 transactions |
 | Update threshold on 5 chains | 5 signing sessions, 5 transactions | 1 signature, 5 transactions |
-| Cross-chain token transfer | Trust a bridge or custodian | Trustless via EIL |
-
 The transactions still execute separately on each chain, but the cognitive overhead, the signing ceremonies, and the coordination burden all collapse to a single action.
 
 ## Use Cases
@@ -86,12 +82,6 @@ The transactions still execute separately on each chain, but the cognitive overh
 Keep your Safe configuration consistent across chains. When a team member leaves or a key is compromised, replace the owner on all chains with a single signature instead of racing to update each chain before an attacker exploits the delay.
 
 This applies to any configuration change: setting up the [Social Recovery Module](/wallet/plugins/recovery-with-guardians) on all chains at once, updating multisig thresholds across your entire footprint, or ensuring consistent recovery options so no chain is left with outdated security settings.
-
-### EIL: Trustless Cross-Chain Token Movements
-
-The Ethereum Foundation's [Interoperability Layer](https://blog.ethereum.org/2025/11/18/eil) enables trustless token transfers between L2s without bridges. The same Merkle-rooted signature scheme that powers account sync also enables EIL-compatible cross-chain operations.
-
-For a broader overview of EIL and what it means for wallets, see the [EIL overview](/account-abstraction/research/eil).
 
 ## How It Works
 
