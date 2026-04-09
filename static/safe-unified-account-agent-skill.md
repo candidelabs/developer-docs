@@ -73,8 +73,8 @@ You MUST produce these four building blocks. Adapt file structure to the develop
 
 **3. Multichain signing orchestrator** — function that:
 - Takes: MetaTransactions (per chain or shared), chain configs, signer credentials
-- Executes the 8-step flow (build txs → create userOps → paymaster commit → sign → paymaster finalize → send)
-- Returns: per-chain results with status tracking (pending/sent/confirmed/failed)
+- Executes the 6-step flow (build txs → create userOps → paymaster commit → sign → paymaster finalize → send)
+- Returns: per-chain results where each chain independently tracks `userOpHash`, `txHash`, and `error` fields through the lifecycle: preparing → signing → pending → success (or error)
 - Uses `Promise.allSettled()` for sending (NOT `Promise.all()`)
 - Implements retry logic for failed chains
 
@@ -148,7 +148,7 @@ Both call the paymaster twice: before signing (commit) and after (finalize).
 
 ### Per-chain status tracking
 
-Track independent status per chain (pending → sent → confirmed / failed). Always use `Promise.allSettled()`. Reference `src/components/SafeCard.tsx` in Source #3 for the pattern.
+Track independent status per chain through the lifecycle: preparing → signing → pending → success (or error). Each chain entry must independently track `userOpHash`, `txHash`, and `error` fields. Always use `Promise.allSettled()`. Reference `src/components/SafeCard.tsx` in Source #3 for the pattern.
 
 ### Retry failed chains
 
