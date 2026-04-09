@@ -318,15 +318,6 @@ export const avalancheList = [
 ];
 
 // testnet tokens
-export const alfajoresList = [
-  {
-    token: "Candide Test Token",
-    logo: "/img/tokens/ctt-logo.png",
-    address: "0xFa5854FBf9964330d761961F46565AB7326e5a3b",
-    blockExplorer: "https://alfajores.celoscan.io/token/",
-    website: "https://candide.dev/",
-  },
-];
 export const amoyList = [
   {
     token: "Candide Test Token",
