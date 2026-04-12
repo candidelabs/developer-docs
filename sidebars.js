@@ -435,6 +435,7 @@ const sidebars = {
         {
           type: "category",
           label: "Chain Abstraction",
+          className: "sidebar-badge-new",
           collapsed: true,
           items: [
             {
@@ -472,6 +473,7 @@ const sidebars = {
             {
               type: "category",
               label: "Calibur Account",
+              className: "sidebar-badge-new",
               collapsible: false,
               items: [
                 {
@@ -571,7 +573,8 @@ const sidebars = {
         {
           type: "doc",
           id: "wallet/abstractionkit/calibur-account",
-          label: "Calibur Account"
+          label: "Calibur Account",
+          className: "sidebar-badge-new"
         },
         {
           type: "doc",

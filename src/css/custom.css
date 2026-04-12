@@ -120,6 +120,25 @@ html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
   line-height: 1.25rem;
 }
 
+/* Sidebar "NEW" badge */
+.sidebar-badge-new > .menu__list-item-collapsible > .menu__link,
+.sidebar-badge-new > .menu__link {
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-badge-new > .menu__list-item-collapsible > .menu__link::before,
+.sidebar-badge-new > .menu__link::before {
+  content: "NEW";
+  order: 1;
+  margin-left: 0.5rem;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: #E70073;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .header-github-link:hover {
   opacity: 0.6;
 }
