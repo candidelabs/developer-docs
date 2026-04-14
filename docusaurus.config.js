@@ -158,9 +158,9 @@ const config = {
       },
       image: 'img/posters/atelier-meta.png',
       announcementBar: {
-        id: 'chain-abstraction',
+        id: 'abstractionkit-v0-3-0',
         content:
-          'Chain Abstraction: Sign once, execute on every chain. Multichain signatures for Safe, now audited. <a href="/wallet/guides/chain-abstraction-overview/">Learn more</a>',
+          'AbstractionKit v0.3.0 is out: Safe Unified Account audited, Calibur Account, and parallelizable paymaster signing. <a href="/blog/abstractionkit-v0-3-0-release">Read the release</a>',
         backgroundColor: '#fce7f0',
         textColor: '#1a1a1a',
         isCloseable: true,
