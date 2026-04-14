@@ -1,6 +1,6 @@
 ---
 name: Forwarding-Address-Integration
-description: Use when integrating the Forwarding Address API for cross-chain deposit address routing, generating deterministic deposit addresses, activating relayer monitoring, estimating fees, or controlling bridging mode via JSON-RPC.
+description: Use when integrating the Forwarding Address API for cross-chain deposit address routing, generating deterministic deposit addresses, activating relayer monitoring, querying per-bridge minimum amounts, or estimating fees via JSON-RPC.
 ---
 
 # Forwarding Address Integration Skill
@@ -9,8 +9,9 @@ You are integrating the Forwarding Address API: a JSON-RPC service that generate
 
 ## Documentation
 
-The API changes frequently. Always read the live docs for exact parameters, response schemas, and examples.
+The API changes frequently. Always read the live docs for exact parameters, response schemas, and examples. Check the changelog first to see what changed recently.
 
+- **Changelog** (recent breaking changes and additions): https://docs.candide.dev/account-abstraction/research/forwarding-address-api#changelog
 - **API Reference** (parameters, response schemas, examples): https://docs.candide.dev/account-abstraction/research/forwarding-address-api
 - **Integration Guide** (patterns, TTL management, gotchas): https://docs.candide.dev/account-abstraction/research/forwarding-address-guide
 - **Recovery frontend** (for stuck funds): https://forwarding-address.candidelabs.com/
