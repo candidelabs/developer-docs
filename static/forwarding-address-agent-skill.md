@@ -48,11 +48,12 @@ Read the API Reference for full parameter details before writing code: https://d
 Follow this implementation order:
 
 1. Set up the JSON-RPC client (see Protocol section below)
-2. Query `forwarding_getRoutes` to discover supported routes
+2. Query `forwarding_getRoutes` (once per source chain) to discover supported routes and tokens
 3. Implement address generation (`forwarding_getAddress` + `forwarding_activate`)
-4. Add fee estimation if needed (`forwarding_estimateOutput`)
-5. Add TTL check: re-activate if expired before presenting the address to the user
-6. Add deposit arrival detection (poll recipient balance on destination chain)
+4. Add user-input validation with `forwarding_getMinimumAmount` before any fee estimation
+5. Add fee estimation if needed (`forwarding_estimateOutput`)
+6. Add TTL check: re-activate if expired before presenting the address to the user
+7. Add deposit arrival detection (poll recipient balance on destination chain)
 
 ---
 
@@ -80,12 +81,12 @@ Successful responses have a `result` field. Errors have an `error` field with a 
 
 For full parameter tables and response schemas, see the [API Reference](https://docs.candide.dev/account-abstraction/research/forwarding-address-api).
 
-- **`forwarding_getRoutes`**: Returns supported source-to-destination chain pairs with accepted tokens, minimum amounts, and fees. Always call first. Single source of truth for what is supported.
+- **`forwarding_getRoutes`**: Returns all routes from a given source chain with accepted tokens and fees. Takes a required `sourceChainId`. Call once per source chain to build the full picture of supported destinations and tokens. Single source of truth for what is supported.
+- **`forwarding_getMinimumAmount`**: Returns per-bridge minimum deposit amounts for a given source chain, destination chain, and token. Call this before `forwarding_estimateOutput` to validate user input. Minimums are bridge-specific and can change.
 - **`forwarding_getAddress`**: Computes a deterministic deposit address from `recipient`, `custodialWithdrawer`, `destinationChainId`, and optional `salt`. Pure computation, no side effects. Same inputs always return the same address.
-- **`forwarding_activate`**: Starts relayer monitoring on specified source chains with a TTL. Idempotent: calling again resets the TTL. Required before deposits will be forwarded.
+- **`forwarding_activate`**: Starts relayer monitoring on the specified source chains with a TTL. The destination chain is automatically included for same-chain forwarding. Idempotent: calling again resets the TTL. Required before deposits will be forwarded.
 - **`forwarding_getActivation`**: Checks whether the relayer is monitoring a forwarding address. Tracks activation status only, not deposit completion.
-- **`forwarding_estimateOutput`**: Estimates what the recipient receives after service and bridge fees for a given route, token, and amount. Returns `outputDecimals` for formatting the output amount. Does not require an activated address.
-- **`forwarding_setMode`**: Sets bridging mode (`"fast"` or `"slow"`) for a monitored forwarding address. Can target specific source chains or update all.
+- **`forwarding_estimateOutput`**: Estimates what the recipient receives after relayer and bridge protocol fees for a given route, token, and amount. Returns the selected `bridge` alongside the output amount. Does not require an activated address.
 
 ---
 
@@ -118,7 +119,7 @@ Do not skip these.
 
 1. Always call `forwarding_getRoutes` before any other call to verify the route exists. Never assume chain IDs, tokens, or fees.
 2. Never suggest sending unsupported tokens. Only tokens from the route's `tokens` array will be forwarded. Anything else gets stuck.
-3. Never suggest sending below `minAmount`. These deposits are not forwarded. Convert `minAmount` to human-readable using the token's `decimals` when presenting to users.
+3. Never suggest sending below the bridge minimum. Call `forwarding_getMinimumAmount` for the exact source chain, destination chain, and token; a deposit below every bridge's `minAmount` will not be forwarded. Convert `minAmount` to human-readable using the source token's `decimals` when presenting to users.
 4. The forwarding address accepts deposits on any supported chain, including the destination chain itself. Check `forwarding_getRoutes` to confirm which chains are supported for a given route.
 5. Activation is required. An address that is not activated (or has expired) will not have deposits forwarded. Always activate after computing the address.
 6. There is no webhook for deposit completion. `forwarding_getActivation` checks if monitoring is active, not if a deposit was forwarded. To confirm arrival, poll the recipient's balance on the destination chain. Typical latency is 10 to 20 seconds.
@@ -139,6 +140,6 @@ Apply before making API calls:
 1. Addresses must match `^0x[0-9a-fA-F]{40}$`
 2. Chain IDs must appear in `forwarding_getRoutes` results. Do not guess or hardcode.
 3. Token addresses must come from the route's `tokens` array for the chosen source-to-destination pair.
-4. Amounts must be decimal strings in smallest unit (no floating point). Must be >= `minAmount` from routes.
+4. Amounts must be decimal strings in smallest unit (no floating point). Must be greater than or equal to the bridge minimum returned by `forwarding_getMinimumAmount` for the same source chain, destination chain, and token.
 5. `custodialWithdrawer` should be the company's secure wallet for most integrations.
 6. `salt`: only use if the developer needs multiple addresses for the same recipient + destination.
