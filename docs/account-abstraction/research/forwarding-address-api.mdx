@@ -423,3 +423,30 @@ interface EstimateResult {
   bridgeProtocolFee: string;       // smallest unit, source token decimals
 }
 ```
+
+---
+
+## Changelog
+
+The Forwarding Address API is in alpha and evolves quickly. Breaking changes and new capabilities are tracked here so integrators can see what to update.
+
+### 2026-04-14
+
+**Added**
+
+- New `forwarding_getMinimumAmount` endpoint. Returns per-bridge minimum deposit amounts for a given source chain, destination chain, and token. Call this before `forwarding_estimateOutput` to validate user input.
+- New source and destination chain support: **BNB Chain** and **Base**. Query [`forwarding_getRoutes`](#forwarding_getroutes) with the chain's ID to see the accepted tokens and fees.
+- `forwarding_estimateOutput` response now includes a `bridge` field identifying which bridge was selected for the route.
+- `forwarding_activate` now automatically includes the destination chain in the monitored set, so same-chain forwarding works without passing it in `sourceChainIds`.
+
+**Changed**
+
+- `forwarding_getRoutes` parameter `sourceChainId` is now **required**. The endpoint returns all routes originating from that source chain. Call it once per source chain to build the full map of supported destinations.
+- `RouteToken` no longer includes a `minAmount` field. Minimums are now bridge-specific and returned by `forwarding_getMinimumAmount`.
+- `forwarding_estimateOutput` response no longer includes `outputDecimals`. To format `outputAmount`, read the output token's `decimals` from `forwarding_getRoutes` (match on the route's `destinationAddress`).
+
+**Removed**
+
+- `forwarding_estimateOutput` no longer accepts a `mode` parameter. The service selects the best available bridge automatically and returns it in the response `bridge` field.
+- `forwarding_setMode` has been removed. Bridging strategy is no longer user-configurable per address.
+- `forwarding_deploy` has been removed as a JSON-RPC method. The relayer auto-deploys the proxy on first deposit. For emergency recovery of stuck funds, users deploy and withdraw on-chain from their own wallet via the [recovery frontend](https://forwarding-address.candidelabs.com/).
