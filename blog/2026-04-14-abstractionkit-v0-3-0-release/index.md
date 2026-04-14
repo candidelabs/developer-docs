@@ -17,7 +17,7 @@ Safe Unified Account is audited by Nethermind. Calibur joins `Simple7702Account`
 
 ## Safe Unified Account, audited
 
-Safe Unified Account is now audited by Nethermind. If you were waiting for the audit before building on it, this is the release. We [first shipped it in February](./safe-unified-account).
+Safe Unified Account is now audited by Nethermind. If you were waiting for the audit before building on it, this is the release. We [first shipped it in February](/blog/safe-unified-account).
 
 The API is unchanged. Sign once, execute anywhere. Key rotations, guardian updates, account configuration: one signing session covers every chain. Each leaf in the Merkle tree is a UserOperation hash. You sign the root, each chain receives the signature plus a Merkle proof, and verification happens independently onchain. No relayers. No bridges.
 
@@ -72,7 +72,7 @@ userOperation.signature = smartAccount.signUserOperation(
 
 ## Parallelizable paymaster signing
 
-We [announced EntryPoint v0.9 support in February](./entrypoint-v09-support) through the Voltaire Bundler and `Simple7702AccountV09`. This release wires the new v0.9 paymaster flow into `CandidePaymaster` so apps can use it end to end.
+We [announced EntryPoint v0.9 support in February](/blog/entrypoint-v09-support) through the Voltaire Bundler and `Simple7702AccountV09`. This release wires the new v0.9 paymaster flow into `CandidePaymaster` so apps can use it end to end.
 
 Why it matters: under v0.8, the paymaster had to sign **before** the user, because the paymaster signature was part of what the user was signing over. That meant a paymaster round trip sitting between "user taps send" and the wallet's confirmation UI. On v0.9, a dedicated `paymasterSignature` field lets the paymaster sign **after** the user. The paymaster round trip can run in parallel with the user signing ceremony, and the confirmation UI shows up sooner.
 
