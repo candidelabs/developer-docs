@@ -22,14 +22,13 @@ The API uses JSON-RPC 2.0 over HTTP POST with `Content-Type: application/json`.
 
 ### `forwarding_getRoutes`
 
-Returns all supported source-to-destination routes with token metadata. This is the single source of truth for which chains and tokens are supported. Routes, tokens, fees, and minimums can change dynamically.
+Returns all routes from a given source chain with their available tokens and fees. This is the single source of truth for which destination chains and tokens are supported. Routes, tokens, and fees can change dynamically.
 
-Parameters (all optional):
+Parameters:
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `sourceChainId` | `number` | No | Filter routes by source chain |
-| `destinationChainId` | `number` | No | Filter routes by destination chain |
+| `sourceChainId` | `number` | Yes | Source chain ID to get routes from |
 
 Request:
 
@@ -38,7 +37,7 @@ Request:
   "jsonrpc": "2.0",
   "id": 1,
   "method": "forwarding_getRoutes",
-  "params": [{}]
+  "params": [{ "sourceChainId": 1 }]
 }
 ```
 
@@ -61,7 +60,6 @@ Response:
             "symbol": "ETH",
             "decimals": 18,
             "destinationAddress": "0x0000000000000000000000000000000000000000",
-            "minAmount": "10000000000000000",
             "feeBps": 50
           },
           {
@@ -69,7 +67,6 @@ Response:
             "symbol": "USDT",
             "decimals": 6,
             "destinationAddress": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
-            "minAmount": "1000000",
             "feeBps": 50
           }
         ]
@@ -87,8 +84,55 @@ Token fields:
 | `symbol` | Human-readable token symbol |
 | `decimals` | Token decimal places (source chain) |
 | `destinationAddress` | Token contract address on the destination chain. Use this when verifying arrival or displaying the output token |
-| `minAmount` | Minimum deposit in smallest unit. Deposits below this threshold are not forwarded |
 | `feeBps` | Service fee in basis points (50 = 0.5%) |
+
+---
+
+### `forwarding_getMinimumAmount`
+
+Returns the minimum deposit amount per bridge for a specific route. Use this to validate user input before calling `forwarding_estimateOutput`. Minimums are bridge-specific because each bridge has its own threshold below which deposits are not processed.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `sourceChainId` | `number` | Yes | Source chain ID |
+| `destinationChainId` | `number` | Yes | Destination chain ID |
+| `token` | `address` | Yes | Token address on the source chain |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_getMinimumAmount",
+  "params": [{
+    "sourceChainId": 1,
+    "destinationChainId": 42161,
+    "token": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+  }]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "bridges": {
+      "across": { "minAmount": "500000" },
+      "oft": { "minAmount": "1000000" }
+    }
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `bridges` | Object keyed by bridge identifier. Each entry contains a `minAmount` in the smallest unit of the source token. A deposit below every bridge's minimum will not be forwarded |
 
 ---
 
@@ -144,6 +188,7 @@ Key behaviors:
 - Idempotent: calling again resets the TTL. Use this to keep an address active.
 - TTL-based: monitoring expires after the TTL. The address must be reactivated to resume forwarding.
 - Reusable: call activate again after expiration.
+- Same-chain forwarding: the destination chain is automatically included in the monitored set. You do not need to pass it in `sourceChainIds` to accept deposits on the destination chain itself.
 
 Parameters:
 
@@ -248,7 +293,7 @@ Response:
 
 ### `forwarding_estimateOutput`
 
-Estimates the output amount a recipient will receive after service fee and bridge fee. This method is decoupled from forwarding addresses: it takes chain IDs directly and does not require the address to be activated.
+Estimates the output amount a recipient will receive after relayer and bridge protocol fees. Returns the best available bridge for the route. This method is decoupled from forwarding addresses: it takes chain IDs directly and does not require the address to be activated.
 
 Parameters:
 
@@ -258,7 +303,6 @@ Parameters:
 | `destinationChainId` | `number` | Yes | Destination chain ID |
 | `token` | `address` | Yes | Token address on source chain (`0x000...000` for native ETH) |
 | `amount` | `string` | Yes | Input amount in smallest unit (e.g. `"1000000000000000000"` for 1 ETH) |
-| `mode` | `string` | No | `"fast"` (default) or `"slow"`. Selects the bridge routing strategy |
 
 Request:
 
@@ -271,8 +315,7 @@ Request:
     "sourceChainId": 1,
     "destinationChainId": 42161,
     "token": "0x0000000000000000000000000000000000000000",
-    "amount": "1000000000000000000",
-    "mode": "fast"
+    "amount": "1000000000000000000"
   }]
 }
 ```
@@ -285,120 +328,35 @@ Response:
   "id": 1,
   "result": {
     "destinationChainId": 42161,
-    "outputToken": "0x...",
-    "outputTokenSymbol": "ETH",
-    "outputAmount": "990000000000000000",
-    "outputDecimals": 18,
-    "relayerBotFee": "5000000000000000",
-    "bridgeProtocolFee": "5000000000000000"
+    "outputToken": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+    "outputTokenSymbol": "USDC",
+    "bridge": "across",
+    "outputAmount": "994005000",
+    "relayerBotFee": "5000000",
+    "bridgeProtocolFee": "995000"
   }
 }
 ```
 
 | Field | Description |
 |-------|-------------|
-| `outputAmount` | Amount the recipient receives, scaled to the destination token's decimals. In smallest unit |
-| `outputDecimals` | Decimal places of the output token on the destination chain. Use this when formatting `outputAmount` for display |
+| `bridge` | Identifier of the bridge selected for this route (e.g. `"across"`, `"oft"`) |
+| `outputToken` | Token contract address on the destination chain |
+| `outputAmount` | Amount the recipient receives, in the smallest unit of the output token |
 | `relayerBotFee` | Relayer service fee in smallest unit (source token decimals) |
 | `bridgeProtocolFee` | Bridge protocol fee in smallest unit (source token decimals) |
 
----
-
-## Mode Control
-
-### `forwarding_setMode`
-
-Sets the bridging mode for a monitored forwarding address. Optionally targets specific source chains.
-
-Parameters:
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `address` | `address` | Yes | The forwarding proxy address to update |
-| `mode` | `string` | Yes | `"fast"` or `"slow"` |
-| `sourceChainIds` | `number[]` | No | Specific source chains to update. If omitted, updates all source chains for this address |
-
-Request:
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "method": "forwarding_setMode",
-  "params": [{
-    "address": "0xDEF456...",
-    "mode": "fast"
-  }]
-}
-```
-
-Response:
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "result": {
-    "address": "0xDEF456...",
-    "mode": "fast",
-    "updated": 2
-  }
-}
-```
-
-| Field | Description |
-|-------|-------------|
-| `updated` | Number of source chain entries that were updated |
+:::note
+To format `outputAmount` for display, look up the output token's decimals from [`forwarding_getRoutes`](#forwarding_getroutes) (the matching `destinationAddress` on the route's token list).
+:::
 
 ---
 
 ## Emergency Recovery
 
-### `forwarding_deploy`
+The relayer auto-deploys the proxy contract on first deposit, so integrators typically do not need to deploy it manually. If tokens are stuck in a forwarding address (e.g. the relayer did not process them), the proxy must be deployed before funds can be withdrawn directly on-chain.
 
-Deploys the CREATE2 proxy contract on specified source chains.
-
-In normal operation, the relayer auto-deploys the contract on first deposit, so integrators typically do not need to call this. It is exposed for emergency fund recovery: if tokens are stuck in the forwarding address (e.g. the relayer did not process them), the contract must be deployed before the recipient can withdraw directly on-chain.
-
-Parameters:
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `recipient` | `address` | Yes | Destination recipient address |
-| `custodialWithdrawer` | `address` | Yes | Withdrawal-authorized address |
-| `destinationChainId` | `number` | Yes | Target chain ID |
-| `sourceChainIds` | `number[]` | No | Source chains to deploy on. If omitted, deploys on all supported source chains |
-| `salt` | `bytes32` | No | Must match the salt used in `forwarding_getAddress` if one was used |
-
-Request:
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "method": "forwarding_deploy",
-  "params": [{
-    "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
-    "custodialWithdrawer": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
-    "destinationChainId": 10,
-    "sourceChainIds": [1]
-  }]
-}
-```
-
-Response:
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "result": {
-    "1": "0xabc123...txhash"
-  }
-}
-```
-
-Returns a map of `sourceChainId` to deployment transaction hash.
+There is no JSON-RPC method for deploy or withdraw. Both actions are performed on-chain from a user's wallet. Direct users to the [recovery frontend](https://forwarding-address.candidelabs.com/), which handles the deploy and withdraw transactions for the `recipient` or `custodialWithdrawer`.
 
 ---
 
@@ -412,7 +370,6 @@ interface RouteToken {
   symbol: string;
   decimals: number;
   destinationAddress: string;  // token address on destination chain
-  minAmount: string;   // smallest unit, decimal string
   feeBps: number;      // basis points (50 = 0.5%)
 }
 
@@ -426,6 +383,12 @@ interface Route {
 
 interface RoutesResult {
   routes: Route[];
+}
+
+interface MinimumAmountResult {
+  bridges: {
+    [bridgeName: string]: { minAmount: string };  // smallest unit, source token decimals
+  };
 }
 
 interface AddressResult {
@@ -454,19 +417,36 @@ interface EstimateResult {
   destinationChainId: number;
   outputToken: string;
   outputTokenSymbol: string;
-  outputAmount: string;            // smallest unit, destination token decimals
-  outputDecimals: number;          // decimal places of output token
+  bridge: string;                  // bridge identifier selected for the route
+  outputAmount: string;            // smallest unit, output token decimals
   relayerBotFee: string;           // smallest unit, source token decimals
   bridgeProtocolFee: string;       // smallest unit, source token decimals
 }
-
-interface SetModeResult {
-  address: string;
-  mode: "fast" | "slow";
-  updated: number;
-}
-
-interface DeployResult {
-  [sourceChainId: string]: string;  // chainId -> txHash
-}
 ```
+
+---
+
+## Changelog
+
+The Forwarding Address API is in alpha and evolves quickly. Breaking changes and new capabilities are tracked here so integrators can see what to update.
+
+### 2026-04-14
+
+**Added**
+
+- New `forwarding_getMinimumAmount` endpoint. Returns per-bridge minimum deposit amounts for a given source chain, destination chain, and token. Call this before `forwarding_estimateOutput` to validate user input.
+- New source and destination chain support: **BNB Chain** and **Base**. Query [`forwarding_getRoutes`](#forwarding_getroutes) with the chain's ID to see the accepted tokens and fees.
+- `forwarding_estimateOutput` response now includes a `bridge` field identifying which bridge was selected for the route.
+- `forwarding_activate` now automatically includes the destination chain in the monitored set, so same-chain forwarding works without passing it in `sourceChainIds`.
+
+**Changed**
+
+- `forwarding_getRoutes` parameter `sourceChainId` is now **required**. The endpoint returns all routes originating from that source chain. Call it once per source chain to build the full map of supported destinations.
+- `RouteToken` no longer includes a `minAmount` field. Minimums are now bridge-specific and returned by `forwarding_getMinimumAmount`.
+- `forwarding_estimateOutput` response no longer includes `outputDecimals`. To format `outputAmount`, read the output token's `decimals` from `forwarding_getRoutes` (match on the route's `destinationAddress`).
+
+**Removed**
+
+- `forwarding_estimateOutput` no longer accepts a `mode` parameter. The service selects the best available bridge automatically and returns it in the response `bridge` field.
+- `forwarding_setMode` has been removed. Bridging strategy is no longer user-configurable per address.
+- `forwarding_deploy` has been removed as a JSON-RPC method. The relayer auto-deploys the proxy on first deposit. For emergency recovery of stuck funds, users deploy and withdraw on-chain from their own wallet via the [recovery frontend](https://forwarding-address.candidelabs.com/).
