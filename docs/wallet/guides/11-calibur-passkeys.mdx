@@ -70,8 +70,8 @@ const smartAccount = new Calibur7702Account(eoaAddress);
 const paymaster = new CandidePaymaster(paymasterUrl);
 
 // Check if the EOA is already delegated to Calibur.
-// isDelegated() returns true only if delegated to this account's delegateeAddress.
-const alreadyDelegated = await smartAccount.isDelegated(nodeUrl);
+// isDelegatedToThisAccount() returns true only if delegated to this account's delegateeAddress.
+const alreadyDelegated = await smartAccount.isDelegatedToThisAccount(nodeUrl);
 console.log("Already delegated:", alreadyDelegated);
 ```
 

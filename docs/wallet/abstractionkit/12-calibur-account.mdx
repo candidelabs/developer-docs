@@ -50,10 +50,10 @@ import {
   getKeySettingsReturn,
   getKeyParam,
   getKeyReturn,
-  listKeysParam,
-  listKeysReturn,
-  isDelegatedParam,
-  isDelegatedReturn,
+  getKeysParam,
+  getKeysReturn,
+  isDelegatedToThisAccountParam,
+  isDelegatedToThisAccountReturn,
   getNonceParam,
   getNonceReturn,
   createAccountCallDataParam,
@@ -831,15 +831,15 @@ console.log("Public key:", key.publicKey);
 #### Source code
 [getKey](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L1228)
 
-### listKeys
+### getKeys
 
-Lists all keys registered on this account. Iterates `keyCount()` and `keyAt(i)` to enumerate all keys.
+Returns all keys registered on this account. Iterates `keyCount()` and `keyAt(i)` to enumerate all keys.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-const keys = await smartAccount.listKeys(
+const keys = await smartAccount.getKeys(
   "https://ethereum-sepolia-rpc.publicnode.com",
 );
 
@@ -855,19 +855,19 @@ for (const key of keys) {
 </TabItem>
 
 <TabItem value="Param Types" label="Param Types">
-  <DataTable items={listKeysParam} />
+  <DataTable items={getKeysParam} />
 </TabItem>
 
 <TabItem value="Return Type" label="Return Type">
-  <DataTable items={listKeysReturn} />
+  <DataTable items={getKeysReturn} />
 </TabItem>
 
 </Tabs>
 
 #### Source code
-[listKeys](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L1059)
+[getKeys](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L1275)
 
-### isDelegated
+### isDelegatedToThisAccount
 
 Checks if the EOA is delegated to this account's Calibur singleton. Returns `true` only when delegated to the account's `delegateeAddress`, `false` if not delegated or delegated to a different singleton.
 
@@ -875,7 +875,7 @@ Checks if the EOA is delegated to this account's Calibur singleton. Returns `tru
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-const isDelegated = await smartAccount.isDelegated(
+const isDelegated = await smartAccount.isDelegatedToThisAccount(
   "https://ethereum-sepolia-rpc.publicnode.com"
 );
 
@@ -889,17 +889,17 @@ if (isDelegated) {
 </TabItem>
 
 <TabItem value="Param Types" label="Param Types">
-  <DataTable items={isDelegatedParam} />
+  <DataTable items={isDelegatedToThisAccountParam} />
 </TabItem>
 
 <TabItem value="Return Type" label="Return Type">
-  <DataTable items={isDelegatedReturn} />
+  <DataTable items={isDelegatedToThisAccountReturn} />
 </TabItem>
 
 </Tabs>
 
 #### Source code
-[isDelegated](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L903)
+[isDelegatedToThisAccount](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L1116)
 
 ### getNonce
 

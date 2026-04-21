@@ -670,8 +670,8 @@ export const getKeyReturn = [
   },
 ];
 
-// listKeys
-export const listKeysParam = [
+// getKeys
+export const getKeysParam = [
   {
     key: "providerRpc",
     type: "string",
@@ -679,7 +679,7 @@ export const listKeysParam = [
   },
 ];
 
-export const listKeysReturn = [
+export const getKeysReturn = [
   {
     key: "keys",
     type: "CaliburKey[]",
@@ -687,8 +687,8 @@ export const listKeysReturn = [
   },
 ];
 
-// isDelegated
-export const isDelegatedParam = [
+// isDelegatedToThisAccount
+export const isDelegatedToThisAccountParam = [
   {
     key: "providerRpc",
     type: "string",
@@ -696,7 +696,7 @@ export const isDelegatedParam = [
   },
 ];
 
-export const isDelegatedReturn = [
+export const isDelegatedToThisAccountReturn = [
   {
     key: "isDelegated",
     type: "boolean",
