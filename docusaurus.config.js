@@ -54,6 +54,9 @@ const config = {
   markdown: {
     mermaid: true,
   },
+  future: {
+    experimental_faster: true,
+  },
   themes: ['@docusaurus/theme-mermaid', '@saucelabs/theme-github-codeblock'],
 
   presets: [
