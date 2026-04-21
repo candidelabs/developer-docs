@@ -197,10 +197,11 @@ userOperation.signature = smartAccount.signUserOperation(
     chainId,
 );
 
-// Option B: Use a viem signer callback
+// Option B: Use a viem account via fromViem adapter
+// import { fromViem } from "abstractionkit";
 // userOperation.signature = await smartAccount.signUserOperationWithSigner(
 //     userOperation,
-//     async (hash) => viemAccount.sign({ hash: hash as `0x${string}` }),
+//     fromViem(viemAccount),
 //     chainId,
 // );
 ```

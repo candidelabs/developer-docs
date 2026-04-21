@@ -323,6 +323,25 @@ console.log(signature);
 #### Source code
 [signUserOperation](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccountV0_3_0.ts#L383)
 
+### signUserOperationWithSigners
+
+Signs a UserOperation using one or more [`ExternalSigner`s](/wallet/guides/authentication#external-signers) instead of raw private keys. Integrates viem, ethers, hardware wallets, HSMs, MPC services, and WebAuthn through the same API.
+
+```ts title="example.ts"
+import { fromViem } from "abstractionkit";
+import { privateKeyToAccount } from "viem/accounts";
+
+const viemAccount = privateKeyToAccount("0x...");
+
+userOperation.signature = await smartAccount.signUserOperationWithSigners(
+  userOperation,
+  [fromViem(viemAccount)],
+  chainId,
+);
+```
+
+See [External Signers](/wallet/guides/authentication#external-signers) for the full list of adapters and custom-signer integrations.
+
 ### sendUserOperation
 
 This method sends the UserOperation to the bundler to be executed on-chain. It returns a promise `SendUseroperationResponse` object to confirm the on-chain inclusion of the UserOperation.

@@ -6,79 +6,140 @@ keywords: [Identifier, on-chain]
 
 # On-Chain Tracking - Adding an Identifier to Your Safe Accounts
 
-This guide explains how to add an on-chain identifier to your Safe Accounts, enabling you to track and distinguish your Safe transactions from other wallets and monitor user adoption.
+Attribute active users and UserOperations to your project by tagging each userOp's `callData` with a 32-byte marker. Your indexer filters on the marker, no extra infrastructure, no off-chain correlation.
 
-## Generate an On-Chain Identifier  
+## Generate an On-Chain Identifier
+
+Pass `onChainIdentifierParams` when you initialize the Safe account. The SDK appends the marker to every userOp's `callData`.
 
 ```ts
-import { SafeAccountV0_3_0 } from "abstractionkit"
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 
-const smartAccount = SafeAccountV0_3_0.initializeNewAccount(
-    [ownerPublicAddress],
-    //highlight-start
-    { onChainIdentifierParams: { project: "PROJECT_NAME" } }
-    //highlight-end
-)
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress], {
+  //highlight-start
+  onChainIdentifierParams: {
+    project: "YourProject",        // required — the thing you key analytics off
+    platform: "Web",               // optional — 'Web' | 'Mobile' | 'Safe App' | 'Widget'
+    tool: "abstractionkit",        // optional — which SDK
+    toolVersion: "0.3.2",          // optional — SDK version
+  },
+  //highlight-end
+});
 ```
 
-This example initializes a new Safe account with an `onChainIdentifierParams` object containing a project property set to "PROJECT_NAME".
-This adds a unique identifier to all transactions from this Safe account, enabling easy tracking and recognition among other Safe wallet transactions.
+Only `project` is required. `platform`, `tool`, and `toolVersion` refine attribution (Web vs Mobile, which SDK, which version). Use the same values everywhere, analytics key off this exact string.
+
+### Already-deployed accounts
+
+For accounts that already exist on-chain, pass the same params to the constructor. New userOps will carry the marker from that point on; historical userOps are not retroactively tagged.
+
+```ts
+const smartAccount = new SafeAccount(accountAddress, {
+  onChainIdentifierParams: { project: "YourProject" },
+});
+```
 
 ## Getting the On-Chain Identifier
 
 ```ts
-const onchainIdentifier = smartAccount.onChainIdentifier
+const onchainIdentifier = smartAccount.onChainIdentifier;
+// "0x5afe00..."
 ```
 
-The `onChainIdentifier` property contains the generated identifier and additional information about the tooling used.
+View the identifier generation in the [generateOnChainIdentifier](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccount.ts) source code.
 
-View the identifier generation in the [generateOnChainIdentifier](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccount.ts#L2819) source code. 
+## Indexer patterns
+
+### Exact match: `UserOperationEvent`
+
+The EntryPoint emits a `UserOperationEvent` log for every included userOp. Decode it, pull the userOp's `callData`, and check the suffix. This is the right approach: it's per-userOp and the marker sits exactly at the tail.
+
+```ts
+const endsWithId = userOp.callData
+  .toLowerCase()
+  .endsWith(identifier.toLowerCase());
+```
+
+Aggregate:
+
+- Unique `sender` values → active users
+- Total matching events → userOp volume
+- Group by the identifier's trailing hashes → split by platform / tool / version
+
+### Fuzzy match: `handleOps` tx input
+
+The bundler wraps the userOp in `EntryPoint.handleOps(ops[], beneficiary)`. The marker ends up inside the tx `input`, not at the tail, because a trailing beneficiary address sits after it. Use substring (not suffix) match:
+
+```ts
+const tagged = tx.input
+  .toLowerCase()
+  .includes(identifier.toLowerCase());
+```
+
+Good enough for quick dashboards, but batches of multiple userOps in one `handleOps` call appear as one match. Prefer the event-based approach above.
+
+## Full example
+
+A complete working script (Safe v0.3.0 on Arbitrum Sepolia, with sponsored gas and a mint transaction) is available on GitHub: [onchain-identifier.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/onchain-identifier/onchain-identifier.ts).
+
+## Marker layout
 
 <details>
 <summary>What's the format of the identifier?</summary>
 
-The identifiers used to track Safe deployments are 50 bytes in length and follow the format below:
+The identifier is 32 bytes and follows the format below:
 
 `5afe` `00` `6363643438383836663461336661366162653539` `646561` `393238` `653366`
 
-Check the last 50 bytes of the data field in this [example transaction](https://sepolia.etherscan.io/tx/0xe0192eedd1fc2d06be0561d57380d610dd6d162af0f3cfbd6c08f9062d738761)
-to see how the identifier appears after the transaction is executed.
+Check the last 32 bytes of the `callData` field in a `UserOperationEvent` log, or inside the `handleOps` tx input, to see how the identifier appears after the transaction is executed.
+
+```text
+5afe │ 00 │ project(20) │ platform(3) │ tool(3) │ toolVersion(3)
+└─prefix  │
+   version
+```
+
+Each variable-content field is `keccak256(value)` truncated to its byte width.
 
 #### Prefix hash
 
 - Type: 2 bytes
-- Example: 5afe
+- Example: `5afe`
 
 Static prefix to identify the Safe on-chain identifier.
 
 #### Version hash
 
 - Type: 1 byte
-- Example: 00
+- Example: `00`
 
 Version number of the Safe on-chain identifier format.
+
 #### Project hash
 
 - Type: 20 bytes
-- Example: 6363643438383836663461336661366162653539
+- Example: `6363643438383836663461336661366162653539`
 
 Truncated hash of the project's name (for example, "Gnosis", "CoW Swap").
+
 #### Platform hash
 
 - Type: 3 bytes
-- Example: 646561
+- Example: `646561`
 
 Truncated hash of the platform's name (for example, "Web", "Mobile", "Safe App", "Widget").
+
 #### Tool hash
 
 - Type: 3 bytes
-- Example: 393238
+- Example: `393238`
 
 Truncated hash of the tool's name (for example, "protocol-kit", "relay-kit", or any custom tool built by projects).
+
 #### Tool version hash
 
 - Type: 3 bytes
-- Example: 653366
+- Example: `653366`
 
 Truncated hash of the tool's version (for example, "1.0.0", "1.0.1").
 
@@ -86,8 +147,6 @@ Truncated hash of the tool's version (for example, "1.0.0", "1.0.1").
 
 ## Submission Form
 
-The Safe Team aim to understand better and recognise key contributors who are driving the adoption of smart accounts within the Ecosystem. 
-By submitting your on-chain identifiers through the provided form, you will help Safe accurately attribute activity.
+The Safe Team aim to understand better and recognise key contributors who are driving the adoption of smart accounts within the Ecosystem. By submitting your on-chain identifiers through the provided form, you will help Safe accurately attribute activity.
 
-You can fill out the form by clicking [this link](https://forms.gle/NYkorYebc6Fz1fMW6)
-
+You can fill out the form by clicking [this link](https://forms.gle/NYkorYebc6Fz1fMW6).

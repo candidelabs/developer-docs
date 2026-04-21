@@ -562,3 +562,60 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 
 #### Source code
 [createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/main/src/paymaster/CandidePaymaster.ts#L508)
+
+## Erc7677Paymaster
+
+`Erc7677Paymaster` is a provider-agnostic [ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) paymaster client. It speaks `pm_getPaymasterStubData` and `pm_getPaymasterData`, so it works with any compliant provider (Candide, Pimlico, Alchemy, or a self-hosted paymaster). Provider is auto-detected from the RPC URL; for Candide and Pimlico it also fetches exchange rates and paymaster addresses automatically for ERC-20 token flows.
+
+If you are using Candide's paymaster and want features like parallel signing phases, prefer [`CandidePaymaster`](#paymaster) above. Use `Erc7677Paymaster` when you want a single client that can switch providers without code changes.
+
+### Usage
+
+#### Import
+
+```ts
+import { Erc7677Paymaster } from "abstractionkit";
+```
+
+#### Sponsored UserOperation
+
+```ts title="example.ts"
+import { Erc7677Paymaster } from "abstractionkit";
+
+const paymaster = new Erc7677Paymaster("https://api.candide.dev/public/v3/sepolia");
+
+// Use createUserOperation() to help you construct a userOp
+let userOperation = await smartAccount.createUserOperation(/* ... */);
+
+userOperation = await paymaster.createPaymasterUserOperation(
+  smartAccount,
+  userOperation,
+  bundlerRpc,
+  { sponsorshipPolicyId: "sp_..." }, // provider-specific context
+);
+```
+
+#### ERC-20 token sponsorship
+
+Passing `{ token }` in the context triggers the ERC-20 gas flow automatically. For Candide and Pimlico the exchange rate is fetched for you; for unknown providers, supply `exchangeRate` in the context.
+
+```ts title="example.ts"
+// Candide or Pimlico (auto-detected): exchange rate fetched from the RPC
+userOperation = await paymaster.createPaymasterUserOperation(
+  smartAccount,
+  userOperation,
+  bundlerRpc,
+  { token: usdcAddress },
+);
+
+// Unknown provider: supply exchangeRate (scaled by 1e18)
+userOperation = await paymaster.createPaymasterUserOperation(
+  smartAccount,
+  userOperation,
+  bundlerRpc,
+  { token: usdcAddress, exchangeRate: "1000000000000000000" },
+);
+```
+
+#### Source code
+[Erc7677Paymaster](https://github.com/candidelabs/abstractionkit/blob/main/src/paymaster/Erc7677Paymaster.ts)

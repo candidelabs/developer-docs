@@ -255,31 +255,36 @@ userOperation.signature = smartAccount.signUserOperation(
 
 ### signUserOperationWithSigner
 
-Signs a UserOperation with an external signer (viem, ethers Signer, hardware wallet, MPC signer, etc.). Computes the UserOperation hash and wraps the returned signature in Calibur's format. By default signs with the root key.
+Signs a UserOperation using an [`ExternalSigner`](/wallet/guides/authentication#external-signers) instead of a raw private key. Integrates viem, ethers, hardware wallets, HSMs, MPC, and WebAuthn through the same API. By default signs with the root key; pass `{ keyHash }` to sign with a registered secondary key.
+
+Calibur requires a signer that implements `signHash` (raw 32-byte hash, no EIP-191 prefix). Signers that only expose `signTypedData` (e.g. a viem `WalletClient` via `fromViemWalletClient`) fail offline with an actionable error.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
+import { fromViem } from "abstractionkit";
 import { privateKeyToAccount } from "viem/accounts";
 
 const viemAccount = privateKeyToAccount("0x...private-key");
 
-// Sign with a viem account
+// Sign with the root key
 userOperation.signature = await smartAccount.signUserOperationWithSigner(
   userOperation,
-  async (hash) => viemAccount.sign({ hash: hash as `0x${string}` }),
-  11155111n // chain ID
+  fromViem(viemAccount),
+  11155111n, // chain ID
 );
 
-// Sign with a secondary key using a viem account
+// Sign with a registered secondary key
 userOperation.signature = await smartAccount.signUserOperationWithSigner(
   userOperation,
-  async (hash) => viemAccount.sign({ hash: hash as `0x${string}` }),
+  fromViem(viemAccount),
   11155111n,
-  { keyHash: "0x...registered-key-hash" }
+  { keyHash: "0x...registered-key-hash" },
 );
 ```
+
+See [External Signers](/wallet/guides/authentication#external-signers) for the full list of adapters (viem, ethers, custom) and the [Calibur external-signer example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/04-external-signer.ts) for a full end-to-end flow.
 
 </TabItem>
 
