@@ -18,7 +18,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { execSync } from "node:child_process";
+import { execSync, execFileSync } from "node:child_process";
 import ts from "typescript";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -31,8 +31,9 @@ mkdirSync(CACHE, { recursive: true });
 function fetchSource(path) {
 	const cachePath = join(CACHE, path.replaceAll("/", "__"));
 	if (existsSync(cachePath)) return readFileSync(cachePath, "utf8");
-	const raw = execSync(
-		`gh api repos/candidelabs/abstractionkit/contents/${path}?ref=${TAG} --jq .content`,
+	const raw = execFileSync(
+		"gh",
+		["api", `repos/candidelabs/abstractionkit/contents/${path}?ref=${TAG}`, "--jq", ".content"],
 		{ encoding: "utf8" },
 	);
 	const decoded = Buffer.from(raw.trim(), "base64").toString("utf8");
@@ -81,10 +82,16 @@ function collectSymbolLines(source) {
 const LINK_RE =
 	/\[([A-Za-z_][\w]*)\]\((https:\/\/github\.com\/candidelabs\/abstractionkit\/blob\/v0\.3\.2\/([^)#\s"]+))#L(\d+)\)/g;
 
-const mdxFiles = execSync(
-	`grep -rl "abstractionkit/blob/v0.3.2" --include="*.mdx" --include="*.md" docs/`,
-	{ encoding: "utf8", cwd: repoRoot },
-).trim().split("\n").filter(Boolean);
+let mdxFiles;
+try {
+	mdxFiles = execSync(
+		`grep -rl "abstractionkit/blob/v0.3.2" --include="*.mdx" --include="*.md" docs/`,
+		{ encoding: "utf8", cwd: repoRoot },
+	).trim().split("\n").filter(Boolean);
+} catch (err) {
+	if (err.status === 1) mdxFiles = []; // no matches — release bump no-op
+	else throw err;
+}
 
 // Pass 1: collect all referenced (path, symbol, oldLine)
 const symbolMapByPath = new Map();
