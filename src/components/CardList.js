@@ -1,6 +1,7 @@
 import React from 'react'
 import Link from '@docusaurus/Link'
-import clsx from 'clsx'
+
+const cx = (...args) => args.filter(Boolean).join(' ')
 
 export default function CardList({ items }) {
     return (
@@ -13,7 +14,7 @@ export default function CardList({ items }) {
 }
 
 function Card({ title, description, route }) {
-    const rootElClassName = clsx(
+    const rootElClassName = cx(
         'block relative rounded-lg p-4 hover:no-underline group w-full',
         'border transition-all duration-150',
         'dark:bg-[rgba(255,255,255,0.03)] bg-white',
