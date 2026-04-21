@@ -178,6 +178,25 @@ userOperation.signature = signature;
 
 </Tabs>
 
+### signUserOperationWithSigner
+
+Signs a UserOperation using an [`ExternalSigner`](/wallet/guides/authentication#external-signers) instead of a raw private key. Integrates viem, ethers, hardware wallets, HSMs, and MPC services through the same API. Simple7702 requires a signer that implements `signHash` (raw 32-byte hash).
+
+```ts title="example.ts"
+import { fromViem } from "abstractionkit";
+import { privateKeyToAccount } from "viem/accounts";
+
+const viemAccount = privateKeyToAccount("0x...");
+
+userOperation.signature = await smartAccount.signUserOperationWithSigner(
+  userOperation,
+  fromViem(viemAccount),
+  11155111n, // chain ID
+);
+```
+
+See [External Signers](/wallet/guides/authentication#external-signers) for the full list of adapters and custom-signer integrations.
+
 ### sendUserOperation
 
 Sends a signed UserOperation to the bundler for execution on-chain.

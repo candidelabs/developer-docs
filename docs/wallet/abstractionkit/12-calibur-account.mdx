@@ -212,7 +212,7 @@ const userOperation = await smartAccount.createUserOperation(
 </Tabs>
 
 #### Source code
-[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L233)
+[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L242)
 
 ### signUserOperation
 
@@ -251,35 +251,40 @@ userOperation.signature = smartAccount.signUserOperation(
 </Tabs>
 
 #### Source code
-[signUserOperation](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L563)
+[signUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L594)
 
 ### signUserOperationWithSigner
 
-Signs a UserOperation with an external signer (viem, ethers Signer, hardware wallet, MPC signer, etc.). Computes the UserOperation hash and wraps the returned signature in Calibur's format. By default signs with the root key.
+Signs a UserOperation using an [`ExternalSigner`](/wallet/guides/authentication#external-signers) instead of a raw private key. Integrates viem, ethers, hardware wallets, HSMs, MPC, and WebAuthn through the same API. By default signs with the root key; pass `{ keyHash }` to sign with a registered secondary key.
+
+Calibur requires a signer that implements `signHash` (raw 32-byte hash, no EIP-191 prefix). Signers that only expose `signTypedData` (e.g. a viem `WalletClient` via `fromViemWalletClient`) fail offline with an actionable error.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
+import { fromViem } from "abstractionkit";
 import { privateKeyToAccount } from "viem/accounts";
 
 const viemAccount = privateKeyToAccount("0x...private-key");
 
-// Sign with a viem account
+// Sign with the root key
 userOperation.signature = await smartAccount.signUserOperationWithSigner(
   userOperation,
-  async (hash) => viemAccount.sign({ hash: hash as `0x${string}` }),
-  11155111n // chain ID
+  fromViem(viemAccount),
+  11155111n, // chain ID
 );
 
-// Sign with a secondary key using a viem account
+// Sign with a registered secondary key
 userOperation.signature = await smartAccount.signUserOperationWithSigner(
   userOperation,
-  async (hash) => viemAccount.sign({ hash: hash as `0x${string}` }),
+  fromViem(viemAccount),
   11155111n,
-  { keyHash: "0x...registered-key-hash" }
+  { keyHash: "0x...registered-key-hash" },
 );
 ```
+
+See [External Signers](/wallet/guides/authentication#external-signers) for the full list of adapters (viem, ethers, custom) and the [Calibur external-signer example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/04-external-signer.ts) for a full end-to-end flow.
 
 </TabItem>
 
@@ -294,7 +299,7 @@ userOperation.signature = await smartAccount.signUserOperationWithSigner(
 </Tabs>
 
 #### Source code
-[signUserOperationWithSigner](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L604)
+[signUserOperationWithSigner](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L635)
 
 ### formatWebAuthnSignature
 
@@ -340,7 +345,7 @@ userOperation.signature = smartAccount.formatWebAuthnSignature(
 </Tabs>
 
 #### Source code
-[formatWebAuthnSignature](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L630)
+[formatWebAuthnSignature](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L670)
 
 ### sendUserOperation
 
@@ -381,7 +386,7 @@ console.log("Transaction receipt:", receipt);
 </Tabs>
 
 #### Source code
-[sendUserOperation](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L666)
+[sendUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L706)
 
 ## Key Management Methods
 
@@ -417,7 +422,7 @@ console.log(key);
 </Tabs>
 
 #### Source code
-[createSecp256k1Key](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L690)
+[createSecp256k1Key](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L730)
 
 ### createWebAuthnP256Key
 
@@ -453,7 +458,7 @@ console.log("Key hash:", keyHash);
 </Tabs>
 
 #### Source code
-[createWebAuthnP256Key](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L704)
+[createWebAuthnP256Key](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L744)
 
 ### createP256Key
 
@@ -488,7 +493,7 @@ console.log("Key hash:", keyHash);
 </Tabs>
 
 #### Source code
-[createP256Key](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L718)
+[createP256Key](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L758)
 
 ### getKeyHash
 
@@ -522,7 +527,7 @@ console.log("Key hash:", keyHash);
 </Tabs>
 
 #### Source code
-[getKeyHash](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L733)
+[getKeyHash](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L773)
 
 ### createRegisterKeyMetaTransactions
 
@@ -568,7 +573,7 @@ const userOperation = await smartAccount.createUserOperation(
 </Tabs>
 
 #### Source code
-[createRegisterKeyMetaTransactions](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L785)
+[createRegisterKeyMetaTransactions](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L825)
 
 ### createRevokeKeyMetaTransaction
 
@@ -604,7 +609,7 @@ const userOperation = await smartAccount.createUserOperation(
 </Tabs>
 
 #### Source code
-[createRevokeKeyMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L829)
+[createRevokeKeyMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L869)
 
 ### createUpdateKeySettingsMetaTransaction
 
@@ -648,7 +653,7 @@ const userOperation = await smartAccount.createUserOperation(
 </Tabs>
 
 #### Source code
-[createUpdateKeySettingsMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L852)
+[createUpdateKeySettingsMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L1065)
 
 ### packKeySettings
 
@@ -684,7 +689,7 @@ console.log("Packed settings:", packed);
 </Tabs>
 
 #### Source code
-[packKeySettings](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L750)
+[packKeySettings](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L790)
 
 ### unpackKeySettings
 
@@ -719,7 +724,7 @@ console.log("Hook:", settings.hook);
 </Tabs>
 
 #### Source code
-[unpackKeySettings](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L763)
+[unpackKeySettings](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L803)
 
 ## Read Methods
 
@@ -753,7 +758,7 @@ console.log("Key registered:", isRegistered);
 </Tabs>
 
 #### Source code
-[isKeyRegistered](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L935)
+[isKeyRegistered](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L1148)
 
 ### getKeySettings
 
@@ -789,7 +794,7 @@ console.log("Hook:", settings.hook);
 </Tabs>
 
 #### Source code
-[getKeySettings](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L975)
+[getKeySettings](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L1188)
 
 ### getKey
 
@@ -824,7 +829,7 @@ console.log("Public key:", key.publicKey);
 </Tabs>
 
 #### Source code
-[getKey](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L1015)
+[getKey](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L1228)
 
 ### listKeys
 
@@ -860,7 +865,7 @@ for (const key of keys) {
 </Tabs>
 
 #### Source code
-[listKeys](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L1059)
+[listKeys](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L1059)
 
 ### isDelegated
 
@@ -894,7 +899,7 @@ if (isDelegated) {
 </Tabs>
 
 #### Source code
-[isDelegated](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L903)
+[isDelegated](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L903)
 
 ### getNonce
 
@@ -930,7 +935,7 @@ const parallelNonce = await smartAccount.getNonce(
 </Tabs>
 
 #### Source code
-[getNonce](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L916)
+[getNonce](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L1129)
 
 ## Utility Methods
 
@@ -968,7 +973,7 @@ const callDataNoRevert = Calibur7702Account.createAccountCallData(transactions, 
 </Tabs>
 
 #### Source code
-[createAccountCallData](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L203)
+[createAccountCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L212)
 
 ### wrapSignature
 
@@ -1012,7 +1017,7 @@ const wrappedWithHook = Calibur7702Account.wrapSignature(
 </Tabs>
 
 #### Source code
-[wrapSignature](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L137)
+[wrapSignature](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L146)
 
 ### createDummyWebAuthnSignature
 
@@ -1050,7 +1055,7 @@ const userOperation = await smartAccount.createUserOperation(
 </Tabs>
 
 #### Source code
-[createDummyWebAuthnSignature](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L103)
+[createDummyWebAuthnSignature](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L109)
 
 ### getUserOperationHash
 
@@ -1082,7 +1087,7 @@ console.log("UserOperation hash:", userOpHash);
 </Tabs>
 
 #### Source code
-[getUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L182)
+[getUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L191)
 
 ### prependTokenPaymasterApproveToCallData
 
@@ -1115,7 +1120,7 @@ userOperation.callData = callDataWithApproval;
 </Tabs>
 
 #### Source code
-[prependTokenPaymasterApproveToCallData](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L1133)
+[prependTokenPaymasterApproveToCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L1378)
 
 ### createInvalidateNonceMetaTransaction
 
@@ -1150,4 +1155,4 @@ const userOperation = await smartAccount.createUserOperation(
 </Tabs>
 
 #### Source code
-[createInvalidateNonceMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Calibur/Calibur7702Account.ts#L880)
+[createInvalidateNonceMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Calibur/Calibur7702Account.ts#L1093)

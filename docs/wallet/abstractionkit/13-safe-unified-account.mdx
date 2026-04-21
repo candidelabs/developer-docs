@@ -87,7 +87,7 @@ console.log("Account address (sender): " + smartAccount.accountAddress);
 
 #### Source code
 
-[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeMultiChainSigAccount.ts)
+[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### createUserOperation
 
@@ -129,7 +129,7 @@ const userOperation = await smartAccount.createUserOperation(
 
 #### Source code
 
-[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeMultiChainSigAccount.ts)
+[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### signUserOperations
 
@@ -180,7 +180,34 @@ userOp2.signature = signatures[1];
 
 #### Source code
 
-[signUserOperations](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeMultiChainSigAccount.ts)
+[signUserOperations](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Safe/SafeMultiChainSigAccount.ts)
+
+### signUserOperationsWithSigners
+
+Multi-op variant that signs a Merkle-rooted bundle of UserOperations using one or more [`ExternalSigner`s](/wallet/guides/authentication#external-signers) instead of raw private keys. One signing session covers every chain in the bundle.
+
+The Merkle root has no typed-data display, so this path requires a signer that implements `signHash`. `fromViemWalletClient` (typed-data only) fails offline here; use `fromViem`, `fromEthersWallet`, or a custom signer.
+
+```ts title="example.ts"
+import { SafeMultiChainSigAccountV1 as SafeAccount, fromViem } from "abstractionkit";
+import { privateKeyToAccount } from "viem/accounts";
+
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+const viemAccount = privateKeyToAccount("0x...");
+
+const signatures = await smartAccount.signUserOperationsWithSigners(
+    [
+        { userOperation: userOp1, chainId: 11155111n },
+        { userOperation: userOp2, chainId: 11155420n },
+    ],
+    [fromViem(viemAccount)],
+);
+
+userOp1.signature = signatures[0];
+userOp2.signature = signatures[1];
+```
+
+See [External Signers](/wallet/guides/authentication#external-signers) for the full list of adapters, and the [multi-chain add-owner example](https://github.com/candidelabs/abstractionkit-examples/blob/main/chain-abstraction/add-owner-with-external-signer.ts) for a full end-to-end flow.
 
 ### getMultiChainSingleSignatureUserOperationsEip712Hash
 
@@ -215,7 +242,7 @@ const hash = SafeAccount.getMultiChainSingleSignatureUserOperationsEip712Hash([
 
 #### Source code
 
-[getMultiChainSingleSignatureUserOperationsEip712Hash](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeMultiChainSigAccount.ts)
+[getMultiChainSingleSignatureUserOperationsEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### getMultiChainSingleSignatureUserOperationsEip712Data
 
@@ -254,7 +281,7 @@ const signature = await wallet.signTypedData(domain, types, messageValue);
 
 #### Source code
 
-[getMultiChainSingleSignatureUserOperationsEip712Data](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeMultiChainSigAccount.ts)
+[getMultiChainSingleSignatureUserOperationsEip712Data](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### formatSignaturesToUseroperationsSignatures
 
@@ -268,7 +295,9 @@ import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const userOpsToSign = [
     { userOperation: userOp1, chainId: 11155111n },
-    { userOperation: userOp2, chainId: 11155420n },
+    // Per-operation overrides (e.g. WebAuthn verifier addresses) go on the
+    // op itself — the previous third `overrides` argument was removed in v0.3.1.
+    { userOperation: userOp2, chainId: 11155420n, overrides: { /* ... */ } },
 ];
 
 const signerSignaturePairs = [
@@ -301,7 +330,7 @@ userOp2.signature = signatures[1];
 
 #### Source code
 
-[formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeMultiChainSigAccount.ts)
+[formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### sendUserOperation
 
