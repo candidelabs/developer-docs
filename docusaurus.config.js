@@ -57,7 +57,21 @@ const config = {
   future: {
     experimental_faster: true,
   },
-  themes: ['@docusaurus/theme-mermaid', '@saucelabs/theme-github-codeblock'],
+  themes: [
+    '@docusaurus/theme-mermaid',
+    '@saucelabs/theme-github-codeblock',
+    [
+      require.resolve('@easyops-cn/docusaurus-search-local'),
+      {
+        hashed: true,
+        indexBlog: false,
+        indexDocs: true,
+        indexPages: false,
+        docsRouteBasePath: '/',
+        highlightSearchTermsOnTargetPage: true,
+      },
+    ],
+  ],
 
   presets: [
     [
@@ -113,9 +127,6 @@ const config = {
         path: 'blog',
       },
     ],
-    [require.resolve('docusaurus-lunr-search'), {
-      excludeRoutes: ["/blog"],
-    }],
     [
       '@signalwire/docusaurus-plugin-llms-txt',
       {
