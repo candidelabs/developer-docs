@@ -105,14 +105,13 @@ const smartAccount = SafeAccount.initializeNewAccount([signerAddress]);
 
 #### Signing a UserOperation
 
-The recommended path for every new integration is the capability-oriented **[External Signer](#external-signers)** API. One `signUserOperationWithSigner(s)` call works across viem, ethers, hardware wallets, HSMs, MPC, and WebAuthn signers, without handing private keys to the SDK.
+The recommended path for every new integration is the capability-oriented **[External Signer](#external-signers)** API. `signUserOperationWithSigner(s)` returns an account-ready signature: hash computation and signature formatting are handled for you across viem, ethers, hardware wallets, HSMs, MPC, and WebAuthn signers, without handing private keys to the SDK.
 
 The manual EIP-712 flow below is kept for advanced use cases where you need direct control over hash computation or signature formatting.
 
 ##### Manual EIP-712 signing (advanced)
 
-Regardless of the approach you choose, you must format the resulting signature into a `userOperation`
-compatible signature using [`formatEip712SignaturesToUserOperationSignature()`](../../abstractionkit/safe-account-v3/#formateip712signaturestouseroperationsignature).
+Only this manual flow requires formatting the raw signature yourself. Regardless of which of the two approaches below you choose, you must wrap the resulting signature into a `userOperation`-compatible signature using [`formatEip712SignaturesToUserOperationSignature()`](../../abstractionkit/safe-account-v3/#formateip712signaturestouseroperationsignature). The External Signer API above does this automatically.
 
 1. **Direct Signing of the EIP-712 Hash**
 
@@ -251,16 +250,21 @@ const signatures = await account.signUserOperationsWithSigners(
 
 ### Pick an adapter
 
-AbstractionKit ships four built-in adapters. Each wraps a concrete signer type into an `ExternalSigner` in one line.
+AbstractionKit ships three built-in adapters and supports custom `ExternalSigner` implementations. Each adapter wraps a concrete signer type into an `ExternalSigner` in one line.
+
+**Built-in adapters**
 
 | Adapter | For | Example |
 |---|---|---|
 | `fromViem(localAccount)` | any viem `LocalAccount` (`privateKeyToAccount`, `toAccount`, wagmi connector accounts) | [fromViem.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/fromViem.ts) |
 | `fromEthersWallet(wallet)` | any ethers `Wallet` or `HDNodeWallet` (ethers >= 6) | [fromEthersWallet.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/fromEthersWallet.ts) |
 | `fromViemWalletClient(client)` | viem `WalletClient` (browser / injected wallet, typed-data only) | [fromViemWalletClient.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/fromViemWalletClient.ts) |
-| Custom `ExternalSigner` | HSM, MPC, hardware wallet, `Uint8Array`-held keys, WebAuthn | [customSigner.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/customSigner.ts) |
 
 Each example in the repo is self-contained. If you use viem, read `fromViem.ts`; if you use ethers, read `fromEthersWallet.ts`. You do not need to install both libraries to use AbstractionKit.
+
+**Custom / extensible**
+
+For HSMs, MPC services, hardware wallets, `Uint8Array`-held keys, or WebAuthn, implement the `ExternalSigner` interface directly: see [customSigner.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/customSigner.ts) for a reference implementation.
 
 :::tip Raw private keys
 For a single-owner private-key setup, the legacy sync API is the shortest path and needs no adapter:

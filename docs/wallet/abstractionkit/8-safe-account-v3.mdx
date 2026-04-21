@@ -342,6 +342,9 @@ userOperation.signature = await smartAccount.signUserOperationWithSigners(
 
 See [External Signers](/wallet/guides/authentication#external-signers) for the full list of adapters and custom-signer integrations.
 
+#### Source code
+[signUserOperationWithSigners](https://github.com/candidelabs/abstractionkit/blob/main/src/account/Safe/SafeAccount.ts)
+
 ### sendUserOperation
 
 This method sends the UserOperation to the bundler to be executed on-chain. It returns a promise `SendUseroperationResponse` object to confirm the on-chain inclusion of the UserOperation.

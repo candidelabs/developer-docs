@@ -68,7 +68,19 @@ Aggregate:
 
 ### Fuzzy match: `handleOps` tx input
 
-The bundler wraps the userOp in `EntryPoint.handleOps(ops[], beneficiary)`. The marker ends up inside the tx `input`, not at the tail, because a trailing beneficiary address sits after it. Use substring (not suffix) match:
+The bundler wraps userOps in `EntryPoint.handleOps(ops[], beneficiary)`. The ABI-encoded tx calldata is laid out as:
+
+```text
+selector (4 bytes)
+│
+├─ head
+│    offset-to-ops  (32 bytes)
+│    beneficiary    (32 bytes)
+│
+└─ ops data (dynamic: length + each op, with callData inlined as dynamic bytes)
+```
+
+The marker is inside each op's `callData`, so it appears somewhere in the dynamic tail of the tx input, not strictly at the end. With multiple userOps batched into one `handleOps` call, each op's callData contributes its own marker occurrence at a different offset. Suffix matching on `tx.input` is not reliable. Use substring match, or decode the ops array and inspect each `callData`:
 
 ```ts
 const tagged = tx.input
@@ -76,7 +88,7 @@ const tagged = tx.input
   .includes(identifier.toLowerCase());
 ```
 
-Good enough for quick dashboards, but batches of multiple userOps in one `handleOps` call appear as one match. Prefer the event-based approach above.
+Good enough for quick dashboards, but batches of multiple userOps in one `handleOps` call collapse into one match. For per-userOp attribution, decode the ops array (ABI-decode the tx input) and check each op's `callData` individually, or prefer the event-based approach above.
 
 ## Full example
 
@@ -147,6 +159,6 @@ Truncated hash of the tool's version (for example, "1.0.0", "1.0.1").
 
 ## Submission Form
 
-The Safe Team aim to understand better and recognise key contributors who are driving the adoption of smart accounts within the Ecosystem. By submitting your on-chain identifiers through the provided form, you will help Safe accurately attribute activity.
+The Safe team aims to better understand and recognise key contributors who are driving the adoption of smart accounts within the ecosystem. By submitting your on-chain identifiers through the provided form, you will help Safe accurately attribute activity.
 
 You can fill out the form by clicking [this link](https://forms.gle/NYkorYebc6Fz1fMW6).

@@ -582,7 +582,8 @@ import { Erc7677Paymaster } from "abstractionkit";
 ```ts title="example.ts"
 import { Erc7677Paymaster } from "abstractionkit";
 
-const paymaster = new Erc7677Paymaster("https://api.candide.dev/public/v3/sepolia");
+const bundlerRpc = "https://api.candide.dev/public/v3/sepolia";
+const paymaster = new Erc7677Paymaster(bundlerRpc);
 
 // Use createUserOperation() to help you construct a userOp
 let userOperation = await smartAccount.createUserOperation(/* ... */);
@@ -600,6 +601,9 @@ userOperation = await paymaster.createPaymasterUserOperation(
 Passing `{ token }` in the context triggers the ERC-20 gas flow automatically. For Candide and Pimlico the exchange rate is fetched for you; for unknown providers, supply `exchangeRate` in the context.
 
 ```ts title="example.ts"
+const bundlerRpc = "https://api.candide.dev/public/v3/sepolia";
+const usdcAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"; // USDC on sepolia
+
 // Candide or Pimlico (auto-detected): exchange rate fetched from the RPC
 userOperation = await paymaster.createPaymasterUserOperation(
   smartAccount,
