@@ -350,9 +350,9 @@ export const signUserOperationWithSignerParam = [
   },
   {
     key: "signer",
-    type: "SignerFunction",
+    type: "ExternalSigner",
     description:
-      "Async signing function: (hash: string) => Promise<string>. Use this to integrate viem, ethers Signers, hardware wallets, or MPC signers.",
+      "A capability-oriented signer: { address, signHash?, signTypedData? }. Use one of the built-in adapters (fromPrivateKey, fromViem, fromEthersWallet, fromViemWalletClient) or implement the interface yourself to integrate hardware wallets, HSMs, MPC, or WebAuthn. Calibur requires a signer that implements signHash.",
   },
   {
     key: "chainId",

@@ -103,11 +103,15 @@ const smartAccount = SafeAccount.initializeNewAccount([signerAddress]);
 </TabItem>
 </Tabs>
 
-#### Signing a UserOperation with EIP-712
+#### Signing a UserOperation
 
-When signing a `userOperation` using `abstractionkit`, you have two options based on your use case. 
-Regardless of the approach you choose, you must format the resulting signature into a `userOperation`
-compatible signature using [`formatEip712SignaturesToUserOperationSignature()`](../../abstractionkit/safe-account-v3/#formateip712signaturestouseroperationsignature).
+The recommended path for every new integration is the capability-oriented **[External Signer](#external-signers)** API. `signUserOperationWithSigner(s)` returns an account-ready signature: hash computation and signature formatting are handled for you across viem, ethers, hardware wallets, HSMs, MPC, and WebAuthn signers, without handing private keys to the SDK.
+
+The manual EIP-712 flow below is kept for advanced use cases where you need direct control over hash computation or signature formatting.
+
+##### Manual EIP-712 signing (advanced)
+
+Only this manual flow requires formatting the raw signature yourself. Regardless of which of the two approaches below you choose, you must wrap the resulting signature into a `userOperation`-compatible signature using [`formatEip712SignaturesToUserOperationSignature()`](../../abstractionkit/safe-account-v3/#formateip712signaturestouseroperationsignature). The External Signer API above does this automatically.
 
 1. **Direct Signing of the EIP-712 Hash**
 
@@ -223,3 +227,86 @@ userOperation.signature = smartAccount.signUserOperation(
   chainId,
 )
 ```
+
+## External Signers
+
+Available since AbstractionKit v0.3.2. `ExternalSigner` is a capability-oriented interface that lets you plug any signing source into AbstractionKit without passing raw private keys to the SDK. It covers viem local accounts, viem WalletClients, ethers Wallets, hardware wallets, HSMs, MPC services, and WebAuthn signers through a single API.
+
+Every account class exposes the same method family:
+
+```ts
+// Safe accounts — multi-signer (plural)
+userOperation.signature = await safe.signUserOperationWithSigners(userOperation, [signer], chainId)
+
+// Simple7702 / Calibur — single signer
+userOperation.signature = await account.signUserOperationWithSigner(userOperation, signer, chainId)
+
+// SafeMultiChainSigAccountV1 — multi-op, one signature across chains
+const signatures = await account.signUserOperationsWithSigners(
+  [{ userOperation: op1, chainId: id1 }, { userOperation: op2, chainId: id2 }],
+  [signer],
+)
+```
+
+### Pick an adapter
+
+AbstractionKit ships three built-in adapters and supports custom `ExternalSigner` implementations. Each adapter wraps a concrete signer type into an `ExternalSigner` in one line.
+
+**Built-in adapters**
+
+| Adapter | For | Example |
+|---|---|---|
+| `fromViem(localAccount)` | any viem `LocalAccount` (`privateKeyToAccount`, `toAccount`, wagmi connector accounts) | [fromViem.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/fromViem.ts) |
+| `fromEthersWallet(wallet)` | any ethers `Wallet` or `HDNodeWallet` (ethers >= 6) | [fromEthersWallet.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/fromEthersWallet.ts) |
+| `fromViemWalletClient(client)` | viem `WalletClient` (browser / injected wallet, typed-data only) | [fromViemWalletClient.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/fromViemWalletClient.ts) |
+
+Each example in the repo is self-contained. If you use viem, read `fromViem.ts`; if you use ethers, read `fromEthersWallet.ts`. You do not need to install both libraries to use AbstractionKit.
+
+**Custom / extensible**
+
+For HSMs, MPC services, hardware wallets, `Uint8Array`-held keys, or WebAuthn, implement the `ExternalSigner` interface directly: see [customSigner.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/customSigner.ts) for a reference implementation.
+
+:::tip Raw private keys
+For a single-owner private-key setup, the legacy sync API is the shortest path and needs no adapter:
+
+```ts
+userOperation.signature = smartAccount.signUserOperation(userOperation, [privateKey], chainId)
+```
+
+`fromPrivateKey(pk)` also exists when you want every owner (pk, HSM, hardware wallet) to flow through the same async interface in a multi-owner setup.
+:::
+
+### Shape
+
+```ts
+type ExternalSigner = { address: `0x${string}` } & (
+  | { signHash:       (hash: `0x${string}`) => Promise<`0x${string}`>
+      signTypedData?: (data: TypedData)     => Promise<`0x${string}`> }
+  | { signHash?:      (hash: `0x${string}`) => Promise<`0x${string}`>
+      signTypedData:  (data: TypedData)     => Promise<`0x${string}`> }
+)
+```
+
+The discriminated union enforces at compile time that every signer implements at least one of `signHash` or `signTypedData`. Canonical definition in [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/signer/types.ts), re-exported from the package root as `ExternalSigner`.
+
+### Capability negotiation
+
+Each account class declares which signing schemes it accepts:
+
+| Account | Accepted schemes | Notes |
+|---|---|---|
+| Safe (V0.2.0, V0.3.0, V1.5.0) | `typedData`, `hash` | Prefers `typedData` for structured EIP-712 display in wallet UIs |
+| `SafeMultiChainSigAccountV1` (single-op) | `typedData`, `hash` | Same preference as Safe |
+| `SafeMultiChainSigAccountV1` (multi-op Merkle path) | `hash` only | The Merkle root has no typed-data display |
+| `Simple7702Account`, `Simple7702AccountV09`, `Calibur7702Account` | `hash` only | Raw 32-byte hash, no EIP-191 prefix |
+
+When a signer exposes both capabilities the account picks the preferred scheme. Capability mismatches throw **offline** with an actionable error: a `fromViemWalletClient` signer (typed-data only) passed to Calibur or to the multi-op Merkle path fails before any wallet prompt is triggered.
+
+### Account-specific flows
+
+Full end-to-end scripts in the examples repo:
+
+- [Simple7702 (EntryPoint v0.8)](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/05-external-signer.ts)
+- [Simple7702 (EntryPoint v0.9, two-phase paymaster)](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/06-external-signer-v09.ts)
+- [Calibur](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/04-external-signer.ts)
+- [Safe Unified Account: multi-chain add-owner with one signature](https://github.com/candidelabs/abstractionkit-examples/blob/main/chain-abstraction/add-owner-with-external-signer.ts)
