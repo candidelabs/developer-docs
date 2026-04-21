@@ -81,7 +81,7 @@ const smartAccount = new Calibur7702Account(eoaAddress);
 console.log("Smart account address: " + smartAccount.accountAddress);
 
 // Check if the EOA is already delegated to Calibur
-const alreadyDelegated = await smartAccount.isDelegated(nodeUrl);
+const alreadyDelegated = await smartAccount.isDelegatedToThisAccount(nodeUrl);
 
 // CandidePaymaster sponsors gas so the EOA doesn't need native tokens.
 const paymaster = new CandidePaymaster(paymasterUrl);

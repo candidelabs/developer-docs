@@ -66,7 +66,7 @@ const smartAccount = new Calibur7702Account(eoaAddress);
 const paymaster = new CandidePaymaster(paymasterUrl);
 
 // This guide requires an already-delegated account.
-const delegated = await smartAccount.isDelegated(nodeUrl);
+const delegated = await smartAccount.isDelegatedToThisAccount(nodeUrl);
 if (!delegated) {
     console.log("EOA is not yet delegated to Calibur. Run the quickstart first.");
     process.exit(1);
@@ -82,7 +82,7 @@ const keyTypeNames = {
     [CaliburKeyType.Secp256k1]: "Secp256k1",
 };
 
-const keys = await smartAccount.listKeys(nodeUrl);
+const keys = await smartAccount.getKeys(nodeUrl);
 console.log("Registered keys:\n");
 
 for (const key of keys) {
@@ -98,7 +98,7 @@ for (const key of keys) {
 }
 ```
 
-`listKeys` returns all currently registered keys. `getKeySettings` returns a key's expiration timestamp, hook address, and admin flag.
+`getKeys` returns all currently registered keys. `getKeySettings` returns a key's expiration timestamp, hook address, and admin flag.
 
 Run the code to verify:
 
