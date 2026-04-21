@@ -28,6 +28,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@docusaurus/faster": "3.6.3",
     "@docusaurus/module-type-aliases": "^3.6.3",
     "tailwindcss": "^3.4.17"
   },
