@@ -1835,18 +1835,13 @@ export const getMultiChainEip712DataReturn = [
 export const formatSignaturesToUseroperationsSignaturesParam = [
   {
     key: "userOperationsToSign",
-    type: "UserOperationToSign[]",
-    description: "Array of UserOperations with their target chain IDs",
+    type: "UserOperationToSignWithOverrides[]",
+    description: "Array of UserOperations with their target chain IDs and optional per-operation overrides (e.g. WebAuthn verifier addresses)",
   },
   {
     key: "signerSignaturePairs",
     type: "SignerSignaturePair[]",
     description: "Array of signer address and signature pairs from EIP-712 signing",
-  },
-  {
-    key: "overrides?",
-    type: "WebAuthnSignatureOverrides",
-    description: "Optional overrides for WebAuthn verifier addresses",
   },
 ];
 
