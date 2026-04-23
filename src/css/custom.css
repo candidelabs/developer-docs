@@ -5,10 +5,14 @@
  */
 
 /* Import Tailwind without preflight. Docusaurus ships its own reset (Infima),
-   so we load theme + utilities only to avoid double-resetting. */
-@layer theme, base, components, utilities;
+   so we load theme + utilities only to avoid double-resetting.
+
+   Utilities are imported WITHOUT `layer(utilities)` on purpose: Docusaurus's
+   Infima rules are unlayered, and unlayered CSS beats any layered CSS in the
+   cascade. Leaving utilities unlayered preserves the v3 behavior where they
+   won via source-order. */
 @import 'tailwindcss/theme.css' layer(theme);
-@import 'tailwindcss/utilities.css' layer(utilities);
+@import 'tailwindcss/utilities.css';
 
 @custom-variant dark (&:is([data-theme="dark"] *));
 

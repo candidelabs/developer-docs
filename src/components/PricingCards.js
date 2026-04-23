@@ -103,8 +103,8 @@ export default function PricingCards() {
             to={plan.cta.href}
             className={`text-center rounded px-4 py-2 text-sm font-medium hover:no-underline transition-opacity hover:opacity-80 ${
               plan.featured
-                ? 'bg-[#E70073] text-white'
-                : 'border border-[rgba(255,255,255,0.15)] dark:text-white text-black'
+                ? 'bg-[#E70073] text-white hover:text-white'
+                : 'border border-[rgba(255,255,255,0.15)] dark:text-white dark:hover:text-white text-black hover:text-black'
             }`}
           >
             {plan.cta.label}
