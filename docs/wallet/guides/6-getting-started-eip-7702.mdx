@@ -188,12 +188,13 @@ const paymasterUrl = process.env.PAYMASTER_URL as string;
 
 const paymaster = new CandidePaymaster(paymasterUrl)
 
-let [paymasterUserOperation, _sponsorMetadata] = await paymaster.createSponsorPaymasterUserOperation(
-    userOperation, 
-    bundlerUrl, 
+const { userOperation: paymasterUserOperation } = await paymaster.createSponsorPaymasterUserOperation(
+    smartAccount,
+    userOperation,
+    bundlerUrl,
 );
 
-userOperation = paymasterUserOperation; 
+userOperation = paymasterUserOperation;
 ```
 
 ## Step 7: Sign and Submit

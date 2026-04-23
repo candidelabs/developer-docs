@@ -157,7 +157,8 @@ if (!alreadyDelegated) {
 }
 
 // Sponsor gas with the paymaster.
-let [sponsoredRegisterOp] = await paymaster.createSponsorPaymasterUserOperation(
+const { userOperation: sponsoredRegisterOp } = await paymaster.createSponsorPaymasterUserOperation(
+  smartAccount,
   registerOp,
   bundlerUrl,
 );
@@ -239,7 +240,8 @@ let userOperation = await smartAccount.createUserOperation(
 
 // Sponsor gas before signing. In ERC-4337 v0.8, paymaster data is included
 // in the UserOperation hash, so it must be set before the passkey signs.
-let [sponsoredUserOperation] = await paymaster.createSponsorPaymasterUserOperation(
+const { userOperation: sponsoredUserOperation } = await paymaster.createSponsorPaymasterUserOperation(
+  smartAccount,
   userOperation,
   bundlerUrl,
 );

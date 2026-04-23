@@ -46,20 +46,22 @@ let paymasterUserOperation;
 let sponsorMetadata;
 try {
   // Sponsor gas using public gas policies
-  [paymasterUserOperation, sponsorMetadata] =
+  ({ userOperation: paymasterUserOperation, sponsorMetadata } =
     await paymaster.createSponsorPaymasterUserOperation(
+      smartAccount,
       userOperation,
       bundlerUrl,
-    );
+    ));
 } catch (publicGasPolicyUnavailable) {
   try {
     // Sponsor gas using a private gas policy
-    [paymasterUserOperation, sponsorMetadata] =
+    ({ userOperation: paymasterUserOperation, sponsorMetadata } =
       await paymaster.createSponsorPaymasterUserOperation(
+        smartAccount,
         userOperation,
         bundlerUrl,
         sponsorshipPolicyId,
-      );
+      ));
   } catch (privateGasPolicyUnavailable) {
     // Fallback: propose to the user the option to pay gas in ERC-20 tokens
   } catch (erc20GasPaymentUnavailable) {

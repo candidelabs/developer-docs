@@ -178,7 +178,8 @@ if (!alreadyDelegated) {
 Optionally [sponsor gas](/wallet/guides/send-gasless-eip-7702/) for your user. In ERC-4337 v0.8, paymaster data is included in the UserOperation hash, so it must be set before signing.
 
 ```ts title="index.ts"
-let [sponsoredUserOperation] = await paymaster.createSponsorPaymasterUserOperation(
+const { userOperation: sponsoredUserOperation } = await paymaster.createSponsorPaymasterUserOperation(
+    smartAccount,
     userOperation,
     bundlerUrl,
 );

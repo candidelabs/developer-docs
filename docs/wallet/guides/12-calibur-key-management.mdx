@@ -170,7 +170,8 @@ let registerOp = await smartAccount.createUserOperation(
 const cost = calculateUserOperationMaxGasCost(registerOp);
 console.log("This UserOperation may cost up to: " + cost + " wei");
 
-let [sponsoredRegisterOp] = await paymaster.createSponsorPaymasterUserOperation(
+const { userOperation: sponsoredRegisterOp } = await paymaster.createSponsorPaymasterUserOperation(
+    smartAccount,
     registerOp,
     bundlerUrl,
 );
@@ -236,7 +237,8 @@ let secondaryOp = await smartAccount.createUserOperation(
     bundlerUrl,
 );
 
-let [sponsoredSecondaryOp] = await paymaster.createSponsorPaymasterUserOperation(
+const { userOperation: sponsoredSecondaryOp } = await paymaster.createSponsorPaymasterUserOperation(
+    smartAccount,
     secondaryOp,
     bundlerUrl,
 );
@@ -295,7 +297,8 @@ let updateOp = await smartAccount.createUserOperation(
     bundlerUrl,
 );
 
-let [sponsoredUpdateOp] = await paymaster.createSponsorPaymasterUserOperation(
+const { userOperation: sponsoredUpdateOp } = await paymaster.createSponsorPaymasterUserOperation(
+    smartAccount,
     updateOp,
     bundlerUrl,
 );
@@ -350,7 +353,8 @@ let revokeOp = await smartAccount.createUserOperation(
     bundlerUrl,
 );
 
-let [sponsoredRevokeOp] = await paymaster.createSponsorPaymasterUserOperation(
+const { userOperation: sponsoredRevokeOp } = await paymaster.createSponsorPaymasterUserOperation(
+    smartAccount,
     revokeOp,
     bundlerUrl,
 );

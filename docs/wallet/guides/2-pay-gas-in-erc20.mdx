@@ -80,12 +80,14 @@ TOKEN_ADDRESS=0xFa5854FBf9964330d761961F46565AB7326e5a3b
 
 ```ts title="Get token paymaster data"
 if (tokenSelected) {
-    userOperation = await paymaster.createTokenPaymasterUserOperation(
+    const { userOperation: tokenOp, tokenQuote } = await paymaster.createTokenPaymasterUserOperation(
         smartAccount,
         userOperation,
         tokenSelected.address,
         bundlerUrl
     );
+    userOperation = tokenOp;
+    console.log(`Max token cost: ${tokenQuote?.tokenCost} (smallest units)`);
 
     // Calculate the cost in tokens
     const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
@@ -179,12 +181,14 @@ async function main(): Promise<void> {
     console.log(`💰 Using ${tokenSelected.name} (${tokenSelected.symbol}) for gas payment`);
 
     // Create token paymaster UserOperation
-    userOperation = await paymaster.createTokenPaymasterUserOperation(
+    const { userOperation: tokenOp, tokenQuote } = await paymaster.createTokenPaymasterUserOperation(
         smartAccount,
         userOperation,
         tokenSelected.address,
         bundlerUrl
     );
+    userOperation = tokenOp;
+    console.log(`Max token cost: ${tokenQuote?.tokenCost} (smallest units)`);
 
     // Calculate the cost in tokens
     const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(

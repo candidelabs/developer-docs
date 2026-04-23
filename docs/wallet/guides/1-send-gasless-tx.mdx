@@ -61,21 +61,23 @@ let sponsorMetadata;
 
 try {
   // First, try public gas policies
-  [paymasterUserOperation, sponsorMetadata] =
+  ({ userOperation: paymasterUserOperation, sponsorMetadata } =
     await paymaster.createSponsorPaymasterUserOperation(
+      smartAccount,
       userOperation,
       bundlerUrl
-    );
+    ));
   console.log("Sponsored by public gas policy!");
 } catch (error) {
   try {
     // Fallback to private gas policy
-    [paymasterUserOperation, sponsorMetadata] =
+    ({ userOperation: paymasterUserOperation, sponsorMetadata } =
       await paymaster.createSponsorPaymasterUserOperation(
+        smartAccount,
         userOperation,
         bundlerUrl,
         sponsorshipPolicyId
-      );
+      ));
     console.log("Sponsored by your private gas policy!");
   } catch (finalError) {
     console.log("No gas sponsorship available");
@@ -175,23 +177,25 @@ async function main(): Promise<void> {
     try {
         // Try public gas policies first
         console.log("🔍 Checking for public gas policies...")
-        [paymasterUserOperation, sponsorMetadata] =
+        ({ userOperation: paymasterUserOperation, sponsorMetadata } =
             await paymaster.createSponsorPaymasterUserOperation(
+                smartAccount,
                 userOperation,
                 bundlerUrl
-            );
+            ));
         console.log("✅ Sponsored by public gas policy!")
         
     } catch (error) {
         try {
             // Fallback to private gas policy
             console.log("🔍 Trying private gas policy fallback...")
-            [paymasterUserOperation, sponsorMetadata] =
+            ({ userOperation: paymasterUserOperation, sponsorMetadata } =
                 await paymaster.createSponsorPaymasterUserOperation(
+                    smartAccount,
                     userOperation,
                     bundlerUrl,
                     sponsorshipPolicyId
-                );
+                ));
             console.log("✅ Sponsored by private gas policy!")
             
         } catch (finalError) {

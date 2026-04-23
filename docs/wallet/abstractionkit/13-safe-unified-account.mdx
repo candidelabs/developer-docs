@@ -87,7 +87,7 @@ console.log("Account address (sender): " + smartAccount.accountAddress);
 
 #### Source code
 
-[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Safe/SafeMultiChainSigAccount.ts)
+[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### createUserOperation
 
@@ -129,7 +129,7 @@ const userOperation = await smartAccount.createUserOperation(
 
 #### Source code
 
-[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Safe/SafeMultiChainSigAccount.ts)
+[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### signUserOperations
 
@@ -180,7 +180,7 @@ userOp2.signature = signatures[1];
 
 #### Source code
 
-[signUserOperations](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Safe/SafeMultiChainSigAccount.ts)
+[signUserOperations](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### signUserOperationsWithSigners
 
@@ -242,7 +242,7 @@ const hash = SafeAccount.getMultiChainSingleSignatureUserOperationsEip712Hash([
 
 #### Source code
 
-[getMultiChainSingleSignatureUserOperationsEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Safe/SafeMultiChainSigAccount.ts)
+[getMultiChainSingleSignatureUserOperationsEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### getMultiChainSingleSignatureUserOperationsEip712Data
 
@@ -281,7 +281,7 @@ const signature = await wallet.signTypedData(domain, types, messageValue);
 
 #### Source code
 
-[getMultiChainSingleSignatureUserOperationsEip712Data](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Safe/SafeMultiChainSigAccount.ts)
+[getMultiChainSingleSignatureUserOperationsEip712Data](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### formatSignaturesToUseroperationsSignatures
 
@@ -330,7 +330,7 @@ userOp2.signature = signatures[1];
 
 #### Source code
 
-[formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/account/Safe/SafeMultiChainSigAccount.ts)
+[formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### sendUserOperation
 
@@ -354,16 +354,14 @@ const paymaster1 = new CandidePaymaster("https://api.candide.dev/public/v3/sepol
 const paymaster2 = new CandidePaymaster("https://api.candide.dev/public/v3/optimism-sepolia");
 
 // Phase 1: Commit (before signing)
-const commitOverrides = {
-    preVerificationGasPercentageMultiplier: 20,
-    context: { signingPhase: "commit" as const },
-};
-const [[commitOp1], [commitOp2]] = await Promise.all([
+const commitContext = { signingPhase: "commit" as const };
+const commitOverrides = { preVerificationGasPercentageMultiplier: 20 };
+const [{ userOperation: commitOp1 }, { userOperation: commitOp2 }] = await Promise.all([
     paymaster1.createSponsorPaymasterUserOperation(
-        smartAccount, userOperation1, bundlerUrl1, undefined, commitOverrides
+        smartAccount, userOperation1, bundlerUrl1, undefined, commitContext, commitOverrides
     ),
     paymaster2.createSponsorPaymasterUserOperation(
-        smartAccount, userOperation2, bundlerUrl2, undefined, commitOverrides
+        smartAccount, userOperation2, bundlerUrl2, undefined, commitContext, commitOverrides
     ),
 ]);
 userOperation1 = commitOp1;
@@ -372,13 +370,13 @@ userOperation2 = commitOp2;
 // Sign here with signUserOperations...
 
 // Phase 2: Finalize (after signing)
-const finalizeOverrides = { context: { signingPhase: "finalize" as const } };
-const [[finalOp1], [finalOp2]] = await Promise.all([
+const finalizeContext = { signingPhase: "finalize" as const };
+const [{ userOperation: finalOp1 }, { userOperation: finalOp2 }] = await Promise.all([
     paymaster1.createSponsorPaymasterUserOperation(
-        smartAccount, userOperation1, bundlerUrl1, undefined, finalizeOverrides
+        smartAccount, userOperation1, bundlerUrl1, undefined, finalizeContext
     ),
     paymaster2.createSponsorPaymasterUserOperation(
-        smartAccount, userOperation2, bundlerUrl2, undefined, finalizeOverrides
+        smartAccount, userOperation2, bundlerUrl2, undefined, finalizeContext
     ),
 ]);
 userOperation1 = finalOp1;

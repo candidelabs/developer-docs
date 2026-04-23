@@ -206,6 +206,12 @@ export const candidePaymasterContext = [
     description:
       "Sponsorship Policy ID if using a private gas policy (optional)",
   },
+  {
+    key: "signingPhase",
+    type: '"commit" | "finalize"?',
+    description:
+      'Opt into the parallel signing two-phase flow (EntryPoint v0.9 only). "commit" on the first call reserves gas limits and returns init paymaster fields so owners can sign in parallel; "finalize" on the second call swaps the placeholder for the real paymaster signature.',
+  },
 ];
 
 export const tokensParametersV3 = [
@@ -556,14 +562,61 @@ export const pm_getPaymasterDataReturnV07 = [
 
 // SDK
 
+export const candidePaymasterContextParam = [
+  {
+    key: "token",
+    type: "string?",
+    description:
+      "ERC-20 token address, if paying gas in erc-20 tokens (optional)",
+  },
+  {
+    key: "sponsorshipPolicyId",
+    type: "string?",
+    description:
+      "Sponsorship Policy ID if using a private gas policy (optional)",
+  },
+  {
+    key: "signingPhase",
+    type: '"commit" | "finalize"?',
+    description:
+      'Opt into the parallel signing two-phase flow (EntryPoint v0.9 only). Use "commit" to request initial paymaster fields and gas limits before the user signs, then "finalize" to attach the final paymaster signature after.',
+  },
+];
+
+export const tokenQuoteType = [
+  {
+    key: "token",
+    type: "string",
+    description: "ERC-20 token contract address used to pay gas",
+  },
+  {
+    key: "exchangeRate",
+    type: "bigint",
+    description:
+      "Exchange rate scaled by 10^18 (1 ETH expressed in the token's smallest unit)",
+  },
+  {
+    key: "tokenCost",
+    type: "bigint",
+    description:
+      "Maximum token cost charged for this UserOperation (token's smallest unit)",
+  },
+];
+
 export const createSponsorPaymasterUserOperationParam = [
+  {
+    key: "smartAccount",
+    type: "SmartAccountWithEntrypoint",
+    description:
+      "The smart account instance. Used to resolve the EntryPoint address.",
+  },
   {
     key: "userOperation",
     type: "UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9",
     description: "UserOperation to Sponsor. Supports EntryPoint v0.6, v0.7, v0.8, and v0.9",
   },
   {
-    key: "bundlerUrl",
+    key: "bundlerRpc",
     type: "string",
     description: "Bundler URL to estimate the gas",
   },
@@ -571,6 +624,18 @@ export const createSponsorPaymasterUserOperationParam = [
     key: "sponsorshipPolicyId",
     type: "string?",
     description: "Optional sponsorship policy id if using a Private Gas Policy",
+  },
+  {
+    key: "context",
+    type: candidePaymasterContextParam,
+    description:
+      "Optional additional context to pass to the paymaster RPC (token, signingPhase).",
+  },
+  {
+    key: "overrides",
+    type: "GasPaymasterUserOperationOverrides?",
+    description:
+      "Optional overrides for gas limits, multipliers, entrypoint, and state overrides used during gas estimation.",
   },
 ];
 
@@ -643,9 +708,9 @@ export const createPaymasterUserOperationOverridesType = [
 export const createTokenPaymasterUserOperationParam = [
   {
     key: "smartAccount",
-    type: "(callData: string, tokenAddress: string, paymasterAddress: string, approveAmount: bigint) => string",
+    type: "PrependTokenPaymasterApproveAccount",
     description:
-      "The SmartAccount object that created the target userOperation",
+      "The smart account object that created the target userOperation. Must implement prependTokenPaymasterApproveToCallData so the paymaster token approval can be prepended to the callData.",
   },
   {
     key: "userOperation",
@@ -663,17 +728,29 @@ export const createTokenPaymasterUserOperationParam = [
     description: "The Bundler RPC to estimate the gas",
   },
   {
+    key: "context",
+    type: candidePaymasterContextParam,
+    description:
+      "Optional additional context to pass to the paymaster RPC. `token` is always derived from `tokenAddress`, so pass `undefined` unless you need other fields (e.g. `signingPhase`).",
+  },
+  {
     key: "overrides",
     type: createPaymasterUserOperationOverridesType,
-    description: "Overrides for the default values",
+    description: "Overrides for gas limits, multipliers, entrypoint, and the approval reset behavior.",
   },
 ];
 
 export const createTokenPaymasterUserOperationReturn = [
   {
     key: "userOperation",
-    type: "Promise<UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9>",
-    description: "The userOperation to sponsor gas with erc-20 paymaster",
+    type: "UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9",
+    description: "The userOperation with paymaster data and token approval prepended",
+  },
+  {
+    key: "tokenQuote",
+    type: tokenQuoteType,
+    description:
+      "The exchange rate and maximum token cost the paymaster applied to this UserOperation. Populated on the token-payment flow; absent when called under the `signingPhase: \"finalize\"` path (no cost recomputation).",
   },
 ];
 

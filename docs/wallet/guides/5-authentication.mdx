@@ -287,7 +287,7 @@ type ExternalSigner = { address: `0x${string}` } & (
 )
 ```
 
-The discriminated union enforces at compile time that every signer implements at least one of `signHash` or `signTypedData`. Canonical definition in [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/signer/types.ts), re-exported from the package root as `ExternalSigner`.
+The discriminated union enforces at compile time that every signer implements at least one of `signHash` or `signTypedData`. Canonical definition in [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/signer/types.ts), re-exported from the package root as `ExternalSigner`.
 
 ### Capability negotiation
 

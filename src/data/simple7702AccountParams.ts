@@ -102,6 +102,12 @@ export const createUserOperationOverridesV8 = [
     type: "string",
     description: "Dummy signature for gas estimation",
   },
+  {
+    key: "skipGasEstimation?",
+    type: "boolean",
+    description:
+      "When true, skip the bundler's eth_estimateUserOperationGas call. Gas limits fall back to any overrides or 0n. The returned UserOperation is always populated with a dummy signature so it stays valid for downstream paymaster sponsorship calls.",
+  },
 ];
 
 export const estimateUserOperationGasOverridesV8 = [

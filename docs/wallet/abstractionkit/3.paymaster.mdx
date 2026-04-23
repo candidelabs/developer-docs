@@ -100,13 +100,14 @@ const sponsorshipPolicyId = '1234';
 const userOperation = smartAccount.createUserOperation(..)
 
 // highlight-start
-const [sponsoredUserOperation, sponsorMetadata] =
+const { userOperation: sponsoredUserOperation, sponsorMetadata } =
   await paymaster.createSponsorPaymasterUserOperation(
+    smartAccount,
     userOperation,
     bundlerUrl,
     sponsorshipPolicyId, // optional
   );
-// highlight-start
+// highlight-end
 ```
 
 </TabItem>
@@ -119,7 +120,7 @@ const [sponsoredUserOperation, sponsorMetadata] =
 </Tabs>
 
 #### Source code
-[createSponsorPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/paymaster/CandidePaymaster.ts#L546)
+[createSponsorPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/paymaster/CandidePaymaster.ts#L529)
 
 ### fetchSupportedERC20TokensAndPaymasterMetadata
 
@@ -229,12 +230,14 @@ let userOperation = smartAccount.createUserOperation(..);
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
 
 // highlight-start
-userOperation = await paymaster.createTokenPaymasterUserOperation(
-  smartAccount,
-  userOperation,
-  erc20TokenAddress,
-  bundlerRPC,
-);
+const { userOperation: sponsoredUserOperation, tokenQuote } =
+  await paymaster.createTokenPaymasterUserOperation(
+    smartAccount,
+    userOperation,
+    erc20TokenAddress,
+    bundlerRPC,
+  );
+userOperation = sponsoredUserOperation;
 // highlight-end
 ```
 
@@ -252,27 +255,36 @@ userOperation = await paymaster.createTokenPaymasterUserOperation(
 
 ```ts
 {
-  sender: '0xb8741a449d50ed0dcfe395287f85be152884c8d9',
-  nonce: 10n,
-  initCode: '0x',
-  callData: '0x541d63c800000000000000000000000038869bf66a61cf6bdb996a6ae40d5853fd43b52600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000001e48d80ff0a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000018b009a7af758ae5d7b6aae84fe4c5ba67c041dfe5336000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000246a627842000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d9009a7af758ae5d7b6aae84fe4c5ba67c041dfe5336000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000246a627842000000000000000000000000b8741a449d50ed0dcfe395287f85be152884c8d900fa5854fbf9964330d761961f46565ab7326e5a3b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b30000000000000000000000003fe285dcd76bcce4ac92d38a6f2f8e964041e02000000000000000000000000000000000000000000000000000a1d1b51fe47c5c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  userOperation: {
+    sender: '0xb8741a449d50ed0dcfe395287f85be152884c8d9',
+    nonce: 10n,
+    initCode: '0x',
+    callData: '0x541d63c8...095ea7b3...',
+    //highlight-start
+    callGasLimit: 116807n,
+    verificationGasLimit: 75441n,
+    preVerificationGas: 50444n,
+    //highlight-end
+    maxFeePerGas: 66195658616n,
+    maxPriorityFeePerGas: 120000n,
+    //highlight-start
+    paymasterAndData: '0x3fE285DcD76BCcE4Ac92d38A6F2F8E964041e020...',
+    //highlight-end
+    signature: '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+  },
   //highlight-start
-  callGasLimit: 116807n,
-  verificationGasLimit: 75441n,
-  preVerificationGas: 50444n,
+  tokenQuote: {
+    token: '0xFa5854FBf9964330d761961F46565AB7326e5a3b',
+    exchangeRate: 1001219705870085130n,
+    tokenCost: 3391931975665260n,
+  },
   //highlight-end
-  maxFeePerGas: 66195658616n,
-  maxPriorityFeePerGas: 120000n,
-  //highlight-start
-  paymasterAndData: '0x3fE285DcD76BCcE4Ac92d38A6F2F8E964041e020Fa5854FBf9964330d761961F46565AB7326e5a3b00000065bcd7fc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000de84cb0d94beb10a4658077bd4ad19f4fdf94425ec730f342b8115d9907f6072f40bcea6a95bce74c29b84a7d4ee9fa67f4efb39e25a2e39a2ecb110b9a0af6b6a9589bfef7ec431b',
-  //highlight-end
-  signature: '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
 }
 ```
 </details>
 
 #### Source code
-[createTokenPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/paymaster/CandidePaymaster.ts#L590)
+[createTokenPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/paymaster/CandidePaymaster.ts#L570)
 
 ### calculateUserOperationErc20TokenMaxGasCost
 
@@ -319,7 +331,7 @@ const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
 </details>
 
 #### Source code
-[calculateUserOperationErc20TokenMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/paymaster/CandidePaymaster.ts#L690)
+[calculateUserOperationErc20TokenMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/paymaster/CandidePaymaster.ts#L669)
 
 ## Advanced Methods
 
@@ -380,7 +392,7 @@ const paymasterResult = await paymaster.getPaymasterMetaData(SafeAccount.DEFAULT
 
 #### source code
 
-[getPaymasterMetaData](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/paymaster/CandidePaymaster.ts#L316)
+[getPaymasterMetaData](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/paymaster/CandidePaymaster.ts#L290)
 
 ### getSupportedEntrypoints
 
@@ -419,7 +431,7 @@ const paymasterResult = await paymaster.getSupportedEntrypoints();
 </details>
 
 #### source code
-[getSupportedEntrypoints](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/paymaster/CandidePaymaster.ts#L287)
+[getSupportedEntrypoints](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/paymaster/CandidePaymaster.ts#L269)
 
 ### isSupportedERC20Token
 
@@ -460,7 +472,7 @@ true
 </details>
 
 #### Source
-[isSupportedERC20Token](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/paymaster/CandidePaymaster.ts#L335)
+[isSupportedERC20Token](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/paymaster/CandidePaymaster.ts#L307)
 
 ### getSupportedERC20TokenData
 
@@ -509,7 +521,7 @@ const erc20TokenData = await paymaster.getSupportedERC20TokenData(erc20TokenAddr
 </details>
 
 #### Source code
-[getSupportedERC20TokenData](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/paymaster/CandidePaymaster.ts#L354)
+[getSupportedERC20TokenData](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/paymaster/CandidePaymaster.ts#L323)
 
 ### fetchTokenPaymasterExchangeRate
 
@@ -552,7 +564,7 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 </details>
 
 #### Source code
-[fetchTokenPaymasterExchangeRate](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/paymaster/CandidePaymaster.ts#L726)
+[fetchTokenPaymasterExchangeRate](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/paymaster/CandidePaymaster.ts#L706)
 
 ### createPaymasterUserOperation
 
@@ -561,7 +573,7 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 :::
 
 #### Source code
-[createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/paymaster/CandidePaymaster.ts#L505)
+[createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/paymaster/CandidePaymaster.ts#L486)
 
 ## Erc7677Paymaster
 
@@ -588,38 +600,41 @@ const paymaster = new Erc7677Paymaster(bundlerRpc);
 // Use createUserOperation() to help you construct a userOp
 let userOperation = await smartAccount.createUserOperation(/* ... */);
 
-userOperation = await paymaster.createPaymasterUserOperation(
+const { userOperation: sponsoredOp } = await paymaster.createPaymasterUserOperation(
   smartAccount,
   userOperation,
   bundlerRpc,
   { sponsorshipPolicyId: "sp_..." }, // provider-specific context
 );
+userOperation = sponsoredOp;
 ```
 
 #### ERC-20 token sponsorship
 
-Passing `{ token }` in the context triggers the ERC-20 gas flow automatically. For Candide and Pimlico the exchange rate is fetched for you; for unknown providers, supply `exchangeRate` in the context.
+Passing `{ token }` in the context triggers the ERC-20 gas flow automatically. For Candide and Pimlico the exchange rate is fetched for you; for unknown providers, supply `exchangeRate` in the context. `tokenQuote` surfaces the exchange rate and max token cost applied to the UserOperation so you can display the charge to the user without a second round trip.
 
 ```ts title="example.ts"
 const bundlerRpc = "https://api.candide.dev/public/v3/sepolia";
 const usdcAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"; // USDC on sepolia
 
 // Candide or Pimlico (auto-detected): exchange rate fetched from the RPC
-userOperation = await paymaster.createPaymasterUserOperation(
+const { userOperation: tokenOp, tokenQuote } = await paymaster.createPaymasterUserOperation(
   smartAccount,
   userOperation,
   bundlerRpc,
   { token: usdcAddress },
 );
+userOperation = tokenOp;
 
 // Unknown provider: supply exchangeRate (scaled by 1e18)
-userOperation = await paymaster.createPaymasterUserOperation(
+const { userOperation: tokenOp2 } = await paymaster.createPaymasterUserOperation(
   smartAccount,
   userOperation,
   bundlerRpc,
   { token: usdcAddress, exchangeRate: "1000000000000000000" },
 );
+userOperation = tokenOp2;
 ```
 
 #### Source code
-[Erc7677Paymaster](https://github.com/candidelabs/abstractionkit/blob/v0.3.2/src/paymaster/Erc7677Paymaster.ts)
+[Erc7677Paymaster](https://github.com/candidelabs/abstractionkit/blob/v0.3.3/src/paymaster/Erc7677Paymaster.ts)

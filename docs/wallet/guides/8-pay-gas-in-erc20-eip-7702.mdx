@@ -40,17 +40,14 @@ const tokenSelected = tokensSupported.tokens.find(
 );
 
 if (tokenSelected) {
-    userOperation = await paymaster.createTokenPaymasterUserOperation(
+    const { userOperation: tokenOp, tokenQuote } = await paymaster.createTokenPaymasterUserOperation(
         smartAccount, // = new Simple7702Account(eoaDelegator.address)
         userOperation,
         tokenSelected.address,
         bundlerUrl,
     )
-
-    const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
-        userOperation,
-        tokenSelected.address
-    )
+    userOperation = tokenOp;
+    const cost = tokenQuote?.tokenCost;
     console.log("This useroperation may cost up to : " + cost + " wei in CTT token")
     console.log("Please fund the sender account: " + userOperation.sender +" with more than "+ cost + " wei CTT token")
 }

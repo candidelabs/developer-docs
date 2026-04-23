@@ -200,17 +200,15 @@ Before signing, we request the paymaster to reserve gas sponsorship for both ope
 ```ts title="index.ts"
 console.log("[2/4] Requesting paymaster sponsorship (commit phase)...")
 
-const commitOverrides = {
-    preVerificationGasPercentageMultiplier: 20,
-    context: { signingPhase: "commit" as const },
-}
+const commitContext = { signingPhase: "commit" as const }
+const commitOverrides = { preVerificationGasPercentageMultiplier: 20 }
 
-const [[commitOp1], [commitOp2]] = await Promise.all([
+const [{ userOperation: commitOp1 }, { userOperation: commitOp2 }] = await Promise.all([
     paymaster1.createSponsorPaymasterUserOperation(
-        smartAccount, userOperation1, bundlerUrl1, undefined, commitOverrides
+        smartAccount, userOperation1, bundlerUrl1, undefined, commitContext, commitOverrides
     ),
     paymaster2.createSponsorPaymasterUserOperation(
-        smartAccount, userOperation2, bundlerUrl2, undefined, commitOverrides
+        smartAccount, userOperation2, bundlerUrl2, undefined, commitContext, commitOverrides
     ),
 ])
 userOperation1 = commitOp1
@@ -257,16 +255,14 @@ After signing, finalize the paymaster sponsorship and submit both operations.
 ```ts title="index.ts"
 console.log("[4/4] Finalizing sponsorship and submitting...")
 
-const finalizeOverrides = {
-    context: { signingPhase: "finalize" as const },
-}
+const finalizeContext = { signingPhase: "finalize" as const }
 
-const [[finalOp1], [finalOp2]] = await Promise.all([
+const [{ userOperation: finalOp1 }, { userOperation: finalOp2 }] = await Promise.all([
     paymaster1.createSponsorPaymasterUserOperation(
-        smartAccount, userOperation1, bundlerUrl1, undefined, finalizeOverrides
+        smartAccount, userOperation1, bundlerUrl1, undefined, finalizeContext
     ),
     paymaster2.createSponsorPaymasterUserOperation(
-        smartAccount, userOperation2, bundlerUrl2, undefined, finalizeOverrides
+        smartAccount, userOperation2, bundlerUrl2, undefined, finalizeContext
     ),
 ])
 userOperation1 = finalOp1

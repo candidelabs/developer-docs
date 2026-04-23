@@ -225,10 +225,12 @@ let userOperation = await smartAccount.createUserOperation(
 import { CandidePaymaster } from "abstractionkit";
 
 const paymaster = new CandidePaymaster(process.env.PAYMASTER_URL);
-userOperation = await paymaster.createSponsorPaymasterUserOperation(
+const { userOperation: sponsoredOp } = await paymaster.createSponsorPaymasterUserOperation(
+  smartAccount,
   userOperation,
   process.env.BUNDLER_URL
 );
+userOperation = sponsoredOp;
 ```
 
 ### Sign and Submit UserOperation

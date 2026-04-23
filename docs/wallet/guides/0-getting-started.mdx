@@ -230,11 +230,12 @@ const paymasterUrl = process.env.PAYMASTER_URL as string;
 const paymaster = new CandidePaymaster(paymasterUrl);
 const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
 
-let [paymasterUserOperation, _sponsorMetadata] = await paymaster.createSponsorPaymasterUserOperation(
-    userOperation, 
-    bundlerUrl, 
+const { userOperation: paymasterUserOperation } = await paymaster.createSponsorPaymasterUserOperation(
+    smartAccount,
+    userOperation,
+    bundlerUrl,
     sponsorshipPolicyId // sponsorshipPolicyId will have no effect if empty
-  ) 
+  )
 
 userOperation = paymasterUserOperation;
 ```
@@ -416,11 +417,12 @@ async function main(): Promise<void> {
     const paymaster: CandidePaymaster = new CandidePaymaster(paymasterUrl);
     const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
 
-    let [paymasterUserOperation, _sponsorMetadata] = await paymaster.createSponsorPaymasterUserOperation(
-        userOperation, 
-        bundlerUrl, 
+    const { userOperation: paymasterUserOperation } = await paymaster.createSponsorPaymasterUserOperation(
+        smartAccount,
+        userOperation,
+        bundlerUrl,
         sponsorshipPolicyId // sponsorshipPolicyId will have no effect if empty
-    ) 
+    )
     userOperation = paymasterUserOperation;
     
     console.log("Transaction will be sponsored - no ETH required!");
