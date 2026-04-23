@@ -15,13 +15,13 @@ export default function CTASection() {
       <div className="flex gap-3 justify-center flex-wrap relative">
         <Link
           to="https://dashboard.candide.dev"
-          className="bg-[#E70073] text-white px-6 py-2.5 rounded font-medium text-sm hover:no-underline hover:opacity-80 transition-opacity"
+          className="bg-[#E70073] text-white px-6 py-2.5 rounded-sm font-medium text-sm hover:no-underline hover:opacity-80 transition-opacity"
         >
           Start Building Free
         </Link>
         <Link
           to="mailto:team@candidelabs.com"
-          className="border border-[rgba(255,255,255,0.2)] dark:text-white text-black px-6 py-2.5 rounded font-medium text-sm hover:no-underline hover:opacity-70 transition-opacity"
+          className="border border-[rgba(255,255,255,0.2)] dark:text-white text-black px-6 py-2.5 rounded-sm font-medium text-sm hover:no-underline hover:opacity-70 transition-opacity"
         >
           Contact Sales
         </Link>

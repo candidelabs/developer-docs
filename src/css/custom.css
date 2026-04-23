@@ -4,9 +4,31 @@
  * work well for content-centric websites.
  */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Import Tailwind without preflight. Docusaurus ships its own reset (Infima),
+   so we load theme + utilities only to avoid double-resetting. */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@custom-variant dark (&:is([data-theme="dark"] *));
+
+@theme {
+  --font-sans: Inter, system-ui, -apple-system, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, SF Mono, Consolas, Liberation Mono, Menlo,
+    monospace;
+
+  --breakpoint-mobile-nav: 997px;
+
+  --color-off-black: #111111;
+  --color-off-white: #f1ede7;
+  --color-white-80: #cfcfcf;
+  --color-white-50: #888888;
+  --color-white-25: #4d4d4d;
+  --color-black-80: #333333;
+  --color-black-50: #808080;
+  --color-black-25: #bfbfbf;
+}
 
 :root {
   --ifm-color-primary: #E70073;

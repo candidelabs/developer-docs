@@ -91,7 +91,7 @@ export default function PricingCards() {
           <p className="text-2xl font-bold my-2 mb-1">{plan.price}</p>
           <p className="text-sm opacity-50 mb-4 mt-0">{plan.tagline}</p>
           <hr className="border-[rgba(255,255,255,0.1)] mb-4" />
-          <ul className="flex-1 !pl-0 !list-none space-y-2 text-sm mb-6">
+          <ul className="flex-1 pl-0! list-none! space-y-2 text-sm mb-6">
             {plan.features.map((f, i) => (
               <li key={i} className="flex items-start gap-2">
                 <span className="text-[#E70073] shrink-0 mt-0.5">✓</span>
