@@ -1134,6 +1134,28 @@ export const formatEip712SignaturesToUseroperationSignatureReturn = [
   },
 ];
 
+export const isDeployedParams = [
+  {
+    key: "accountAddress",
+    type: "string",
+    description: "The Safe account address to check.",
+  },
+  {
+    key: "nodeRpcUrl",
+    type: "string",
+    description: "The JSON-RPC API URL for the target chain.",
+  },
+];
+
+export const isDeployedReturn = [
+  {
+    key: "isDeployed",
+    type: "Promise<boolean>",
+    description:
+      "Resolves to true if non-empty bytecode is deployed at accountAddress, false otherwise.",
+  },
+];
+
 export const isModuleEnabledParams = [
   {
     key: "nodeRpcUrl",
