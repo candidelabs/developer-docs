@@ -116,7 +116,7 @@ const smartAccount = new SafeAccount(accountAddress);
 
 #### Source code
 
-[constructor](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L44)
+[constructor](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L46)
 
 ## Methods
 
@@ -168,7 +168,7 @@ Account address(sender) : 0x1a02592A3484c2077d2E5D24482497F85e1980C6
 
 #### Source code
 
-[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L117)
+[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L111)
 
 ### isDeployed
 
@@ -342,7 +342,7 @@ console.log(userOperation);
 </details>
 
 #### Source code
-[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L342)
+[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L324)
 
 ### signUserOperation
 
@@ -388,7 +388,7 @@ console.log(signature);
 </details>
 
 #### Source code
-[signUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L480)
+[signUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L458)
 
 ### signUserOperationWithSigners
 
@@ -540,7 +540,7 @@ Account address(sender) : 0x1a02592A3484c2077d2E5D24482497F85e1980C6
 
 #### Source code
 
-[createAccountAddress](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L77)
+[createAccountAddress](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L74)
 
 ### createInitCode
 
@@ -589,7 +589,7 @@ initCode: 0x...
 
 #### Source code
 
-[createInitCode](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L308)
+[createInitCode](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L296)
 
 ### createAccountAddressAndInitCode
 
@@ -641,7 +641,7 @@ initCode: 0x...
 
 #### Source code
 
-[createAccountAddressAndInitCode](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L252)
+[createAccountAddressAndInitCode](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L235)
 
 ### createInitializerCallData
 
@@ -684,7 +684,7 @@ initializeCallData: 0xb63e800d00000000000000000000000000000000000000000000000000
 </details>
 
 #### Source code
-[createInitializerCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L270)
+[createInitializerCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L260)
 
 ### createAccountCallDataSingleTransaction
 
@@ -872,7 +872,7 @@ const [preVerificationGas, verificationGasLimit, callGasLimit] = await estimateU
 </details>
 
 #### Source code
-[estimateUserOperationGas](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L445)
+[estimateUserOperationGas](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L427)
 
 ### getUserOperationEip712Hash
 
@@ -909,7 +909,7 @@ console.log(safeUserOpHash);
 
 #### Source code
 
-[getUserOperationEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L177)
+[getUserOperationEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L165)
 
 ### formatEip712SignaturesToUseroperationSignature
 
@@ -1113,7 +1113,7 @@ const userOperation = await smartAccount.createUserOperation(
 
 #### Source code
 
-[createMigrateToSafeAccountV0_3_0MetaTransactions](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L388)
+[createMigrateToSafeAccountV0_3_0MetaTransactions](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccountV0_2_0.ts#L370)
 
 ## Audits
 - [Audits by Ackee and OpenZeppelin](https://github.com/safe-global/safe-modules/blob/main/modules/4337/docs/v0.2.0/audit.md)
