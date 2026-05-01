@@ -1784,6 +1784,18 @@ export const userOperationToSignType = [
     type: "bigint",
     description: "Timestamp the signature will be valid until",
   },
+  {
+    key: "options?",
+    type: "MultiChainSigningOptions",
+    description:
+      "Per-operation signing options such as the Safe 4337 module address. In v0.3.5 this replaced the generic overrides field for non-WebAuthn options.",
+  },
+  {
+    key: "webAuthnSignatureOverrides?",
+    type: "WebAuthnSignatureOverrides",
+    description:
+      "Per-operation WebAuthn signature encoding overrides, such as isInit or WebAuthn verifier addresses. In v0.3.5 this replaced the WebAuthn-specific values previously carried in overrides.",
+  },
 ];
 
 export const signUserOperationsParam = [
@@ -1864,7 +1876,8 @@ export const formatSignaturesToUseroperationsSignaturesParam = [
   {
     key: "userOperationsToSign",
     type: "UserOperationToSignWithOverrides[]",
-    description: "Array of UserOperations with their target chain IDs and optional per-operation overrides (e.g. WebAuthn verifier addresses)",
+    description:
+      "Array of UserOperations with their target chain IDs and optional per-operation options / WebAuthn signature overrides",
   },
   {
     key: "signerSignaturePairs",

@@ -87,7 +87,7 @@ console.log("Account address (sender): " + smartAccount.accountAddress);
 
 #### Source code
 
-[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeMultiChainSigAccount.ts)
+[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v0.3.5/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### createUserOperation
 
@@ -129,13 +129,15 @@ const userOperation = await smartAccount.createUserOperation(
 
 #### Source code
 
-[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeMultiChainSigAccount.ts)
+[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.5/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### signUserOperations
 
 Signs multiple UserOperations across different chains with a single signing session. Builds a Merkle tree from the UserOperation hashes, signs the Merkle root, and returns an array of signatures (one per UserOperation) each containing the Merkle proof for its chain.
 
 If only one UserOperation is provided, falls back to single-chain signing.
+
+In AbstractionKit `v0.3.5`, `UserOperationToSignWithOverrides` split the previous catch-all `overrides` field into `options` for normal signing options and `webAuthnSignatureOverrides` for WebAuthn-specific signature encoding values.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
@@ -180,7 +182,7 @@ userOp2.signature = signatures[1];
 
 #### Source code
 
-[signUserOperations](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeMultiChainSigAccount.ts)
+[signUserOperations](https://github.com/candidelabs/abstractionkit/blob/v0.3.5/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### signUserOperationsWithSigners
 
@@ -242,7 +244,7 @@ const hash = SafeAccount.getMultiChainSingleSignatureUserOperationsEip712Hash([
 
 #### Source code
 
-[getMultiChainSingleSignatureUserOperationsEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeMultiChainSigAccount.ts)
+[getMultiChainSingleSignatureUserOperationsEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v0.3.5/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### getMultiChainSingleSignatureUserOperationsEip712Data
 
@@ -281,7 +283,7 @@ const signature = await wallet.signTypedData(domain, types, messageValue);
 
 #### Source code
 
-[getMultiChainSingleSignatureUserOperationsEip712Data](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeMultiChainSigAccount.ts)
+[getMultiChainSingleSignatureUserOperationsEip712Data](https://github.com/candidelabs/abstractionkit/blob/v0.3.5/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### formatSignaturesToUseroperationsSignatures
 
@@ -295,9 +297,14 @@ import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const userOpsToSign = [
     { userOperation: userOp1, chainId: 11155111n },
-    // Per-operation overrides (e.g. WebAuthn verifier addresses) go on the
-    // op itself — the previous third `overrides` argument was removed in v0.3.1.
-    { userOperation: userOp2, chainId: 11155420n, overrides: { /* ... */ } },
+    // Since v0.3.5, generic signing options and WebAuthn signature overrides
+    // use separate fields instead of the previous catch-all `overrides` field.
+    {
+        userOperation: userOp2,
+        chainId: 11155420n,
+        options: { safe4337ModuleAddress: "0x..." },
+        webAuthnSignatureOverrides: { isInit: userOp2.nonce === 0n },
+    },
 ];
 
 const signerSignaturePairs = [
@@ -330,7 +337,7 @@ userOp2.signature = signatures[1];
 
 #### Source code
 
-[formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeMultiChainSigAccount.ts)
+[formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/v0.3.5/src/account/Safe/SafeMultiChainSigAccount.ts)
 
 ### sendUserOperation
 

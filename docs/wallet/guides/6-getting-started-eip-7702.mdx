@@ -1,6 +1,6 @@
 ---
-title: How to use EIP-7702 Smart Account Authorization with Abstractionkit   
-description: Learn how to upgrade an EOA to an EIP-7702-compatible Smart Account to leverage features such as batching and gas sponsorship  
+title: How to use EIP-7702 Smart Account Authorization with Abstractionkit
+description: Learn how to upgrade an EOA to an EIP-7702-compatible Smart Account to leverage features such as batching and gas sponsorship
 keywords: [eip-7702, smart-account, batching, EOA, metamask]
 ---
 
@@ -43,7 +43,7 @@ npm i abstractionkit dotenv ethers
 
 3. Configure Environment Variables
 
-- Create a `.env` file and add the following environment variables with your own values 
+- Create a `.env` file and add the following environment variables with your own values
 
 ```bash title=".env"
 CHAIN_ID=11155111
@@ -86,14 +86,15 @@ npx ts-node index.ts
 
 If everything worked, you will see the computed smart account address in the console, which is the same as the EOA address.
 
-<details>
-<summary>Result example</summary>
+Example output:
+
+```terminal
 Account address(sender): 0x32afdcfa1e3bfe70d03ecb55b5c8045c26515c9d
-</details>
+```
 
 ## Step 3: Generate callData for Minting NFTs
 
-Beyond upgrading the EOA to a smart account, this example demonstrates executing two NFT mints in a single transaction.  
+Beyond upgrading the EOA to a smart account, this example demonstrates executing two NFT mints in a single transaction.
 
 ```ts title="index.ts"
 import {
@@ -211,7 +212,7 @@ userOperation.signature = smartAccount.signUserOperation(
 );
 ```
 
-2. Use the Bundler URL to send the user operation to the bundler with `sendUserOperation`, and await the return `SendUseroperationResponse` object to confirm the on-chain inclusion of the user operation. 
+2. Use the Bundler URL to send the user operation to the bundler with `sendUserOperation`, and await the return `SendUseroperationResponse` object to confirm the on-chain inclusion of the user operation.
 
 ```ts title="index.ts"
 const sendUserOperationResponse = await smartAccount.sendUserOperation(userOperation, bundlerUrl)
@@ -219,7 +220,7 @@ const sendUserOperationResponse = await smartAccount.sendUserOperation(userOpera
 console.log("UserOperation sent. Waiting to be included ......")
 ```
 
-3. Track the userOperation and wait for its inclusion onchain 
+3. Track the userOperation and wait for its inclusion onchain
 ```ts
 // highlight-start
 let userOperationReceiptResult = await sendUserOperationResponse.included()
@@ -243,8 +244,7 @@ npx ts-node index.ts
 
 You've now enabled smart account features for your EOA! If everything went well, you should see the bundler returning a user operation receipt.
 
-<details>
-<summary>Result</summary>
+Example output:
 
 ```terminal
 Useroperation sent. Waiting to be included ......
@@ -267,8 +267,6 @@ Useroperation receipt received.
 }
 EOA upgraded to a Smart Account and minted two NFTs! The transaction hash is : 0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a
 ```
-
-</details>
 
 You can look up the hash on explorers that support user operations like [Blockscout](https://www.blockscout.com/).
 

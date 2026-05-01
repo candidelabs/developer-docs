@@ -180,22 +180,42 @@ userOperation.signature = signature;
 
 ### signUserOperationWithSigner
 
-Signs a UserOperation using an [`ExternalSigner`](/wallet/guides/authentication#external-signers) instead of a raw private key. Integrates viem, ethers, hardware wallets, HSMs, and MPC services through the same API. Simple7702 requires a signer that implements `signHash` (raw 32-byte hash).
+Signs a UserOperation using an [`ExternalSigner`](/wallet/guides/authentication#external-signers) instead of a raw private key. Integrates viem, ethers, browser wallets, hardware wallets, HSMs, and MPC services through the same API.
+
+Since AbstractionKit `v0.3.5`, `Simple7702Account` accepts signers that implement either `signTypedData` or `signHash`. The SDK prefers `signTypedData` when available, so JSON-RPC wallets and viem `WalletClient` instances can sign EntryPoint v0.8 UserOperations without raw-hash signing support. Raw-hash signers continue to work.
 
 ```ts title="example.ts"
-import { fromViem } from "abstractionkit";
-import { privateKeyToAccount } from "viem/accounts";
+import { fromViemWalletClient } from "abstractionkit";
+import { createWalletClient, custom } from "viem";
 
-const viemAccount = privateKeyToAccount("0x...");
+const walletClient = createWalletClient({
+  account: delegatorPublicAddress,
+  chain,
+  transport: custom(window.ethereum),
+});
 
 userOperation.signature = await smartAccount.signUserOperationWithSigner(
   userOperation,
-  fromViem(viemAccount),
+  fromViemWalletClient(walletClient),
   11155111n, // chain ID
 );
 ```
 
 See [External Signers](/wallet/guides/authentication#external-signers) for the full list of adapters and custom-signer integrations.
+
+### getUserOperationEip712TypedData
+
+Builds the EIP-712 typed data payload for a UserOperation under the EntryPoint v0.8 domain. Use this lower-level method when you need to inspect the wallet prompt payload or drive a custom `signTypedData` primitive directly.
+
+```ts title="example.ts"
+const typedData = smartAccount.getUserOperationEip712TypedData(
+  userOperation,
+  11155111n,
+);
+
+const signature = await walletClient.signTypedData(typedData);
+userOperation.signature = signature;
+```
 
 ### sendUserOperation
 

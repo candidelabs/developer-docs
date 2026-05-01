@@ -425,7 +425,7 @@ const paymasterResult = await paymaster.getSupportedEntrypoints();
 [
   '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
   '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
-] 
+]
 ```
 
 </details>
@@ -476,7 +476,7 @@ true
 
 ### getSupportedERC20TokenData
 
-Returns the token data given an erc20 address 
+Returns the token data given an erc20 address
 
 #### Usage
 
@@ -579,7 +579,7 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 
 `Erc7677Paymaster` is a provider-agnostic [ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) paymaster client. It speaks `pm_getPaymasterStubData` and `pm_getPaymasterData`, so it works with any compliant provider (Candide, Pimlico, Alchemy, or a self-hosted paymaster). Provider is auto-detected from the RPC URL; for Candide and Pimlico it also fetches exchange rates and paymaster addresses automatically for ERC-20 token flows.
 
-If you are using Candide's paymaster and want features like parallel signing phases, prefer [`CandidePaymaster`](#paymaster) above. Use `Erc7677Paymaster` when you want a single client that can switch providers without code changes.
+If you are using Candide's paymaster and want features like parallel signing phases, prefer `CandidePaymaster` above. Use `Erc7677Paymaster` when you want a single client that can switch providers without code changes.
 
 ### Usage
 

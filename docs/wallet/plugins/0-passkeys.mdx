@@ -121,6 +121,20 @@ const webauthPublicKey: WebauthPublicKey = {
 Store the passkey's public credentials (<code>x</code>, <code>y</code>, and <code>passkeyCredential.id</code>) in a retrievable location before the smart account is deployed. Losing this data prevents users from using their accounts if the account has not been. This information is not sensitive. You can use a simple backend server or leverage <a href="https://simplewebauthn.dev/docs/packages/server">@simplewebauthn/server</a> for storage.
 </Callout>
 
+AbstractionKit `v0.3.5` includes bigint-safe JSON helpers for storing and rehydrating passkey public coordinates:
+
+```ts title="storePasskey.ts"
+import {
+    pubkeyCoordinatesFromJson,
+    pubkeyCoordinatesToJson,
+} from "abstractionkit";
+
+localStorage.setItem("passkeyPubkey", pubkeyCoordinatesToJson(webauthPublicKey));
+
+const stored = localStorage.getItem("passkeyPubkey");
+const restoredPubkey = stored ? pubkeyCoordinatesFromJson(stored) : undefined;
+```
+
 ### Step 4: Initialize Smart Account
 
 Initialize the Safe Smart Account with the passkey as the signer. `SafeAccountV0_3_0` supports Entrypoint v0.7, while `SafeAccountV0_2_0` supports Entrypoint v0.6.
@@ -152,7 +166,50 @@ let userOperation = await smartAccount.createUserOperation(
 
 ### Step 6: Sign with Passkeys
 
-Signing a UserOperation with passkeys involves four substeps: hashing, requesting a WebAuthn assertion, building the signature data, and formatting it.
+#### Sign with fromSafeWebauthn
+
+AbstractionKit `v0.3.5` includes `fromSafeWebauthn`, an `ExternalSigner` adapter for Safe passkey owners. It handles the Safe-specific signer address, contract-signature encoding, and `signUserOperationWithSigners` integration.
+
+```ts title="signUserOp.ts"
+import {
+    SafeAccountV0_3_0 as SafeAccount,
+    fromSafeWebauthn,
+    webauthnSignatureFromAssertion,
+} from "abstractionkit";
+import { sign } from "ox/WebAuthnP256";
+import { Hex as OxHex } from "ox/Hex";
+import { Hex } from "ox";
+
+const signer = fromSafeWebauthn({
+    publicKey: webauthPublicKey,
+    isInit: userOperation.nonce === 0n,
+    accountClass: SafeAccount,
+    getAssertion: async (challenge) => {
+        const { metadata, signature } = await sign({
+            challenge: Hex.fromBytes(challenge),
+            credentialId: passkeyCredential.id as OxHex,
+        });
+
+        return webauthnSignatureFromAssertion({
+            authenticatorData: metadata.authenticatorData,
+            clientDataJSON: metadata.clientDataJSON,
+            signature,
+        });
+    },
+});
+
+userOperation.signature = await smartAccount.signUserOperationWithSigners(
+    userOperation,
+    [signer],
+    BigInt(chainId),
+);
+```
+
+Pass the same account class used to initialize the account. Use `SafeAccountV0_3_0` for standard Safe passkeys and `SafeMultiChainSigAccountV1` for Safe Unified Account passkeys. Keep passing `expectedSigners: [webauthPublicKey]` to `createUserOperation`; the bundler needs the larger WebAuthn dummy signature during gas estimation.
+
+#### Manual signing
+
+The lower-level manual path is still available when you need direct control over each signature field. It involves four substeps: hashing, requesting a WebAuthn assertion, building the signature data, and formatting it.
 
 #### Step 6a: Calculate the EIP-712 Hash
 

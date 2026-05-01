@@ -75,12 +75,12 @@ export function DataTable({ items }) {
               <td key={colIndex} align="left" style={{ padding: "8px" }}>
                 {key === "key" && (
                   <code>
-                    <font color="#22c916">{renderValue(item[key])}</font>
+                    <span style={{ color: "#22c916" }}>{renderValue(item[key])}</span>
                   </code>
                 )}
                 {key === "type" && (
                   <code>
-                    <font color="#e25894">{renderValue(item[key])}</font>
+                    <span style={{ color: "#e25894" }}>{renderValue(item[key])}</span>
                   </code>
                 )}
                 {key !== "key" && key !== "type" && renderValue(item[key])}
