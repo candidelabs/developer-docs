@@ -250,7 +250,7 @@ const signatures = await account.signUserOperationsWithSigners(
 
 ### Pick an adapter
 
-AbstractionKit ships three built-in adapters and supports custom `ExternalSigner` implementations. Each adapter wraps a concrete signer type into an `ExternalSigner` in one line.
+AbstractionKit ships built-in adapters and supports custom `ExternalSigner` implementations. Each adapter wraps a concrete signer type into an `ExternalSigner` in one line.
 
 **Built-in adapters**
 
@@ -259,6 +259,7 @@ AbstractionKit ships three built-in adapters and supports custom `ExternalSigner
 | `fromViem(localAccount)` | any viem `LocalAccount` (`privateKeyToAccount`, `toAccount`, wagmi connector accounts) | [fromViem.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/fromViem.ts) |
 | `fromEthersWallet(wallet)` | any ethers `Wallet` or `HDNodeWallet` (ethers >= 6) | [fromEthersWallet.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/fromEthersWallet.ts) |
 | `fromViemWalletClient(client)` | viem `WalletClient` (browser / injected wallet, typed-data only) | [fromViemWalletClient.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/fromViemWalletClient.ts) |
+| `fromSafeWebauthn(params)` | Safe passkey owners; returns a contract-signature signer for `signUserOperationWithSigners` | [Passkeys guide](/wallet/plugins/passkeys/#sign-with-fromsafewebauthn) |
 
 Each example in the repo is self-contained. If you use viem, read `fromViem.ts`; if you use ethers, read `fromEthersWallet.ts`. You do not need to install both libraries to use AbstractionKit.
 
@@ -284,10 +285,12 @@ type ExternalSigner = { address: `0x${string}` } & (
       signTypedData?: (data: TypedData)     => Promise<`0x${string}`> }
   | { signHash?:      (hash: `0x${string}`) => Promise<`0x${string}`>
       signTypedData:  (data: TypedData)     => Promise<`0x${string}`> }
-)
+) & {
+  type?: "ecdsa" | "contract"
+}
 ```
 
-The discriminated union enforces at compile time that every signer implements at least one of `signHash` or `signTypedData`. Canonical definition in [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/signer/types.ts), re-exported from the package root as `ExternalSigner`.
+The discriminated union enforces at compile time that every signer implements at least one of `signHash` or `signTypedData`. The optional `type` field defaults to `"ecdsa"`; Safe accounts use `"contract"` for dynamic-length EIP-1271 signatures such as WebAuthn verifier contracts. Canonical definition in [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v0.3.5/src/signer/types.ts), re-exported from the package root as `ExternalSigner`.
 
 ### Capability negotiation
 
@@ -298,7 +301,8 @@ Each account class declares which signing schemes it accepts:
 | Safe (V0.2.0, V0.3.0, V1.5.0) | `typedData`, `hash` | Prefers `typedData` for structured EIP-712 display in wallet UIs |
 | `SafeMultiChainSigAccountV1` (single-op) | `typedData`, `hash` | Same preference as Safe |
 | `SafeMultiChainSigAccountV1` (multi-op Merkle path) | `hash` only | The Merkle root has no typed-data display |
-| `Simple7702Account`, `Simple7702AccountV09`, `Calibur7702Account` | `hash` only | Raw 32-byte hash, no EIP-191 prefix |
+| `Simple7702Account`, `Simple7702AccountV09` | `typedData`, `hash` | Since v0.3.5, prefers EntryPoint v0.8/v0.9 EIP-712 typed data for JSON-RPC wallets; raw-hash signing remains supported |
+| `Calibur7702Account` | `hash` only | Raw 32-byte hash, no EIP-191 prefix |
 
 When a signer exposes both capabilities the account picks the preferred scheme. Capability mismatches throw **offline** with an actionable error: a `fromViemWalletClient` signer (typed-data only) passed to Calibur or to the multi-op Merkle path fails before any wallet prompt is triggered.
 

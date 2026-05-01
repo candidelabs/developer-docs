@@ -9,7 +9,7 @@ import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { DataTable } from "/src/components/Table";
 import { userOperationReturnParamsV06 } from "/src/data/userOperation"
-import { 
+import {
   candidePaymasterContext,
   tokensParametersV2,
   paymasterMetadataReturnParametersV06,
@@ -88,8 +88,11 @@ Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
 
 <table>
   <thead>
+    <tr>
     <th align="left">Parameter</th>
     <th align="left">Type</th>
+
+    </tr>
   </thead>
   <tbody>
     <tr>
@@ -136,7 +139,7 @@ If the paymaster rejects the UserOperation, it should not return a result but a 
     preVerificationGas,
     maxFeePerGas,
     maxPriorityFeePerGas
-  } 
+  }
 }
 ```
 
@@ -190,8 +193,11 @@ If the paymaster rejects the UserOperation, it should not return a result but a 
 
 <table>
   <thead>
+    <tr>
     <th align="left">Parameter</th>
     <th align="left">Type</th>
+
+    </tr>
   </thead>
   <tbody>
     <tr>
@@ -206,9 +212,12 @@ If the paymaster rejects the UserOperation, it should not return a result but a 
       <td align="left">
         <table>
           <thead>
+    <tr>
             <th align="left">Type</th>
             <th align="left">Description</th>
-          </thead>
+
+    </tr>
+  </thead>
           <tr>
             <td>
               <code>string</code>
@@ -329,16 +338,19 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
 <TabItem value="response type" label="Response Type">
   <table>
     <thead>
+    <tr>
       <th align="left">Parameter</th>
       <th align="left">Type</th>
       <th align="left">Description</th>
-    </thead>
+
+    </tr>
+  </thead>
     <tbody>
       <tr>
         <td align="left">chainId</td>
         <td align="left">
           <code>
-            <font color="#e25894">string</font>
+            <span style={{ color: "#e25894" }}>string</span>
           </code>
         </td>
         <td align="left">

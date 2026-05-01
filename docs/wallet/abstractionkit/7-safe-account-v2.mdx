@@ -77,7 +77,7 @@ The V2 contracts, known as the `SafeAccountV0_2_0` class in AbstractionKit, supp
 ## Import
 
 ```ts
-import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit"; 
+import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit";
 ```
 
 ## How to Use
@@ -246,15 +246,18 @@ console.log(userOperation);
 <TabItem value="Param type" label="Param Types">
     <table>
     <thead>
+    <tr>
       <th align="left">Param Name</th>
       <th align="left">Param Type</th>
       <th align="left">Description</th>
-    </thead>
+
+    </tr>
+  </thead>
     <tbody>
       <tr>
         <td>Transactions</td>
         <td align="left">
-          <p><font color="#22c916">MetaTransaction[]</font></p>
+          MetaTransaction[]
           <DataTable items={metaTransactionType} />
         </td>
         <td align="left">
@@ -264,21 +267,21 @@ console.log(userOperation);
       <tr>
         <td>Provider RPC</td>
         <td align="left">
-          <p><font color="#22c916">string</font></p>
+          string
         </td>
         <td>The node URL. It is used to fetch the current nonce and fetch gas prices</td>
       </tr>
       <tr>
         <td>Bundler URL</td>
         <td align="left">
-          <p><font color="#22c916">string</font></p>
+          string
         </td>
         <td>The Bundler URL. It is used to fetch the gas limits</td>
       </tr>
       <tr>
         <td align="left">Overrides</td>
         <td align="left">
-          <p>CreateUserOperationOverrides, optional object</p>
+          CreateUserOperationOverrides, optional object
           <DataTable items={createUserOperationV6Overrides} />
         </td>
         <td align="left">
@@ -292,31 +295,30 @@ console.log(userOperation);
 <TabItem value="Return Type" label="Return Type">
   <table>
     <thead>
+    <tr>
       <th align="left">Param Name</th>
       <th align="left">Param Type</th>
       <th align="left">Description</th>
-    </thead>
+
+    </tr>
+  </thead>
     <tbody>
       <tr>
         <td>UserOperation</td>
         <td align="left">
-          <p><font color="#22c916">{`Promise<UserOperation | JsonRpcError | BundlerJsonRpcError>`}</font></p>
-            <font color="#22c916">UserOperation </font>object
-            <DataTable items={userOperationReturnParamsV06} />
-            <font color="#22c916">JsonRpcError object</font>
-            <td align="left">
-              <DataTable items={jsonRpcErrorType} />
-            </td>
-            <font color="#22c916">BundlerJsonRpcError object</font>
-            <td align="left">
-              <DataTable items={bundlerJsonRpcErrorType} />
-            </td>
+          <div>{`Promise<UserOperation | JsonRpcError | BundlerJsonRpcError>`}</div>
+          <div>UserOperation object</div>
+          <DataTable items={userOperationReturnParamsV06} />
+          <div>JsonRpcError object</div>
+          <DataTable items={jsonRpcErrorType} />
+          <div>BundlerJsonRpcError object</div>
+          <DataTable items={bundlerJsonRpcErrorType} />
         </td>
         <td align="left">
           Returns a UserOperation on success, or the RPC/bundler error on failure.
         </td>
       </tr>
-    </tbody>  
+    </tbody>
   </table>
 </TabItem>
 
@@ -354,7 +356,7 @@ This method takes a userOperation, the private keys of the owner of the account,
 ```ts title="example.ts"
 const chainId = BigInt("11155111"); // sepolia chain ID
 const privateKey = "0x4cad764980d84fc6684ca839cae2c78be5432e292fa98416e11687ceb9096a03";
-const userOperation = {..} 
+const userOperation = {..}
 
 // highlight-start
 const signature = smartAccount.signUserOperation(
@@ -814,8 +816,8 @@ Estimates gas limits for a UserOperation.
 <TabItem value="example.ts" label="example.ts">
 
 ```ts
-import { 
-  SafeAccountV0_2_0 as SafeAccount, 
+import {
+  SafeAccountV0_2_0 as SafeAccount,
   UserOperationV6
 } from "abstractionkit";
 
@@ -846,15 +848,18 @@ const [preVerificationGas, verificationGasLimit, callGasLimit] = await estimateU
 <TabItem value="response type" label="Response Type">
   <table>
     <thead>
+    <tr>
       <th align="left">Parameter</th>
       <th align="left">Type</th>
       <th align="left">Description</th>
-    </thead>
+
+    </tr>
+  </thead>
     <tbody>
       <tr>
         <td align="left">gas estimates</td>
         <td align="left">
-          <font color="#e25894">{`Promise<[bigint, bigint, bigint]>`}</font>
+          {`Promise<[bigint, bigint, bigint]>`}
         </td>
         <td>Returns the gas estimates of preVerificationGas, verificationGasLimit, callGasLimit</td>
       </tr>
@@ -884,12 +889,12 @@ Creates a UserOperation EIP-712 hash.
   <TabItem value="example" label="example">
 
 ```ts title="example"
-import { 
-  SafeAccountV0_3_0 as SafeAccount, 
-  UserOperationV7
+import {
+  SafeAccountV0_2_0 as SafeAccount,
+  UserOperationV6
 } from "abstractionkit";
 
-const userOperation: UserOperationV7 = smartAccount.createUserOperation(..)
+const userOperation: UserOperationV6 = smartAccount.createUserOperation(..)
 
 // highlight-start
 const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(userOperation, chainId);
@@ -913,7 +918,7 @@ console.log(safeUserOpHash);
 
 ### formatEip712SignaturesToUseroperationSignature
 
-A static method to format a list of EIP-712 signatures to a UserOperation signature. 
+A static method to format a list of EIP-712 signatures to a UserOperation signature.
 
 #### Usage
 
