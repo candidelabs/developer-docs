@@ -1,0 +1,236 @@
+---
+title: External Signers
+description: Reference for using ExternalSigner adapters with AbstractionKit accounts
+keywords: [external-signer, signer-adapter, viem, ethers, webauthn, mpc, hsm, passkeys, abstractionkit]
+---
+
+# External Signers
+
+`ExternalSigner` is the AbstractionKit interface for signing UserOperations without passing raw private keys to the SDK. It plugs viem, ethers, hardware wallets, HSMs, MPC services, passkeys, or any custom signing backend into the same API.
+
+Available since AbstractionKit v0.3.2.
+
+## Quick start
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount, fromViem } from "abstractionkit";
+import { privateKeyToAccount } from "viem/accounts";
+
+const signer = fromViem(privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`));
+const safe = SafeAccount.initializeNewAccount([signer.address]);
+
+userOperation.signature = await safe.signUserOperationWithSigners(
+  userOperation,
+  [signer],
+  chainId,
+);
+```
+
+## Picking an adapter
+
+AbstractionKit ships built-in adapters for the common signing sources, plus an open `ExternalSigner` interface for custom backends.
+
+| Signing source | Adapter | Use when |
+|---|---|---|
+| viem `LocalAccount` | `fromViem(localAccount)` | The project uses viem. Works for `privateKeyToAccount`, `toAccount`, and wagmi connector accounts. |
+| viem `WalletClient` | `fromViemWalletClient(client)` | The signer is a browser or injected JSON-RPC wallet (typed-data signing only). |
+| ethers `Wallet` / `HDNodeWallet` | `fromEthersWallet(wallet)` | The project already uses ethers v6. |
+| Raw private key string | `fromPrivateKey(privateKey)` | You want every owner (private key, HSM, hardware) to flow through the same async interface. |
+| Safe passkey owner | `fromSafeWebauthn(params)` | Signing a Safe UserOperation with a WebAuthn credential. |
+| HSM, MPC, hardware wallet, remote signer | custom `ExternalSigner` | Implement the `signHash` and/or `signTypedData` methods your service exposes. |
+
+If your project already uses viem, use `fromViem`; if it uses ethers, use `fromEthersWallet`. You don't need to install both.
+
+## Account compatibility
+
+Each account class exposes its own signing method and accepts a different subset of adapters. The returned signature is already formatted for the account, so assign it directly to `userOperation.signature`.
+
+| Account | Method | Compatible adapters |
+|---|---|---|
+| `SafeAccountV0_2_0`, `SafeAccountV0_3_0`, `SafeAccountV1_5_0_M_0_3_0` | `signUserOperationWithSigners(userOperation, signers, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom |
+| `SafeMultiChainSigAccountV1` (single UserOperation) | `signUserOperationWithSigners(userOperation, signers, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom |
+| `SafeMultiChainSigAccountV1` (multi-op Merkle path) | `signUserOperationsWithSigners(userOperationsToSign, signers)` | `fromViem`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom (`signHash` required) |
+| `Simple7702Account`, `Simple7702AccountV09` | `signUserOperationWithSigner(userOperation, signer, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, custom |
+| `Calibur7702Account` | `signUserOperationWithSigner(userOperation, signer, chainId)` | `fromViem`, `fromEthersWallet`, `fromPrivateKey`, custom (`signHash` required) |
+
+For Safe accounts, pass one signer per owner required by the threshold. For multi-chain Safe signing, pass the UserOperations and chain IDs together:
+
+```ts
+const signatures = await safe.signUserOperationsWithSigners(
+  [
+    { chainId: 11155111n, userOperation: op1 },
+    { chainId: 84532n, userOperation: op2 },
+  ],
+  [signer],
+);
+```
+
+Under the hood, every signer implements `signHash`, `signTypedData`, or both, and each account picks the scheme it prefers (typed data when supported, so wallets can display structured EIP-712 fields). Capability mismatches throw offline with an actionable error before any wallet prompt is shown. `fromViemWalletClient` is typed-data only, which is why it cannot drive the Calibur or multi-op Merkle paths (both require raw-hash signing). `fromSafeWebauthn` is Safe-specific because it produces an EIP-1271 contract signature using Safe's WebAuthn verifier.
+
+## Adapter recipes
+
+### viem local account
+
+`fromViem` is the preferred viem adapter for scripts, backends, and any local private-key account. It supports both hash and typed-data signing.
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount, fromViem } from "abstractionkit";
+import { privateKeyToAccount } from "viem/accounts";
+
+const localAccount = privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`);
+const signer = fromViem(localAccount);
+
+const safe = SafeAccount.initializeNewAccount([signer.address]);
+userOperation.signature = await safe.signUserOperationWithSigners(
+  userOperation,
+  [signer],
+  chainId,
+);
+```
+
+Full example: [`signer/fromViem.ts`](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/fromViem.ts).
+
+### viem WalletClient
+
+Use `fromViemWalletClient` for browser wallets and injected JSON-RPC wallets. It only exposes `signTypedData`, so it does not work with Calibur or the Safe multi-op Merkle path.
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount, fromViemWalletClient } from "abstractionkit";
+import { createWalletClient, custom } from "viem";
+
+const walletClient = createWalletClient({
+  account: userAddress,
+  transport: custom(window.ethereum),
+});
+
+const signer = fromViemWalletClient(walletClient);
+
+const safe = SafeAccount.initializeNewAccount([signer.address]);
+userOperation.signature = await safe.signUserOperationWithSigners(
+  userOperation,
+  [signer],
+  chainId,
+);
+```
+
+Full example: [`signer/fromViemWalletClient.ts`](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/fromViemWalletClient.ts).
+
+### ethers Wallet
+
+`fromEthersWallet` accepts any ethers v6 `Wallet` or `HDNodeWallet`.
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount, fromEthersWallet } from "abstractionkit";
+import { Wallet } from "ethers";
+
+const wallet = new Wallet(process.env.PRIVATE_KEY as string);
+const signer = fromEthersWallet(wallet);
+
+const safe = SafeAccount.initializeNewAccount([signer.address]);
+userOperation.signature = await safe.signUserOperationWithSigners(
+  userOperation,
+  [signer],
+  chainId,
+);
+```
+
+Full example: [`signer/fromEthersWallet.ts`](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/fromEthersWallet.ts).
+
+### Raw private key
+
+For a single-owner private-key setup, the sync `signUserOperation` method is the shortest path and needs no adapter:
+
+```ts
+userOperation.signature = smartAccount.signUserOperation(userOperation, [privateKey], chainId);
+```
+
+Use `fromPrivateKey` when you want every owner (private key, HSM, hardware) to share the same async `ExternalSigner` interface in a multi-owner setup:
+
+```ts
+import { fromPrivateKey } from "abstractionkit";
+
+const signer = fromPrivateKey(process.env.PRIVATE_KEY as `0x${string}`);
+
+userOperation.signature = await safe.signUserOperationWithSigners(
+  userOperation,
+  [signer],
+  chainId,
+);
+```
+
+### Custom signer
+
+Use a custom `ExternalSigner` for HSMs, MPC providers, hardware wallets, secure enclaves, or remote signing APIs. Implement only the methods your service supports.
+
+```ts
+import type { ExternalSigner } from "abstractionkit";
+
+const signer: ExternalSigner = {
+  address: deviceAddress as `0x${string}`,
+  signHash: async (hash) => {
+    return (await hsmClient.signHash(hash)) as `0x${string}`;
+  },
+  signTypedData: async (typedData) => {
+    return (await mpcClient.signTypedData(typedData)) as `0x${string}`;
+  },
+};
+```
+
+Full example: [`signer/customSigner.ts`](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/customSigner.ts).
+
+### Safe WebAuthn (passkeys)
+
+`fromSafeWebauthn` is Safe-specific. It returns a contract-signature signer, sets `type: "contract"`, and handles Safe's WebAuthn signature encoding.
+
+```ts
+import { SafeAccountV0_3_0, fromSafeWebauthn } from "abstractionkit";
+
+const signer = fromSafeWebauthn({
+  publicKey: { x, y },
+  isInit: userOperation.nonce === 0n,
+  accountClass: SafeAccountV0_3_0,
+  getAssertion: async (challenge) => {
+    return getWebauthnAssertion(challenge);
+  },
+});
+
+userOperation.signature = await safe.signUserOperationWithSigners(
+  userOperation,
+  [signer],
+  chainId,
+);
+```
+
+When creating the UserOperation, pass `expectedSigners: [{ x, y }]` so gas estimation uses the WebAuthn dummy signature size instead of the EOA dummy signature size.
+
+See the [Passkeys guide](/wallet/plugins/passkeys/#sign-with-fromsafewebauthn) and the [`passkeys/index.ts`](https://github.com/candidelabs/abstractionkit-examples/blob/main/passkeys/index.ts) example.
+
+## ExternalSigner shape
+
+```ts
+type ExternalSigner = { address: `0x${string}` } & (
+  | {
+      signHash: (hash: `0x${string}`, context: SignContext) => Promise<`0x${string}`>;
+      signTypedData?: (data: TypedData, context: SignContext) => Promise<`0x${string}`>;
+    }
+  | {
+      signHash?: (hash: `0x${string}`, context: SignContext) => Promise<`0x${string}`>;
+      signTypedData: (data: TypedData, context: SignContext) => Promise<`0x${string}`>;
+    }
+) & {
+  type?: "ecdsa" | "contract";
+};
+```
+
+The discriminated union enforces at compile time that every signer implements at least one of `signHash` or `signTypedData`. The optional `type` field defaults to `"ecdsa"`. Safe accounts use `"contract"` for dynamic-length EIP-1271 signatures, including WebAuthn verifier contracts.
+
+Canonical source: [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v0.3.7/src/signer/types.ts).
+
+## End-to-end examples
+
+- [Signer adapter examples](https://github.com/candidelabs/abstractionkit-examples/tree/main/signer)
+- [Simple7702 EntryPoint v0.8 external signer](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/05-external-signer.ts)
+- [Simple7702 EntryPoint v0.9 external signer](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/06-external-signer-v09.ts)
+- [Calibur external signer](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/04-external-signer.ts)
+- [Safe Unified Account external signer](https://github.com/candidelabs/abstractionkit-examples/blob/main/chain-abstraction/add-owner-with-external-signer.ts)
+- [Safe passkeys example](https://github.com/candidelabs/abstractionkit-examples/blob/main/passkeys/index.ts)

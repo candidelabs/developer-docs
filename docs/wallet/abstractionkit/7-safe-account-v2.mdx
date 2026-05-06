@@ -394,7 +394,7 @@ console.log(signature);
 
 ### signUserOperationWithSigners
 
-Signs a UserOperation using one or more [`ExternalSigner`s](/wallet/guides/authentication#external-signers) instead of raw private keys. Integrates viem, ethers, hardware wallets, HSMs, MPC services, and WebAuthn through the same API.
+Signs a UserOperation using one or more [`ExternalSigner`s](/wallet/abstractionkit/external-signers) instead of raw private keys. Integrates viem, ethers, hardware wallets, HSMs, MPC services, and WebAuthn through the same API.
 
 ```ts title="example.ts"
 import { fromEthersWallet } from "abstractionkit";
@@ -409,7 +409,7 @@ userOperation.signature = await smartAccount.signUserOperationWithSigners(
 );
 ```
 
-See [External Signers](/wallet/guides/authentication#external-signers) for the full list of adapters and custom-signer integrations.
+See [External Signers](/wallet/abstractionkit/external-signers) for the full list of adapters and custom-signer integrations.
 
 #### Source code
 [signUserOperationWithSigners](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/SafeAccount.ts)

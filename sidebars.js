@@ -578,6 +578,11 @@ const sidebars = {
         },
         {
           type: "doc",
+          id: "wallet/abstractionkit/external-signers",
+          label: "External Signers"
+        },
+        {
+          type: "doc",
           id: "wallet/abstractionkit/bundler",
           label: "Bundler"
         },

@@ -180,7 +180,7 @@ userOperation.signature = signature;
 
 ### signUserOperationWithSigner
 
-Signs a UserOperation using an [`ExternalSigner`](/wallet/guides/authentication#external-signers) instead of a raw private key. Integrates viem, ethers, browser wallets, hardware wallets, HSMs, and MPC services through the same API.
+Signs a UserOperation using an [`ExternalSigner`](/wallet/abstractionkit/external-signers) instead of a raw private key. Integrates viem, ethers, browser wallets, hardware wallets, HSMs, and MPC services through the same API.
 
 Since AbstractionKit `v0.3.5`, `Simple7702Account` accepts signers that implement either `signTypedData` or `signHash`. The SDK prefers `signTypedData` when available, so JSON-RPC wallets and viem `WalletClient` instances can sign EntryPoint v0.8 UserOperations without raw-hash signing support. Raw-hash signers continue to work.
 
@@ -201,7 +201,7 @@ userOperation.signature = await smartAccount.signUserOperationWithSigner(
 );
 ```
 
-See [External Signers](/wallet/guides/authentication#external-signers) for the full list of adapters and custom-signer integrations.
+See [External Signers](/wallet/abstractionkit/external-signers) for the full list of adapters and custom-signer integrations.
 
 ### getUserOperationEip712TypedData
 

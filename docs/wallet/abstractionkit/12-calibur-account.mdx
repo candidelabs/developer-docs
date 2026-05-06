@@ -255,7 +255,7 @@ userOperation.signature = smartAccount.signUserOperation(
 
 ### signUserOperationWithSigner
 
-Signs a UserOperation using an [`ExternalSigner`](/wallet/guides/authentication#external-signers) instead of a raw private key. Integrates viem, ethers, hardware wallets, HSMs, MPC, and WebAuthn through the same API. By default signs with the root key; pass `{ keyHash }` to sign with a registered secondary key.
+Signs a UserOperation using an [`ExternalSigner`](/wallet/abstractionkit/external-signers) instead of a raw private key. Integrates viem, ethers, hardware wallets, HSMs, MPC, and WebAuthn through the same API. By default signs with the root key; pass `{ keyHash }` to sign with a registered secondary key.
 
 Calibur requires a signer that implements `signHash` (raw 32-byte hash, no EIP-191 prefix). Signers that only expose `signTypedData` (e.g. a viem `WalletClient` via `fromViemWalletClient`) fail offline with an actionable error.
 
@@ -284,7 +284,7 @@ userOperation.signature = await smartAccount.signUserOperationWithSigner(
 );
 ```
 
-See [External Signers](/wallet/guides/authentication#external-signers) for the full list of adapters (viem, ethers, custom) and the [Calibur external-signer example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/04-external-signer.ts) for a full end-to-end flow.
+See [External Signers](/wallet/abstractionkit/external-signers) for the full list of adapters (viem, ethers, custom) and the [Calibur external-signer example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/04-external-signer.ts) for a full end-to-end flow.
 
 </TabItem>
 
