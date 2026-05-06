@@ -50,6 +50,43 @@ These examples showcase Safe Smart Account deployments using ERC-4337 and Passke
 - **Node.js Demo**: Client side example with simulated passkeys for testing and CI environments.
     - [Source Code](https://github.com/candidelabs/abstractionkit-examples/tree/main/passkeys)
 
+## Start Integrating
+
+Install the Candide skills so your AI agent knows how to wire up Safe Passkeys (RP ID setup, public-key extraction, signature assembly, recovery posture). Source: [github.com/candidelabs/skills](https://github.com/candidelabs/skills).
+
+<Tabs>
+<TabItem value="claude" label="Claude Code">
+
+Run inside Claude Code:
+
+```
+/plugin marketplace add candidelabs/skills
+/plugin install candide@candide
+```
+
+Then ask: *"Integrate Safe Passkeys."*
+
+</TabItem>
+<TabItem value="codex" label="Codex CLI">
+
+```bash
+npx -y github:candidelabs/skills
+```
+
+Then ask Codex: *"Integrate Safe Passkeys."*
+
+</TabItem>
+<TabItem value="other" label="Other agents">
+
+Paste the raw skill URL into Cursor, Windsurf, Copilot, or any chat-based agent:
+
+```
+https://raw.githubusercontent.com/candidelabs/skills/main/skills/safe-passkeys/SKILL.md
+```
+
+</TabItem>
+</Tabs>
+
 ## Create a Passkey-Authenticated Smart Account
 
 ### Step 1: Install Dependencies
