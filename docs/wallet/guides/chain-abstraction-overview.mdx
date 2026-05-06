@@ -25,39 +25,37 @@ Try the live demo at **[unified.candide.dev](https://unified.candide.dev)**
 
 ## Start Integrating
 
-Paste this into your agent to integrate the Safe Unified Account:
+Install the Candide skills so your AI agent knows how to wire up the Safe Unified Account. Source: [github.com/candidelabs/skills](https://github.com/candidelabs/skills).
 
 <Tabs>
 <TabItem value="claude" label="Claude Code">
 
-```bash
-claude "Read https://docs.candide.dev/safe-unified-account-agent-skill.md and integrate the Safe Unified Account"
+Run inside Claude Code:
+
 ```
+/plugin marketplace add candidelabs/skills
+/plugin install candide@candide
+```
+
+Then ask: *"Integrate the Safe Unified Account."*
 
 </TabItem>
 <TabItem value="codex" label="Codex CLI">
 
 ```bash
-codex "Read https://docs.candide.dev/safe-unified-account-agent-skill.md and integrate the Safe Unified Account"
+npx -y github:candidelabs/skills
 ```
+
+Then ask Codex: *"Integrate the Safe Unified Account."*
 
 </TabItem>
-<TabItem value="chat" label="Chat Agents">
+<TabItem value="other" label="Other agents">
 
-Paste this into Cursor, Windsurf, Copilot, or any chat-based agent:
-
-```
-Fetch https://docs.candide.dev/safe-unified-account-agent-skill.md and use it to integrate the Safe Unified Account
-```
-
-</TabItem>
-<TabItem value="raw" label="Raw URL">
+Paste the raw skill URL into Cursor, Windsurf, Copilot, or any chat-based agent:
 
 ```
-https://docs.candide.dev/safe-unified-account-agent-skill.md
+https://raw.githubusercontent.com/candidelabs/skills/main/skills/safe-unified-account/SKILL.md
 ```
-
-Drop this file into your agent's system prompt or knowledge base.
 
 </TabItem>
 </Tabs>

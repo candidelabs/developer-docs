@@ -90,9 +90,10 @@ const finalizeOverrides = { context: { signingPhase: "finalize" as const } }
 - **Delegation introspection.** `getDelegatedAddress` and `isDelegated` let you check EIP-7702 delegation state before sending a UserOperation.
 - **Safe Allowance Module v1.0.0.** The v0.1.0 address is kept as a legacy constant for migrations.
 - **USDT-safe approvals.** SafeAccount multisend now prepends `approve(0)` for ERC-20s that require an allowance reset, so batched approvals no longer silently revert.
-- **Agent skill for Safe Unified Account.** A single markdown file a coding agent can read to integrate the account end to end:
-  ```bash
-  claude "Read https://docs.candide.dev/safe-unified-account-agent-skill.md and integrate the Safe Unified Account"
+- **Agent skill for Safe Unified Account.** Procedural guidance a coding agent can install to integrate the account end to end. Available in the [candidelabs/skills](https://github.com/candidelabs/skills) repo:
+  ```
+  /plugin marketplace add candidelabs/skills
+  /plugin install candide@candide
   ```
 
 A reminder worth repeating: AbstractionKit does not lock your app into a specific web3 library, node provider, bundler, or paymaster. Use viem or ethers, your own RPC, any ERC-4337 bundler, and any ERC-7677 paymaster. No vendor lock-in.
