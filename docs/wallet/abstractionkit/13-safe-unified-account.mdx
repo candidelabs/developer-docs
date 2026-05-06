@@ -186,7 +186,7 @@ userOp2.signature = signatures[1];
 
 ### signUserOperationsWithSigners
 
-Multi-op variant that signs a Merkle-rooted bundle of UserOperations using one or more [`ExternalSigner`s](/wallet/guides/authentication#external-signers) instead of raw private keys. One signing session covers every chain in the bundle.
+Multi-op variant that signs a Merkle-rooted bundle of UserOperations using one or more [`ExternalSigner`s](/wallet/abstractionkit/external-signers) instead of raw private keys. One signing session covers every chain in the bundle.
 
 The Merkle root has no typed-data display, so this path requires a signer that implements `signHash`. `fromViemWalletClient` (typed-data only) fails offline here; use `fromViem`, `fromEthersWallet`, or a custom signer.
 
@@ -209,7 +209,7 @@ userOp1.signature = signatures[0];
 userOp2.signature = signatures[1];
 ```
 
-See [External Signers](/wallet/guides/authentication#external-signers) for the full list of adapters, and the [multi-chain add-owner example](https://github.com/candidelabs/abstractionkit-examples/blob/main/chain-abstraction/add-owner-with-external-signer.ts) for a full end-to-end flow.
+See [External Signers](/wallet/abstractionkit/external-signers) for the full list of adapters, and the [multi-chain add-owner example](https://github.com/candidelabs/abstractionkit-examples/blob/main/chain-abstraction/add-owner-with-external-signer.ts) for a full end-to-end flow.
 
 ### getMultiChainSingleSignatureUserOperationsEip712Hash
 

@@ -180,7 +180,7 @@ userOperation.signature = signature;
 
 ### signUserOperationWithSigner
 
-Signs a UserOperation using an [`ExternalSigner`](/wallet/guides/authentication#external-signers) instead of a raw private key. Integrates viem, ethers, browser wallets, hardware wallets, HSMs, and MPC services through the same API.
+Signs a UserOperation using an [`ExternalSigner`](/wallet/abstractionkit/external-signers) instead of a raw private key. Integrates viem, ethers, browser wallets, hardware wallets, HSMs, and MPC services through the same API.
 
 Since AbstractionKit `v0.3.5`, `Simple7702AccountV09` accepts signers that implement either `signTypedData` or `signHash`. The SDK prefers `signTypedData` when available, so JSON-RPC wallets and viem `WalletClient` instances can sign EntryPoint v0.9 UserOperations without raw-hash signing support. Raw-hash signers continue to work.
 
@@ -204,7 +204,7 @@ userOperation.signature = await smartAccount.signUserOperationWithSigner(
 );
 ```
 
-See [External Signers](/wallet/guides/authentication#external-signers) for the full list of adapters and custom-signer integrations. EntryPoint v0.9 also supports parallel paymaster signing via the two-phase `signingPhase` context — see the [v0.9 external-signer example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/06-external-signer-v09.ts).
+See [External Signers](/wallet/abstractionkit/external-signers) for the full list of adapters and custom-signer integrations. EntryPoint v0.9 also supports parallel paymaster signing via the two-phase `signingPhase` context — see the [v0.9 external-signer example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/06-external-signer-v09.ts).
 
 ### getUserOperationEip712TypedData
 
