@@ -16,6 +16,10 @@ keywords:
 
 The API uses JSON-RPC 2.0 over HTTP POST with `Content-Type: application/json`.
 
+## Authentication
+
+Most methods are public. Only the activation call (`account_activateForwardingAddress`) requires authentication: send `Authorization: Bearer <account_api_key>`. Account API keys are issued by Candide on request.
+
 ---
 
 ## Discovery
@@ -180,9 +184,13 @@ Response:
 
 ---
 
-### `forwarding_activate`
+### `account_activateForwardingAddress`
 
 Activates relayer monitoring for a forwarding address on specified source chains. Returns the address, active status, and TTL expiration timestamp.
+
+:::note Requires authentication
+Send `Authorization: Bearer <account_api_key>` with this request. Keys are issued by Candide. Each account can have up to 500 active forwarding addresses; refreshing an existing address does not count against the cap. Exceeding the cap returns error `-32013`.
+:::
 
 Key behaviors:
 - Idempotent: calling again resets the TTL. Use this to keep an address active.
@@ -206,7 +214,7 @@ Request:
 {
   "jsonrpc": "2.0",
   "id": 1,
-  "method": "forwarding_activate",
+  "method": "account_activateForwardingAddress",
   "params": [{
     "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
     "custodialWithdrawer": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
@@ -343,12 +351,72 @@ Response:
 | `bridge` | Identifier of the bridge selected for this route (e.g. `"across"`, `"oft"`) |
 | `outputToken` | Token contract address on the destination chain |
 | `outputAmount` | Amount the recipient receives, in the smallest unit of the output token |
-| `relayerBotFee` | Relayer service fee in smallest unit (source token decimals) |
+| `relayerBotFee` | Relayer service fee in smallest unit (source token decimals). Same-chain forwards return `"0"` |
 | `bridgeProtocolFee` | Bridge protocol fee in smallest unit (source token decimals) |
 
 :::note
 To format `outputAmount` for display, look up the output token's decimals from [`forwarding_getRoutes`](#forwarding_getroutes) (the matching `destinationAddress` on the route's token list).
 :::
+
+---
+
+## Status
+
+### `forwarding_getStatus`
+
+Returns confirmed forwards for a recipient on a destination chain, including per-bridge delivery statuses. Use this to track when a deposit has been picked up and whether it has been delivered, attested, refunded, etc.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `recipient` | `address` | Yes | Destination recipient address |
+| `destinationChainId` | `number` | Yes | Destination chain ID |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_getStatus",
+  "params": [{
+    "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
+    "destinationChainId": 10
+  }]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "transfers": [
+      {
+        "sourceTxHash": "0x123...abc",
+        "sourceChainId": 1,
+        "proxyAddress": "0xDEF456...",
+        "createdAt": 1741132800,
+        "bridgeStatuses": [
+          {
+            "bridge": "across",
+            "status": "delivered",
+            "destinationTxHash": "0x789...def"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `transfers` | Array of confirmed forwards routed through the proxy address derived from `recipient` |
+| `bridgeStatuses[].status` | One of `pending`, `attested`, `delivered`, `failed`, `expired`, `refunded` |
 
 ---
 
@@ -429,6 +497,18 @@ interface EstimateResult {
 ## Changelog
 
 The Forwarding Address API is in alpha and evolves quickly. Breaking changes and new capabilities are tracked here so integrators can see what to update.
+
+### 2026-05-06
+
+**Changed**
+
+- `forwarding_activate` has been renamed to [`account_activateForwardingAddress`](#account_activateforwardingaddress) and now requires `Authorization: Bearer <account_api_key>`. Other methods remain public. Request an account API key from Candide.
+
+**Added**
+
+- Per-account cap of 500 active forwarding addresses. Refreshing an existing address does not count against the cap. Exceeding the cap returns error code `-32013`.
+- New [`forwarding_getStatus`](#forwarding_getstatus) endpoint. Returns confirmed forwards for a recipient on a destination chain, with per-bridge delivery statuses (`pending`, `attested`, `delivered`, `failed`, `expired`, `refunded`).
+- Same-chain forwards is now fee free. Only the gas cost is taken into account in the relayer fee.
 
 ### 2026-04-22
 

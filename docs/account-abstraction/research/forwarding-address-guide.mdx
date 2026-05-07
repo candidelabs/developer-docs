@@ -26,24 +26,30 @@ flowchart TD
     D --> E[Poll recipient balance on destination chain]
 ```
 
-See the [API Reference](./forwarding-address-api.mdx) for details on each method. There is currently no webhook for forwarding completion. Poll the recipient's token balance on the destination chain to confirm arrival. Typical latency is 10 to 20 seconds.
+See the [API Reference](./forwarding-address-api.mdx) for details on each method. There is currently no webhook for forwarding completion. Poll the recipient's token balance on the destination chain — or use [`forwarding_getStatus`](./forwarding-address-api.mdx#forwarding_getstatus) — to confirm arrival. Typical latency is 10 to 20 seconds.
+
+:::note Authentication
+The activation call ([`account_activateForwardingAddress`](./forwarding-address-api.mdx#account_activateforwardingaddress)) requires `Authorization: Bearer <account_api_key>`. Account API keys are issued by Candide; every other method is public.
+:::
 
 ---
 
 ## Keeping Addresses Alive
 
-Monitoring is TTL-based. When the activation expires, the relayer stops watching for deposits. Before presenting a forwarding address to a user, check its activation status and call `forwarding_activate` again if the TTL has expired.
+Monitoring is TTL-based. When the activation expires, the relayer stops watching for deposits. Before presenting a forwarding address to a user, check its activation status and call `account_activateForwardingAddress` again if the TTL has expired.
 
-`forwarding_activate` is idempotent. Calling it again resets the TTL. If a deposit arrives after expiration, the funds sit in the forwarding address until either:
+`account_activateForwardingAddress` is idempotent. Calling it again resets the TTL. If a deposit arrives after expiration, the funds sit in the forwarding address until either:
 
-- The address is reactivated via `forwarding_activate`, at which point the relayer picks up the deposit
+- The address is reactivated via `account_activateForwardingAddress`, at which point the relayer picks up the deposit
 - The funds are recovered via the [recovery frontend](https://forwarding-address.candidelabs.com/)
 
 ---
 
 ## Multiple Addresses per Recipient
 
-Use the optional `salt` parameter in `forwarding_getAddress` and `forwarding_activate` to generate distinct forwarding addresses for the same recipient and destination pair. Each unique salt produces a different deterministic address. This is useful for tracking individual deposits or creating per-transaction deposit addresses.
+Use the optional `salt` parameter in `forwarding_getAddress` and `account_activateForwardingAddress` to generate distinct forwarding addresses for the same recipient and destination pair. Each unique salt produces a different deterministic address. This is useful for tracking individual deposits or creating per-transaction deposit addresses.
+
+Each account is capped at 500 active forwarding addresses; refreshing an existing address does not count against the cap. If you need many short-lived per-deposit addresses, plan for the cap or contact Candide.
 
 ---
 
@@ -81,3 +87,4 @@ If funds are stuck, use the [recovery frontend](https://forwarding-address.candi
 - The forwarding address accepts deposits on any supported chain, including the destination chain. Do not send on unsupported chains. Check `forwarding_getRoutes` for the full list of supported chains per route.
 - The output token on the destination chain may have different decimals than the input token. Use the token's `decimals` from [`forwarding_getRoutes`](./forwarding-address-api.mdx#forwarding_getroutes) when formatting amounts.
 - Cache `forwarding_getRoutes` on app load and refresh periodically. Routes, fees, and supported tokens can change.
+- The activation call needs an account API key (`Authorization: Bearer ...`). All other methods are public. Each account can have up to 500 active forwarding addresses; exceeding the cap returns error `-32013`.
