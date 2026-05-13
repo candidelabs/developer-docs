@@ -353,6 +353,13 @@ export const sepoliaList = [
     blockExplorer: "https://sepolia.etherscan.io/token/",
     website: "https://candide.dev/",
   },
+  {
+    token: "USD₮",
+    logo: "/img/tokens/usdt-logo.svg",
+    address: "0xd077A400968890Eacc75cdc901F0356c943e4fDb",
+    blockExplorer: "https://sepolia.etherscan.io/token/",
+    website: "https://tether.io/",
+  },
 ];
 export const optimismSepoliaList = [
   {
