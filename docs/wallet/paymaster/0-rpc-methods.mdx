@@ -9,7 +9,7 @@ import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { DataTable } from "/src/components/Table";
 
-import { userOperationReturnParamsV06, userOperationParamV07 } from "/src/data/userOperation"
+import { userOperationReturnParamsV06, userOperationParamV07, userOperationParamV09 } from "/src/data/userOperation"
 import {
   candidePaymasterContext,
   tokensParametersV3,
@@ -27,6 +27,127 @@ import {
 # Paymaster API V3 RPC Methods
 
 JSON-RPC API reference for Candide's Paymaster V3 service. Visit the [dashboard](https://dashboard.candide.dev) to get an API key for Candide's Paymaster.
+
+## EntryPoint v0.9
+
+EntryPoint v0.9 is ABI-compatible with v0.8 and exposes the same Paymaster API methods with the same UserOperation shape. Pass the v0.9 EntryPoint address (`0x433709009B8330FDa32311DF1C2AFA402eD8D009`) as the `entrypoint` parameter.
+
+Key v0.9 addition for the Paymaster API:
+
+- **Parallelizable Paymaster Signing**: A two-phase signing flow lets the dApp send the paymaster data to the wallet for signing in parallel with the paymaster producing its own signature. This is opted into via the `signingPhase` context parameter on `pm_getPaymasterData`, and eliminates the round-trip delay between the user signing and the paymaster signing.
+
+### Parallelizable Paymaster Signing
+
+The two-phase flow uses a single context field, `signingPhase`, which can be `"commit"` or `"finalize"`. It is only valid on `pm_getPaymasterData` calls against the EntryPoint v0.9 entrypoint.
+
+1. **Commit phase** — call `pm_getPaymasterData` with `context: { signingPhase: "commit", ... }`. The paymaster reserves gas limits, computes the paymaster data and its signature, stores the signed result in a server-side commitment keyed by `sender:nonce`, and returns the **unsigned** paymaster data so the wallet can compute the UserOp hash and sign it in parallel.
+2. **Finalize phase** — once the user has signed the UserOp, call `pm_getPaymasterData` again with `context: { signingPhase: "finalize", ... }` and the same UserOp (unchanged between commit and finalize). The paymaster returns the previously committed signed paymaster data.
+
+If anything about the UserOp changes between the two calls, the commitment lookup fails and the call is rejected.
+
+### pm_supportedERC20Tokens
+
+Same semantics and response shape as the [v0.8 method](#pm_supportederc20tokens). Pass the v0.9 EntryPoint address as `params[0]`.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "pm_supportedERC20Tokens",
+  "params": ["0x433709009B8330FDa32311DF1C2AFA402eD8D009"]
+}
+```
+
+### pm_sponsorUserOperation
+
+Same semantics, UserOp shape, and response shape as the [v0.8 method](#pm_sponsoruseroperation). Pass the v0.9 EntryPoint address.
+
+<Tabs>
+<TabItem value="request type" label="Request Types">
+
+<table>
+  <thead>
+    <tr>
+    <th align="left">Parameter</th>
+    <th align="left">Type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="left">userOperation</td>
+      <td align="left">
+        <p>Object</p>
+        <DataTable items={userOperationParamV09} />
+      </td>
+    </tr>
+    <tr>
+      <td align="left">entrypoint</td>
+      <td align="left"><code>string</code> — EntryPoint v0.9 address</td>
+    </tr>
+    <tr>
+      <td align="left">context</td>
+      <td align="left">
+        <p>Object</p>
+        <DataTable items={candidePaymasterContext} />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</TabItem>
+
+<TabItem value="response type" label="Response Type">
+  <DataTable items={pm_sponsorUserOperationReturnParamsV07} />
+</TabItem>
+</Tabs>
+
+### pm_supportedEntryPoints
+
+Returns the entryPoint addresses supported by the paymaster. The response array includes the v0.9 EntryPoint address (`0x433709009B8330FDa32311DF1C2AFA402eD8D009`) when supported. See the [v0.8 reference](#pm_supportedentrypoints).
+
+### pm_chainId
+
+Same as [v0.8 reference](#pm_chainid).
+
+### pm_getPaymasterStubData
+
+[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Same semantics, UserOp shape, and response shape as the [v0.8 method](#pm_getpaymasterstubdata). Pass the v0.9 EntryPoint address. The `signingPhase` context parameter is **not** valid here; use `pm_getPaymasterData` for the two-phase flow.
+
+### pm_getPaymasterData
+
+[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Same semantics, UserOp shape, and response shape as the [v0.8 method](#pm_getpaymasterdata). Pass the v0.9 EntryPoint address.
+
+To opt into parallelizable paymaster signing, set `context.signingPhase` to `"commit"` for the first call and `"finalize"` for the second call (see [Parallelizable Paymaster Signing](#parallelizable-paymaster-signing) above).
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "pm_getPaymasterData",
+  "params": [
+    {
+      "sender": "0x2c298CcaFF..c236fCC66dB2",
+      "nonce": "0x17",
+      "factory": "0x..",
+      "factoryData": "0xf3....0000",
+      "callData": "0xf3....0000",
+      "callGasLimit": "0x12a87",
+      "verificationGasLimit": "0x1a332",
+      "preVerificationGas": "0xe95c",
+      "maxFeePerGas": "0x5f4ecdc0",
+      "maxPriorityFeePerGas": "0x59682f00",
+      "paymaster": "0x..",
+      "paymasterVerificationGasLimit": "0x..",
+      "paymasterPostOpGasLimit": "0x..",
+      "paymasterAndData": "0x",
+      "signature": "0x"
+    },
+    "0x433709009B8330FDa32311DF1C2AFA402eD8D009",
+    "0x01",
+    { "signingPhase": "commit", "sponsorshipPolicyId": "1234" }
+  ]
+}
+```
 
 ## EntryPoint v0.8
 
