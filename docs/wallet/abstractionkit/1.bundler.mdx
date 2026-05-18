@@ -25,7 +25,7 @@ import { userOperationReturnParamsV06, userOperationParamV07, userOperationParam
 
 The `Bundler` class provides access to ERC-4337 Bundler JSON-RPC API methods for estimating user operation gas and sending user operations.
 
-The `Bundler` class creates a Bundler instance with a [Bundler RPC URL](../../bundler/rpc-endpoints).
+The `Bundler` class creates a Bundler instance with a [Bundler RPC URL](../../bundler/rpc-endpoints) or an EIP-1193-shaped `Transport`.
 
 ## Usage
 
@@ -40,9 +40,19 @@ import { Bundler } from "abstractionkit";
 Initialize a Bundler with your desired bundler RPC URL:
 
 ```ts
-const bundlerRPC = "https://api.candide.dev/public/v3/sepolia";
+const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
 
 const bundler: Bundler = new Bundler(bundlerRPC);
+```
+
+You can also pass a custom transport when you need request cancellation, custom headers, retries, telemetry, or an injected provider:
+
+```ts
+import { Bundler, HttpTransport } from "abstractionkit";
+
+const bundler = new Bundler(
+  new HttpTransport("https://api.candide.dev/public/v3/11155111"),
+);
 ```
 
 Then consume Bundler methods:
@@ -53,7 +63,9 @@ const entrypointAddresses = await bundler.supportedEntryPoints();
 
 ### Parameters
 
-#### bundlerURL `string`
+#### bundlerRPC `string | Transport`
+
+`Bundler`, `CandidePaymaster`, and `Erc7677Paymaster` accept either an RPC URL string or a `Transport`. Each service also exposes `transport`, which replaces the old `rpcUrl` field.
 
 ## Methods
 
@@ -69,7 +81,7 @@ Returns the chain ID of the network the bundler is operating on.
 ```ts title="example.ts"
 import { Bundler } from "abstractionkit";
 
-const bundlerRPC = "https://api.candide.dev/public/v3/sepolia";
+const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
 const bundler: Bundler = new Bundler(bundlerRPC);
 // highlight-start
 const getChainId = await bundler.chainId();
@@ -107,7 +119,7 @@ Returns the list of the entryPoint addresses supported by the bundler
 ```ts title="example.ts"
 import { Bundler } from "abstractionkit";
 
-const bundlerRPC = "https://api.candide.dev/public/v3/sepolia";
+const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
 const bundler: Bundler = new Bundler(bundlerRPC);
 //highlight-start
 const entrypointAddresses = await bundler.supportedEntryPoints();
@@ -149,7 +161,7 @@ See a full example in [getting-started guide](../../guides/getting-started)
 ```ts title="example.ts"
 import { Bundler, UserOperationV7 } from "abstractionkit";
 
-const bundlerRPC = "https://api.candide.dev/public/v3/sepolia";
+const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
 const bundler: Bundler = new Bundler(bundlerRPC);
 
 // Use createUserOperation() to help you construct the userOp below
@@ -206,7 +218,7 @@ See a full example in [getting-started guide](../../guides/getting-started)
 ```ts title="example.ts"
 import { Bundler } from "abstractionkit";
 
-const bundlerRPC = "https://api.candide.dev/public/v3/sepolia";
+const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
 const bundler: Bundler = new Bundler(bundlerRPC);
 const entrypointAddress = "0x0000000071727De22E5E9d8BAf0edAc6f37da032";
 // Use createUserOperation() to help you construct the userOp below
@@ -258,7 +270,7 @@ Returns a UserOperation by its hash returned from sendUserOperation
 ```ts title="example.ts"
 import { Bundler } from "abstractionkit";
 
-const bundlerRPC = "https://api.candide.dev/public/v3/sepolia";
+const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
 const bundler: Bundler = new Bundler(bundlerRPC);
 const userOperationHash = "0xb348b32bc9b9e90620839c3926db401558806b03b2a46dc6de21d3a4ed8412fb";
 
@@ -324,7 +336,7 @@ Returns the receipt of a UserOperation by its hash returned from `sendUserOperat
 ```ts title="example.ts"
 import { Bundler } from "abstractionkit";
 
-const bundlerRPC = "https://api.candide.dev/public/v3/sepolia";
+const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
 const bundler: Bundler = new Bundler(bundlerRPC);
 const userOperationHash = "0xb348b32bc9b9e90620839c3926db401558806b03b2a46dc6de21d3a4ed8412fb";
 

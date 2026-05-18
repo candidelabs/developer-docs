@@ -64,7 +64,7 @@ Initialize a Paymaster with your RPC URL. Get an API key from the [dashboard](ht
 ```ts title="paymaster.ts"
 import { CandidePaymaster } from "abstractionkit";
 
-const paymasterRPC = "https://api.candide.dev/public/v3/sepolia";
+const paymasterRPC = "https://api.candide.dev/public/v3/11155111";
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
 ```
 
@@ -92,7 +92,7 @@ Returns the paymaster data if the the userOperation has a Gas Policy. Otherwise 
 ```ts title="example.ts"
 import { CandidePaymaster } from "abstractionkit";
 
-const paymasterRPC = "https://api.candide.dev/public/v3/sepolia";
+const paymasterRPC = "https://api.candide.dev/public/v3/11155111";
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
 const sponsorshipPolicyId = '1234';
 
@@ -120,7 +120,7 @@ const { userOperation: sponsoredUserOperation, sponsorMetadata } =
 </Tabs>
 
 #### Source code
-[createSponsorPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/paymaster/CandidePaymaster.ts#L529)
+[createSponsorPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/paymaster/CandidePaymaster.ts#L571)
 
 ### fetchSupportedERC20TokensAndPaymasterMetadata
 
@@ -134,7 +134,7 @@ Returns a promise with the supported erc20 tokens and their exchange rate, along
 ```ts title="example.ts"
 import { CandidePaymaster, SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 
-const paymasterRPC="https://api.candide.dev/public/v3/sepolia";
+const paymasterRPC="https://api.candide.dev/public/v3/11155111";
 const paymaster = new CandidePaymaster(paymasterRPC);
 
 const supportedERC20Tokens = await paymaster.fetchSupportedERC20TokensAndPaymasterMetadata(SafeAccount.DEFAULT_ENTRYPOINT_ADDRESS);
@@ -217,9 +217,9 @@ The `overrides` parameter also accepts an `entrypoint` field, which allows you t
 ```ts
 import { SafeAccountV0_3_0 as SafeAccount, CandidePaymaster } from "abstractionkit";
 
-const paymasterRPC="https://api.candide.dev/public/v3/sepolia";
+const paymasterRPC="https://api.candide.dev/public/v3/11155111";
 const erc20TokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b"; // CTT test token
-const bundlerRPC = "https://api.candide.dev/public/v3/sepolia";
+const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
 
 const ownerPublicAddress = "0x2Ef844456580b6e1E22e1D584EBbC2467D9298B2"
 const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress])
@@ -284,7 +284,7 @@ userOperation = sponsoredUserOperation;
 </details>
 
 #### Source code
-[createTokenPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/paymaster/CandidePaymaster.ts#L570)
+[createTokenPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/paymaster/CandidePaymaster.ts#L612)
 
 ### calculateUserOperationErc20TokenMaxGasCost
 
@@ -302,7 +302,7 @@ const erc20TokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b"; // CTT t
 // Use createUserOperation() to help you construct a userOp
 const userOperation = smartAccount.createUserOperation(..)
 
-const paymasterRPC="https://api.candide.dev/public/v3/sepolia";
+const paymasterRPC="https://api.candide.dev/public/v3/11155111";
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
 
 // highlight-start
@@ -331,7 +331,7 @@ const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
 </details>
 
 #### Source code
-[calculateUserOperationErc20TokenMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/paymaster/CandidePaymaster.ts#L669)
+[calculateUserOperationErc20TokenMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/paymaster/CandidePaymaster.ts#L711)
 
 ## Advanced Methods
 
@@ -347,7 +347,7 @@ Returns the metadata associated with the Paymaster, along with dummyPaymasterAnd
 ```ts title="example.ts"
 import { CandidePaymaster, SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 
-const paymasterRPC="https://api.candide.dev/public/v3/sepolia";
+const paymasterRPC="https://api.candide.dev/public/v3/11155111";
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
 
 const paymasterResult = await paymaster.getPaymasterMetaData(SafeAccount.DEFAULT_ENTRYPOINT_ADDRESS);
@@ -392,7 +392,7 @@ const paymasterResult = await paymaster.getPaymasterMetaData(SafeAccount.DEFAULT
 
 #### source code
 
-[getPaymasterMetaData](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/paymaster/CandidePaymaster.ts#L290)
+[getPaymasterMetaData](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/paymaster/CandidePaymaster.ts#L334)
 
 ### getSupportedEntrypoints
 
@@ -406,7 +406,7 @@ Returns the supported Entrypoints by the paymaster
 ```ts title="example.ts"
 import { CandidePaymaster } from "abstractionkit";
 
-const paymasterRPC="https://api.candide.dev/public/v3/sepolia";
+const paymasterRPC="https://api.candide.dev/public/v3/11155111";
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
 
 const paymasterResult = await paymaster.getSupportedEntrypoints();
@@ -431,7 +431,7 @@ const paymasterResult = await paymaster.getSupportedEntrypoints();
 </details>
 
 #### source code
-[getSupportedEntrypoints](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/paymaster/CandidePaymaster.ts#L269)
+[getSupportedEntrypoints](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/paymaster/CandidePaymaster.ts#L311)
 
 ### isSupportedERC20Token
 
@@ -444,7 +444,7 @@ Checks if a particular ERC-20 token is accepted as gas payment by the paymaster.
 ```ts title="example.ts"
 import { CandidePaymaster } from "abstractionkit";
 
-const paymasterRPC="https://api.candide.dev/public/v3/sepolia";
+const paymasterRPC="https://api.candide.dev/public/v3/11155111";
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
 
 const erc20TokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b"; // CTT on sepolia testnet
@@ -472,7 +472,7 @@ true
 </details>
 
 #### Source
-[isSupportedERC20Token](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/paymaster/CandidePaymaster.ts#L307)
+[isSupportedERC20Token](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/paymaster/CandidePaymaster.ts#L351)
 
 ### getSupportedERC20TokenData
 
@@ -486,7 +486,7 @@ Returns the token data given an erc20 address
 ```ts title="example.ts"
 import { CandidePaymaster } from "abstractionkit";
 
-const paymasterRPC = "https://api.candide.dev/public/v3/sepolia";
+const paymasterRPC = "https://api.candide.dev/public/v3/11155111";
 
 const erc20TokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b";
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
@@ -521,7 +521,7 @@ const erc20TokenData = await paymaster.getSupportedERC20TokenData(erc20TokenAddr
 </details>
 
 #### Source code
-[getSupportedERC20TokenData](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/paymaster/CandidePaymaster.ts#L323)
+[getSupportedERC20TokenData](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/paymaster/CandidePaymaster.ts#L367)
 
 ### fetchTokenPaymasterExchangeRate
 
@@ -535,7 +535,7 @@ Fetches the current exchange rate for an ERC-20 token from the paymaster. The ex
 ```ts title="example.ts"
 import { CandidePaymaster } from "abstractionkit";
 
-const paymasterRPC = "https://api.candide.dev/public/v3/sepolia";
+const paymasterRPC = "https://api.candide.dev/public/v3/11155111";
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
 
 const erc20TokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b"; // CTT on sepolia testnet
@@ -564,7 +564,7 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 </details>
 
 #### Source code
-[fetchTokenPaymasterExchangeRate](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/paymaster/CandidePaymaster.ts#L706)
+[fetchTokenPaymasterExchangeRate](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/paymaster/CandidePaymaster.ts#L748)
 
 ### createPaymasterUserOperation
 
@@ -573,7 +573,7 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 :::
 
 #### Source code
-[createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/paymaster/CandidePaymaster.ts#L486)
+[createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/paymaster/CandidePaymaster.ts#L530)
 
 ## Erc7677Paymaster
 
@@ -594,7 +594,7 @@ import { Erc7677Paymaster } from "abstractionkit";
 ```ts title="example.ts"
 import { Erc7677Paymaster } from "abstractionkit";
 
-const bundlerRpc = "https://api.candide.dev/public/v3/sepolia";
+const bundlerRpc = "https://api.candide.dev/public/v3/11155111";
 const paymaster = new Erc7677Paymaster(bundlerRpc);
 
 // Use createUserOperation() to help you construct a userOp
@@ -614,7 +614,7 @@ userOperation = sponsoredOp;
 Passing `{ token }` in the context triggers the ERC-20 gas flow automatically. For Candide and Pimlico the exchange rate is fetched for you; for unknown providers, supply `exchangeRate` in the context. `tokenQuote` surfaces the exchange rate and max token cost applied to the UserOperation so you can display the charge to the user without a second round trip.
 
 ```ts title="example.ts"
-const bundlerRpc = "https://api.candide.dev/public/v3/sepolia";
+const bundlerRpc = "https://api.candide.dev/public/v3/11155111";
 const usdcAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"; // USDC on sepolia
 
 // Candide or Pimlico (auto-detected): exchange rate fetched from the RPC
@@ -637,4 +637,4 @@ userOperation = tokenOp2;
 ```
 
 #### Source code
-[Erc7677Paymaster](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/paymaster/Erc7677Paymaster.ts)
+[Erc7677Paymaster](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/paymaster/Erc7677Paymaster.ts#L186)

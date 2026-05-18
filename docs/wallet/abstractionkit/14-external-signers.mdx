@@ -49,9 +49,9 @@ Each account class exposes its own signing method and accepts a different subset
 |---|---|---|
 | `SafeAccountV0_2_0`, `SafeAccountV0_3_0`, `SafeAccountV1_5_0_M_0_3_0` | `signUserOperationWithSigners(userOperation, signers, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom |
 | `SafeMultiChainSigAccountV1` (single UserOperation) | `signUserOperationWithSigners(userOperation, signers, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom |
-| `SafeMultiChainSigAccountV1` (multi-op Merkle path) | `signUserOperationsWithSigners(userOperationsToSign, signers)` | `fromViem`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom (`signHash` required) |
+| `SafeMultiChainSigAccountV1` (multi-op Merkle path) | `signUserOperationsWithSigners(userOperationsToSign, signers)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom |
 | `Simple7702Account`, `Simple7702AccountV09` | `signUserOperationWithSigner(userOperation, signer, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, custom |
-| `Calibur7702Account` | `signUserOperationWithSigner(userOperation, signer, chainId)` | `fromViem`, `fromEthersWallet`, `fromPrivateKey`, custom (`signHash` required) |
+| `Calibur7702Account` | `signUserOperationWithSigner(userOperation, signer, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, custom |
 
 For Safe accounts, pass one signer per owner required by the threshold. For multi-chain Safe signing, pass the UserOperations and chain IDs together:
 
@@ -65,7 +65,7 @@ const signatures = await safe.signUserOperationsWithSigners(
 );
 ```
 
-Under the hood, every signer implements `signHash`, `signTypedData`, or both, and each account picks the scheme it prefers (typed data when supported, so wallets can display structured EIP-712 fields). Capability mismatches throw offline with an actionable error before any wallet prompt is shown. `fromViemWalletClient` is typed-data only, which is why it cannot drive the Calibur or multi-op Merkle paths (both require raw-hash signing). `fromSafeWebauthn` is Safe-specific because it produces an EIP-1271 contract signature using Safe's WebAuthn verifier.
+Under the hood, every signer implements `signHash`, `signTypedData`, or both, and each account picks the scheme it prefers. Since `v0.3.8`, `Simple7702Account`, `Simple7702AccountV09`, `Calibur7702Account`, and `SafeMultiChainSigAccountV1` all accept typed-data-only signers where the account supports EIP-712 signing. Capability mismatches throw offline with an actionable error before any wallet prompt is shown. `fromSafeWebauthn` is Safe-specific because it produces an EIP-1271 contract signature using Safe's WebAuthn verifier.
 
 ## Adapter recipes
 
@@ -92,7 +92,7 @@ Full example: [`signer/fromViem.ts`](https://github.com/candidelabs/abstractionk
 
 ### viem WalletClient
 
-Use `fromViemWalletClient` for browser wallets and injected JSON-RPC wallets. It only exposes `signTypedData`, so it does not work with Calibur or the Safe multi-op Merkle path.
+Use `fromViemWalletClient` for browser wallets and injected JSON-RPC wallets. It exposes `signTypedData`, so it works with Safe accounts, Safe multi-chain signing, Simple7702 accounts, and Calibur.
 
 ```ts
 import { SafeAccountV0_3_0 as SafeAccount, fromViemWalletClient } from "abstractionkit";
@@ -224,7 +224,7 @@ type ExternalSigner = { address: `0x${string}` } & (
 
 The discriminated union enforces at compile time that every signer implements at least one of `signHash` or `signTypedData`. The optional `type` field defaults to `"ecdsa"`. Safe accounts use `"contract"` for dynamic-length EIP-1271 signatures, including WebAuthn verifier contracts.
 
-Canonical source: [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v0.3.7/src/signer/types.ts).
+Canonical source: [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/signer/types.ts#L152).
 
 ## End-to-end examples
 
