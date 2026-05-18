@@ -203,12 +203,14 @@ userOperation.signature = await smartAccount.signUserOperationWithSigner(
 
 See [External Signers](/wallet/abstractionkit/external-signers) for the full list of adapters and custom-signer integrations.
 
-### getUserOperationEip712TypedData
+### getUserOperationEip712Data
 
-Builds the EIP-712 typed data payload for a UserOperation under the EntryPoint v0.8 domain. Use this lower-level method when you need to inspect the wallet prompt payload or drive a custom `signTypedData` primitive directly.
+Builds the EIP-712 typed data payload for a UserOperation under the EntryPoint v0.8 domain. Use this static helper when you need to inspect the wallet prompt payload or drive a custom `signTypedData` primitive directly.
 
 ```ts title="example.ts"
-const typedData = smartAccount.getUserOperationEip712TypedData(
+import { Simple7702Account } from "abstractionkit";
+
+const typedData = Simple7702Account.getUserOperationEip712Data(
   userOperation,
   11155111n,
 );
@@ -216,6 +218,8 @@ const typedData = smartAccount.getUserOperationEip712TypedData(
 const signature = await walletClient.signTypedData(typedData);
 userOperation.signature = signature;
 ```
+
+`getUserOperationEip712TypedData` was renamed in `v0.3.8` and moved from an instance method to a static helper. Use `getUserOperationEip712Hash(userOperation, chainId, overrides?)` when you only need the digest.
 
 ### sendUserOperation
 

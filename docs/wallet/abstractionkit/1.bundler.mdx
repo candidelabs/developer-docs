@@ -25,7 +25,7 @@ import { userOperationReturnParamsV06, userOperationParamV07, userOperationParam
 
 The `Bundler` class provides access to ERC-4337 Bundler JSON-RPC API methods for estimating user operation gas and sending user operations.
 
-The `Bundler` class creates a Bundler instance with a [Bundler RPC URL](../../bundler/rpc-endpoints).
+The `Bundler` class creates a Bundler instance with a [Bundler RPC URL](../../bundler/rpc-endpoints) or an EIP-1193-shaped `Transport`.
 
 ## Usage
 
@@ -45,6 +45,16 @@ const bundlerRPC = "https://api.candide.dev/public/v3/sepolia";
 const bundler: Bundler = new Bundler(bundlerRPC);
 ```
 
+You can also pass a custom transport when you need request cancellation, custom headers, retries, telemetry, or an injected provider:
+
+```ts
+import { Bundler, HttpTransport } from "abstractionkit";
+
+const bundler = new Bundler(
+  new HttpTransport("https://api.candide.dev/public/v3/sepolia"),
+);
+```
+
 Then consume Bundler methods:
 
 ```ts
@@ -53,7 +63,9 @@ const entrypointAddresses = await bundler.supportedEntryPoints();
 
 ### Parameters
 
-#### bundlerURL `string`
+#### bundlerRPC `string | Transport`
+
+`Bundler`, `CandidePaymaster`, and `Erc7677Paymaster` accept either an RPC URL string or a `Transport`. Each service also exposes `transport`, which replaces the old `rpcUrl` field.
 
 ## Methods
 

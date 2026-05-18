@@ -18,11 +18,6 @@ import {
   fetchAccountNonceReturn,
   calculateUserOperationMaxGasCostParams,
   calculateUserOperationMaxGasCostReturn,
-  getBalanceOfParams,
-  getBalanceOfReturn,
-  getDepositInfoParams,
-  getDepositInfoReturn,
-  depositInfoType,
   simulateUserOperationWithTenderlyParams,
   simulateUserOperationWithTenderlyReturn,
   simulateUserOperationCallDataWithTenderlyParams,
@@ -34,20 +29,12 @@ import {
   metaTransactionType,
   decodeMultiSendCallDataParams,
   decodeMultiSendCallDataReturn,
-  fetchGasPriceParams,
-  fetchGasPriceReturn,
   createCallDataParams,
   createCallDataReturn,
   getFunctionSelectorParams,
   getFunctionSelectorReturn,
   sendJsonRpcRequestParams,
   sendJsonRpcRequestReturn,
-  sendEthCallRequestParams,
-  sendEthCallRequestReturn,
-  sendEthGetCodeRequestParams,
-  sendEthGetCodeRequestReturn,
-  getDelegatedAddressParams,
-  getDelegatedAddressReturn,
   createAndSignEip7702DelegationAuthorizationParams,
   createAndSignEip7702DelegationAuthorizationReturn,
   authorization7702HexReturnType,
@@ -94,7 +81,7 @@ const userOpHash = createUserOperationHash(
 </Tabs>
 
 #### Source code
-[createUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
+[createUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L50)
 
 ### createPackedUserOperationV6
 
@@ -119,7 +106,7 @@ const packed = createPackedUserOperationV6(userOperationV6);
 </Tabs>
 
 #### Source code
-[createPackedUserOperationV6](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
+[createPackedUserOperationV6](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L313)
 
 ### createPackedUserOperationV7
 
@@ -144,7 +131,7 @@ const packed = createPackedUserOperationV7(userOperationV7);
 </Tabs>
 
 #### Source code
-[createPackedUserOperationV7](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
+[createPackedUserOperationV7](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L353)
 
 ### fetchAccountNonce
 
@@ -173,7 +160,7 @@ const nonce = await fetchAccountNonce(
 </Tabs>
 
 #### Source code
-[fetchAccountNonce](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
+[fetchAccountNonce](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L586)
 
 ### calculateUserOperationMaxGasCost
 
@@ -198,67 +185,95 @@ const maxCost = calculateUserOperationMaxGasCost(userOperation);
 </Tabs>
 
 #### Source code
-[calculateUserOperationMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
+[calculateUserOperationMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L645)
+
+### JsonRpcNode
+
+`JsonRpcNode` wraps common Ethereum node calls behind the same `Transport` abstraction used by Bundler and Paymaster services. Use it for node reads instead of the removed top-level URL helpers `fetchGasPrice`, `getBalanceOf`, `getDepositInfo`, and `getDelegatedAddress`.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { GasOption, JsonRpcNode } from "abstractionkit";
+
+const node = new JsonRpcNode("https://ethereum-sepolia-rpc.publicnode.com");
+
+const [maxFeePerGas, maxPriorityFeePerGas] = await node.getFeeData(GasOption.Medium);
+const deposit = await node.getEntryPointDeposit(
+  "0xYourAccountAddress",
+  "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+);
+const depositInfo = await node.getEntryPointDepositInfo(
+  "0xYourAccountAddress",
+  "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
+);
+const delegatee = await node.getDelegatedAddress("0xYourEOAAddress");
+```
+
+</TabItem>
+<TabItem value="Transport" label="Transport">
+
+```ts title="transport.ts"
+import { JsonRpcNode, type Transport } from "abstractionkit";
+
+const transport: Transport = {
+  request: async ({ method, params }, options) => {
+    return myRpcClient.request({ method, params }, { signal: options?.signal });
+  },
+};
+
+const node = new JsonRpcNode(transport);
+const code = await node.getCode("0xYourAccountAddress");
+```
+
+</TabItem>
+</Tabs>
+
+#### Methods
+
+- `chainId()`
+- `blockNumber()`
+- `getCode(address)`
+- `call(transaction)`
+- `getTransactionCount(address)`
+- `getFeeData(gasOption?)`
+- `getDelegatedAddress(eoaAddress)`
+- `getEntryPointNonce(entryPoint, account, key?)`
+- `getEntryPointDeposit(address, entryPoint)`
+- `getEntryPointDepositInfo(address, entryPoint)`
+- `request(args, options?)`
+
+#### Source code
+[JsonRpcNode](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/transport/JsonRpcNode.ts#L50)
 
 ### getBalanceOf
 
-Returns the balance of an account deposited in the EntryPoint contract.
+Deprecated in `v0.3.8`. Use `JsonRpcNode#getEntryPointDeposit` instead.
 
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
+```ts title="migration.ts"
+import { JsonRpcNode } from "abstractionkit";
 
-```ts title="example.ts"
-import { getBalanceOf } from "abstractionkit";
-
-const balance = await getBalanceOf(
-  "https://ethereum-sepolia-rpc.publicnode.com",
+const node = new JsonRpcNode("https://ethereum-sepolia-rpc.publicnode.com");
+const balance = await node.getEntryPointDeposit(
   "0xYourAccountAddress",
-  "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+  "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
 );
 ```
-
-</TabItem>
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={getBalanceOfParams} />
-</TabItem>
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={getBalanceOfReturn} />
-</TabItem>
-</Tabs>
-
-#### Source code
-[getBalanceOf](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
 
 ### getDepositInfo
 
-Returns the full deposit information of an account in the EntryPoint contract, including deposit balance, stake status, and unstake delay.
+Deprecated in `v0.3.8`. Use `JsonRpcNode#getEntryPointDepositInfo` instead.
 
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
+```ts title="migration.ts"
+import { JsonRpcNode } from "abstractionkit";
 
-```ts title="example.ts"
-import { getDepositInfo } from "abstractionkit";
-
-const info = await getDepositInfo(
-  "https://ethereum-sepolia-rpc.publicnode.com",
+const node = new JsonRpcNode("https://ethereum-sepolia-rpc.publicnode.com");
+const info = await node.getEntryPointDepositInfo(
   "0xYourAccountAddress",
-  "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+  "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
 );
 ```
-
-</TabItem>
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={getDepositInfoParams} />
-</TabItem>
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={getDepositInfoReturn} />
-  DepositInfo
-  <DataTable items={depositInfoType} />
-</TabItem>
-</Tabs>
-
-#### Source code
-[getDepositInfo](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
 
 ## Simulation utils
 
@@ -293,7 +308,7 @@ const { simulation, simulationShareLink } =
 </Tabs>
 
 #### Source code
-[simulateUserOperationWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utilsTenderly.ts)
+[simulateUserOperationWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utilsTenderly.ts#L82)
 
 ### simulateUserOperationCallDataWithTenderlyAndCreateShareLink
 
@@ -326,7 +341,7 @@ const { simulation, callDataSimulationShareLink } =
 </Tabs>
 
 #### Source code
-[simulateUserOperationCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utilsTenderly.ts)
+[simulateUserOperationCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utilsTenderly.ts#L376)
 
 ### simulateSenderCallDataWithTenderlyAndCreateShareLink
 
@@ -360,7 +375,7 @@ const { simulation, callDataSimulationShareLink } =
 </Tabs>
 
 #### Source code
-[simulateSenderCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utilsTenderly.ts)
+[simulateSenderCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utilsTenderly.ts#L596)
 
 ## Multicall utils
 
@@ -402,7 +417,7 @@ const callData = encodeMultiSendCallData([
 </Tabs>
 
 #### Source code
-[encodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/multisend.ts)
+[encodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/multisend.ts#L26)
 
 ### decodeMultiSendCallData
 
@@ -427,37 +442,20 @@ const decoded = decodeMultiSendCallData(encodedCallData);
 </Tabs>
 
 #### Source code
-[decodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/account/Safe/multisend.ts)
+[decodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/multisend.ts#L36)
 
 ## Generic Ethereum utils
 
 ### fetchGasPrice
 
-Fetches the current gas price from an Ethereum node, returning maxFeePerGas and maxPriorityFeePerGas for a given gas level.
+Deprecated in `v0.3.8`. Use `JsonRpcNode#getFeeData` instead.
 
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
+```ts title="migration.ts"
+import { GasOption, JsonRpcNode } from "abstractionkit";
 
-```ts title="example.ts"
-import { fetchGasPrice, GasOption } from "abstractionkit";
-
-const [maxFeePerGas, maxPriorityFeePerGas] = await fetchGasPrice(
-  "https://ethereum-sepolia-rpc.publicnode.com",
-  GasOption.Medium
-);
+const node = new JsonRpcNode("https://ethereum-sepolia-rpc.publicnode.com");
+const [maxFeePerGas, maxPriorityFeePerGas] = await node.getFeeData(GasOption.Medium);
 ```
-
-</TabItem>
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={fetchGasPriceParams} />
-</TabItem>
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={fetchGasPriceReturn} />
-</TabItem>
-</Tabs>
-
-#### Source code
-[fetchGasPrice](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
 
 ### createCallData
 
@@ -486,7 +484,7 @@ const callData = createCallData(
 </Tabs>
 
 #### Source code
-[createCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
+[createCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L474)
 
 ### getFunctionSelector
 
@@ -512,7 +510,7 @@ const selector = getFunctionSelector("transfer(address,uint256)");
 </Tabs>
 
 #### Source code
-[getFunctionSelector](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
+[getFunctionSelector](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L567)
 
 ### sendJsonRpcRequest
 
@@ -541,83 +539,48 @@ const result = await sendJsonRpcRequest(
 </Tabs>
 
 #### Source code
-[sendJsonRpcRequest](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
+[sendJsonRpcRequest](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L514)
 
 ### sendEthCallRequest
 
-Executes an `eth_call` against an Ethereum node and returns the result. Useful for reading contract state without submitting a transaction.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
+Deprecated in `v0.3.8`. Use `JsonRpcNode#call` instead.
 
 ```ts title="example.ts"
-import { sendEthCallRequest } from "abstractionkit";
+import { JsonRpcNode } from "abstractionkit";
 
-const result = await sendEthCallRequest(
-  "https://ethereum-sepolia-rpc.publicnode.com",
-  {
-    to: "0xContractAddress",
-    data: "0xCallData",
-  },
-  "latest"
-);
+const node = new JsonRpcNode("https://ethereum-sepolia-rpc.publicnode.com");
+const result = await node.call({
+  to: "0xContractAddress",
+  data: "0xCallData",
+});
 ```
 
-</TabItem>
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={sendEthCallRequestParams} />
-</TabItem>
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={sendEthCallRequestReturn} />
-</TabItem>
-</Tabs>
-
 #### Source code
-[sendEthCallRequest](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
+[JsonRpcNode.call](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/transport/JsonRpcNode.ts#L163)
 
 ### sendEthGetCodeRequest
 
-Retrieves the bytecode deployed at a given contract address using `eth_getCode`.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
+Deprecated in `v0.3.8`. Use `JsonRpcNode#getCode` instead.
 
 ```ts title="example.ts"
-import { sendEthGetCodeRequest } from "abstractionkit";
+import { JsonRpcNode } from "abstractionkit";
 
-const code = await sendEthGetCodeRequest(
-  "https://ethereum-sepolia-rpc.publicnode.com",
-  "0xContractAddress",
-  "latest"
-);
+const node = new JsonRpcNode("https://ethereum-sepolia-rpc.publicnode.com");
+const code = await node.getCode("0xContractAddress");
 ```
 
-</TabItem>
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={sendEthGetCodeRequestParams} />
-</TabItem>
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={sendEthGetCodeRequestReturn} />
-</TabItem>
-</Tabs>
-
 #### Source code
-[sendEthGetCodeRequest](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
+[JsonRpcNode.getCode](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/transport/JsonRpcNode.ts#L137)
 
 ### getDelegatedAddress
 
-Checks whether an EOA has an active EIP-7702 delegation and returns the delegated address, or null if the account is not delegated.
+Deprecated in `v0.3.8`. Use `JsonRpcNode#getDelegatedAddress` instead.
 
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
+```ts title="migration.ts"
+import { JsonRpcNode } from "abstractionkit";
 
-```ts title="example.ts"
-import { getDelegatedAddress } from "abstractionkit";
-
-const delegatee = await getDelegatedAddress(
-  "0xYourEOAAddress",
-  "https://ethereum-sepolia-rpc.publicnode.com"
-);
+const node = new JsonRpcNode("https://ethereum-sepolia-rpc.publicnode.com");
+const delegatee = await node.getDelegatedAddress("0xYourEOAAddress");
 
 if (delegatee) {
   console.log("Delegated to:", delegatee);
@@ -625,18 +588,6 @@ if (delegatee) {
   console.log("Not delegated");
 }
 ```
-
-</TabItem>
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={getDelegatedAddressParams} />
-</TabItem>
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={getDelegatedAddressReturn} />
-</TabItem>
-</Tabs>
-
-#### Source code
-[getDelegatedAddress](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils.ts)
 
 ## EIP-7702 Utilities
 
@@ -682,7 +633,7 @@ const authorization = await createAndSignEip7702DelegationAuthorization(
 </Tabs>
 
 #### Source code
-[createAndSignEip7702DelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils7702.ts)
+[createAndSignEip7702DelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils7702.ts#L137)
 
 ### createRevokeDelegationAuthorization
 
@@ -713,7 +664,7 @@ const revokeAuth = createRevokeDelegationAuthorization(
 </Tabs>
 
 #### Source code
-[createRevokeDelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils7702.ts)
+[createRevokeDelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils7702.ts#L192)
 
 ### createEip7702DelegationAuthorizationHash
 
@@ -742,7 +693,7 @@ const hash = createEip7702DelegationAuthorizationHash(
 </Tabs>
 
 #### Source code
-[createEip7702DelegationAuthorizationHash](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils7702.ts)
+[createEip7702DelegationAuthorizationHash](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils7702.ts#L209)
 
 ### createAndSignEip7702RawTransaction
 
@@ -779,7 +730,7 @@ const rawTx = createAndSignEip7702RawTransaction(
 </Tabs>
 
 #### Source code
-[createAndSignEip7702RawTransaction](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils7702.ts)
+[createAndSignEip7702RawTransaction](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils7702.ts#L255)
 
 ### createEip7702TransactionHash
 
@@ -815,4 +766,4 @@ const txHash = createEip7702TransactionHash(
 </Tabs>
 
 #### Source code
-[createEip7702TransactionHash](https://github.com/candidelabs/abstractionkit/blob/v0.3.4/src/utils7702.ts)
+[createEip7702TransactionHash](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils7702.ts#L319)
