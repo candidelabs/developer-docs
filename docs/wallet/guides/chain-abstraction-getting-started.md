@@ -70,9 +70,9 @@ Create a `.env` file in your project root:
 ```bash title=".env"
 # Chain 1 (Sepolia)
 CHAIN_ID1=11155111
-BUNDLER_URL1=https://api.candide.dev/public/v3/sepolia
+BUNDLER_URL1=https://api.candide.dev/public/v3/11155111
 NODE_URL1=https://ethereum-sepolia-rpc.publicnode.com
-PAYMASTER_URL1=https://api.candide.dev/public/v3/sepolia
+PAYMASTER_URL1=https://api.candide.dev/public/v3/11155111
 
 # Chain 2 (Optimism Sepolia)
 CHAIN_ID2=11155420

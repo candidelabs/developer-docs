@@ -121,7 +121,7 @@ const transactions = [
 const userOperation = await smartAccount.createUserOperation(
   transactions,
   "https://ethereum-sepolia-rpc.publicnode.com", // provider RPC
-  "https://api.candide.dev/public/v3/sepolia", // bundler RPC
+  "https://api.candide.dev/public/v3/11155111", // bundler RPC
   {
     eip7702Auth:{
         chainId, // chainId at which the account will be authorized
@@ -231,7 +231,7 @@ Sends a signed UserOperation to the bundler for execution on-chain.
 ```ts title="example.ts"
 const response = await smartAccount.sendUserOperation(
   userOperation,
-  "https://api.candide.dev/public/v3/sepolia" // bundler URL
+  "https://api.candide.dev/public/v3/11155111" // bundler URL
 );
 
 console.log("UserOperation hash:", response.userOperationHash);
@@ -412,7 +412,7 @@ Estimates gas limits for a UserOperation using the bundler.
 const [preVerificationGas, verificationGasLimit, callGasLimit] =
   await smartAccount.estimateUserOperationGas(
     userOperation,
-    "https://api.candide.dev/public/v3/sepolia",
+    "https://api.candide.dev/public/v3/11155111",
     {
       // Optional overrides
       stateOverrideSet: {...},
