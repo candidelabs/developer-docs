@@ -76,9 +76,9 @@ PAYMASTER_URL1=https://api.candide.dev/public/v3/11155111
 
 # Chain 2 (Optimism Sepolia)
 CHAIN_ID2=11155420
-BUNDLER_URL2=https://api.candide.dev/public/v3/optimism-sepolia
+BUNDLER_URL2=https://api.candide.dev/public/v3/11155420
 NODE_URL2=https://sepolia.optimism.io
-PAYMASTER_URL2=https://api.candide.dev/public/v3/optimism-sepolia
+PAYMASTER_URL2=https://api.candide.dev/public/v3/11155420
 
 # Your keys (auto-generated if not provided)
 PRIVATE_KEY=
