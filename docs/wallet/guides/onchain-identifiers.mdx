@@ -13,7 +13,7 @@ Attribute active users and UserOperations to your project by tagging each userOp
 Pass `onChainIdentifierParams` when you initialize the Safe account. The SDK appends the marker to every userOp's `callData`.
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress], {
   //highlight-start

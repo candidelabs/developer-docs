@@ -118,7 +118,7 @@ Sign the SIWE statement with the Smart Account owner key and submit registration
 
 ```ts
 import { 
-  SafeAccountV0_3_0, 
+  SafeMultiChainSigAccountV1 as SafeAccount,
   getSafeMessageEip712Data, 
   SAFE_MESSAGE_PRIMARY_TYPE 
 } from "abstractionkit";
@@ -140,7 +140,7 @@ const emailOwnerSignature = await ownerAccount.signTypedData({
     message: emailSafeTypedData.messageValue
 });
 
-const emailRegistrationSignature = SafeAccountV0_3_0.buildSignaturesFromSingerSignaturePairs([
+const emailRegistrationSignature = SafeAccount.buildSignaturesFromSingerSignaturePairs([
     { signer: ownerAccount.address, signature: emailOwnerSignature }
 ]);
 
@@ -157,7 +157,7 @@ const emailRegistrationChallengeId = await custodialGuardianService.createRegist
 
 ```ts
 import { 
-  SafeAccountV0_3_0, 
+  SafeMultiChainSigAccountV1 as SafeAccount,
   getSafeMessageEip712Data, 
   SAFE_MESSAGE_PRIMARY_TYPE 
 } from "abstractionkit";
@@ -179,7 +179,7 @@ const smsOwnerSignature = await ownerAccount.signTypedData({
     message: smsSafeTypedData.messageValue
 });
 
-const smsRegistrationSignature = SafeAccountV0_3_0.buildSignaturesFromSingerSignaturePairs([
+const smsRegistrationSignature = SafeAccount.buildSignaturesFromSingerSignaturePairs([
     { signer: ownerAccount.address, signature: smsOwnerSignature }
 ]);
 

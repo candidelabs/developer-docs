@@ -69,7 +69,7 @@ NEW_OWNER_PUBLIC_ADDRESS=
 
 ```ts
 import { 
-    SafeAccountV0_3_0 as SafeAccount, 
+    SafeMultiChainSigAccountV1 as SafeAccount,
     SocialRecoveryModule,
 } from "abstractionkit";
 import { Magic } from "magic-sdk";
@@ -102,7 +102,7 @@ let userOperation = await smartAccount.createUserOperation(
 <TabItem value="viem" label="viem">
 
 ```ts 
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 import { Magic } from "magic-sdk";
 import { createWalletClient, custom } from "viem";
 
@@ -142,7 +142,7 @@ To use MagicSigner in your app's client, you must ensure the `window` object is 
 <TabItem value="ethers" label="ethers">
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const initiateRecoveryMetaTx = createConfirmRecoveryMetaTransaction(
     smartAccount.address, 
@@ -165,7 +165,7 @@ const sendTx1 = guardianSigner.sendTransaction({
 <TabItem value="viem" label="viem">
 
 ```ts 
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 import { createWalletClient, http } from "viem";
 
 const initiateRecoveryMetaTx = createConfirmRecoveryMetaTransaction(

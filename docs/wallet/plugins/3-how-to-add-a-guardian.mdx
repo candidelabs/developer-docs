@@ -66,7 +66,7 @@ Set up the Social Recovery Module on a Safe account with a designated guardian i
 <TabItem value="enable-module.ts" label="enable-module.ts">
 
 ```ts title="Enable Social Recovery Module and add a guardian"
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const smartAccount = SafeAccount.initializeNewAccount([process.env.OWNER_PUBLIC_KEY]);
 
@@ -121,7 +121,7 @@ Below is a complete example that demonstrates enabling the recovery module and a
 import * as dotenv from 'dotenv'
 
 import {
-  SafeAccountV0_3_0 as SafeAccount,
+  SafeMultiChainSigAccountV1 as SafeAccount,
   SocialRecoveryModule,
 } from "abstractionkit";
 

@@ -174,10 +174,10 @@ const restoredPubkey = stored ? pubkeyCoordinatesFromJson(stored) : undefined;
 
 ### Step 4: Initialize Smart Account
 
-Initialize the Safe Smart Account with the passkey as the signer. `SafeAccountV0_3_0` supports Entrypoint v0.7, while `SafeAccountV0_2_0` supports Entrypoint v0.6.
+Initialize the Safe Smart Account with the passkey as the signer. New integrations should use `SafeMultiChainSigAccountV1` on EntryPoint v0.9. Use `SafeAccountV0_3_0` for legacy EntryPoint v0.7 passkey accounts or `SafeAccountV0_2_0` for legacy EntryPoint v0.6 accounts.
 
 ```ts title="initAccount.ts"
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const smartAccount = SafeAccount.initializeNewAccount([webauthPublicKey])
 ```
@@ -209,7 +209,7 @@ AbstractionKit `v0.3.5` includes `fromSafeWebauthn`, an `ExternalSigner` adapter
 
 ```ts title="signUserOp.ts"
 import {
-    SafeAccountV0_3_0 as SafeAccount,
+    SafeMultiChainSigAccountV1 as SafeAccount,
     fromSafeWebauthn,
     webauthnSignatureFromAssertion,
 } from "abstractionkit";
@@ -242,7 +242,7 @@ userOperation.signature = await smartAccount.signUserOperationWithSigners(
 );
 ```
 
-Pass the same account class used to initialize the account. Use `SafeAccountV0_3_0` for standard Safe passkeys and `SafeMultiChainSigAccountV1` for Safe Unified Account passkeys. Keep passing `expectedSigners: [webauthPublicKey]` to `createUserOperation`; the bundler needs the larger WebAuthn dummy signature during gas estimation.
+Pass the same account class used to initialize the account. Use `SafeMultiChainSigAccountV1` for new Safe passkeys and `SafeAccountV0_3_0` only for legacy EntryPoint v0.7 passkey accounts. Keep passing `expectedSigners: [webauthPublicKey]` to `createUserOperation`; the bundler needs the larger WebAuthn dummy signature during gas estimation.
 
 #### Manual signing
 
@@ -358,7 +358,7 @@ To initialize a smart account with multiple signer types, provide both a WebAuth
 To add two Passkey signers, initialize and deploy the account with a single Passkey signer first, then use [`addOwnerWithThreshold`](/wallet/abstractionkit/safe-account-v3/#createaddownerwiththresholdmetatransactions) to add the second Passkey signer.
 
 ```ts title="multisigInit.ts"
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 import { Wallet } from 'ethers'
 
 const webauthPublicKey = .. // see Step 3
@@ -449,7 +449,7 @@ Chains that support the RIP-7212 precompile for secp256r1 verification can reduc
 #### New Account
 
 ```ts title="precompileInit.ts"
-import { SafeAccountV0_3_0 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount, DEFAULT_SECP256R1_PRECOMPILE_ADDRESS } from "abstractionkit";
 
 let smartAccount = SafeAccount.initializeNewAccount(
     [webauthPublicKey],

@@ -96,13 +96,13 @@ Smart accounts are smart contracts. Unlike regular wallets (EOAs), they can:
 - Implement custom validation logic
 - Support multiple signers or alternative signature schemes
 
-This guide uses Safe's smart account implementation, which is battle-tested and widely adopted.
+This guide uses the Safe Unified Account (`SafeMultiChainSigAccountV1`), which works for single-chain transactions and multichain flows with the same account class.
 
 #### Generate Account Address
 
 ```ts title="index.ts"
 import * as dotenv from "dotenv";
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
   
 async function main(): Promise<void> {
   // Load environment variables
@@ -157,7 +157,7 @@ Add this to your `index.ts` (after the account creation code):
 
 ```ts title="index.ts"
 import {
-  SafeAccountV0_3_0 as SafeAccount,
+  SafeMultiChainSigAccountV1 as SafeAccount,
   MetaTransaction,
   getFunctionSelector,
   createCallData,
@@ -217,24 +217,27 @@ We'll use a paymaster to sponsor the gas fees, making this transaction completel
 
 ```ts title="index.ts"
 import {
-  SafeAccountV0_3_0 as SafeAccount,
+  SafeMultiChainSigAccountV1 as SafeAccount,
   MetaTransaction,
   getFunctionSelector,
   createCallData,
   // highlight-start
-  CandidePaymaster,
+  Erc7677Paymaster,
   // highlight-end
 } from "abstractionkit";
 
 const paymasterUrl = process.env.PAYMASTER_URL as string;
-const paymaster = new CandidePaymaster(paymasterUrl);
+const paymaster = new Erc7677Paymaster(paymasterUrl);
 const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
+const context = sponsorshipPolicyId
+  ? { sponsorshipPolicyId, policyId: sponsorshipPolicyId }
+  : {};
 
-const { userOperation: paymasterUserOperation } = await paymaster.createSponsorPaymasterUserOperation(
+const { userOperation: paymasterUserOperation } = await paymaster.createPaymasterUserOperation(
     smartAccount,
     userOperation,
     bundlerUrl,
-    sponsorshipPolicyId // sponsorshipPolicyId will have no effect if empty
+    context
   )
 
 userOperation = paymasterUserOperation;
@@ -310,7 +313,7 @@ Useroperation sent. Waiting to be included ......
 Useroperation receipt received.
 {
   userOpHash: '0x1acede61123ab7116eb29c797aeaec3c03615c37732ba66428524aebdb4b4514',
-  entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+  entryPoint: '0x433709009B8330FDa32311DF1C2AFA402eD8D009',
   sender: '0xb8741a449d50ed0dcfe395287f85be152884c8d9',
   nonce: 0n,
   paymaster: '0x3fe285dcd76bcce4ac92d38a6f2f8e964041e020',
@@ -348,9 +351,9 @@ Below is the complete example code that you can copy directly to implement the f
 import * as dotenv from 'dotenv'
 
 import { 
-    SafeAccountV0_3_0 as SafeAccount,
+    SafeMultiChainSigAccountV1 as SafeAccount,
     MetaTransaction,
-    CandidePaymaster,
+    Erc7677Paymaster,
     getFunctionSelector,
     createCallData,
 } from "abstractionkit";
@@ -414,14 +417,17 @@ async function main(): Promise<void> {
 
     // Get paymaster data to sponsor the transaction
     const paymasterUrl = process.env.PAYMASTER_URL as string;
-    const paymaster: CandidePaymaster = new CandidePaymaster(paymasterUrl);
+    const paymaster = new Erc7677Paymaster(paymasterUrl);
     const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
+    const context = sponsorshipPolicyId
+        ? { sponsorshipPolicyId, policyId: sponsorshipPolicyId }
+        : {};
 
-    const { userOperation: paymasterUserOperation } = await paymaster.createSponsorPaymasterUserOperation(
+    const { userOperation: paymasterUserOperation } = await paymaster.createPaymasterUserOperation(
         smartAccount,
         userOperation,
         bundlerUrl,
-        sponsorshipPolicyId // sponsorshipPolicyId will have no effect if empty
+        context
     )
     userOperation = paymasterUserOperation;
     

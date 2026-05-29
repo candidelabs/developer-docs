@@ -33,21 +33,20 @@ If you would like to see a full example, you can reference it [here](https://git
 ```ts
 import {
   // highlight-start
-  CandidePaymaster,
+  Erc7677Paymaster,
   // highlight-end
 } from "abstractionkit";
 
 const paymasterRPC = process.env.PAYMASTER_RPC as string;
-const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
+const paymaster: Erc7677Paymaster = new Erc7677Paymaster(paymasterRPC);
 const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
 
 // userOperation and bundlerUrl should be defined elsewhere in your code
 let paymasterUserOperation;
-let sponsorMetadata;
 try {
   // Sponsor gas using public gas policies
-  ({ userOperation: paymasterUserOperation, sponsorMetadata } =
-    await paymaster.createSponsorPaymasterUserOperation(
+  ({ userOperation: paymasterUserOperation } =
+    await paymaster.createPaymasterUserOperation(
       smartAccount,
       userOperation,
       bundlerUrl,
@@ -55,17 +54,16 @@ try {
 } catch (publicGasPolicyUnavailable) {
   try {
     // Sponsor gas using a private gas policy
-    ({ userOperation: paymasterUserOperation, sponsorMetadata } =
-      await paymaster.createSponsorPaymasterUserOperation(
+    ({ userOperation: paymasterUserOperation } =
+      await paymaster.createPaymasterUserOperation(
         smartAccount,
         userOperation,
         bundlerUrl,
-        sponsorshipPolicyId,
+        sponsorshipPolicyId ? { sponsorshipPolicyId, policyId: sponsorshipPolicyId } : {},
       ));
   } catch (privateGasPolicyUnavailable) {
-    // Fallback: propose to the user the option to pay gas in ERC-20 tokens
-  } catch (erc20GasPaymentUnavailable) {
-    // Last fallback: propose to the user the option to pay gas in the native token
+    // Fallback: propose ERC-20 token gas or native-token gas.
+    throw privateGasPolicyUnavailable;
   }
 }
 

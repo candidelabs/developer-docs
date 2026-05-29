@@ -50,19 +50,18 @@ Try public policies first, then fallback to private if no public policy matches
 <TabItem value="index.ts" label="index.ts">
 
 ```ts title="Public first, private fallback"
-import { CandidePaymaster } from "abstractionkit";
+import { Erc7677Paymaster } from "abstractionkit";
 
 const paymasterRPC = process.env.PAYMASTER_RPC as string;
-const paymaster = new CandidePaymaster(paymasterRPC);
+const paymaster = new Erc7677Paymaster(paymasterRPC);
 const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
 
 let paymasterUserOperation;
-let sponsorMetadata;
 
 try {
   // First, try public gas policies
-  ({ userOperation: paymasterUserOperation, sponsorMetadata } =
-    await paymaster.createSponsorPaymasterUserOperation(
+  ({ userOperation: paymasterUserOperation } =
+    await paymaster.createPaymasterUserOperation(
       smartAccount,
       userOperation,
       bundlerUrl
@@ -71,12 +70,12 @@ try {
 } catch (error) {
   try {
     // Fallback to private gas policy
-    ({ userOperation: paymasterUserOperation, sponsorMetadata } =
-      await paymaster.createSponsorPaymasterUserOperation(
+    ({ userOperation: paymasterUserOperation } =
+      await paymaster.createPaymasterUserOperation(
         smartAccount,
         userOperation,
         bundlerUrl,
-        sponsorshipPolicyId
+        sponsorshipPolicyId ? { sponsorshipPolicyId, policyId: sponsorshipPolicyId } : {}
       ));
     console.log("Sponsored by your private gas policy!");
   } catch (finalError) {
@@ -117,9 +116,9 @@ Below is a complete example that demonstrates gas sponsorship with public and pr
 import * as dotenv from 'dotenv'
 
 import {
-    SafeAccountV0_3_0 as SafeAccount,
+    SafeMultiChainSigAccountV1 as SafeAccount,
     MetaTransaction,
-    CandidePaymaster,
+    Erc7677Paymaster,
     getFunctionSelector,
     createCallData,
 } from "abstractionkit";
@@ -169,43 +168,42 @@ async function main(): Promise<void> {
     )
 
     // Add paymaster sponsorship - try public first, fallback to private
-    const paymaster = new CandidePaymaster(paymasterRPC)
+    const paymaster = new Erc7677Paymaster(paymasterRPC)
     
     let paymasterUserOperation;
-    let sponsorMetadata;
     
     try {
         // Try public gas policies first
-        console.log("🔍 Checking for public gas policies...")
-        ({ userOperation: paymasterUserOperation, sponsorMetadata } =
-            await paymaster.createSponsorPaymasterUserOperation(
+        console.log("Checking for public gas policies...")
+        ({ userOperation: paymasterUserOperation } =
+            await paymaster.createPaymasterUserOperation(
                 smartAccount,
                 userOperation,
                 bundlerUrl
             ));
-        console.log("✅ Sponsored by public gas policy!")
+        console.log("Sponsored by public gas policy!")
         
     } catch (error) {
         try {
             // Fallback to private gas policy
-            console.log("🔍 Trying private gas policy fallback...")
-            ({ userOperation: paymasterUserOperation, sponsorMetadata } =
-                await paymaster.createSponsorPaymasterUserOperation(
+            console.log("Trying private gas policy fallback...")
+            ({ userOperation: paymasterUserOperation } =
+                await paymaster.createPaymasterUserOperation(
                     smartAccount,
                     userOperation,
                     bundlerUrl,
-                    sponsorshipPolicyId
+                    sponsorshipPolicyId ? { sponsorshipPolicyId, policyId: sponsorshipPolicyId } : {}
                 ));
-            console.log("✅ Sponsored by private gas policy!")
+            console.log("Sponsored by private gas policy!")
             
         } catch (finalError) {
-            console.log("❌ No gas sponsorship available");
+            console.log("No gas sponsorship available");
             throw finalError;
         }
     }
     
     userOperation = paymasterUserOperation;
-    console.log("💰 Transaction will be gasless for the user!")
+    console.log("Transaction will be gasless for the user!")
 
     // Sign the UserOperation
     userOperation.signature = smartAccount.signUserOperation(
@@ -220,18 +218,18 @@ async function main(): Promise<void> {
         bundlerUrl
     )
 
-    console.log("📤 Sponsored UserOperation sent. Waiting for confirmation...")
+    console.log("Sponsored UserOperation sent. Waiting for confirmation...")
     
     // Wait for transaction to be included
     let userOperationReceiptResult = await sendUserOperationResponse.included()
 
-    console.log("📋 UserOperation receipt received.")
+    console.log("UserOperation receipt received.")
     console.log(userOperationReceiptResult)
     
     if (userOperationReceiptResult.success) {
-        console.log("🎉 Gasless transaction successful! Hash:", userOperationReceiptResult.receipt.transactionHash)
+        console.log("Gasless transaction successful! Hash:", userOperationReceiptResult.receipt.transactionHash)
     } else {
-        console.log("❌ UserOperation execution failed")
+        console.log("UserOperation execution failed")
     }
 }
 
