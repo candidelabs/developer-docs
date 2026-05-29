@@ -37,25 +37,16 @@ Token paymasters enable users to pay gas fees with ERC-20 tokens instead of ETH,
 <TabItem value="index.ts" label="index.ts">
 
 ```ts title="Token paymaster implementation"
-import { CandidePaymaster } from "abstractionkit";
+import { Erc7677Paymaster } from "abstractionkit";
 
 const paymasterRPC = process.env.PAYMASTER_RPC as string;
 const tokenAddress = process.env.TOKEN_ADDRESS as string;
 
-const paymaster = new CandidePaymaster(paymasterRPC);
+const paymaster = new Erc7677Paymaster(paymasterRPC);
 
-const tokensSupported = await paymaster.fetchSupportedERC20TokensAndPaymasterMetadata();
-
-// Find your specific token
-const tokenSelected = tokensSupported.tokens.find(
-    token => token.address.toLowerCase() === tokenAddress.toLowerCase()
-);
-
-if (!tokenSelected) {
-    throw new Error("Token not supported by paymaster");
-}
-
-console.log(`Using ${tokenSelected.name} (${tokenSelected.symbol}) for gas payment`);
+// Pass any supported token address. Erc7677Paymaster fetches the quote
+// and prepends the required ERC-20 approval automatically.
+console.log(`Using ${tokenAddress} for gas payment`);
 ```
 
 :::tip Test Tokens
@@ -79,25 +70,14 @@ TOKEN_ADDRESS=0xFa5854FBf9964330d761961F46565AB7326e5a3b
 ### Step2: Get Token Paymaster Data
 
 ```ts title="Get token paymaster data"
-if (tokenSelected) {
-    const { userOperation: tokenOp, tokenQuote } = await paymaster.createTokenPaymasterUserOperation(
-        smartAccount,
-        userOperation,
-        tokenSelected.address,
-        bundlerUrl
-    );
-    userOperation = tokenOp;
-    console.log(`Max token cost: ${tokenQuote?.tokenCost} (smallest units)`);
-
-    // Calculate the cost in tokens
-    const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
-        userOperation,
-        tokenSelected.address
-    );
-    
-    console.log(`Gas cost: ${cost} wei in ${tokenSelected.symbol}`);
-    console.log(`Make sure your account has enough ${tokenSelected.symbol} tokens`);
-}
+const { userOperation: tokenOp, tokenQuote } = await paymaster.createPaymasterUserOperation(
+    smartAccount,
+    userOperation,
+    bundlerUrl,
+    { token: tokenAddress },
+);
+userOperation = tokenOp;
+console.log(`Max token cost: ${tokenQuote?.tokenCost} (smallest units)`);
 ```
 
 ## Complete Runnable Example
@@ -114,9 +94,9 @@ Below is a complete example that demonstrates ERC-20 token gas payments:
 import * as dotenv from 'dotenv'
 
 import {
-    SafeAccountV0_3_0 as SafeAccount,
+    SafeMultiChainSigAccountV1 as SafeAccount,
     MetaTransaction,
-    CandidePaymaster,
+    Erc7677Paymaster,
     getFunctionSelector,
     createCallData,
 } from "abstractionkit";
@@ -166,38 +146,22 @@ async function main(): Promise<void> {
     )
 
     // Set up token paymaster
-    const paymaster = new CandidePaymaster(paymasterRPC)
+    const paymaster = new Erc7677Paymaster(paymasterRPC)
     
-    // Get supported tokens and find the one we want to use
-    const tokensSupported = await paymaster.fetchSupportedERC20TokensAndPaymasterMetadata();
-    const tokenSelected = tokensSupported.tokens.find(
-        token => token.address.toLowerCase() === tokenAddress.toLowerCase()
-    );
-
-    if (!tokenSelected) {
-        throw new Error("Token not supported by paymaster");
-    }
-
-    console.log(`💰 Using ${tokenSelected.name} (${tokenSelected.symbol}) for gas payment`);
+    console.log(`Using ${tokenAddress} for gas payment`);
 
     // Create token paymaster UserOperation
-    const { userOperation: tokenOp, tokenQuote } = await paymaster.createTokenPaymasterUserOperation(
+    const { userOperation: tokenOp, tokenQuote } = await paymaster.createPaymasterUserOperation(
         smartAccount,
         userOperation,
-        tokenSelected.address,
-        bundlerUrl
+        bundlerUrl,
+        { token: tokenAddress },
     );
     userOperation = tokenOp;
     console.log(`Max token cost: ${tokenQuote?.tokenCost} (smallest units)`);
 
-    // Calculate the cost in tokens
-    const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
-        userOperation,
-        tokenSelected.address
-    );
-    
-    console.log(`⛽ Gas cost: ${cost} wei in ${tokenSelected.symbol}`);
-    console.log(`🔍 Make sure account has enough ${tokenSelected.symbol} tokens`);
+    console.log(`Gas cost: ${tokenQuote?.tokenCost} in token smallest units`);
+    console.log(`Make sure account has enough tokens`);
 
     // Sign the UserOperation
     userOperation.signature = smartAccount.signUserOperation(
@@ -212,19 +176,19 @@ async function main(): Promise<void> {
         bundlerUrl
     )
 
-    console.log("📤 UserOperation sent. Waiting for confirmation...")
+    console.log("UserOperation sent. Waiting for confirmation...")
     
     // Wait for transaction to be included
     let userOperationReceiptResult = await sendUserOperationResponse.included()
 
-    console.log("📋 UserOperation receipt received.")
+    console.log("UserOperation receipt received.")
     console.log(userOperationReceiptResult)
     
     if (userOperationReceiptResult.success) {
-        console.log("🎉 Transaction successful! Hash:", userOperationReceiptResult.receipt.transactionHash)
-        console.log(`💸 Gas paid with ${tokenSelected.symbol} tokens`);
+        console.log("Transaction successful! Hash:", userOperationReceiptResult.receipt.transactionHash)
+        console.log(`Gas paid with token ${tokenAddress}`);
     } else {
-        console.log("❌ UserOperation execution failed")
+        console.log("UserOperation execution failed")
     }
 }
 

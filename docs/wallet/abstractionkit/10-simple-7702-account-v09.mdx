@@ -53,7 +53,7 @@ The following ERCs are supported:
 - ERC-4337 v0.9
 
 :::info Full Example
-A complete working example is available on GitHub: [upgrade-eoa-ep-v09.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/04-upgrade-eoa-ep-v09.ts)
+A complete working example is available on GitHub: [01-upgrade-eoa.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/01-upgrade-eoa.ts)
 :::
 
 
@@ -204,7 +204,7 @@ userOperation.signature = await smartAccount.signUserOperationWithSigner(
 );
 ```
 
-See [External Signers](/wallet/abstractionkit/external-signers) for the full list of adapters and custom-signer integrations. EntryPoint v0.9 also supports parallel paymaster signing via the two-phase `signingPhase` context — see the [v0.9 external-signer example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/06-external-signer-v09.ts).
+See [External Signers](/wallet/abstractionkit/external-signers) for the full list of adapters and custom-signer integrations. EntryPoint v0.9 also supports parallel paymaster signing via the two-phase `signingPhase` context — see the [parallel signing example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/03-parallel-signing.ts).
 
 ### getUserOperationEip712Data
 

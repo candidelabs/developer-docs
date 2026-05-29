@@ -73,7 +73,7 @@ the Smart Account.EOAs exposes a JavaScript Ethereum Provider API.
 <TabItem value="ethers" label="ethers example">
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount, EIP712_SAFE_OPERATION_V7_TYPE } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 import { BrowserProvider } from "ethers";
 
 const provider = new BrowserProvider(window.ethereum);
@@ -87,7 +87,7 @@ const smartAccount = SafeAccount.initializeNewAccount([signerAddress]);
 <TabItem value="viem" label="viem example">
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 import { createWalletClient, custom } from "viem";
 
 const viemWalletClient = createWalletClient({
@@ -111,7 +111,9 @@ The manual EIP-712 flow below is kept for advanced use cases where you need dire
 
 ##### Manual EIP-712 signing (advanced)
 
-Only this manual flow requires formatting the raw signature yourself. Regardless of which of the two approaches below you choose, you must wrap the resulting signature into a `userOperation`-compatible signature using [`formatEip712SignaturesToUserOperationSignature()`](../../abstractionkit/safe-account-v3/#formateip712signaturestouseroperationsignature). The External Signer API above does this automatically.
+Only this manual flow requires formatting the raw signature yourself. The External Signer API above does this automatically.
+
+For legacy `SafeAccountV0_3_0`, wrap raw signatures with [`formatEip712SignaturesToUserOperationSignature()`](../../abstractionkit/safe-account-v3/#formateip712signaturestouseroperationsignature). For the default `SafeMultiChainSigAccountV1`, use `formatSignaturesToUseroperationSignature([{ signer, signature }], { isMultiChainSignature: true })`; the Unified Account validates even a single UserOperation through its multichain signature scheme.
 
 1. **Direct Signing of the EIP-712 Hash**
 
@@ -128,7 +130,10 @@ const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(userOperation, cha
 
 const signature = signer.signingKey.sign(safeUserOpHash).serialized;
 
-userOperation.signature = SafeAccount.formatEip712SignaturesToUseroperationSignature([signer.address], [signature]);
+userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
+  [{ signer: signer.address, signature }],
+  { isMultiChainSignature: true },
+);
 ```
 
 </TabItem>
@@ -144,9 +149,9 @@ const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(
 
 const signature = await viemWalletClient.account.sign({ hash: safeUserOpHash });
 
-userOperation.signature = SafeAccount.formatEip712SignaturesToUseroperationSignature(
-  [viemWalletClient.account.address],
-  [signature]
+userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
+  [{ signer: viemWalletClient.account.address, signature }],
+  { isMultiChainSignature: true },
 );
 ```
 
@@ -169,9 +174,9 @@ let userOperation = ... // Use createUserOperation() to help you construct the u
 const { domain, types, messageValue } = SafeAccount.getUserOperationEip712Data(userOperation, chainId);
 
 const signature = await wallet.signTypedData(domain, types, messageValue);
-userOperation.signature = SafeAccount.formatEip712SignaturesToUseroperationSignature(
-  [signer.address], 
-  [signature]
+userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
+  [{ signer: signer.address, signature }],
+  { isMultiChainSignature: true },
 );
 ```
 
@@ -190,10 +195,10 @@ const signedTypedData = await viemWalletClient.signTypedData({
   primaryType: "SafeOp",
 } as any);
 
-userOperation.signature = SafeAccount.formatEip712SignaturesToUseroperationSignature(
-    [viemWalletClient.account.address],
-    [signedTypedData],
-  );
+userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
+  [{ signer: viemWalletClient.account.address, signature: signedTypedData }],
+  { isMultiChainSignature: true },
+);
 ```
 
 </TabItem>
@@ -206,7 +211,7 @@ Traditional wallets encrypts the private key in local storage. In this setup, th
 #### Signup Account Owner
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const ownerPublicAddress = process.env.PUBLIC_KEY;
 

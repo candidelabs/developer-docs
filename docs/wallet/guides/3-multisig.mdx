@@ -27,7 +27,7 @@ Set up a multisig account with multiple owners and signature threshold:
 <TabItem value="index.ts" label="index.ts">
 
 ```ts title="Create multisig account"
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const ownerPublicAddress1 = process.env.PUBLIC_ADDRESS1 as string;
 const ownerPublicAddress2 = process.env.PUBLIC_ADDRESS2 as string;
@@ -41,7 +41,7 @@ const smartAccount = SafeAccount.initializeNewAccount(
 console.log("Multisig Account Address:", smartAccount.accountAddress);
 ```
 
-> Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-account-v3/#initializenewaccount)
+> Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-unified-account/)
 
 :::tip Fund Your Account
 Make sure to fund your multisig account with ETH before sending transactions, or use a [paymaster for gas sponsorship](/wallet/guides/send-gasless-tx/).
@@ -87,7 +87,7 @@ userOperation.signature = smartAccount.signUserOperation(
 );
 ```
 
-> Learn more: [`signUserOperation`](/wallet/abstractionkit/safe-account-v3/#signuseroperation)
+> Learn more: [`signUserOperation`](/wallet/abstractionkit/safe-unified-account/)
 
 </TabItem>
 
@@ -114,7 +114,7 @@ userOperation.signature = smartAccount.signUserOperation(
 );
 ```
 
-> Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-account-v3/#initializenewaccount) | [`signUserOperation`](/wallet/abstractionkit/safe-account-v3/#signuseroperation)
+> Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-unified-account/) | [`signUserOperation`](/wallet/abstractionkit/safe-unified-account/)
 
 </TabItem>
 </Tabs>
@@ -133,7 +133,7 @@ Below is a complete example that demonstrates multisig account creation and sign
 import * as dotenv from 'dotenv'
 
 import {
-    SafeAccountV0_3_0 as SafeAccount,
+    SafeMultiChainSigAccountV1 as SafeAccount,
     MetaTransaction,
     getFunctionSelector,
     createCallData,
@@ -222,7 +222,7 @@ async function main(): Promise<void> {
 main().catch(console.error)
 ```
 
-> Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-account-v3/#initializenewaccount) | [`createUserOperation`](/wallet/abstractionkit/safe-account-v3/#createuseroperation) | [`signUserOperation`](/wallet/abstractionkit/safe-account-v3/#signuseroperation) | [`sendUserOperation`](/wallet/abstractionkit/safe-account-v3/#senduseroperation)
+> Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-unified-account/) | [`createUserOperation`](/wallet/abstractionkit/safe-unified-account/) | [`signUserOperation`](/wallet/abstractionkit/safe-unified-account/) | [`sendUserOperation`](/wallet/abstractionkit/safe-unified-account/)
 
 </TabItem>
 
@@ -254,7 +254,7 @@ After creating a multisig account, you can dynamically add, remove, or swap owne
 <TabItem value="add-owner" label="Add Owner">
 
 ```ts title="Add a new owner"
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 // Add a new owner with threshold of 3 (now 3/3 multisig)
 const newOwnerAddress = "0x..."; // New owner's address
@@ -281,7 +281,7 @@ userOperation.signature = smartAccount.signUserOperation(
 );
 ```
 
-> Learn more: [`createAddOwnerWithThresholdMetaTransactions`](/wallet/abstractionkit/safe-account-v3/#createaddownerwiththresholdmetatransactions)
+> Learn more: [`createAddOwnerWithThresholdMetaTransactions`](/wallet/abstractionkit/safe-unified-account/)
 
 </TabItem>
 
@@ -312,7 +312,7 @@ userOperation.signature = smartAccount.signUserOperation(
 );
 ```
 
-> Learn more: [`createRemoveOwnerMetaTransaction`](/wallet/abstractionkit/safe-account-v3/#createremoveownermetatransaction)
+> Learn more: [`createRemoveOwnerMetaTransaction`](/wallet/abstractionkit/safe-unified-account/)
 
 </TabItem>
 
@@ -343,7 +343,7 @@ userOperation.signature = smartAccount.signUserOperation(
 );
 ```
 
-> Learn more: [`createSwapOwnerMetaTransactions`](/wallet/abstractionkit/safe-account-v3/#createswapownermetatransactions)
+> Learn more: [`createSwapOwnerMetaTransactions`](/wallet/abstractionkit/safe-unified-account/)
 
 </TabItem>
 </Tabs>

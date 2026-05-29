@@ -560,13 +560,13 @@ const sidebars = {
           items: [
             {
               type: "doc",
-              id: "wallet/abstractionkit/simple-7702-account-v08",
-              label: "EntryPoint v0.8"
+              id: "wallet/abstractionkit/simple-7702-account-v09",
+              label: "EntryPoint v0.9"
             },
             {
               type: "doc",
-              id: "wallet/abstractionkit/simple-7702-account-v09",
-              label: "EntryPoint v0.9"
+              id: "wallet/abstractionkit/simple-7702-account-v08",
+              label: "EntryPoint v0.8"
             },
           ],
         },

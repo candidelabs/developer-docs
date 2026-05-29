@@ -7,7 +7,7 @@ keywords: [safe-account, "4337", sdk, account-abstraction, gnosis-safe]
 import CardList from "/src/components/CardList";
 
 # Safe Account
-The `SafeAccount` uses the original Safe Singleton and adds ERC-4337 functionality using a module/fallback handler.
+The `SafeAccount` uses the original Safe Singleton and adds ERC-4337 functionality using a module/fallback handler. For new integrations, use [Safe Unified Account](/wallet/abstractionkit/safe-unified-account/) (`SafeMultiChainSigAccountV1`) on EntryPoint v0.9; use the V2/V3 classes below for legacy EntryPoint v0.6/v0.7 compatibility.
 
 - The V2 contracts, or `SafeAccountV0_2_0` in AbstractionKit, support EntryPoint v0.6.
 - The V3 contracts, or `SafeAccountV0_3_0` in AbstractionKit, support EntryPoint v0.7.
@@ -23,16 +23,22 @@ To learn more about the contracts, visit the [repository of Safe ERC-4337 Module
 
 ## Import
 
+### Recommended for EntryPoint v0.9
+
+```ts
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+```
+
 ### V3 for EntryPoint v0.7
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit"; 
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 ```
 
 ### V2 for EntryPoint v0.6
 
 ```ts
-import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit"; 
+import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit";
 ```
 
 ## How to Use
@@ -51,6 +57,11 @@ const accountAddress = smartAccount.accountAddress;
 ###
 
 export const GETTING_STARTED_ITEMS = [
+    {
+        title: "Safe Unified Account",
+        description: "Recommended Safe account for EntryPoint v0.9, single-chain and multichain",
+        route: "/wallet/abstractionkit/safe-unified-account",
+    },
     {
         title: "Safe Account V3",
         description: "Reference functions for Safe Account V3 with EntryPoint V7",

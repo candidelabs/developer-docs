@@ -104,7 +104,7 @@ if (userOperation.eip7702Auth) {
 }
 ```
 
-See the [full external signer example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/02-upgrade-eoa-external-signer.ts) on GitHub.
+See the [full external signer example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/05-external-signer.ts) on GitHub.
 
 ## Revoke Delegation
 
@@ -130,7 +130,7 @@ if (isDelegated) {
 }
 ```
 
-See the [full revoke delegation example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/05-revoke-delegation.ts) on GitHub.
+See the [full revoke delegation example](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/04-revoke-delegation.ts) on GitHub.
 
 ---
 

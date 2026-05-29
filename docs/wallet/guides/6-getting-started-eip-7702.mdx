@@ -64,16 +64,16 @@ main();
 
 ## Step 2: Prepare Smart Account Instance
 
-Prepare the smart account instance using [Simple7702Account](/wallet/abstractionkit/simple-7702-account), a fully audited minimalist smart contract account safely authorized by any EOA. It provides full support for smart account features including batching and gas sponsorship.
+Prepare the smart account instance using [Simple7702AccountV09](/wallet/abstractionkit/simple-7702-account-v09), a fully audited minimalist smart contract account safely authorized by any EOA. It provides full support for smart account features including batching and gas sponsorship.
 
 ```ts title="index.ts"
-import { Simple7702Account } from "abstractionkit";
+import { Simple7702AccountV09 } from "abstractionkit";
 import { Wallet } from "ethers";
 
 // For demo: generate a random EOA. In production, use user's EOA/private key
 const eoaDelegator = Wallet.createRandom();
 
-const smartAccount = new Simple7702Account(eoaDelegator.address);
+const smartAccount = new Simple7702AccountV09(eoaDelegator.address);
 
 console.log("Smart account address (sender): " + smartAccount.accountAddress);
 ```
@@ -183,13 +183,13 @@ if (userOperation.eip7702Auth) {
 Optionally [sponsor gas](/wallet/guides/send-gasless-eip-7702/) for your user transaction or offer them to pay [gas in erc-20 tokens](/wallet/guides/pay-gas-in-erc20-eip-7702/).
 
 ```ts
-import { CandidePaymaster } from "abstractionkit";
+import { Erc7677Paymaster } from "abstractionkit";
 
 const paymasterUrl = process.env.PAYMASTER_URL as string;
 
-const paymaster = new CandidePaymaster(paymasterUrl)
+const paymaster = new Erc7677Paymaster(paymasterUrl)
 
-const { userOperation: paymasterUserOperation } = await paymaster.createSponsorPaymasterUserOperation(
+const { userOperation: paymasterUserOperation } = await paymaster.createPaymasterUserOperation(
     smartAccount,
     userOperation,
     bundlerUrl,
@@ -251,7 +251,7 @@ Useroperation sent. Waiting to be included ......
 Useroperation receipt received.
 {
   userOpHash: '0x89a5111d40c4ca45977a28419a08ca33e496a88e973bc995ec6a5a28da564cb5',
-  entryPoint: '0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108',
+  entryPoint: '0x433709009B8330FDa32311DF1C2AFA402eD8D009',
   sender: '0xbdbc5fbc9ca8c3f514d073ec3de840ac84fc6d31',
   nonce: 0n,
   paymaster: '0x0000000000000000000000000000000000000000',

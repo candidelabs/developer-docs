@@ -16,7 +16,7 @@ Enable users to pay gas in ERC-20 tokens using any [supported ERC-20 token](/wal
 1. Create a new app on the [dashboard](https://dashboard.candide.dev) and copy the Paymaster URL to your `.env` file
 2. Select an ERC-20 token for gas payment and add its address to the `.env` file (this example uses CTT) 
 
-If you would like to see a full example, you can reference it [here](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/03-upgrade-eoa-erc20-gas.ts).
+If you would like to see a full example, you can reference it [here](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/02-upgrade-eoa-erc20-gas.ts).
 
 <Tabs>
 <TabItem value="index.ts" label="index.ts">
@@ -25,32 +25,25 @@ If you would like to see a full example, you can reference it [here](https://git
 import {
   ...
   // highlight-start
-  CandidePaymaster,
+  Erc7677Paymaster,
   // highlight-end
 } from "abstractionkit";
 
 const paymasterRPC = process.env.PAYMASTER_RPC as string;
 const tokenAddress = process.env.TOKEN_ADDRESS as string;
 
-const paymaster = new CandidePaymaster(paymasterRPC)
+const paymaster = new Erc7677Paymaster(paymasterRPC)
 
-const tokensSupported = await paymaster.fetchSupportedERC20TokensAndPaymasterMetadata();
-const tokenSelected = tokensSupported.tokens.find(
-    token => token.address.toLowerCase() === tokenAddress.toLowerCase()
-);
-
-if (tokenSelected) {
-    const { userOperation: tokenOp, tokenQuote } = await paymaster.createTokenPaymasterUserOperation(
-        smartAccount, // = new Simple7702Account(eoaDelegator.address)
-        userOperation,
-        tokenSelected.address,
-        bundlerUrl,
-    )
-    userOperation = tokenOp;
-    const cost = tokenQuote?.tokenCost;
-    console.log("This useroperation may cost up to : " + cost + " wei in CTT token")
-    console.log("Please fund the sender account: " + userOperation.sender +" with more than "+ cost + " wei CTT token")
-}
+const { userOperation: tokenOp, tokenQuote } = await paymaster.createPaymasterUserOperation(
+    smartAccount, // = new Simple7702AccountV09(eoaDelegator.address)
+    userOperation,
+    bundlerUrl,
+    { token: tokenAddress },
+)
+userOperation = tokenOp;
+const cost = tokenQuote?.tokenCost;
+console.log("This useroperation may cost up to : " + cost + " in the token")
+console.log("Please fund the sender account: " + userOperation.sender + " with at least " + cost + " of the token")
 ```
 
 </TabItem>

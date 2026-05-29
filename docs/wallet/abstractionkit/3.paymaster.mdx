@@ -42,12 +42,22 @@ import {
 } from "/src/data/paymaster";
 
 # Paymaster
-The `CandidePaymaster` class interacts with Candide's ERC-4337 Paymaster API.
+AbstractionKit includes two paymaster clients. `CandidePaymaster` can sponsor one-shot UserOperations, but new integrations should prefer the standard `Erc7677Paymaster` for one-shot sponsorship and ERC-20 token gas flows. `Erc7677Paymaster` auto-detects supported providers such as Candide and Pimlico and handles provider-specific metadata, supported token data, exchange rates, and paymaster addresses internally. Use `CandidePaymaster` when you need Candide-specific APIs or the EntryPoint v0.9 two-phase `commit -> sign -> finalize` flow.
 
 **Supports:**
 - Gas sponsorship through Gas Policies
 - ERC-20 Token Sponsorship
 - Multi-EntryPoint
+
+## Which Paymaster Client to Use
+
+| Flow | Recommended client | Method |
+|---|---|---|
+| Sponsored gas, one-shot | `Erc7677Paymaster` | Recommended standard path: `createPaymasterUserOperation(..., context?)` |
+| ERC-20 token gas | `Erc7677Paymaster` | `createPaymasterUserOperation(..., { token })` |
+| Provider metadata and supported token details for Candide/Pimlico | `Erc7677Paymaster` | Handled automatically from the paymaster URL |
+| Candide-specific one-shot sponsorship | `CandidePaymaster` | Supported via `createSponsorPaymasterUserOperation(...)` |
+| Two-phase paymaster signing to reduce user waiting time | `CandidePaymaster` | `createSponsorPaymasterUserOperation(..., { signingPhase })` |
 
 ## Usage
 
@@ -579,7 +589,7 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 
 `Erc7677Paymaster` is a provider-agnostic [ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) paymaster client. It speaks `pm_getPaymasterStubData` and `pm_getPaymasterData`, so it works with any compliant provider (Candide, Pimlico, Alchemy, or a self-hosted paymaster). Provider is auto-detected from the RPC URL; for Candide and Pimlico it also fetches exchange rates and paymaster addresses automatically for ERC-20 token flows.
 
-If you are using Candide's paymaster and want features like parallel signing phases, prefer `CandidePaymaster` above. Use `Erc7677Paymaster` when you want a single client that can switch providers without code changes.
+For new one-shot sponsorship and ERC-20 gas flows, prefer `Erc7677Paymaster`. For Candide and Pimlico URLs, it handles provider-specific metadata and token quote details behind the scenes. `CandidePaymaster` also supports one-shot sponsorship, but it is most useful when you need Candide-specific APIs or two-phase paymaster signing with `signingPhase: "commit"` and `signingPhase: "finalize"`, which lets the user sign while the paymaster prepares its signature in parallel and reduces wallet or remote-signer latency.
 
 ### Usage
 

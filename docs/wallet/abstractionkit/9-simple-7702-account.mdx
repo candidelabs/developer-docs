@@ -9,8 +9,8 @@ import CardList from "/src/components/CardList";
 
 The `Simple7702Account` is a fully audited minimalist smart contract account that can be safely authorized by any EOA. It adds full support for major smart account features like batching and gas sponsorship.
 
-- `Simple7702Account` in AbstractionKit supports EntryPoint v0.8.
-- `Simple7702AccountV09` in AbstractionKit supports EntryPoint v0.9.
+- `Simple7702AccountV09` in AbstractionKit supports EntryPoint v0.9 and is recommended for new integrations.
+- `Simple7702Account` in AbstractionKit supports EntryPoint v0.8 for legacy integrations and migration flows.
 
 The following ERCs are supported:
 
@@ -32,16 +32,16 @@ For multi-key support, passkeys, or per-key hooks, see [Calibur Account](/wallet
 
 ## Import
 
-### EntryPoint v0.8
-
-```ts
-import { Simple7702Account } from "abstractionkit";
-```
-
-### EntryPoint v0.9
+### EntryPoint v0.9 recommended
 
 ```ts
 import { Simple7702AccountV09 } from "abstractionkit";
+```
+
+### EntryPoint v0.8 legacy
+
+```ts
+import { Simple7702Account } from "abstractionkit";
 ```
 
 ## How to Use
@@ -50,7 +50,7 @@ AbstractionKit classes are designed to support the same methods across both vers
 
 ```ts
 const delegatorPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31"; // EOA public key
-const smartAccount = new Simple7702Account(delegatorPublicAddress);
+const smartAccount = new Simple7702AccountV09(delegatorPublicAddress);
 ```
 
 ###

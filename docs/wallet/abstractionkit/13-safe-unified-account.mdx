@@ -25,7 +25,7 @@ import {
 
 # Safe Unified Account
 
-**SafeMultiChainSigAccountV1** enables chain abstraction for Safe Accounts. It extends the standard Safe Account with multichain signature support via Merkle trees, allowing you to sign UserOperations for multiple chains with a single signature.
+**SafeMultiChainSigAccountV1** is the recommended Safe account class for new AbstractionKit examples. It works for normal single-chain Safe transactions and enables chain abstraction for multichain Safe Accounts. It extends the standard Safe Account with multichain signature support via Merkle trees, allowing you to sign UserOperations for multiple chains with a single signature.
 
 Uses EntryPoint v0.9 and EIP-712 typed data with Merkle proofs.
 
@@ -338,6 +338,36 @@ userOp2.signature = signatures[1];
 #### Source code
 
 [formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeMultiChainSigAccount.ts#L863)
+
+### Manual EIP-712 signing for a single UserOperation
+
+`SafeMultiChainSigAccountV1` also validates single-chain UserOperations through its multichain signature scheme. If you drive `signTypedData` yourself instead of using `signUserOperationWithSigners`, format the raw wallet signature with `isMultiChainSignature: true`.
+
+```ts title="example.ts"
+import {
+    EIP712_SAFE_OPERATION_PRIMARY_TYPE,
+    SafeMultiChainSigAccountV1 as SafeAccount,
+} from "abstractionkit";
+
+const eip712Data = SafeAccount.getUserOperationEip712Data(
+    userOperation,
+    chainId,
+);
+
+const signature = await walletClient.signTypedData({
+    domain: eip712Data.domain,
+    types: eip712Data.types,
+    primaryType: EIP712_SAFE_OPERATION_PRIMARY_TYPE,
+    message: eip712Data.messageValue,
+});
+
+userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
+    [{ signer: ownerAddress, signature }],
+    { isMultiChainSignature: true },
+);
+```
+
+Full example: [`eip-712-signing.ts`](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-712-signing/eip-712-signing.ts).
 
 ### sendUserOperation
 

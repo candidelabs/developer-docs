@@ -187,7 +187,7 @@ console.log("Created PKPEthersWallet using the PKP ✔️");
 We will integrate Lit as the guardian of the Smart Account. Not only that, we will be creating a special Smart Account that will be owned by the Lit key, allowing us to sponsor gas fees during the recovery process. No need to fund the associated Gmail account with funds to execute a recovery process.
 ### Initilize a Smart Account 
 ```ts 
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
 console.log("Smart Account Address:", smartAccount.accountAddress);

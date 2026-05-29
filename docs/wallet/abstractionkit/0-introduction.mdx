@@ -9,15 +9,27 @@ keywords: [typescript, sdk, userOperation, library]
 
 ![image](/img/posters/abstractionkit-poster.png)
 
-A TypeScript library for building and sending ERC-4337 UserOperations with first-class support for Safe Accounts, Calibur Accounts, and Simple EIP-7702 Accounts.
+A TypeScript library for building and sending ERC-4337 UserOperations with first-class support for Safe Accounts, Calibur Accounts, and Simple EIP-7702 Accounts. New Safe examples default to `SafeMultiChainSigAccountV1` on EntryPoint v0.9, and new EIP-7702 Simple Account examples default to `Simple7702AccountV09`.
 
 AbstractionKit abstracts the complexities of the ERC-4337 standard while providing developers with maximum flexibility to build Smart Wallets.
-Use Safe Accounts, construct callData, estimate and sponsor gas (fully or with ERC-20 tokens), and send UserOperations to Bundlers – all with full type safety.
+Use Safe Accounts, construct callData, estimate and sponsor gas (fully or with ERC-20 tokens), and send UserOperations to Bundlers - all with full type safety.
 
 - AbstractionKit is agnostic of:
   - Ethereum interface libraries: ethers, web3.js, viem/wagmi
   - Bundler implementation: Plug and play from any bundler provider
   - Paymaster services: use any 3rd party paymaster, or build your own
+
+## Current Defaults
+
+| Integration | Recommended class | EntryPoint | Notes |
+|---|---|---|---|
+| Safe account, single-chain or multichain | `SafeMultiChainSigAccountV1` | v0.9 | Same class works for normal single-chain Safe UserOperations and Safe Unified Account multichain signing. |
+| Legacy Safe v0.7 compatibility | `SafeAccountV0_3_0` | v0.7 | Use when you need the older Safe 4337 module v0.3.0. |
+| Legacy Safe v0.6 compatibility | `SafeAccountV0_2_0` | v0.6 | Use only for older Safe 4337 module v0.2.0 integrations or migration paths. |
+| EIP-7702 Simple Account | `Simple7702AccountV09` | v0.9 | Recommended for new EOA delegation flows. |
+| EIP-7702 Simple Account v0.8 | `Simple7702Account` | v0.8 | Use for legacy integrations and v0.8 to v0.9 migration flows. |
+| Standard sponsorship or ERC-20 token gas | `Erc7677Paymaster` | v0.6-v0.9 | Recommended for new one-shot sponsorship and token-gas integrations. It auto-detects providers such as Candide and Pimlico and handles provider-specific metadata, supported token data, exchange rates, and paymaster addresses internally. |
+| Candide paymaster flows | `CandidePaymaster` | v0.6-v0.9 | Candide-specific client. It also supports one-shot sponsorship, but use it mainly when you need Candide-specific APIs or the v0.9 `commit -> sign -> finalize` flow that reduces wallet or remote-signer latency. |
 
 ## Why AbstractionKit
 

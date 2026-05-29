@@ -15,7 +15,7 @@ Smart wallets can sign arbitrary messages similar to EOAs. Learn how to sign mes
 ```ts title="Signing"
 import * as dotenv from 'dotenv';
 
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit"; 
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 import { Contract, JsonRpcProvider, Wallet, hashMessage} from "ethers"; // v6
 
 dotenv.config()
@@ -61,7 +61,7 @@ console.log(returnValue, "Success! You should see the magic value 0x1626ba7e");
 ```ts title="Signing a Message"
 import * as dotenv from 'dotenv';
 
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 import { Contract, JsonRpcProvider, Wallet, hashMessage} from "ethers"; // v6
 
 dotenv.config();
