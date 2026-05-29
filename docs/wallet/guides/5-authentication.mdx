@@ -23,7 +23,7 @@ See a demo at [passkeys.candide.dev](https://passkeys.candide.dev) and learn mor
 
 Candide supports on-chain multisig (multi-signature) accounts that enhance security by requiring multiple approvals for transactions. This feature is ideal for implementing two-factor authentication (2FA) and suits wallets targeting companies or DAOs where transactions require multiple key approvals.
 
-Visit the dedicated [Multisig guide](../multisig).
+Visit the dedicated [Multisig guide](/wallet/guides/multisig/).
 
 ## Traditional Signers
 
@@ -113,7 +113,7 @@ The manual EIP-712 flow below is kept for advanced use cases where you need dire
 
 Only this manual flow requires formatting the raw signature yourself. The External Signer API above does this automatically.
 
-For legacy `SafeAccountV0_3_0`, wrap raw signatures with [`formatEip712SignaturesToUserOperationSignature()`](../../abstractionkit/safe-account-v3/#formateip712signaturestouseroperationsignature). For the default `SafeMultiChainSigAccountV1`, use `formatSignaturesToUseroperationSignature([{ signer, signature }], { isMultiChainSignature: true })`; the Unified Account validates even a single UserOperation through its multichain signature scheme.
+For legacy `SafeAccountV0_3_0`, wrap raw signatures with [`formatEip712SignaturesToUserOperationSignature()`](/wallet/abstractionkit/safe-account-v3/#formateip712signaturestouseroperationsignature). For the default `SafeMultiChainSigAccountV1`, use `formatSignaturesToUseroperationSignature([{ signer, signature }], { isMultiChainSignature: true })`; the Unified Account validates even a single UserOperation through its multichain signature scheme.
 
 1. **Direct Signing of the EIP-712 Hash**
 
@@ -206,7 +206,7 @@ userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
 
 ### Private key Storage
 
-Traditional wallets encrypts the private key in local storage. In this setup, the owner of the smart account is represented by it. Use [signUserOperation](../../../wallet/abstractionkit/safe-account-v3/#senduseroperation).
+Traditional wallets encrypts the private key in local storage. In this setup, the owner of the smart account is represented by it. Use [signUserOperation](/wallet/abstractionkit/safe-account-v3/#senduseroperation).
 
 #### Signup Account Owner
 

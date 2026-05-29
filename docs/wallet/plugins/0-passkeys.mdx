@@ -186,7 +186,7 @@ const smartAccount = SafeAccount.initializeNewAccount([webauthPublicKey])
 
 ### Step 5: Create UserOperation
 
-Create a UserOperation following the standard Safe flow with [createUserOperation](../../abstractionkit/safe-account-v3/#createuseroperation). Pass `expectedSigners` so that gas estimation accounts for the passkey signature format.
+Create a UserOperation following the standard Safe flow with [createUserOperation](/wallet/abstractionkit/safe-account-v3/#createuseroperation). Pass `expectedSigners` so that gas estimation accounts for the passkey signature format.
 
 ```ts title="createUserOp.ts"
 let userOperation = await smartAccount.createUserOperation(

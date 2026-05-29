@@ -18,4 +18,4 @@ Specifically:
 - AA4x error codes involve general verification.
 - AA5x errors relate to actions taken after the user operation has been executed.
 
-See the explanation of each [error code provided by the Entrypoint](../entrypoint-error-codes/)
+See the explanation of each [error code provided by the Entrypoint](/wallet/technical-reference/entrypoint-error-codes/)
