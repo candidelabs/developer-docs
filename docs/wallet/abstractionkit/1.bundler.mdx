@@ -25,7 +25,7 @@ import { userOperationReturnParamsV06, userOperationParamV07, userOperationParam
 
 The `Bundler` class provides access to ERC-4337 Bundler JSON-RPC API methods for estimating user operation gas and sending user operations.
 
-The `Bundler` class creates a Bundler instance with a [Bundler RPC URL](../../bundler/rpc-endpoints) or an EIP-1193-shaped `Transport`.
+The `Bundler` class creates a Bundler instance with a [Bundler RPC URL](/wallet/bundler/rpc-endpoints/) or an EIP-1193-shaped `Transport`.
 
 ## Usage
 
@@ -105,7 +105,7 @@ const getChainId = await bundler.chainId();
 
 #### JSON-RPC Method
 
-[eth_chainId](../../bundler/rpc-methods/#eth_chainid)
+[eth_chainId](/wallet/bundler/rpc-methods/#eth_chainid)
 
 ### supportedEntryPoints
 
@@ -146,14 +146,14 @@ const entrypointAddresses = await bundler.supportedEntryPoints();
 
 #### JSON-RPC Method
 
-[eth_supportedEntryPoints](../../bundler/rpc-methods#eth_supportedentrypoints)
+[eth_supportedEntryPoints](/wallet/bundler/rpc-methods/#eth_supportedentrypoints)
 
 ### estimateUserOperationGas
 
 Generates and returns an estimate of how much gas is necessary to allow the user operation to complete, given a UserOperations.
 
 #### Usage
-See a full example in [getting-started guide](../../guides/getting-started)
+See a full example in [getting-started guide](/wallet/guides/getting-started/)
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
@@ -203,14 +203,14 @@ const estimation = await bundler.estimateUserOperationGas(userOperation, entryPo
 
 #### JSON-RPC Method
 
-[eth_estimateUserOperationGas](../../bundler/rpc-methods#eth_estimateuseroperationgas)
+[eth_estimateUserOperationGas](/wallet/bundler/rpc-methods/#eth_estimateuseroperationgas)
 
 ### sendUserOperation
 Asks the bundler to sign and submit a User Operation
 
 #### Usage
 
-See a full example in [getting-started guide](../../guides/getting-started)
+See a full example in [getting-started guide](/wallet/guides/getting-started/)
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
@@ -256,7 +256,7 @@ const userOperationHash = await bundler.sendUserOperation(userOperation, entrypo
 
 #### JSON-RPC Method
 
-[eth_sendUserOperation](../../bundler/rpc-methods/#eth_senduseroperation)
+[eth_sendUserOperation](/wallet/bundler/rpc-methods/#eth_senduseroperation)
 
 ### getUserOperationByHash
 
@@ -322,7 +322,7 @@ const userOperation = await bundler.getUserOperationByHash(userOperationHash);
 
 #### JSON-RPC Method
 
-[eth_getUserOperationByHash](../../bundler/rpc-methods#eth_getuseroperationbyhash)
+[eth_getUserOperationByHash](/wallet/bundler/rpc-methods/#eth_getuseroperationbyhash)
 
 ### getUserOperationReceipt
 
@@ -389,4 +389,4 @@ const userOperationReceipt = await bundler.getUserOperationReceipt(
 
 #### JSON-RPC Method
 
-[eth_getUserOperationReceipt](../../bundler/rpc-methods#eth_getuseroperationreceipt)
+[eth_getUserOperationReceipt](/wallet/bundler/rpc-methods/#eth_getuseroperationreceipt)
