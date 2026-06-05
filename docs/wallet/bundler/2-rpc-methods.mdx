@@ -8,7 +8,7 @@ import TabItem from "@theme/TabItem";
 
 # Bundler API
 
-The Bundler exposes the standard ERC-4337 JSON-RPC API.
+The Bundler exposes the standard ERC-4337 JSON-RPC API defined by ERC-7769.
 
 ## EntryPoint v0.9
 
@@ -48,7 +48,7 @@ EntryPoint v0.9 maintains ABI compatibility with v0.8, requiring no changes to e
         'paymasterData': None,
         'paymasterSignature': None, // new in v0.9: allows parallelizable paymaster signing
         // highlight-start
-        'eip7702auth': {
+        'eip7702Auth': {
           'chainId': '0x4268',
           'address': '0xa46cc63eBF4Bd77888AA327837d20b23A63a56B5',
           'nonce': '0x0f',
@@ -107,8 +107,7 @@ The signature field is ignored by the wallet, so that the operation will not req
   id: 1,
   method: "eth_estimateUserOperationGas",
   "params": [
-  [
-   {
+    {
       sender, // address
       nonce, // uint256
       factory, // address
@@ -126,7 +125,7 @@ The signature field is ignored by the wallet, so that the operation will not req
       paymasterSignature, // bytes (new in v0.9: parallelizable paymaster signing)
       signature // bytes
       // highlight-start
-      'eip7702auth': {
+      'eip7702Auth': {
         'chainId': '0x4268',
         'address': '0xa46cc63eBF4Bd77888AA327837d20b23A63a56B5', // must be valid delegation address for simulation
         'nonce': '0x0f',
@@ -135,7 +134,7 @@ The signature field is ignored by the wallet, so that the operation will not req
         's': '0x60ab7d22e278dc43b0b37afada54666c0bf9e0beb9f0cd0159de007d127f3406' // can pass a dummy signature during estimates
       }
     // highlight-end
-    }
+    },
     // highlight-next-line
     '0x433709009B8330FDa32311DF1C2AFA402eD8D009'
   ]
@@ -158,7 +157,7 @@ It returns estimates for a UserOperation Gas parameters for:
         callGasLimit, // uint256
         preVerificationGas, // uint256
         paymasterVerificationGasLimit, // uint256
-        verificationGas, // uint256
+        verificationGasLimit, // uint256
     },
 }
 ```
@@ -333,7 +332,7 @@ Highlighted code is relevant to wallets upgrading EOAs to Smart Accounts using E
         'paymasterPostOpGasLimit': None,
         'paymasterData': None,
         // highlight-start
-        'eip7702auth': {
+        'eip7702Auth': {
           'chainId': '0x4268',
           'address': '0x6C193e88c2C6ACB0897d162E9496156BfFF73C0F',
           'nonce': '0x0f',
@@ -407,8 +406,7 @@ The signature field is ignored by the wallet, so that the operation will not req
   id: 1,
   method: "eth_estimateUserOperationGas",
   "params": [
-  [
-   {
+    {
       sender, // address
       nonce, // uint256
       factory, // address
@@ -425,7 +423,7 @@ The signature field is ignored by the wallet, so that the operation will not req
       paymasterData, // bytes
       signature // bytes
       // highlight-start
-      'eip7702auth': {
+      'eip7702Auth': {
         'chainId': '0x4268',
         'address': '0x6C193e88c2C6ACB0897d162E9496156BfFF73C0F', // must be valid delegation address for simulation
         'nonce': '0x0f', 
@@ -434,7 +432,7 @@ The signature field is ignored by the wallet, so that the operation will not req
         's': '0x60ab7d22e278dc43b0b37afada54666c0bf9e0beb9f0cd0159de007d127f3406' // can pass a dummy signature during estimates
       }
     // highlight-end
-    }
+    },
     '0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108'
   ]
 }
@@ -456,7 +454,7 @@ It returns estimates for a UserOperation Gas parameters for:
         callGasLimit, // uint256
         preVerificationGas, // uint256
         paymasterVerificationGasLimit, // uint256
-        verificationGas, // uint256
+        verificationGasLimit, // uint256
     },
 }
 ```
@@ -770,7 +768,7 @@ It returns estimates for a UserOperation Gas parameters for:
         callGasLimit, // uint256
         preVerificationGas, // uint256
         paymasterVerificationGasLimit, // uint256
-        verificationGas, // uint256
+        verificationGasLimit, // uint256
     },
 }
 ```
@@ -1023,7 +1021,7 @@ It returns the hash of the User Operation. In case of an error, it returns the e
 ```
 
 #### Response
-It returns estimates for a UserOperation Gas parameters for `preVerificationGas`, `verificationGas`, and `callGasLimit`
+It returns estimates for a UserOperation Gas parameters for `preVerificationGas`, `verificationGasLimit`, and `callGasLimit`
 ```json
 {
     "jsonrpc": "2.0",
@@ -1031,7 +1029,7 @@ It returns estimates for a UserOperation Gas parameters for `preVerificationGas`
     "result": {
         callGasLimit
         preVerificationGas,
-        verificationGas,
+        verificationGasLimit,
     },
 }
 ```

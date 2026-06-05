@@ -91,6 +91,11 @@ const sidebars = {
             },
             {
               type: "doc",
+              id: "wallet/technical-reference/-32508-paymaster-balance-too-low",
+              label: "-32508"
+            },
+            {
+              type: "doc",
               id: "wallet/technical-reference/-32521-transaction-reverted",
               label: "-32521"
             },

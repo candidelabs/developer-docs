@@ -39,7 +39,7 @@ To support EIP-7702, bundlers add a new JSON element named `eip7702Auth` contain
     "method": "eth_sendUserOperation",
     "params": [
         {
-            "eip7702auth": {
+            "eip7702Auth": {
                 "chainId": "0x4268",
                 "address": "0x6C193e88c2C6ACB0897d162E9496156BfFF73C0F", // must be a valid delegation address for simulation
                 "nonce": "0x0f",
@@ -75,7 +75,7 @@ let userOperation = await smartAccount.createUserOperation(
     bundlerUrl, // to estimate gas limits
     // highlight-start
     {
-        eip7702auth: {
+        eip7702Auth: {
             chainId, // where the account will be upgraded
         }
     }
@@ -84,10 +84,10 @@ let userOperation = await smartAccount.createUserOperation(
 
 // calculates the r, s, and the yParity
 // highlight-start
-userOperation.eip7702auth = createAndSignEip7702DelegationAuthorization(
-    BigInt(userOperation.eip7702auth.chainId),
-    userOperation.eip7702auth.address,
-    BigInt(userOperation.eip7702auth.nonce),
+userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
+    BigInt(userOperation.eip7702Auth.chainId),
+    userOperation.eip7702Auth.address,
+    BigInt(userOperation.eip7702Auth.nonce),
     eoaDelegatorPrivateKey
 );
 // highlight-end
