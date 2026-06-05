@@ -125,7 +125,7 @@ export const userOperationParamV07 = [
     key: "paymasterVerificationGasLimit",
     type: "bigint | null",
     description:
-      "The amount of gas to allocate for the paymaster post-operation code",
+      "The amount of gas to allocate for the paymaster verification step",
   },
   {
     key: "paymasterPostOpGasLimit",

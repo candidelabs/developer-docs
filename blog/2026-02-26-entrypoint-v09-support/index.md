@@ -66,7 +66,7 @@ let userOperation = await smartAccount.createUserOperation(
     nodeUrl,
     bundlerUrl,
     {
-        eip7702auth: {
+        eip7702Auth: {
             chainId,
         }
     }
