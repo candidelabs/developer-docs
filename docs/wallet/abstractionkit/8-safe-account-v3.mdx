@@ -52,6 +52,12 @@ import {
   verifyWebAuthnSignatureForMessageHashReturn,
   getUserOperationEip712DataV7Param,
   getUserOperationEip712DataReturn,
+  createMigrateToMultiChainSigParam,
+  createMigrateToMultiChainSigReturn,
+  getFallbackHandlerParams,
+  getFallbackHandlerReturn,
+  getSafeVersionParams,
+  getSafeVersionReturn,
 } from "../../../src/data/accountParamAndReturnData";
 import { userOperationParamV07, userOperationReceiptResultType } from "/src/data/userOperation";
 import {
@@ -135,7 +141,7 @@ Account address(sender) : 0x1a02592A3484c2077d2E5D24482497F85e1980C6
 
 #### Source code
 
-[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccountV0_3_0.ts#L96)
+[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccountV0_3_0.ts#L97)
 
 ### isDeployed
 
@@ -173,7 +179,7 @@ const account = (await SafeAccount.isDeployed(accountAddress, nodeRpcUrl))
 
 #### Source code
 
-[isDeployed](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccount.ts#L257)
+[isDeployed](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccount.ts#L263)
 
 ### createUserOperation
 
@@ -315,7 +321,7 @@ console.log(userOperation);
 </details>
 
 #### Source code
-[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccountV0_3_0.ts#L288)
+[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccountV0_3_0.ts#L289)
 
 ### signUserOperation
 
@@ -363,7 +369,7 @@ console.log(signature);
 </details>
 
 #### Source code
-[signUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccountV0_3_0.ts#L355)
+[signUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccountV0_3_0.ts#L356)
 
 ### signUserOperationWithSigners
 
@@ -385,7 +391,7 @@ userOperation.signature = await smartAccount.signUserOperationWithSigners(
 See [External Signers](/wallet/abstractionkit/external-signers) for the full list of adapters and custom-signer integrations.
 
 #### Source code
-[signUserOperationWithSigners](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccountV0_3_0.ts#L394)
+[signUserOperationWithSigners](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccountV0_3_0.ts#L395)
 
 ### sendUserOperation
 
@@ -461,7 +467,7 @@ receipt: {
 </details>
 
 #### Source code
-[sendUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccount.ts#L989)
+[sendUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccount.ts#L1078)
 
 ## Advanced Methods
 
@@ -515,7 +521,7 @@ Account address(sender) : 0x1a02592A3484c2077d2E5D24482497F85e1980C6
 
 #### Source code
 
-[createAccountAddress](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccountV0_3_0.ts#L73)
+[createAccountAddress](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccountV0_3_0.ts#L74)
 
 ### createFactoryAddressAndData
 
@@ -567,7 +573,7 @@ factoryData:  0x1688f0b900000000000000000000000029fcb43b46531bca003ddc8fcb67ffe9
 
 #### Source code
 
-[createFactoryAddressAndData](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccountV0_3_0.ts#L258)
+[createFactoryAddressAndData](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccountV0_3_0.ts#L259)
 
 ### createInitializerCallData
 
@@ -610,7 +616,7 @@ initializeCallData: 0xb63e800d00000000000000000000000000000000000000000000000000
 </details>
 
 #### Source
-[createInitializerCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccountV0_3_0.ts#L222)
+[createInitializerCallData](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccountV0_3_0.ts#L223)
 
 ### createAccountCallDataSingleTransaction
 
@@ -663,7 +669,7 @@ callData : 0xf34308ef000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2
 
 #### Source code
 
-[createAccountCallDataSingleTransaction](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccount.ts#L274)
+[createAccountCallDataSingleTransaction](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccount.ts#L280)
 
 ### createAccountCallDataBatchTransactions
 
@@ -728,7 +734,7 @@ callData : 0xf34308ef000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2
 
 #### Source code
 
-[createAccountCallDataBatchTransactions](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccount.ts#L309)
+[createAccountCallDataBatchTransactions](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccount.ts#L315)
 
 ### estimateUserOperationGas
 
@@ -801,7 +807,7 @@ const [preVerificationGas, verificationGasLimit, callGasLimit] = await estimateU
 </details>
 
 #### Source code
-[estimateUserOperationGas](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccountV0_3_0.ts#L324)
+[estimateUserOperationGas](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccountV0_3_0.ts#L325)
 
 ### getUserOperationEip712Hash
 
@@ -845,7 +851,7 @@ console.log(safeUserOpHash);
 </details>
 
 #### Source
-[getUserOperationEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccountV0_3_0.ts#L150)
+[getUserOperationEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccountV0_3_0.ts#L151)
 
 ### formatEip712SignaturesToUseroperationSignature
 
@@ -921,7 +927,7 @@ userOperation.signature = formatedSig;
 </details>
 
 #### Source code
-[formatEip712SignaturesToUseroperationSignature](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeAccount.ts#L516)
+[formatEip712SignaturesToUseroperationSignature](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccount.ts#L521)
 
 
 ### isModuleEnabled
@@ -1014,6 +1020,97 @@ A static method that returns the EIP-712 domain data for a userOp
   <DataTable items={getUserOperationEip712DataReturn} />
 </TabItem>
 </Tabs>
+
+### createMigrateToSafeMultiChainSigAccountV1MetaTransactions
+
+Creates an array of meta-transactions that migrate a deployed Safe from the EntryPoint v0.7 module to the EntryPoint v0.9 `Safe4337MultiChainSignatureModule`. The migration disables the v0.7 module, enables the v0.9 module, and updates the fallback handler. Both modules are stateless, so no storage clearing is required.
+
+Unless `{ skipPreflight: true }` is passed, it first verifies on-chain that the account is a Safe (version `>= 1.4.1`) running the old module, where the module is both enabled and the current fallback handler. This turns a would-be cryptic on-chain `AA23` / `AA24` into a clear up-front error.
+
+#### Usage
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+
+const nodeRpcUrl = "https://rpc2.sepolia.org";
+
+const smartAccount = new SafeAccount(accountAddress);
+
+const migrationMetaTransactions =
+  await smartAccount.createMigrateToSafeMultiChainSigAccountV1MetaTransactions(nodeRpcUrl);
+
+// Include these meta-transactions in a UserOperation to execute the migration
+const userOperation = await smartAccount.createUserOperation(
+  migrationMetaTransactions,
+  nodeRpcUrl,
+  bundlerUrl,
+);
+```
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createMigrateToMultiChainSigParam} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={createMigrateToMultiChainSigReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[createMigrateToSafeMultiChainSigAccountV1MetaTransactions](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccountV0_3_0.ts#L429)
+
+### getFallbackHandler
+
+Reads the active ERC-4337 fallback handler (the 4337 module) currently set on the Safe.
+
+#### Usage
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+
+const smartAccount = new SafeAccount(accountAddress);
+const fallbackHandler = await smartAccount.getFallbackHandler(nodeRpcUrl);
+```
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getFallbackHandlerParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={getFallbackHandlerReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[getFallbackHandler](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccount.ts#L2837)
+
+### getSafeVersion
+
+Reads the Safe singleton version string via `VERSION()`, for example `"1.4.1"`.
+
+#### Usage
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+
+const smartAccount = new SafeAccount(accountAddress);
+const version = await smartAccount.getSafeVersion(nodeRpcUrl);
+```
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getSafeVersionParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={getSafeVersionReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[getSafeVersion](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccount.ts#L2853)
 
 ## Audits
 - [Audits by Ackee](https://github.com/safe-global/safe-modules/blob/main/modules/4337/docs/v0.3.0/audit.md)

@@ -46,6 +46,12 @@ import {
   createAndSignEip7702RawTransactionReturn,
   createEip7702TransactionHashParams,
   createEip7702TransactionHashReturn,
+  getStorageAtParams,
+  getStorageAtReturn,
+  decodeUserOperationRevertReasonParams,
+  decodeUserOperationRevertReasonReturn,
+  parseAaCodeParams,
+  parseAaCodeReturn,
 } from "/src/data/utilityParams";
 
 # Utilities
@@ -81,7 +87,7 @@ const userOpHash = createUserOperationHash(
 </Tabs>
 
 #### Source code
-[createUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L50)
+[createUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L49)
 
 ### createPackedUserOperationV6
 
@@ -106,7 +112,7 @@ const packed = createPackedUserOperationV6(userOperationV6);
 </Tabs>
 
 #### Source code
-[createPackedUserOperationV6](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L313)
+[createPackedUserOperationV6](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L310)
 
 ### createPackedUserOperationV7
 
@@ -131,7 +137,7 @@ const packed = createPackedUserOperationV7(userOperationV7);
 </Tabs>
 
 #### Source code
-[createPackedUserOperationV7](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L353)
+[createPackedUserOperationV7](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L349)
 
 ### fetchAccountNonce
 
@@ -160,7 +166,7 @@ const nonce = await fetchAccountNonce(
 </Tabs>
 
 #### Source code
-[fetchAccountNonce](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L586)
+[fetchAccountNonce](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L577)
 
 ### calculateUserOperationMaxGasCost
 
@@ -185,7 +191,7 @@ const maxCost = calculateUserOperationMaxGasCost(userOperation);
 </Tabs>
 
 #### Source code
-[calculateUserOperationMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L645)
+[calculateUserOperationMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L636)
 
 ### JsonRpcNode
 
@@ -245,7 +251,7 @@ const code = await node.getCode("0xYourAccountAddress");
 - `request(args, options?)`
 
 #### Source code
-[JsonRpcNode](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/transport/JsonRpcNode.ts#L50)
+[JsonRpcNode](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/transport/JsonRpcNode.ts#L50)
 
 ### getBalanceOf
 
@@ -274,6 +280,36 @@ const info = await node.getEntryPointDepositInfo(
   "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
 );
 ```
+
+### getStorageAt
+
+Reads the 32-byte storage word at a given slot via `eth_getStorageAt`.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { JsonRpcNode, SAFE_FALLBACK_HANDLER_STORAGE_SLOT } from "abstractionkit";
+
+const node = new JsonRpcNode("https://ethereum-sepolia-rpc.publicnode.com");
+const word = await node.getStorageAt(
+  "0xYourAccountAddress",
+  SAFE_FALLBACK_HANDLER_STORAGE_SLOT,
+);
+```
+
+</TabItem>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getStorageAtParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={getStorageAtReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[getStorageAt](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/transport/JsonRpcNode.ts#L162)
 
 ## Simulation utils
 
@@ -308,7 +344,7 @@ const { simulation, simulationShareLink } =
 </Tabs>
 
 #### Source code
-[simulateUserOperationWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utilsTenderly.ts#L82)
+[simulateUserOperationWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utilsTenderly.ts#L82)
 
 ### simulateUserOperationCallDataWithTenderlyAndCreateShareLink
 
@@ -341,7 +377,7 @@ const { simulation, callDataSimulationShareLink } =
 </Tabs>
 
 #### Source code
-[simulateUserOperationCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utilsTenderly.ts#L376)
+[simulateUserOperationCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utilsTenderly.ts#L377)
 
 ### simulateSenderCallDataWithTenderlyAndCreateShareLink
 
@@ -375,7 +411,7 @@ const { simulation, callDataSimulationShareLink } =
 </Tabs>
 
 #### Source code
-[simulateSenderCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utilsTenderly.ts#L596)
+[simulateSenderCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utilsTenderly.ts#L597)
 
 ## Multicall utils
 
@@ -417,7 +453,7 @@ const callData = encodeMultiSendCallData([
 </Tabs>
 
 #### Source code
-[encodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/multisend.ts#L26)
+[encodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/multisend.ts#L26)
 
 ### decodeMultiSendCallData
 
@@ -442,7 +478,7 @@ const decoded = decodeMultiSendCallData(encodedCallData);
 </Tabs>
 
 #### Source code
-[decodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/multisend.ts#L36)
+[decodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/multisend.ts#L36)
 
 ## Generic Ethereum utils
 
@@ -484,7 +520,7 @@ const callData = createCallData(
 </Tabs>
 
 #### Source code
-[createCallData](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L474)
+[createCallData](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L466)
 
 ### getFunctionSelector
 
@@ -510,7 +546,7 @@ const selector = getFunctionSelector("transfer(address,uint256)");
 </Tabs>
 
 #### Source code
-[getFunctionSelector](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L567)
+[getFunctionSelector](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L558)
 
 ### sendJsonRpcRequest
 
@@ -539,7 +575,7 @@ const result = await sendJsonRpcRequest(
 </Tabs>
 
 #### Source code
-[sendJsonRpcRequest](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils.ts#L514)
+[sendJsonRpcRequest](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L505)
 
 ### sendEthCallRequest
 
@@ -556,7 +592,7 @@ const result = await node.call({
 ```
 
 #### Source code
-[JsonRpcNode.call](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/transport/JsonRpcNode.ts#L163)
+[JsonRpcNode.call](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/transport/JsonRpcNode.ts#L189)
 
 ### sendEthGetCodeRequest
 
@@ -570,7 +606,7 @@ const code = await node.getCode("0xContractAddress");
 ```
 
 #### Source code
-[JsonRpcNode.getCode](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/transport/JsonRpcNode.ts#L137)
+[JsonRpcNode.getCode](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/transport/JsonRpcNode.ts#L137)
 
 ### getDelegatedAddress
 
@@ -588,6 +624,74 @@ if (delegatee) {
   console.log("Not delegated");
 }
 ```
+
+## Error and revert decoding
+
+### decodeUserOperationRevertReason
+
+Reads the EntryPoint's `UserOperationRevertReason` log directly from a mined receipt and returns the decoded reason, with no extra RPC call. The result is matched to the receipt's `userOpHash`, so a multi-op bundle returns the right entry. The reason is an `Error` string, a `Panic` code, or empty when the inner call left no revert data (usually out-of-gas).
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { decodeUserOperationRevertReason } from "abstractionkit";
+
+const receipt = await response.included();
+const revert = decodeUserOperationRevertReason(receipt);
+
+if (revert.reverted) {
+  console.log(revert.errorMessage ?? revert.panicCode ?? "out of gas");
+}
+```
+
+</TabItem>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={decodeUserOperationRevertReasonParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={decodeUserOperationRevertReasonReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[decodeUserOperationRevertReason](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/userOperationRevert.ts#L45)
+
+### parseAaCode
+
+Parses an EntryPoint `AAxx` revert code (e.g. `AA21`) out of an error message, so you can branch on a stable contract-defined code instead of matching message text. When a UserOperation fails, AbstractionKit also surfaces this code directly on `AbstractionKitError.aaCode`, so most callers can read `error.aaCode` without calling `parseAaCode` themselves.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { parseAaCode } from "abstractionkit";
+
+try {
+  await smartAccount.sendUserOperation(userOperation, bundlerUrl);
+} catch (error) {
+  // Read the code straight off the error...
+  if (error.aaCode === "AA21") {
+    // account did not pay the prefund
+  }
+  // ...or parse it from any message string
+  const code = parseAaCode(error.message);
+}
+```
+
+</TabItem>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={parseAaCodeParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={parseAaCodeReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[parseAaCode](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/errors.ts#L146)
 
 ## EIP-7702 Utilities
 
@@ -633,7 +737,7 @@ const authorization = await createAndSignEip7702DelegationAuthorization(
 </Tabs>
 
 #### Source code
-[createAndSignEip7702DelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils7702.ts#L137)
+[createAndSignEip7702DelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils7702.ts#L142)
 
 ### createRevokeDelegationAuthorization
 
@@ -664,7 +768,7 @@ const revokeAuth = createRevokeDelegationAuthorization(
 </Tabs>
 
 #### Source code
-[createRevokeDelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils7702.ts#L192)
+[createRevokeDelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils7702.ts#L197)
 
 ### createEip7702DelegationAuthorizationHash
 
@@ -693,7 +797,7 @@ const hash = createEip7702DelegationAuthorizationHash(
 </Tabs>
 
 #### Source code
-[createEip7702DelegationAuthorizationHash](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils7702.ts#L209)
+[createEip7702DelegationAuthorizationHash](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils7702.ts#L214)
 
 ### createAndSignEip7702RawTransaction
 
@@ -730,7 +834,7 @@ const rawTx = createAndSignEip7702RawTransaction(
 </Tabs>
 
 #### Source code
-[createAndSignEip7702RawTransaction](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils7702.ts#L255)
+[createAndSignEip7702RawTransaction](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils7702.ts#L259)
 
 ### createEip7702TransactionHash
 
@@ -766,4 +870,4 @@ const txHash = createEip7702TransactionHash(
 </Tabs>
 
 #### Source code
-[createEip7702TransactionHash](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/utils7702.ts#L319)
+[createEip7702TransactionHash](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils7702.ts#L323)
