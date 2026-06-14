@@ -21,6 +21,8 @@ import {
   getMultiChainEip712DataReturn,
   formatSignaturesToUseroperationsSignaturesParam,
   formatSignaturesToUseroperationsSignaturesReturn,
+  estimateUserOperationGasParamMultiChainSig,
+  estimateUserOperationGasReturnMultiChainSig,
 } from "../../../src/data/accountParamAndReturnData";
 
 # Safe Unified Account
@@ -87,7 +89,7 @@ console.log("Account address (sender): " + smartAccount.accountAddress);
 
 #### Source code
 
-[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeMultiChainSigAccount.ts#L150)
+[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeMultiChainSigAccount.ts#L155)
 
 ### createUserOperation
 
@@ -129,7 +131,35 @@ const userOperation = await smartAccount.createUserOperation(
 
 #### Source code
 
-[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeMultiChainSigAccount.ts#L380)
+[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeMultiChainSigAccount.ts#L385)
+
+### estimateUserOperationGas
+
+Estimates gas limits for a multichain-signature UserOperation against a bundler, matching the estimation surface available on the other account classes. Returns a tuple of `[preVerificationGas, verificationGasLimit, callGasLimit]`.
+
+#### Usage
+
+```ts
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+
+const bundlerRpc = "https://api.candide.dev/public/v3/11155111";
+
+const [preVerificationGas, verificationGasLimit, callGasLimit] =
+  await smartAccount.estimateUserOperationGas(userOperation, bundlerRpc);
+```
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={estimateUserOperationGasParamMultiChainSig} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={estimateUserOperationGasReturnMultiChainSig} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[estimateUserOperationGas](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeMultiChainSigAccount.ts#L461)
 
 ### signUserOperations
 
@@ -182,7 +212,7 @@ userOp2.signature = signatures[1];
 
 #### Source code
 
-[signUserOperations](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeMultiChainSigAccount.ts#L541)
+[signUserOperations](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeMultiChainSigAccount.ts#L672)
 
 ### signUserOperationsWithSigners
 
@@ -244,7 +274,7 @@ const hash = SafeAccount.getMultiChainSingleSignatureUserOperationsEip712Hash([
 
 #### Source code
 
-[getMultiChainSingleSignatureUserOperationsEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeMultiChainSigAccount.ts#L772)
+[getMultiChainSingleSignatureUserOperationsEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeMultiChainSigAccount.ts#L902)
 
 ### getMultiChainSingleSignatureUserOperationsEip712Data
 
@@ -283,7 +313,7 @@ const signature = await wallet.signTypedData(domain, types, messageValue);
 
 #### Source code
 
-[getMultiChainSingleSignatureUserOperationsEip712Data](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeMultiChainSigAccount.ts#L806)
+[getMultiChainSingleSignatureUserOperationsEip712Data](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeMultiChainSigAccount.ts#L936)
 
 ### formatSignaturesToUseroperationsSignatures
 
@@ -337,7 +367,7 @@ userOp2.signature = signatures[1];
 
 #### Source code
 
-[formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/account/Safe/SafeMultiChainSigAccount.ts#L863)
+[formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeMultiChainSigAccount.ts#L1015)
 
 ### Manual EIP-712 signing for a single UserOperation
 

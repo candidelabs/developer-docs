@@ -210,12 +210,12 @@ See the [Passkeys guide](/wallet/plugins/passkeys/#sign-with-fromsafewebauthn) a
 ```ts
 type ExternalSigner = { address: `0x${string}` } & (
   | {
-      signHash: (hash: `0x${string}`, context: SignContext) => Promise<`0x${string}`>;
-      signTypedData?: (data: TypedData, context: SignContext) => Promise<`0x${string}`>;
+      signHash: (hash: `0x${string}`, context: SignContext) => `0x${string}` | Promise<`0x${string}`>;
+      signTypedData?: (data: TypedData, context: SignContext) => `0x${string}` | Promise<`0x${string}`>;
     }
   | {
-      signHash?: (hash: `0x${string}`, context: SignContext) => Promise<`0x${string}`>;
-      signTypedData: (data: TypedData, context: SignContext) => Promise<`0x${string}`>;
+      signHash?: (hash: `0x${string}`, context: SignContext) => `0x${string}` | Promise<`0x${string}`>;
+      signTypedData: (data: TypedData, context: SignContext) => `0x${string}` | Promise<`0x${string}`>;
     }
 ) & {
   type?: "ecdsa" | "contract";
@@ -224,7 +224,9 @@ type ExternalSigner = { address: `0x${string}` } & (
 
 The discriminated union enforces at compile time that every signer implements at least one of `signHash` or `signTypedData`. The optional `type` field defaults to `"ecdsa"`. Safe accounts use `"contract"` for dynamic-length EIP-1271 signatures, including WebAuthn verifier contracts.
 
-Canonical source: [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v0.3.8/src/signer/types.ts#L152).
+Both `signHash` and `signTypedData` may return either a signature directly or a `Promise` of one (`Hex | Promise<Hex>`). A local-key signer can return synchronously without wrapping the result in a `Promise`; async signers (HSMs, MPC, remote APIs) work unchanged.
+
+Canonical source: [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/signer/types.ts#L157).
 
 ## End-to-end examples
 

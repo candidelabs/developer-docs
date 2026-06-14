@@ -1893,3 +1893,154 @@ export const formatSignaturesToUseroperationsSignaturesReturn = [
     description: "Array of formatted signatures with Merkle proofs, one per UserOperation",
   },
 ];
+
+// v0.7 -> v0.9 module migration (SafeAccountV0_3_0)
+
+export const createMigrateToMultiChainSigParam = [
+  {
+    key: "nodeRpcUrl",
+    type: "string | Transport | JsonRpcNode",
+    description: "The JSON-RPC API URL for the target chain.",
+  },
+  {
+    key: "overrides?",
+    type: [
+      {
+        key: "safeV07ModuleAddress?",
+        type: "string",
+        description: "Override the EntryPoint v0.7 module address to disable.",
+      },
+      {
+        key: "safeV09ModuleAddress?",
+        type: "string",
+        description: "Override the EntryPoint v0.9 module address to enable.",
+      },
+      {
+        key: "prevModuleAddress?",
+        type: "string",
+        description:
+          "Override the linked-list predecessor of the module being disabled. Defaults to an on-chain lookup.",
+      },
+      {
+        key: "modulesStart?",
+        type: "string",
+        description: "Starting address for the module pagination query.",
+      },
+      {
+        key: "modulesPageSize?",
+        type: "bigint",
+        description: "Page size for the module pagination query.",
+      },
+      {
+        key: "skipPreflight?",
+        type: "boolean",
+        description:
+          "Skip the on-chain check that verifies the account is a Safe (>= 1.4.1) running the old module before building the batch. Defaults to false.",
+      },
+    ],
+    description: "Optional overrides for contract addresses, pagination, and the preflight check.",
+  },
+];
+
+export const createMigrateToMultiChainSigReturn = [
+  {
+    key: "MetaTransaction[]",
+    type: [
+      {
+        key: "to",
+        type: "string",
+        description: "The target address for the meta-transaction.",
+      },
+      {
+        key: "data",
+        type: "string",
+        description: "The encoded function call data.",
+      },
+      {
+        key: "value",
+        type: "bigint",
+        description: "The value to send with the meta-transaction (0n for these operations).",
+      },
+    ],
+    description:
+      "Array of meta-transactions that disable the v0.7 module, enable the v0.9 Safe4337MultiChainSignatureModule, and update the fallback handler.",
+  },
+];
+
+export const getFallbackHandlerParams = [
+  {
+    key: "nodeRpcUrl",
+    type: "string | Transport | JsonRpcNode",
+    description: "The JSON-RPC API URL for the target chain.",
+  },
+];
+
+export const getFallbackHandlerReturn = [
+  {
+    key: "fallbackHandler",
+    type: "Promise<string>",
+    description: "Resolves to the address of the active ERC-4337 fallback handler (module) set on the Safe.",
+  },
+];
+
+export const getSafeVersionParams = [
+  {
+    key: "nodeRpcUrl",
+    type: "string | Transport | JsonRpcNode",
+    description: "The JSON-RPC API URL for the target chain.",
+  },
+];
+
+export const getSafeVersionReturn = [
+  {
+    key: "version",
+    type: "Promise<string>",
+    description: 'Resolves to the Safe singleton version string read from VERSION(), e.g. "1.4.1".',
+  },
+];
+
+// estimateUserOperationGas (SafeMultiChainSigAccountV1)
+
+export const estimateUserOperationGasParamMultiChainSig = [
+  {
+    key: "userOperation",
+    type: "UserOperationV9",
+    description: "The UserOperation to estimate gas for.",
+  },
+  {
+    key: "bundlerRpc",
+    type: "string | Transport | Bundler",
+    description: "The bundler RPC URL used to run eth_estimateUserOperationGas.",
+  },
+  {
+    key: "overrides?",
+    type: [
+      {
+        key: "stateOverrideSet?",
+        type: "StateOverrideSet",
+        description: "State overrides passed to the bundler during estimation.",
+      },
+      {
+        key: "dummySignerSignaturePairs?",
+        type: "SignerSignaturePair[]",
+        description: "Dummy signer/signature pairs used as placeholders during estimation.",
+      },
+      {
+        key: "expectedSigners?",
+        type: "Signer[]",
+        description:
+          "The signers whose signatures will be produced at sign time. Used to build dummy signatures when dummySignerSignaturePairs is not provided.",
+      },
+    ],
+    description: "Optional overrides for the estimation, including WebAuthn verifier and signer factory addresses.",
+  },
+];
+
+export const estimateUserOperationGasReturnMultiChainSig = [
+  {
+    key: "[preVerificationGas, verificationGasLimit, callGasLimit]",
+    type: "Promise<[bigint, bigint, bigint]>",
+    description:
+      "Resolves to a tuple of the estimated preVerificationGas, verificationGasLimit, and callGasLimit.",
+  },
+];

@@ -872,3 +872,91 @@ export const createEip7702TransactionHashReturn = [
     description: "The keccak256 hash of the RLP-encoded EIP-7702 transaction with the 0x04 type prefix, used for signing",
   },
 ];
+
+export const getStorageAtParams = [
+  {
+    key: "address",
+    type: "string",
+    description: "The contract address to read storage from.",
+  },
+  {
+    key: "slot",
+    type: "string",
+    description: "The 32-byte storage slot, as a hex string.",
+  },
+  {
+    key: "blockTag?",
+    type: "string | bigint",
+    description: 'Block tag or number to read at. Defaults to "latest".',
+  },
+];
+
+export const getStorageAtReturn = [
+  {
+    key: "word",
+    type: "Promise<string>",
+    description: "Resolves to the 32-byte storage word at the given slot, as a hex string.",
+  },
+];
+
+export const decodeUserOperationRevertReasonParams = [
+  {
+    key: "receipt",
+    type: "UserOperationReceiptResult",
+    description:
+      "A mined UserOperation receipt. The function reads the EntryPoint's UserOperationRevertReason log from it directly, with no extra RPC call.",
+  },
+];
+
+export const decodeUserOperationRevertReasonReturn = [
+  {
+    key: "UserOperationRevert",
+    type: [
+      {
+        key: "reverted",
+        type: "boolean",
+        description: "True when the receipt's success is false.",
+      },
+      {
+        key: "outOfGas",
+        type: "boolean",
+        description:
+          "True when the inner call left no revert data. Usually out-of-gas, though a bare revert()/assert or a call to a non-contract also produce empty data.",
+      },
+      {
+        key: "errorMessage?",
+        type: "string",
+        description: 'Decoded Error("...") string, when the call reverted with a reason.',
+      },
+      {
+        key: "panicCode?",
+        type: "number",
+        description: "Decoded Panic(uint256) code (0x11 overflow, 0x12 divide-by-zero, ...).",
+      },
+      {
+        key: "revertData",
+        type: "string",
+        description: "The raw revert data bytes, for custom errors or further decoding.",
+      },
+    ],
+    description:
+      "The decoded revert reason, matched to the receipt's userOpHash so multi-op bundles return the right entry.",
+  },
+];
+
+export const parseAaCodeParams = [
+  {
+    key: "message",
+    type: "string",
+    description: "An error message string from a failed UserOperation.",
+  },
+];
+
+export const parseAaCodeReturn = [
+  {
+    key: "aaCode",
+    type: "string | undefined",
+    description:
+      'The parsed EntryPoint AAxx revert code (e.g. "AA21"), or undefined when the message contains no AA code.',
+  },
+];
