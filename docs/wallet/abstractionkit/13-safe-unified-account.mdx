@@ -140,9 +140,27 @@ Estimates gas limits for a multichain-signature UserOperation against a bundler,
 #### Usage
 
 ```ts
-import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+import {
+  SafeMultiChainSigAccountV1 as SafeAccount,
+  MetaTransaction,
+} from "abstractionkit";
 
 const bundlerRpc = "https://api.candide.dev/public/v3/11155111";
+const nodeRpcUrl = "https://rpc-node-url";
+
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+
+const transaction: MetaTransaction = {
+  to: "0xTargetAddress",
+  value: 0n,
+  data: "0x",
+};
+
+const userOperation = await smartAccount.createUserOperation(
+  [transaction],
+  nodeRpcUrl,
+  bundlerRpc,
+);
 
 const [preVerificationGas, verificationGasLimit, callGasLimit] =
   await smartAccount.estimateUserOperationGas(userOperation, bundlerRpc);
