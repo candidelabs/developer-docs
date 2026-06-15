@@ -2032,7 +2032,7 @@ export const estimateUserOperationGasParamMultiChainSig = [
           "The signers whose signatures will be produced at sign time. Used to build dummy signatures when dummySignerSignaturePairs is not provided.",
       },
     ],
-    description: "Optional overrides for the estimation, including WebAuthn verifier and signer factory addresses.",
+    description: "Optional overrides for the estimation, such as bundler state overrides and the dummy signatures used while estimating.",
   },
 ];
 
