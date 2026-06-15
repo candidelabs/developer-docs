@@ -1032,7 +1032,9 @@ Unless `{ skipPreflight: true }` is passed, it first verifies on-chain that the 
 ```ts
 import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
 
+const accountAddress = "0x1a02592A3484c2077d2E5D24482497F85e1980C6";
 const nodeRpcUrl = "https://rpc2.sepolia.org";
+const bundlerUrl = "https://api.candide.dev/public/v3/11155111";
 
 const smartAccount = new SafeAccount(accountAddress);
 
