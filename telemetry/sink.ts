@@ -1,10 +1,12 @@
 import type { EventSink } from './types'
 import { InMemorySink } from './sink-memory'
+import { PostgresSink } from './sink-postgres'
 
 let singleton: EventSink | null = null
 
-// Replaced with PostgresSink wiring in Task 6.
 export function getSink(): EventSink {
-  if (!singleton) singleton = new InMemorySink()
+  if (!singleton) {
+    singleton = process.env.POSTGRES_URL ? new PostgresSink() : new InMemorySink()
+  }
   return singleton
 }
