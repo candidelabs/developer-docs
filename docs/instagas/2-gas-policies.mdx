@@ -41,7 +41,8 @@ InstaGas provides customizable rules for gas policies. These rules are organized
 - **Account Whitelist**: Create an allowlist of accounts eligible for the gas policy. If empty, all accounts are allowed.
     - Example: "Only sponsor transactions from sender `0xabcd...`."
 - **Domains Whitelist**: Create an allowlist of origins eligible for the gas policy. If empty, all origins are allowed.
-    - Example: "Only sponsor transactions originating from `app.uniswap.com`."
+    - Example: "Only sponsor transactions originating from `https://app.uniswap.com`."
+    - Partial wildcards are supported for subdomains, but the protocol scheme is required. `https://*.candide.dev` is accepted; `*.candide.dev` is not.
 - **IP Whitelists**: Create an allowlist of IPs eligible for the gas policy. If empty, all IPs are allowed.
     - Example: "Only sponsor transactions originating from IP `148.156.123.63`."
 
