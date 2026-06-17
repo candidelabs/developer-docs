@@ -68,6 +68,8 @@ const config = {
       ssgWorkerThreads: false,
     },
   },
+  clientModules: [require.resolve('./src/clientModules/searchBeacon.ts')],
+
   themes: [
     '@docusaurus/theme-mermaid',
     '@saucelabs/theme-github-codeblock',
