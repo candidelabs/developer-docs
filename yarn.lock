@@ -4662,7 +4662,7 @@
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-1.3.5.tgz#1ef302e01cf7d2b5a0fa526790c9123bf1d06690"
   integrity sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==
 
-"@types/ms@*":
+"@types/ms@*", "@types/ms@2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@types/ms/-/ms-2.1.0.tgz#052aa67a48eccc4309d7f0191b7e41434b90bb78"
   integrity sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==
@@ -4860,6 +4860,13 @@
   resolved "https://registry.yarnpkg.com/@vercel/error-utils/-/error-utils-2.2.0.tgz#3aaf43cf463c37fc097e016265098c4e85a66fc6"
   integrity sha512-WFWiRxfPzoYWYifaj4thSKvAaZZwUOqD4k5GINRIgZgCiS2E3iAJbWbIsIZmkQdTecWFHcWGA6q48CjisgpOBA==
 
+"@vercel/functions@^2.0.0":
+  version "2.2.13"
+  resolved "https://registry.yarnpkg.com/@vercel/functions/-/functions-2.2.13.tgz#8b290efb46967cd5e02b366a62176987a765fad5"
+  integrity sha512-14ArBSIIcOBx9nrEgaJb4Bw+en1gl6eSoJWh8qjifLl5G3E4dRXCFOT8HP+w66vb9Wqyd1lAQBrmRhRwOj9X9A==
+  dependencies:
+    "@vercel/oidc" "2.0.2"
+
 "@vercel/nft@1.10.0":
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/@vercel/nft/-/nft-1.10.0.tgz#b2dc01c5ea4e22ada6da2ea7712ac9132da2ad09"
@@ -4905,6 +4912,14 @@
     tsx "4.21.0"
     typescript "npm:typescript@5.9.3"
     undici "5.28.4"
+
+"@vercel/oidc@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@vercel/oidc/-/oidc-2.0.2.tgz#ca96b3dd690fd6d6f835b6638a9c9d836ed2e228"
+  integrity sha512-59PBFx3T+k5hLTEWa3ggiMpGRz1OVvl9eN8SUai+A43IsqiOuAe7qPBf+cray/Fj6mkgnxm/D7IAtjc8zSHi7g==
+  dependencies:
+    "@types/ms" "2.1.0"
+    ms "2.1.3"
 
 "@vercel/python-analysis@0.11.1":
   version "0.11.1"
