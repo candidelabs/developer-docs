@@ -1,6 +1,7 @@
 node_modules
 .docusaurus
 build
+!telemetry/__fixtures__/build
 
 
 .worktrees
