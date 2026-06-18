@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isAuthorizedBeacon } from './auth'
+import { isAuthorizedBeacon, isAuthorizedDrain } from './auth'
 
 describe('isAuthorizedBeacon', () => {
   it('returns true when configuredSecret is null (unconfigured local dev)', () => {
@@ -120,5 +120,35 @@ describe('isAuthorizedBeacon', () => {
         host: null,
       }),
     ).toBe(false)
+  })
+})
+
+describe('isAuthorizedDrain', () => {
+  it('returns true when configuredSecret is null (unconfigured local dev)', () => {
+    expect(isAuthorizedDrain(null, 'some-secret')).toBe(true)
+  })
+
+  it('returns true when configuredSecret is empty string (unconfigured)', () => {
+    expect(isAuthorizedDrain('', 'some-secret')).toBe(true)
+  })
+
+  it('returns true when secret header matches configured secret (string form)', () => {
+    expect(isAuthorizedDrain('super-secret', 'super-secret')).toBe(true)
+  })
+
+  it('returns true when secret header matches but delivered as array (Node header normalization bug fix)', () => {
+    expect(isAuthorizedDrain('super-secret', ['super-secret'])).toBe(true)
+  })
+
+  it('returns false when secret header does not match configured secret', () => {
+    expect(isAuthorizedDrain('super-secret', 'wrong-secret')).toBe(false)
+  })
+
+  it('returns false when secret header is undefined and secret is configured', () => {
+    expect(isAuthorizedDrain('super-secret', undefined)).toBe(false)
+  })
+
+  it('returns false when secret header array is empty and secret is configured', () => {
+    expect(isAuthorizedDrain('super-secret', [])).toBe(false)
   })
 })

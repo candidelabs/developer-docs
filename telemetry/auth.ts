@@ -37,3 +37,23 @@ export function isAuthorizedBeacon(args: AuthBeaconArgs): boolean {
     return false
   }
 }
+
+/**
+ * Returns true if the log drain request is authorized.
+ *
+ * Normalizes the x-telemetry-secret header which Node may deliver as a string or array,
+ * then compares against the configured secret.
+ *
+ * Rules:
+ * - If configuredSecret is null or empty (unconfigured dev/preview), allow all.
+ * - Else allow if the header (as a string) matches the configured secret.
+ * - Otherwise deny.
+ */
+export function isAuthorizedDrain(
+  configuredSecret: string | null,
+  secretHeader: string | string[] | undefined,
+): boolean {
+  if (!configuredSecret) return true
+  const value = Array.isArray(secretHeader) ? secretHeader[0] : secretHeader
+  return value === configuredSecret
+}
