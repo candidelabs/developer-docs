@@ -21,4 +21,22 @@ describe('InMemorySink', () => {
     const recent = await sink.since('2026-06-15T00:00:00.000Z')
     expect(recent).toHaveLength(1)
   })
+
+  it('saveReport() pushes entry onto reports array', async () => {
+    const sink = new InMemorySink()
+    await sink.saveReport('# Report', '2026-06-10T00:00:00.000Z', '2026-06-17T00:00:00.000Z')
+    expect(sink.reports).toHaveLength(1)
+    expect(sink.reports[0]).toEqual({
+      markdown: '# Report',
+      fromIso: '2026-06-10T00:00:00.000Z',
+      toIso: '2026-06-17T00:00:00.000Z',
+    })
+  })
+
+  it('saveReport() accumulates multiple reports', async () => {
+    const sink = new InMemorySink()
+    await sink.saveReport('# Week 1', '2026-06-03T00:00:00.000Z', '2026-06-10T00:00:00.000Z')
+    await sink.saveReport('# Week 2', '2026-06-10T00:00:00.000Z', '2026-06-17T00:00:00.000Z')
+    expect(sink.reports).toHaveLength(2)
+  })
 })

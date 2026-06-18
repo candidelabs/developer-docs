@@ -25,4 +25,11 @@ export class PostgresSink implements EventSink {
       result_count: (r.result_count as number | null) ?? null,
     }))
   }
+
+  async saveReport(markdown: string, fromIso: string, toIso: string): Promise<void> {
+    await sql`
+      insert into telemetry_reports (from_ts, to_ts, markdown)
+      values (${fromIso}, ${toIso}, ${markdown})
+    `
+  }
 }

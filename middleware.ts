@@ -16,10 +16,13 @@ export default function middleware(request: Request): void {
     knownPaths,
     ts: new Date().toISOString(),
   })
+  const beaconHeaders: Record<string, string> = { 'content-type': 'application/json' }
+  const beaconSecret = process.env.TELEMETRY_BEACON_SECRET
+  if (beaconSecret) beaconHeaders['x-telemetry-secret'] = beaconSecret
   waitUntil(
     fetch(new URL('/api/beacon', request.url), {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: beaconHeaders,
       body: JSON.stringify(event),
     }).catch(() => {}),
   )

@@ -17,4 +17,5 @@ export interface TelemetryEvent {
 export interface EventSink {
   record(event: TelemetryEvent): Promise<void>
   since(fromIso: string): Promise<TelemetryEvent[]>
+  saveReport(markdown: string, fromIso: string, toIso: string): Promise<void>
 }
