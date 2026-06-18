@@ -2,7 +2,7 @@ import type { ClientClass } from './types'
 
 const RULES: Array<[RegExp, ClientClass]> = [
   [/claude-?code/i, 'claude-code'],
-  [/codex/i, 'codex'],
+  [/codex[-/]/i, 'codex'],
   [/GPTBot|OAI-SearchBot|ChatGPT-User/i, 'chatgpt'],
   [/PerplexityBot/i, 'perplexity'],
   [/Googlebot|bingbot|DuckDuckBot|Applebot|Slackbot/i, 'search-bot'],

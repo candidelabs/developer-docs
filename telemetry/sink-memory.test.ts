@@ -33,6 +33,12 @@ describe('InMemorySink', () => {
     })
   })
 
+  it('recordMany appends all events', async () => {
+    const sink = new InMemorySink()
+    await sink.recordMany([ev(), ev({ path: '/b.md' })])
+    expect(sink.events).toHaveLength(2)
+  })
+
   it('saveReport() accumulates multiple reports', async () => {
     const sink = new InMemorySink()
     await sink.saveReport('# Week 1', '2026-06-03T00:00:00.000Z', '2026-06-10T00:00:00.000Z')

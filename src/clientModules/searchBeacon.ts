@@ -1,5 +1,5 @@
 export function onRouteDidUpdate({ location }: { location: Location }): void {
-  if (!location.pathname.includes('/search')) return
+  if (!/\/search(?:\/|$)/.test(location.pathname)) return
   const query = new URLSearchParams(location.search).get('q')
   if (!query) return
   // Let the plugin render results before counting.

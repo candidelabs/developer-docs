@@ -18,4 +18,9 @@ describe('parseDrainLines', () => {
     const line = JSON.stringify({ timestamp: 1, path: '/img/logo.png', statusCode: 200, userAgent: [''] })
     expect(parseDrainLines(line)).toHaveLength(0)
   })
+
+  it('skips lines with a missing or invalid timestamp', () => {
+    const line = JSON.stringify({ path: '/wallet/x.md', statusCode: 200, userAgent: ['GPTBot'] })
+    expect(parseDrainLines(line)).toHaveLength(0)
+  })
 })

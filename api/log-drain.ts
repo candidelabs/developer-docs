@@ -27,7 +27,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body)
-  const sink = getSink()
-  for (const event of parseDrainLines(body)) await sink.record(event)
+  const events = parseDrainLines(body)
+  if (events.length > 0) await getSink().recordMany(events)
   res.status(200).end()
 }

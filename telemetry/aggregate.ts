@@ -54,6 +54,13 @@ export function aggregate(
   }
 }
 
+// Telemetry values (paths, queries, client names) are attacker-influenceable.
+// Neutralize newlines and markdown control characters so a forged value cannot
+// break the report layout or inject content.
+function escapeCell(value: string): string {
+  return value.replace(/[\r\n]+/g, ' ').replace(/[`|*_[\]<>]/g, '\\$&')
+}
+
 export function toMarkdown(r: RollupReport): string {
   const lines: string[] = []
   lines.push(`# Docs telemetry: ${r.from.slice(0, 10)} to ${r.to.slice(0, 10)}`)
@@ -61,17 +68,17 @@ export function toMarkdown(r: RollupReport): string {
   lines.push(`Total events: ${r.total}. Agent numbers are a floor, not an exact count.`)
   lines.push('')
   lines.push('## Expected-but-missing docs (agents requested, do not exist)')
-  for (const m of r.missingDocs) lines.push(`- ${m.path}: ${m.count}`)
+  for (const m of r.missingDocs) lines.push(`- ${escapeCell(m.path)}: ${m.count}`)
   if (r.missingDocs.length === 0) lines.push('- none')
   lines.push('')
   lines.push('## Zero-result searches')
-  for (const s of r.zeroResultSearches) lines.push(`- "${s.query}": ${s.count}`)
+  for (const s of r.zeroResultSearches) lines.push(`- "${escapeCell(s.query)}": ${s.count}`)
   if (r.zeroResultSearches.length === 0) lines.push('- none')
   lines.push('')
   lines.push('## Top pages by client')
   for (const [client, pages] of Object.entries(r.topPagesByClient)) {
-    lines.push(`### ${client}`)
-    for (const p of pages) lines.push(`- ${p.path}: ${p.count}`)
+    lines.push(`### ${escapeCell(client)}`)
+    for (const p of pages) lines.push(`- ${escapeCell(p.path)}: ${p.count}`)
   }
   return lines.join('\n')
 }

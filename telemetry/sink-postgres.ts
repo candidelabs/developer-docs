@@ -10,6 +10,24 @@ export class PostgresSink implements EventSink {
     `
   }
 
+  async recordMany(events: TelemetryEvent[]): Promise<void> {
+    if (events.length === 0) return
+    const cols = 7
+    const valuesSql = events
+      .map((_, i) => {
+        const b = i * cols
+        return `($${b + 1}, $${b + 2}, $${b + 3}, $${b + 4}, $${b + 5}, $${b + 6}, $${b + 7})`
+      })
+      .join(', ')
+    const params = events.flatMap((e) => [
+      e.ts, e.kind, e.path, e.status, e.client_class, e.query ?? null, e.result_count ?? null,
+    ])
+    await sql.query(
+      `insert into telemetry_events (ts, kind, path, status, client_class, query, result_count) values ${valuesSql}`,
+      params,
+    )
+  }
+
   async since(fromIso: string): Promise<TelemetryEvent[]> {
     const { rows } = await sql`
       select ts, kind, path, status, client_class, query, result_count

@@ -9,6 +9,9 @@ export const config = {
 }
 
 export default function middleware(request: Request): void {
+  // If the build-time manifest is empty or stale, every path would be marked
+  // 404 (expected-but-missing) and poison telemetry. Skip rather than emit noise.
+  if (knownPaths.size === 0) return
   const event = buildPageEvent({
     url: request.url,
     userAgent: request.headers.get('user-agent'),

@@ -3,7 +3,8 @@ import { getSink } from '../telemetry/sink'
 import { aggregate, toMarkdown } from '../telemetry/aggregate'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET
+  if (!cronSecret || req.headers.authorization !== `Bearer ${cronSecret}`) {
     res.status(401).end()
     return
   }

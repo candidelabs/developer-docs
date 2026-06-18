@@ -28,4 +28,15 @@ describe('aggregate', () => {
     expect(md).toContain('# Docs telemetry')
     expect(md).not.toContain('—')
   })
+
+  it('escapes newlines and markdown control characters in untrusted fields', () => {
+    const r = aggregate(
+      [e({ kind: 'search', path: '/search', query: 'evil\nline `code`', result_count: 0, client_class: 'human' })],
+      '2026-06-15T00:00:00.000Z',
+      '2026-06-22T00:00:00.000Z',
+    )
+    const md = toMarkdown(r)
+    expect(md).not.toContain('evil\nline')   // newline neutralized to a space
+    expect(md).not.toContain('`code`')         // backticks escaped
+  })
 })

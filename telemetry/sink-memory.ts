@@ -14,6 +14,10 @@ export class InMemorySink implements EventSink {
     this.events.push(event)
   }
 
+  async recordMany(events: TelemetryEvent[]): Promise<void> {
+    this.events.push(...events)
+  }
+
   async since(fromIso: string): Promise<TelemetryEvent[]> {
     return this.events.filter((e) => e.ts >= fromIso)
   }

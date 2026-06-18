@@ -26,6 +26,7 @@ export function parseDrainLines(body: string): TelemetryEvent[] {
     }
     const path = log.path ?? ''
     if (!isDocPath(path)) continue
+    if (typeof log.timestamp !== 'number' || !Number.isFinite(log.timestamp)) continue
     const ua = Array.isArray(log.userAgent) ? log.userAgent[0] ?? '' : log.userAgent ?? ''
     out.push({
       ts: new Date(log.timestamp).toISOString(),

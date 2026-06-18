@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { ingest } from '../telemetry/ingest'
+import { validateEvent } from '../telemetry/ingest'
 import { getSink } from '../telemetry/sink'
 import { isAuthorizedBeacon } from '../telemetry/auth'
 
@@ -23,11 +23,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
+  let body: unknown
   try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
-    await ingest(body, getSink())
-    res.status(204).end()
+    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body
+  } catch {
+    res.status(400).json({ error: 'invalid JSON body' })
+    return
+  }
+
+  let event
+  try {
+    event = validateEvent(body)
   } catch (err) {
     res.status(400).json({ error: (err as Error).message })
+    return
   }
+
+  try {
+    await getSink().record(event)
+  } catch {
+    res.status(500).json({ error: 'internal error' })
+    return
+  }
+  res.status(204).end()
 }
