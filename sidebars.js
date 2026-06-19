@@ -535,6 +535,11 @@ const sidebars = {
           label: "Why AbstractionKit"
         },
         {
+          type: "doc",
+          id: "wallet/abstractionkit/account-types",
+          label: "Account Types"
+        },
+        {
           type: "category",
           label: "Safe Account",
           collapsed: true,
