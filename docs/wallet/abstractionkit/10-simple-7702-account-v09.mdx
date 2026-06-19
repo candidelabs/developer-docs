@@ -210,6 +210,8 @@ See [External Signers](/wallet/abstractionkit/external-signers) for the full lis
 
 Builds the EIP-712 typed data payload for a UserOperation under the EntryPoint v0.9 domain. Use this static helper when you need to inspect the wallet prompt payload or drive a custom `signTypedData` primitive directly.
 
+Full example: [`06-typed-data-builder.ts`](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/06-typed-data-builder.ts).
+
 ```ts title="example.ts"
 import { Simple7702AccountV09 } from "abstractionkit";
 
@@ -508,6 +510,8 @@ const signedTransaction = await smartAccount.createRevokeDelegationTransaction(
 </Tabs>
 
 ## Error Handling & Common Issues
+
+For runnable examples that classify and recover from the most common UserOperation failures (underfunded paymaster, insufficient token balance, sponsor denial, on-chain reverts, and gas-too-low retries), see the [error-handling examples](https://github.com/candidelabs/abstractionkit-examples/tree/main/error-handling).
 
 <Tabs>
 <TabItem value="auth-errors" label="Authorization Errors">
