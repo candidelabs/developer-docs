@@ -37,7 +37,7 @@ import {
   // highlight-end
 } from "abstractionkit";
 
-const paymasterRPC = process.env.PAYMASTER_RPC as string;
+const paymasterRPC = process.env.PAYMASTER_URL as string;
 const paymaster: Erc7677Paymaster = new Erc7677Paymaster(paymasterRPC);
 const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
 
@@ -75,7 +75,7 @@ userOperation = paymasterUserOperation;
 <TabItem value=".env" label=".env">
 
 ```env
-PAYMASTER_RPC=https://api.candide.dev/public/v3/11155111
+PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
 SPONSORSHIP_POLICY_ID=
 ```
 
