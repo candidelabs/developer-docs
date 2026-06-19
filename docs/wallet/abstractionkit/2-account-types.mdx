@@ -7,7 +7,14 @@ keywords: [account-class, safe-account, "7702", entrypoint, sdk, account-abstrac
 
 # Account Types
 
-AbstractionKit ships several account classes. This page is the single reference for which one to use, what it is actually called, and how the import alias you see in the guides maps to the real class. If you are unsure which account to start with, use `SafeMultiChainSigAccountV1`.
+AbstractionKit ships several account classes. This page is the single reference for which one to use, what it is actually called, and how the import alias you see in the guides maps to the real class.
+
+## Which one should I use?
+
+- **New wallet** (you are creating a fresh smart account for the user): use `SafeMultiChainSigAccountV1`. It works single-chain and as the Safe Unified Account for multichain, so one class covers both.
+- **Existing EOA** (the user already has an externally owned account and wants to upgrade it in place): use `Simple7702AccountV09`. It upgrades the existing EOA via EIP-7702 delegation, keeping the same address.
+
+Everything below is the full list, including legacy classes.
 
 ## The `SafeAccount` alias
 
@@ -25,10 +32,10 @@ When you read a snippet, check the import to see which real class `SafeAccount` 
 
 | Class | Use case | EntryPoint | External signer method |
 |-------|----------|------------|------------------------|
-| `SafeMultiChainSigAccountV1` | Most integrations (recommended). Works single-chain and as the Safe Unified Account for multichain. | v0.9 | `signUserOperationWithSigners(op, signers[], chainId)` for single chain, `signUserOperationsWithSigners(ops[], signers[])` for multichain |
+| `SafeMultiChainSigAccountV1` | New wallets (recommended). A new smart account that works single-chain and as the Safe Unified Account for multichain. | v0.9 | `signUserOperationWithSigners(op, signers[], chainId)` for single chain, `signUserOperationsWithSigners(ops[], signers[])` for multichain |
 | `SafeAccountV0_3_0` | Legacy v0.7 compatibility | v0.7 | `signUserOperationWithSigners(op, signers[], chainId)` |
 | `SafeAccountV0_2_0` | Legacy v0.6 compatibility | v0.6 | `signUserOperationWithSigners(op, signers[], chainId)` |
-| `Simple7702AccountV09` | EIP-7702 delegation (recommended) | v0.9 | `signUserOperationWithSigner(op, signer, chainId)` |
+| `Simple7702AccountV09` | Existing EOAs upgraded in place via EIP-7702 (recommended for that case) | v0.9 | `signUserOperationWithSigner(op, signer, chainId)` |
 | `Simple7702Account` | EIP-7702 legacy v0.8, used in the v0.8 to v0.9 migration example | v0.8 | `signUserOperationWithSigner(op, signer, chainId)` |
 | `Calibur7702Account` | EIP-7702 Calibur (passkeys, key management) | v0.8 (default) | `signUserOperationWithSigner(op, signer, chainId)` |
 
