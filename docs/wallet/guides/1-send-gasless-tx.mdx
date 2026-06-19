@@ -34,7 +34,7 @@ Add the paymaster configuration to your `.env`:
 
 ```bash title=".env"
 # Paymaster service endpoint
-PAYMASTER_RPC=https://api.candide.dev/public/v3/11155111
+PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
 
 # Optional: Your private gas policy ID (if you created one)
 SPONSORSHIP_POLICY_ID=
@@ -52,7 +52,7 @@ Try public policies first, then fallback to private if no public policy matches
 ```ts title="Public first, private fallback"
 import { Erc7677Paymaster } from "abstractionkit";
 
-const paymasterRPC = process.env.PAYMASTER_RPC as string;
+const paymasterRPC = process.env.PAYMASTER_URL as string;
 const paymaster = new Erc7677Paymaster(paymasterRPC);
 const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
 
@@ -93,7 +93,7 @@ userOperation = paymasterUserOperation;
 
 ```bash
 # Paymaster service endpoint
-PAYMASTER_RPC=https://api.candide.dev/public/v3/11155111
+PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
 
 # Optional: Your private gas policy ID (if you created one)
 SPONSORSHIP_POLICY_ID=
@@ -129,7 +129,7 @@ async function main(): Promise<void> {
     const chainId = BigInt(process.env.CHAIN_ID as string)
     const bundlerUrl = process.env.BUNDLER_URL as string
     const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string
-    const paymasterRPC = process.env.PAYMASTER_RPC as string
+    const paymasterRPC = process.env.PAYMASTER_URL as string
     const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID
     const ownerPublicAddress = process.env.PUBLIC_ADDRESS as string
     const ownerPrivateKey = process.env.PRIVATE_KEY as string
@@ -244,7 +244,7 @@ main().catch(console.error)
 CHAIN_ID=11155111
 BUNDLER_URL=https://api.candide.dev/public/v3/11155111
 JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
-PAYMASTER_RPC=https://api.candide.dev/public/v3/11155111
+PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
 
 # Optional: Your private gas policy ID
 SPONSORSHIP_POLICY_ID=

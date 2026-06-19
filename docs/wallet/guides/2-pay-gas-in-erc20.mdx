@@ -39,7 +39,7 @@ Token paymasters enable users to pay gas fees with ERC-20 tokens instead of ETH,
 ```ts title="Token paymaster implementation"
 import { Erc7677Paymaster } from "abstractionkit";
 
-const paymasterRPC = process.env.PAYMASTER_RPC as string;
+const paymasterRPC = process.env.PAYMASTER_URL as string;
 const tokenAddress = process.env.TOKEN_ADDRESS as string;
 
 const paymaster = new Erc7677Paymaster(paymasterRPC);
@@ -59,7 +59,7 @@ Get ERC-20 faucet tokens (CTT or USDT) from our [dashboard faucet](https://dashb
 
 ```bash
 # Paymaster service endpoint
-PAYMASTER_RPC=https://api.candide.dev/public/v3/11155111
+PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
 
 # Token address for gas payment (CTT on Sepolia for testing)
 TOKEN_ADDRESS=0xFa5854FBf9964330d761961F46565AB7326e5a3b
@@ -107,7 +107,7 @@ async function main(): Promise<void> {
     const chainId = BigInt(process.env.CHAIN_ID as string)
     const bundlerUrl = process.env.BUNDLER_URL as string
     const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string
-    const paymasterRPC = process.env.PAYMASTER_RPC as string
+    const paymasterRPC = process.env.PAYMASTER_URL as string
     const tokenAddress = process.env.TOKEN_ADDRESS as string
     const ownerPublicAddress = process.env.PUBLIC_ADDRESS as string
     const ownerPrivateKey = process.env.PRIVATE_KEY as string
@@ -205,7 +205,7 @@ BUNDLER_URL=https://api.candide.dev/public/v3/11155111
 JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
 
 # Paymaster configuration
-PAYMASTER_RPC=https://api.candide.dev/public/v3/11155111
+PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
 TOKEN_ADDRESS=0xFa5854FBf9964330d761961F46565AB7326e5a3b
 
 # Your EOA credentials
