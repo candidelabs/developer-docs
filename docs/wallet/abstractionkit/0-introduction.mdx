@@ -9,7 +9,7 @@ keywords: [typescript, sdk, userOperation, library]
 
 ![image](/img/posters/abstractionkit-poster.png)
 
-A TypeScript library for building and sending ERC-4337 UserOperations with first-class support for Safe Accounts, Calibur Accounts, and Simple EIP-7702 Accounts. New Safe examples default to `SafeMultiChainSigAccountV1` on EntryPoint v0.9, and new EIP-7702 Simple Account examples default to `Simple7702AccountV09`.
+A TypeScript library for building and sending ERC-4337 UserOperations with first-class support for Safe Accounts, Calibur Accounts, and Simple EIP-7702 Accounts. New Safe examples default to `SafeMultiChainSigAccountV1` on EntryPoint v0.9, and new EIP-7702 Simple Account examples default to `Simple7702AccountV09`. Pick by what the user already has: for a new wallet, create a `SafeMultiChainSigAccountV1`; to upgrade an existing EOA in place and keep its address, use `Simple7702AccountV09` via EIP-7702.
 
 AbstractionKit abstracts the complexities of the ERC-4337 standard while providing developers with maximum flexibility to build Smart Wallets.
 Use Safe Accounts, construct callData, estimate and sponsor gas (fully or with ERC-20 tokens), and send UserOperations to Bundlers - all with full type safety.
