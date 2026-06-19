@@ -1027,6 +1027,8 @@ Creates an array of meta-transactions that migrate a deployed Safe from the Entr
 
 Unless `{ skipPreflight: true }` is passed, it first verifies on-chain that the account is a Safe (version `>= 1.4.1`) running the old module, where the module is both enabled and the current fallback handler. This turns a would-be cryptic on-chain `AA23` / `AA24` into a clear up-front error.
 
+Full example: [`migrate-safe-v07-to-v09.ts`](https://github.com/candidelabs/abstractionkit-examples/blob/main/migrate-safe-v07-to-v09/migrate-safe-v07-to-v09.ts).
+
 #### Usage
 
 ```ts
