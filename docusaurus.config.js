@@ -183,9 +183,9 @@ const config = {
       },
       image: 'img/posters/atelier-meta.png',
       announcementBar: {
-        id: 'abstractionkit-v0-3-0',
+        id: 'new-chains-somnia-hyperevm-tempo',
         content:
-          'AbstractionKit v0.3.0 is out: Safe Unified Account audited, Calibur Account, and parallelizable paymaster signing. <a href="/blog/abstractionkit-v0-3-0-release">Read the release</a>',
+          'Now live on Somnia, HyperEVM, and Tempo. <a href="/wallet/bundler/rpc-endpoints">See all supported networks</a>',
         backgroundColor: '#fce7f0',
         textColor: '#1a1a1a',
         isCloseable: true,
