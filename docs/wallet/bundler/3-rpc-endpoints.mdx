@@ -6,7 +6,7 @@ image: /img/posters/voltaire-meta.png
 authors: [sherif]
 ---
 
-import { BundlerEndPointTable, ChainListTable } from "/src/components/CustomTable";
+import { ChainListTable } from "/src/components/CustomTable";
 export const chainList = [
   {
     network: "Arbitrum One",
@@ -49,64 +49,48 @@ export const chainList = [
     logo: "/img/networks/100.svg",
     chainId: 100,
     chainHandle: "gnosis",
-    address: "Available on Dashboard",
-    type: "Bundler",
+  },
+  {
+    network: "HyperEVM",
+    logo: "/img/networks/999.png",
+    chainId: 999,
+    chainHandle: "hyperevm",
   },
   {
     network: "Optimism",
     logo: "/img/networks/10.png",
     chainId: 10,
     chainHandle: "optimism",
-    address: "Available on Dashboard",
-    type: "Bundler",
+  },
+  {
+    network: "Plasma",
+    logo: "/img/networks/9745.svg",
+    chainId: 9745,
+    chainHandle: "plasma",
   },
   {
     network: "Polygon PoS",
     logo: "/img/networks/137.png",
     chainId: 137,
     chainHandle: "polygon",
-    address: "Available on Dashboard",
-    type: "Bundler",
   },
-    {
-    network: "Plasma",
-    logo: "/img/networks/9745.svg",
-    chainId: 9745,
-    chainHandle: "plasma",
-    address: "Available on Dashboard",
-    type: "Bundler",
+  {
+    network: "Somnia",
+    logo: "/img/networks/5031.png",
+    chainId: 5031,
+    chainHandle: "somnia",
+  },
+  {
+    network: "Tempo",
+    logo: "/img/networks/4217.png",
+    chainId: 4217,
+    chainHandle: "tempo",
   },
   {
     network: "Worldchain",
     logo: "/img/networks/480.svg",
     chainId: 480,
     chainHandle: "worldchain",
-    address: "Available on Dashboard",
-    type: "Bundler",
-  },
-];
-
-export const unifiedMempool = [
-  {
-    network: "Arbitrum One",
-    logo: "/img/networks/42161.png",
-    chainId: 42161,
-    chainHandle: "arbitrum",
-    address: "https://arbitrum.test.bundler.candide.dev/rpc",
-  },
-  {
-    network: "Ethereum",
-    logo: "/img/networks/1.png",
-    chainId: 1,
-    chainHandle: "ethereum",
-    address: "https://ethereum.test.bundler.candide.dev/rpc",
-  },
-  {
-    network: "Optimism",
-    logo: "/img/networks/10.png",
-    chainId: 10,
-    chainHandle: "optimism",
-    address: "https://optimism.test.bundler.candide.dev/rpc",
   },
 ];
 
@@ -141,6 +125,18 @@ export const testChainList = [
     chainId: 11155111,
     chainHandle: "sepolia",
   },
+  {
+    network: "Somnia Testnet",
+    logo: "/img/networks/5031.png",
+    chainId: 50312,
+    chainHandle: "somnia-testnet",
+  },
+  {
+    network: "Tempo Testnet",
+    logo: "/img/networks/4217.png",
+    chainId: 42431,
+    chainHandle: "tempo-testnet",
+  },
 ];
 
 export const exclusiveChainList = [
@@ -168,7 +164,6 @@ export const exclusiveChainList = [
   { network: "Plume", chainId: 98866 },
   { network: "Derive", chainId: 957 },
   { network: "Lisk", chainId: 1135 },
-  { network: "Tempo", chainId: 4217 },
 ];
 
 # Supported Networks

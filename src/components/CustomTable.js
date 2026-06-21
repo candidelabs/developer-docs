@@ -46,6 +46,7 @@ export function ChainListTable({ items }) {
         >
           {item.logo && <img
             src={item.logo}
+            alt={item.network}
             style={{
               width: "25px",
               marginRight: "10px",
