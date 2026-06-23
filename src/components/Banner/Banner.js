@@ -76,7 +76,7 @@ const Banner = () => {
           </button>
         </div>
         <div className={styles.banner__actions}>
-          <a href="/wallet/atelier-intro/" className={styles.banner__primary}>
+          <a href="/wallet/intro/" className={styles.banner__primary}>
             Get started
             <svg
               xmlns="http://www.w3.org/2000/svg"

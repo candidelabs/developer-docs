@@ -161,6 +161,10 @@ const config = {
       {
         redirects: [
           {
+            from: '/wallet/atelier-intro/',
+            to: '/wallet/intro/',
+          },
+          {
             from: '/wallet/bundler/rpc-endpoints/',
             to: '/wallet/api/supported-networks/',
           },
@@ -230,7 +234,7 @@ const config = {
         },
         items: [
           {
-            to: '/wallet/atelier-intro',
+            to: '/wallet/intro',
             position: 'left',
             label: 'SDK',
           },

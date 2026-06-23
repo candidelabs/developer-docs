@@ -417,7 +417,7 @@ const sidebars = {
   walletSideBar: [
     {
       type: "doc",
-      id: "wallet/atelier-intro",
+      id: "wallet/intro",
       label: "Intro to Candide"
     },
     {

@@ -30,7 +30,7 @@ Thanks to support from the [Safe Grants Program](https://grants.safe.global), Ca
 
 The integration of Safe contracts into AbstractionKit paves the way for Safe Account adoption. This integration streamlines Smart Wallet development while ensuring wallets operate cohesively within the ecosystem, allowing applications to expand their user bases with the battle-tested Safe smart account standard.
 
-To begin using AbstractionKit, visit the [getting started](https://docs.candide.dev/wallet/atelier-intro/) tutorial and install with `npm i abstractionkit`.
+To begin using AbstractionKit, visit the [getting started](https://docs.candide.dev/wallet/intro/) tutorial and install with `npm i abstractionkit`.
 
 If you're building on account abstraction, reach out on [Twitter](https://twitter.com/@candidelabs), Discord, or email us at team@candidelabs.com.
 
