@@ -1,13 +1,9 @@
 import React from 'react';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import HomepageFeatures from '@site/src/components/HomepageFeatures';
-import homePageFeatures from '../homePageFeatures'
 import styles from './index.module.css';
 import Banner from '../components/Banner/Banner';
 
 export default function Home() {
-  const { siteConfig } = useDocusaurusContext()
   return (
     <Layout
       title={`Candide Documentation`}
@@ -27,9 +23,6 @@ export default function Home() {
               For agents and IDE integrations like Claude Code or Cursor, use{' '}
               <a href="https://docs.candide.dev/llms.txt" target="_blank" rel="noopener noreferrer">/llms.txt</a>.
             </span>
-          </div>
-          <div className={styles.row}>
-            <HomepageFeatures items={homePageFeatures} />
           </div>
         </div>
       </main>

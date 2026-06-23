@@ -9,95 +9,6 @@
   padding: 2.5rem 1.5rem 3rem;
 }
 
-.row {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-}
-
-/* ---- Cards ---- */
-
-.card {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.875rem;
-  padding: 1.125rem 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--ifm-color-emphasis-200);
-  background: rgba(255, 255, 255, 0.02);
-  text-decoration: none !important;
-  color: inherit !important;
-  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
-  position: relative;
-  cursor: pointer;
-}
-
-.card:hover {
-  border-color: var(--ifm-color-primary);
-  background: rgba(231, 0, 115, 0.05);
-  transform: translateY(-1px);
-  text-decoration: none !important;
-}
-
-.card_icon {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  margin-top: 0.15rem;
-  color: var(--ifm-color-primary);
-  opacity: 0.85;
-  transition: opacity 0.15s ease;
-}
-
-.card:hover .card_icon {
-  opacity: 1;
-}
-
-.card_body {
-  flex: 1;
-  min-width: 0;
-}
-
-.card_title {
-  font-size: 0.95rem !important;
-  font-weight: 700 !important;
-  color: var(--ifm-font-color-base) !important;
-  margin: 0 0 0.3rem 0 !important;
-  line-height: 1.4;
-}
-
-.card_description {
-  font-size: 0.875rem !important;
-  color: var(--ifm-color-emphasis-700) !important;
-  line-height: 1.55;
-  margin: 0 !important;
-}
-
-.card_arrow {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  color: var(--ifm-color-emphasis-400);
-  transition: transform 0.15s ease, color 0.15s ease;
-  margin-top: 0.2rem;
-}
-
-.card:hover .card_arrow {
-  transform: translateX(3px);
-  color: var(--ifm-color-primary);
-}
-
-/* Light mode overrides */
-html[data-theme="light"] .card {
-  background: #ffffff;
-  border-color: var(--ifm-color-emphasis-200);
-}
-
-html[data-theme="light"] .card:hover {
-  background: rgba(231, 0, 115, 0.04);
-  border-color: var(--ifm-color-primary);
-}
-
 /* ---- AI strip ---- */
 
 .ai_strip {
@@ -140,13 +51,6 @@ html[data-theme="light"] .ai_strip {
 }
 
 /* Responsive */
-@media screen and (max-width: 700px) {
-  .row {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-}
-
 @media screen and (max-width: 660px) {
   .container {
     padding: 2rem 1rem;
