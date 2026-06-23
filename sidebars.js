@@ -17,16 +17,51 @@ const sidebars = {
 
   // But you can create a sidebar manually
   aaSideBar: ["account-abstraction/intro"],
+  forwardingAddressSideBar: [
+    {
+      type: "category",
+      label: "Forwarding Address",
+      className: "category-not-collapsible",
+      collapsible: false,
+      collapsed: false,
+      items: [
+        {
+          type: "doc",
+          id: "forwarding-address/overview",
+          label: "Overview"
+        },
+        {
+          type: "doc",
+          id: "forwarding-address/integration-guide",
+          label: "Integration Guide"
+        },
+        {
+          type: "doc",
+          id: "forwarding-address/api-reference",
+          label: "API Reference"
+        },
+      ],
+    },
+  ],
   infraSideBar: [
     {
-      type: "doc",
-      id: "wallet/bundler/rpc-endpoints",
-      label: "Supported Networks"
-    },
-    {
-      type: "doc",
-      id: "wallet/bundler/public-endpoints",
-      label: "Public Endpoints"
+      type: "category",
+      label: "Bundler & Paymaster",
+      className: "category-not-collapsible",
+      collapsible: false,
+      collapsed: false,
+      items: [
+        {
+          type: "doc",
+          id: "wallet/api/supported-networks",
+          label: "Supported Networks"
+        },
+        {
+          type: "doc",
+          id: "wallet/api/public-endpoints",
+          label: "Public Endpoints"
+        },
+      ],
     },
     {
       type: "category",
@@ -628,28 +663,6 @@ const sidebars = {
       className: "category-not-collapsible",
       label: "Labs",
       items: [
-        {
-          type: "category",
-          label: "Forwarding Address",
-          collapsed: true,
-          items: [
-            {
-              type: "doc",
-              id: "account-abstraction/research/multichain-deposit-address",
-              label: "Overview"
-            },
-            {
-              type: "doc",
-              id: "account-abstraction/research/forwarding-address-api",
-              label: "API Reference"
-            },
-            {
-              type: "doc",
-              id: "account-abstraction/research/forwarding-address-guide",
-              label: "Integration Guide"
-            },
-          ],
-        },
         {
           type: "doc",
           id: "account-abstraction/research/eil",

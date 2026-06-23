@@ -26,7 +26,7 @@ https://api.candide.dev/public/v3/11155111
 
 ## Supported Networks
 
-See the list of [supported networks](/wallet/bundler/rpc-endpoints/).
+See the list of [supported networks](/wallet/api/supported-networks/).
 
 ## Supported Methods
 

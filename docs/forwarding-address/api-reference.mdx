@@ -7,14 +7,10 @@ keywords:
   - json-rpc
   - cross-chain
   - deposit-address
-  - alpha
+  - production
 ---
 
 # Forwarding Address API Reference
-
-:::caution Alpha
-The Forwarding Address API is in alpha. Breaking changes are expected. Do not move large amounts of funds through forwarding addresses during the alpha period.
-:::
 
 ## Protocol
 
@@ -155,7 +151,7 @@ Parameters:
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | `recipient` | `address` | Yes | Destination address that receives forwarded tokens |
-| `custodialWithdrawer` | `address` | Yes | Emergency recovery address that can withdraw stuck funds after a timelock. For most integrations, use the platform's address. See [custodialWithdrawer](./forwarding-address-guide.mdx#the-custodialwithdrawer-role) |
+| `custodialWithdrawer` | `address` | Yes | Emergency recovery address that can withdraw stuck funds after a timelock. For most integrations, use the platform's address. See [custodialWithdrawer](./integration-guide.mdx#the-custodialwithdrawer-role) |
 | `destinationChainId` | `number` | Yes | Target chain ID where assets will be delivered |
 | `salt` | `bytes32` | No | Optional 32-byte hex value. Use different salts to generate multiple forwarding addresses for the same recipient |
 
@@ -207,7 +203,7 @@ Parameters:
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | `recipient` | `address` | Yes | Destination recipient address |
-| `custodialWithdrawer` | `address` | Yes | Withdrawal-authorized address. See [custodialWithdrawer](./forwarding-address-guide.mdx#the-custodialwithdrawer-role) |
+| `custodialWithdrawer` | `address` | Yes | Withdrawal-authorized address. See [custodialWithdrawer](./integration-guide.mdx#the-custodialwithdrawer-role) |
 | `destinationChainId` | `number` | Yes | Target chain ID |
 | `sourceChainIds` | `number[]` | Yes | Array of source chain IDs to activate monitoring on |
 | `salt` | `bytes32` | No | Optional salt (must match the one used in `forwarding_getAddress`) |
@@ -499,8 +495,6 @@ interface EstimateResult {
 ---
 
 ## Changelog
-
-The Forwarding Address API is in alpha and evolves quickly. Breaking changes and new capabilities are tracked here so integrators can see what to update.
 
 ### 2026-05-06
 

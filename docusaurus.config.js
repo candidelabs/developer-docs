@@ -161,6 +161,26 @@ const config = {
       {
         redirects: [
           {
+            from: '/wallet/bundler/rpc-endpoints/',
+            to: '/wallet/api/supported-networks/',
+          },
+          {
+            from: '/wallet/bundler/public-endpoints/',
+            to: '/wallet/api/public-endpoints/',
+          },
+          {
+            from: '/account-abstraction/research/multichain-deposit-address/',
+            to: '/forwarding-address/overview/',
+          },
+          {
+            from: '/account-abstraction/research/forwarding-address-api/',
+            to: '/forwarding-address/api-reference/',
+          },
+          {
+            from: '/account-abstraction/research/forwarding-address-guide/',
+            to: '/forwarding-address/integration-guide/',
+          },
+          {
             from: '/account-abstraction/research/safe-unified-account/',
             to: '/wallet/guides/chain-abstraction-overview/',
           },
@@ -185,7 +205,7 @@ const config = {
       announcementBar: {
         id: 'new-chains-somnia-hyperevm-tempo',
         content:
-          'Now live on Somnia, HyperEVM, and Tempo. <a href="/wallet/bundler/rpc-endpoints">See all supported networks</a>',
+          'Now live on Somnia, HyperEVM, and Tempo. <a href="/wallet/api/supported-networks">See all supported networks</a>',
         backgroundColor: '#fce7f0',
         textColor: '#1a1a1a',
         isCloseable: true,
@@ -217,15 +237,20 @@ const config = {
           {
             to: '/wallet/plugins/passkeys',
             position: 'left',
-            label: 'Plugins',
+            label: 'Safe Account Plugins',
           },
           {
-            to: '/wallet/bundler/rpc-endpoints',
+            to: '/forwarding-address/overview',
+            position: 'left',
+            label: 'Forwarding Address',
+          },
+          {
+            to: '/wallet/api/supported-networks',
             position: 'left',
             label: 'API',
           },
           {
-            to: '/account-abstraction/research/multichain-deposit-address',
+            to: '/account-abstraction/research/eil',
             position: 'left',
             label: 'Labs',
           },

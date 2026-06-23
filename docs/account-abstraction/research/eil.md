@@ -75,7 +75,7 @@ One signature authorizes operations across all chains. Users sign once, and coor
 
 A single address that works on every chain. Users share one address, receive funds from any network, and assets automatically route to their preferred destination. EIL powers the trustless routing without any custody intermediaries.
 
-[Learn more about Forwarding Address →](/account-abstraction/research/multichain-deposit-address)
+[Learn more about Forwarding Address →](/forwarding-address/overview)
 
 ### SDK Integration
 
