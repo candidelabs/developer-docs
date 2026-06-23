@@ -254,11 +254,6 @@ const config = {
             label: 'API',
           },
           {
-            to: '/account-abstraction/research/eil',
-            position: 'left',
-            label: 'Labs',
-          },
-          {
             to: 'https://dashboard.candide.dev',
             position: 'right',
             label: 'Dashboard↗',

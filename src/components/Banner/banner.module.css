@@ -3,7 +3,6 @@
     display: flex;
     justify-content: center;
     background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(231, 0, 115, 0.10) 0%, transparent 70%);
-    border-bottom: 1px solid var(--ifm-color-emphasis-200);
 }
 
 .banner__inner {
