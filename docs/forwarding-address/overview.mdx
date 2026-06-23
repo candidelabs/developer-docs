@@ -1,6 +1,6 @@
 ---
 title: "Forwarding Address"
-description: "A forwarding address that works across all blockchains, enabling instant cross-chain asset routing"
+description: "Let users deposit into one forwarding address from any supported chain and receive funds on their destination chain."
 keywords:
   - cross-chain
   - forwarding
@@ -14,11 +14,9 @@ keywords:
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-# Forwarding Address: One Address for Every Chain
+# Forwarding Address for Onramps and Deposits
 
-*Universal deposit addresses for wallets, on-ramp flows, and payment apps.*
-
-Users share one address. Senders pay from any supported chain. Funds arrive on the user's preferred destination chain.
+Let users deposit into one address from any supported chain and receive funds on their destination chain.
 
 <div style={{maxWidth: "720px"}}>
   <div style={{position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "12px"}}>
@@ -35,6 +33,8 @@ Users share one address. Senders pay from any supported chain. Funds arrive on t
 
 <br />
 
+Use Forwarding Address for onboarding, onramp, exchange withdrawal, and payment flows where the sender's source chain may not match the user's destination chain. The user receives one deposit address; Candide routes supported deposits to the destination wallet automatically.
+
 **Try it**: [forwarding-address.candidelabs.com](https://forwarding-address.candidelabs.com)
 
 ## Start Integrating
@@ -43,8 +43,6 @@ Install the Candide skills so your AI agent knows how to wire up the Forwarding 
 
 <Tabs>
 <TabItem value="claude" label="Claude Code">
-
-Run inside Claude Code:
 
 ```
 /plugin marketplace add candidelabs/skills
@@ -74,7 +72,7 @@ https://raw.githubusercontent.com/candidelabs/skills/main/skills/forwarding-addr
 </TabItem>
 </Tabs>
 
-For manual reference: [API Reference](./forwarding-address-api.mdx) | [Integration Guide](./forwarding-address-guide.mdx)
+For manual reference: [API Reference](./api-reference.mdx) | [Integration Guide](./integration-guide.mdx)
 
 ## Why It Matters
 
@@ -96,12 +94,6 @@ Funds route through self-custodial smart contracts. Integrators can configure a 
 - Wallets that want one deposit address per user.
 - On-ramp and exchange funding flows where supported withdrawal chains vary.
 - Payment apps where sender and recipient may operate on different chains.
-
-## Build With Us
-
-We're looking for wallet and payment teams who want to offer seamless cross-chain receiving to their users.
-
-Reach out directly on Telegram: **[@heymarcopolo](https://t.me/heymarcopolo)**
 
 ---
 

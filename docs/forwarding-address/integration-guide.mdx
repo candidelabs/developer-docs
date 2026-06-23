@@ -7,23 +7,10 @@ keywords:
   - guide
   - cross-chain
   - deposit-address
-  - alpha
+  - production
 ---
 
 # Forwarding Address Integration Guide
-
-<div style={{maxWidth: "720px"}}>
-  <div style={{position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", borderRadius: "12px"}}>
-    <iframe
-      style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}
-      src="https://www.youtube.com/embed/S1fttTLzUuo"
-      title="Forwarding Address Technical Explainer"
-      frameBorder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      allowFullScreen
-    />
-  </div>
-</div>
 
 ## Typical Integration Flow
 
@@ -35,12 +22,12 @@ flowchart TD
     D --> E[Watch for status on destination chain]
 ```
 
-See the [API Reference](./forwarding-address-api.mdx) for details on each method. 
+See the [API Reference](./api-reference.mdx) for details on each method. 
 
 import Callout from "/src/components/Callout";
 
 <Callout title="Authentication">
-The activation call ([`account_activateForwardingAddress`](./forwarding-address-api.mdx#account_activateforwardingaddress)) requires `Authorization: Bearer <account_api_key>`. Account API keys are issued by Candide; every other method is public.
+The activation call ([`account_activateForwardingAddress`](./api-reference.mdx#account_activateforwardingaddress)) requires `Authorization: Bearer <account_api_key>`. Account API keys are issued by Candide; every other method is public.
 </Callout>
 
 ---
@@ -93,9 +80,9 @@ If funds are stuck, use the [recovery frontend](https://forwarding-address.candi
 
 ## Gotchas
 
-- Deposits below the per-bridge minimum are not forwarded. Query [`forwarding_getMinimumAmount`](./forwarding-address-api.mdx#forwarding_getminimumamount) for the route and token to validate user input, and display the minimum clearly in your UI.
+- Deposits below the per-bridge minimum are not forwarded. Query [`forwarding_getMinimumAmount`](./api-reference.mdx#forwarding_getminimumamount) for the route and token to validate user input, and display the minimum clearly in your UI.
 - Only tokens listed in the route's `tokens` array are forwarded. Unsupported tokens sent to the address require manual recovery.
 - The forwarding address accepts deposits on any supported chain, including the destination chain. Do not send on unsupported chains. Check `forwarding_getRoutes` for the full list of supported chains per route.
-- The output token on the destination chain may have different decimals than the input token. Use the token's `decimals` from [`forwarding_getRoutes`](./forwarding-address-api.mdx#forwarding_getroutes) when formatting amounts.
+- The output token on the destination chain may have different decimals than the input token. Use the token's `decimals` from [`forwarding_getRoutes`](./api-reference.mdx#forwarding_getroutes) when formatting amounts.
 - Cache `forwarding_getRoutes` on app load and refresh periodically. Routes, fees, and supported tokens can change.
 - The activation call needs an account API key (`Authorization: Bearer ...`). All other methods are public. Each account can have up to 500 active forwarding addresses; exceeding the cap returns error `-32013`.
