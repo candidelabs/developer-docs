@@ -49,7 +49,7 @@ The following apps and wallets support smart capabilities.
 
 |                      App                            | Batching | Sponsor Gas |
 |-----------------------------------------------------|----------|-------------|
-| [PoolTogether Cabana](https://app.cabana.fi/)       | ✅       | ERC-767     |
+| [PoolTogether Cabana](https://app.cabana.fi/)       | ✅       | ERC-7677    |
 | [revoke.cash](https://revoke.cash/)                 | ✅       | ERC-7677    |
 | [Lido](https://lido.fi)                             | ✅       | ✖️          |
 | [Lifi](https://li.fi/)                              | ✅       | ✖️          |
@@ -64,7 +64,6 @@ The following apps and wallets support smart capabilities.
 | [Ethena](https://app.ethena.fi/)                    | ✅       | ✖️          |
 | [Fibrous](https://app.fibrous.finance/)             | ✅       | ✖️          |
 | [PWN](https://app.pwn.xyz/)                         | ✅       | ✖️          |
-| [Relay](https://relay.link/bridge)                  | ✅       | ✖️          |
 | [Relay](https://relay.link/bridge)                  | ✅       | ✖️          |
 
 ## Reference Example
@@ -326,8 +325,8 @@ Requests that the wallet deliver a group of function calls on-chain from the use
       "paymasterService": {
           "url": "https://...",
           "optional": true,
-          "context" {
-            "sponsorshipPolicyId": "123",
+          "context": {
+            "sponsorshipPolicyId": "123"
           }
         }
       }
