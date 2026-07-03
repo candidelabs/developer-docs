@@ -760,7 +760,7 @@ const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress])
 const userOperation:UserOperationV7 = {..}
 
 //highlight-start
-const [preVerificationGas, verificationGasLimit, callGasLimit] = await estimateUserOperationGas(userOperation, bundlerRPC);
+const [preVerificationGas, verificationGasLimit, callGasLimit] = await smartAccount.estimateUserOperationGas(userOperation, bundlerRPC);
 //highlight-end
 ```
 

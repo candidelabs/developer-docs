@@ -23,7 +23,11 @@ import {
   formatSignaturesToUseroperationsSignaturesReturn,
   estimateUserOperationGasParamMultiChainSig,
   estimateUserOperationGasReturnMultiChainSig,
+  createUserOperationV7Overrides,
+  createAddOwnerWithThresholdMetaTransactionsParams,
+  createAddOwnerWithThresholdMetaTransactionsReturn,
 } from "../../../src/data/accountParamAndReturnData";
+import { userOperationParamV09 } from "/src/data/userOperation";
 
 # Safe Unified Account
 
@@ -124,7 +128,75 @@ const userOperation = await smartAccount.createUserOperation(
 </TabItem>
 
 <TabItem value="Param type" label="Param Types">
-  <DataTable items={metaTransactionType} />
+    <table>
+    <thead>
+    <tr>
+      <th align="left">Param Name</th>
+      <th align="left">Param Type</th>
+      <th align="left">Description</th>
+    </tr>
+  </thead>
+    <tbody>
+      <tr>
+        <td>Transactions</td>
+        <td align="left">
+          MetaTransaction[]
+          <DataTable items={metaTransactionType} />
+        </td>
+        <td align="left">
+          MetaTransaction is the type of a transaction to construct a Safe operation
+        </td>
+      </tr>
+      <tr>
+        <td>Provider RPC</td>
+        <td align="left">
+          string
+        </td>
+        <td>The node URL. It is used to fetch the current nonce and fetch gas prices</td>
+      </tr>
+      <tr>
+        <td>Bundler URL</td>
+        <td align="left">
+          string
+        </td>
+        <td>The Bundler URL. It is used to fetch the gas limits</td>
+      </tr>
+      <tr>
+        <td align="left">Overrides</td>
+        <td align="left">
+          CreateUserOperationV9Overrides, optional object
+          <DataTable items={createUserOperationV7Overrides} />
+        </td>
+        <td align="left">
+          CreateUserOperationV9Overrides allows you to override any of the default parameters for the user operation. It has the same fields as CreateUserOperationV7Overrides.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <table>
+    <thead>
+    <tr>
+      <th align="left">Param Name</th>
+      <th align="left">Param Type</th>
+      <th align="left">Description</th>
+    </tr>
+  </thead>
+    <tbody>
+      <tr>
+        <td>UserOperation</td>
+        <td align="left">
+          <div>{`Promise<UserOperationV9>`}</div>
+          <DataTable items={userOperationParamV09} />
+        </td>
+        <td align="left">
+          Returns an unsigned UserOperation for EntryPoint v0.9.
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </TabItem>
 
 </Tabs>
@@ -178,6 +250,33 @@ const [preVerificationGas, verificationGasLimit, callGasLimit] =
 #### Source code
 
 [estimateUserOperationGas](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeMultiChainSigAccount.ts#L461)
+
+### signUserOperation
+
+Signs a single UserOperation with one or more private keys. This overrides the base method to always encode the signature with the multichain scheme (`isMultiChainSignature: true`), which is how this account validates even single-chain UserOperations.
+
+```ts
+signUserOperation(
+  userOperation: UserOperationV9,
+  privateKeys: string[],
+  chainId: bigint,
+  options?: SafeSignatureOptions,
+): string
+```
+
+Pass one private key per owner required by the threshold. `options` accepts the usual `SafeSignatureOptions` timing fields (`validAfter`, `validUntil`) and module address override; `multiChainMerkleProof` is rejected here, use [`signUserOperations`](#signuseroperations) for multi-op Merkle signatures.
+
+```ts title="example.ts"
+userOperation.signature = smartAccount.signUserOperation(
+    userOperation,
+    [ownerPrivateKey],
+    11155111n, // chainId
+);
+```
+
+#### Source code
+
+[signUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeMultiChainSigAccount.ts#L585)
 
 ### signUserOperations
 
@@ -238,6 +337,16 @@ Multi-op variant that signs a Merkle-rooted bundle of UserOperations using one o
 
 Since `v0.3.8`, this path accepts typed-data-only signers such as `fromViemWalletClient` as well as raw-hash signers. Pass `chainId` inside each `UserOperationToSign` item so the SDK can build the per-chain typed-data payloads.
 
+```ts
+signUserOperationsWithSigners(
+  userOperationsToSign: UserOperationToSign[],
+  signers: ExternalSigner[],
+): Promise<string[]>
+```
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
 ```ts title="example.ts"
 import { SafeMultiChainSigAccountV1 as SafeAccount, fromViem } from "abstractionkit";
 import { privateKeyToAccount } from "viem/accounts";
@@ -257,7 +366,71 @@ userOp1.signature = signatures[0];
 userOp2.signature = signatures[1];
 ```
 
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <table>
+    <thead>
+    <tr>
+      <th align="left">Param Name</th>
+      <th align="left">Param Type</th>
+      <th align="left">Description</th>
+    </tr>
+  </thead>
+    <tbody>
+      <tr>
+        <td>userOperationsToSign</td>
+        <td align="left">
+          UserOperationToSign[]
+          <DataTable items={userOperationToSignType} />
+        </td>
+        <td align="left">
+          UserOperations with their chain IDs and optional validity windows.
+        </td>
+      </tr>
+      <tr>
+        <td>signers</td>
+        <td align="left">
+          ExternalSigner[]
+        </td>
+        <td align="left">
+          One signer per owner required by the threshold, in any order. The built-in adapters `fromPrivateKey`, `fromViem`, `fromEthersWallet`, and `fromViemWalletClient` all work here.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <table>
+    <thead>
+    <tr>
+      <th align="left">Param Name</th>
+      <th align="left">Param Type</th>
+      <th align="left">Description</th>
+    </tr>
+  </thead>
+    <tbody>
+      <tr>
+        <td>signatures</td>
+        <td align="left">
+          {`Promise<string[]>`}
+        </td>
+        <td align="left">
+          One formatted signature per input UserOperation, in the same order.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</TabItem>
+
+</Tabs>
+
 See [External Signers](/wallet/abstractionkit/external-signers) for the full list of adapters, and the [multi-chain add-owner example](https://github.com/candidelabs/abstractionkit-examples/blob/main/chain-abstraction/add-owner-with-external-signer.ts) for a full end-to-end flow.
+
+#### Source code
+
+[signUserOperationsWithSigners](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeMultiChainSigAccount.ts#L768)
 
 ### getMultiChainSingleSignatureUserOperationsEip712Hash
 
@@ -426,6 +599,89 @@ const account = new SafeAccount(userOperation.sender);
 const response = await account.sendUserOperation(userOperation, bundlerUrl);
 const receipt = await response.included();
 ```
+
+## Owner Management
+
+`SafeMultiChainSigAccountV1` inherits the Safe owner-management helpers from the base `SafeAccount` class. The two add-owner methods below are the ones used in the guides; the remaining helpers (swap owner, remove owner, module management) are documented on [Safe Account V3](/wallet/abstractionkit/safe-account-v3/).
+
+### createAddOwnerWithThresholdMetaTransactions
+
+Builds the MetaTransactions needed to add a new owner (an ECDSA address or a WebAuthn public key) and set a new threshold. If the new owner is a WebAuthn signer whose verifier contract is not yet deployed, the returned list also contains a MetaTransaction that deploys the verifier, so it resolves to one or two MetaTransactions.
+
+```ts
+createAddOwnerWithThresholdMetaTransactions(
+  newOwner: Signer,
+  threshold: number,
+  overrides?: {
+    nodeRpcUrl?: string;
+    eip7212WebAuthnPrecompileVerifier?: string;
+    eip7212WebAuthnContractVerifier?: string;
+    webAuthnSignerFactory?: string;
+    webAuthnSignerSingleton?: string;
+    webAuthnSignerProxyCreationCode?: string;
+  },
+): Promise<MetaTransaction[]>
+```
+
+`overrides.nodeRpcUrl` is required when adding a WebAuthn owner, so the SDK can check whether the new owner's verifier is already deployed.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const newOwnerPublicAddress = "0xNewOwnerAddress";
+
+const addOwnerMetaTransactions =
+    await smartAccount.createAddOwnerWithThresholdMetaTransactions(
+        newOwnerPublicAddress,
+        2, // new threshold
+    );
+
+const userOperation = await smartAccount.createUserOperation(
+    addOwnerMetaTransactions,
+    nodeRpcUrl,
+    bundlerUrl,
+);
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createAddOwnerWithThresholdMetaTransactionsParams} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAddOwnerWithThresholdMetaTransactionsReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[createAddOwnerWithThresholdMetaTransactions](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccount.ts#L2475)
+
+### createStandardAddOwnerWithThresholdMetaTransaction
+
+Builds the single standard `addOwnerWithThreshold` MetaTransaction for an owner public address. Unlike the plural variant above, it takes a plain address, performs no WebAuthn verifier handling, and returns synchronously.
+
+```ts
+createStandardAddOwnerWithThresholdMetaTransaction(
+  newOwner: string,
+  threshold: number,
+): MetaTransaction
+```
+
+```ts title="example.ts"
+const addOwnerMetaTransaction =
+    smartAccount.createStandardAddOwnerWithThresholdMetaTransaction(
+        "0xNewOwnerAddress",
+        2, // new threshold
+    );
+```
+
+#### Source code
+
+[createStandardAddOwnerWithThresholdMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccount.ts#L2536)
 
 ## Gas Sponsorship
 
