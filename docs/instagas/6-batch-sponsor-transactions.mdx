@@ -156,7 +156,7 @@ const { sendCalls, data: id } = useSendCalls(); // to send batch & sponsored tx
 const { sendTransaction } = useSendTransaction(); // to send standard tx
 const chainId = useChainId();
 
-const paymasterUrl = "https://api.candide.dev/paymaster/v3/network/APY_KEY";
+const paymasterUrl = "https://api.candide.dev/api/v3/CHAIN_ID/API_KEY";
 const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
 
 const tx = {

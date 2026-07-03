@@ -24,14 +24,9 @@ https://api.candide.dev/api/v3/11155111/YOUR_API_KEY
 
 The API key is a path segment: there are no separate auth headers. Treat the full URL as a secret.
 
-### Legacy formats
-
-Earlier integrations used separate per-service URLs with chain names. These remain fully supported, but new integrations should use the unified format above.
-
-```
-https://api.candide.dev/bundler/v3/{CHAIN_NAME}/{API_KEY}
-https://api.candide.dev/paymaster/v3/{CHAIN_NAME}/{API_KEY}
-```
+:::caution
+The older per-service URL formats (`/bundler/v3/` and `/paymaster/v3/` with chain names) are deprecated. Use the unified format above.
+:::
 
 ## Example Request
 
