@@ -1,14 +1,16 @@
 ---
 title: Candide Developer Platform
-description: Complete toolkit for building user-friendly Ethereum applications with Smart Accounts. Features ERC-4337 and EIP-7702 support, gas abstraction, social login, and advanced transaction capabilities
+description: Complete toolkit for building user-friendly Ethereum applications with Smart Accounts. Features ERC-4337 and EIP-7702 support, gas abstraction, chain abstraction, social login, and cross-chain deposit routing
 image: /img/posters/atelier-meta.png
-keywords: [erc-4337, account abstraction, paymaster, bundler, Smart Wallets]
+keywords: [erc-4337, account abstraction, paymaster, bundler, Smart Wallets, chain abstraction, forwarding address]
 sidebar_position: 1
 ---
 
 # Welcome to Candide
 
-A developer platform for building Ethereum smart wallets: gas sponsorship, passkeys, batch transactions, and account recovery, all on top of Safe contracts.
+A developer platform for building Ethereum smart wallets: gas sponsorship, passkeys, chain abstraction, and account recovery, all on top of Safe contracts.
+
+In production since ERC-4337 launched in 2023, Candide is the longest-running account abstraction infrastructure provider: millions of UserOperations bundled across hundreds of thousands of accounts. Every contract in these docs ships with public audits from OpenZeppelin, Ackee, Certora, Nethermind, and Cantina.
 
 ## Quick Start
 
@@ -22,6 +24,8 @@ import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 const account = SafeAccount.initializeNewAccount([ownerPublicKey]);
 console.log(account.accountAddress); // 0x… deterministic smart wallet address
 ```
+
+The account you just created is a [Safe Unified Account](/wallet/guides/chain-abstraction-overview/). It has the same address on every EVM chain, and a single signature can authorize execution across all of them.
 
 import CardList from "/src/components/CardList";
 import Callout from "/src/components/Callout";
@@ -40,10 +44,16 @@ export const GETTING_STARTED_ITEMS = [
     route: "/wallet/guides/pay-gas-in-erc20",
   },
   {
+    title: "Chain Abstraction",
+    description:
+      "Sign once, execute on every chain. One account, one address, every EVM network",
+    route: "/wallet/guides/chain-abstraction-getting-started",
+  },
+  {
     title: "EIP-7702 Account Upgrades",
     description:
-      "Upgrade existing EOAs to smart accounts with EIP-7702 delegation",
-    route: "/wallet/guides/getting-started-eip-7702",
+      "Upgrade existing EOAs to smart accounts with Calibur (passkeys, multi-key) or Simple Account",
+    route: "/wallet/guides/getting-started-calibur",
   },
 ];
 
@@ -53,33 +63,33 @@ export const GETTING_STARTED_ITEMS = [
   Every page has a <strong>Copy Page</strong> button in the toolbar. Paste it directly into Claude or ChatGPT with a pre-filled prompt. For agents and IDE integrations like Claude Code or Cursor, point them to <a href="https://docs.candide.dev/llms.txt"><code>/llms.txt</code></a> for a full index of the docs.
 </Callout>
 
-## Why Smart Accounts?
-
-Smart accounts eliminate the biggest UX barriers in Web3:
-- **No gas tokens**: Users pay fees in any ERC-20 or have them sponsored entirely
-- **Modern onboarding**: Login with passkeys, email, or social accounts. No seed phrases
-- **Built-in security**: Account recovery, multisig support, and spending limits
-- **Batch transactions**: Execute multiple operations atomically in a single transaction
+## Core Features
 
 *Smart accounts are programmable contracts, unlocking capabilities impossible with traditional EOAs.*
 
-## Core Features
-
 ### Gas Abstraction
 - Gasless transactions: [Sponsor user fees](/wallet/guides/send-gasless-tx/) with flexible rules and policies
-- ERC-20 gas payments: Let users [pay gas in any token](/wallet/guides/pay-gas-in-erc20/) (USDC, DAI, etc.)
+- ERC-20 gas payments: Let users [pay gas in any token](/wallet/guides/pay-gas-in-erc20/) (USDC, DAI, etc.). No ETH required
 
 ### Modern Authentication
-- Passkey integration: [Onchain WebAuthn](/wallet/plugins/passkeys/) support for biometric login
+- Passkey integration: [Onchain WebAuthn](/wallet/plugins/passkeys/) support for biometric login. No seed phrases
 - Social login: [Email and OAuth](/wallet/guides/authentication/#social--email) integration
 
+### Chain Abstraction
+- Sign once, execute on every chain: one signature authorizes [UserOperations across every chain](/wallet/guides/chain-abstraction-overview/) you target
+- Same account everywhere: one address on every EVM network where Safe is deployed
+
 ### Advanced Transactions
-- Batch operations: [Execute multiple transactions](/wallet/guides/getting-started/#step-4-create-useroperation) atomically
+- Batch operations: [Execute multiple transactions](/wallet/guides/getting-started/) atomically
 - Spending controls: [Set limits and policies](/wallet/plugins/allowance) for subscriptions and recurring payments
 
 ### Security
 - Account recovery: [Social Recovery](/wallet/plugins/recovery-with-guardians) or [traditional](/wallet/recovery/auth-api/) recovery options
 - Multi-signature: A single account controlled with [multiple signatures](/wallet/guides/multisig/)
+
+## Onboarding & Deposits
+
+Users don't always arrive on the chain your app runs on. [Forwarding Address](/forwarding-address/overview/) gives each user one deposit address that accepts funds from any supported chain and routes them automatically to the destination wallet. Built for onramps, exchange withdrawals, and payment flows.
 
 ## Developer Tools
 
@@ -89,6 +99,7 @@ Smart accounts eliminate the biggest UX barriers in Web3:
 | [Bundler](/wallet/bundler/rpc-methods/) | ERC-4337 compliant nodes for submitting UserOperations on all major EVM chains |
 | [Paymaster](/wallet/paymaster/rpc-methods/) | Sponsor gas or accept ERC-20 token payments with configurable policies |
 | [InstaGas](/instagas/overview/) | No-code dashboard to set gas sponsorship rules. No Solidity required |
+| [Forwarding Address](/forwarding-address/overview/) | One deposit address per user that routes funds from any supported chain to the destination wallet |
 | [Account Recovery](/wallet/recovery/overview/) | Email/SMS recovery with an alert system and automatic on-chain execution |
 
 Access [Candide's Dashboard](https://dashboard.candide.dev) to get API keys and configure your integration.
