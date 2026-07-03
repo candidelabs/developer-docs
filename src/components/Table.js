@@ -39,22 +39,35 @@ export default function Table({
 
 // Function to render the value based on its type
 function renderValue(value) {
-  if (Array.isArray(value)) {
-    return (
-      <DataTable items={value}/>
-    );
-  } else {
-    return <span>{String(value)}</span>;
-  }
+  return <span>{String(value)}</span>;
+}
+
+// Nested type definitions (a row whose `type` is an array of rows) are
+// flattened into dotted-path rows: nested <table> elements inside cells do
+// not survive the HTML-to-markdown conversion that produces llms.txt.
+function flattenItems(items, prefix = "") {
+  return items.flatMap((item) => {
+    const key = item.key === undefined ? "" : String(item.key);
+    const fullKey = prefix && key ? `${prefix}.${key}` : key || prefix;
+    if (Array.isArray(item.type)) {
+      return [
+        { ...item, key: fullKey, type: "object" },
+        ...flattenItems(item.type, fullKey),
+      ];
+    }
+    return [{ ...item, key: fullKey }];
+  });
 }
 
 // Main DataTable component
 export function DataTable({ items }) {
   if (!items || items.length === 0) return null;
 
+  const rows = flattenItems(items);
+
   // Extract all unique keys from the data
   const allKeys = Array.from(
-    new Set(items.flatMap((item) => Object.keys(item)))
+    new Set(rows.flatMap((item) => Object.keys(item)))
   );
 
   return (
@@ -69,7 +82,7 @@ export function DataTable({ items }) {
         </tr>
       </thead>
       <tbody>
-        {items.map((item, rowIndex) => (
+        {rows.map((item, rowIndex) => (
           <tr key={rowIndex}>
             {allKeys.map((key, colIndex) => (
               <td key={colIndex} align="left" style={{ padding: "8px" }}>

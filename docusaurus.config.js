@@ -144,6 +144,7 @@ const config = {
         siteTitle: 'Candide Account Abstraction',
         siteDescription: 'Candide Ethereum Account Abstraction developer tools for building smart accounts',
         content: {
+          enableLlmsFullTxt: true,  // Generate llms-full.txt with full page content
           relativePaths: false,  // Use absolute URLs instead of relative paths
           includeBlog: false,    // Already false by default
           includePages: false,   // Exclude tag/other pages
