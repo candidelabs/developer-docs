@@ -51,6 +51,8 @@ AbstractionKit includes two paymaster clients. `CandidePaymaster` can sponsor on
 
 ## Which Paymaster Client to Use
 
+Both clients are supported; neither is deprecated. `Erc7677Paymaster` implements the standard [ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) protocol, so integrations stay portable across providers (Candide, Pimlico, Alchemy, or self-hosted) with no vendor lock-in. `CandidePaymaster` is the dedicated client for Candide-hosted paymasters and adds features the standard does not cover, such as parallel signing phases.
+
 | Flow | Recommended client | Method |
 |---|---|---|
 | Sponsored gas, one-shot | `Erc7677Paymaster` | Recommended standard path: `createPaymasterUserOperation(..., context?)` |
@@ -142,7 +144,7 @@ Returns a promise with the supported erc20 tokens and their exchange rate, along
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-import { CandidePaymaster, SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { CandidePaymaster, SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const paymasterRPC="https://api.candide.dev/public/v3/11155111";
 const paymaster = new CandidePaymaster(paymasterRPC);
@@ -225,7 +227,7 @@ The `overrides` parameter also accepts an `entrypoint` field, which allows you t
 <TabItem value="example.ts" label="example.ts">
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount, CandidePaymaster } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount, CandidePaymaster } from "abstractionkit";
 
 const paymasterRPC="https://api.candide.dev/public/v3/11155111";
 const erc20TokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b"; // CTT test token
@@ -355,7 +357,7 @@ Returns the metadata associated with the Paymaster, along with dummyPaymasterAnd
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-import { CandidePaymaster, SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { CandidePaymaster, SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const paymasterRPC="https://api.candide.dev/public/v3/11155111";
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
@@ -578,8 +580,10 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 
 ### createPaymasterUserOperation
 
-:::note Internal Method
-`createPaymasterUserOperation` is an internal method. Use [`createSponsorPaymasterUserOperation`](#createsponsorpaymasteruseroperation) for gas sponsorship or [`createTokenPaymasterUserOperation`](#createtokenpaymasteruseroperation) for ERC-20 token payment instead.
+:::note Private on CandidePaymaster
+`CandidePaymaster.createPaymasterUserOperation` is a private helper, not part of the public API. Use [`createSponsorPaymasterUserOperation`](#createsponsorpaymasteruseroperation) for gas sponsorship or [`createTokenPaymasterUserOperation`](#createtokenpaymasteruseroperation) for ERC-20 token payment instead.
+
+`Erc7677Paymaster` exposes a public method with the same name; that one is the recommended entry point for the standard ERC-7677 flow and is documented in the [Erc7677Paymaster section](#erc7677paymaster) below.
 :::
 
 #### Source code
@@ -647,4 +651,4 @@ userOperation = tokenOp2;
 ```
 
 #### Source code
-[Erc7677Paymaster](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/Erc7677Paymaster.ts#L204)
+[Erc7677Paymaster](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/Erc7677Paymaster.ts#L204) | [createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/Erc7677Paymaster.ts#L409)

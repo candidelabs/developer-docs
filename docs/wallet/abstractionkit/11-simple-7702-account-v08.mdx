@@ -113,6 +113,8 @@ import { Simple7702Account } from "abstractionkit";
 const delegatorPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
 const smartAccount = new Simple7702Account(delegatorPublicAddress);
 
+const chainId = 11155111n; // Sepolia
+
 const transactions = [
   {
     to: "0x...",
@@ -127,9 +129,9 @@ const userOperation = await smartAccount.createUserOperation(
   "https://ethereum-sepolia-rpc.publicnode.com", // provider RPC
   "https://api.candide.dev/public/v3/11155111", // bundler RPC
   {
-    eip7702Auth:{
-        chainId, // chainId at which the account will be authorized
-    }
+    eip7702Auth: {
+      chainId, // chainId at which the account will be authorized
+    },
     // Optional overrides
     maxFeePerGas: 20000000000n,
     maxPriorityFeePerGas: 2000000000n,

@@ -165,6 +165,10 @@ const config = {
             to: '/wallet/intro/',
           },
           {
+            from: '/wallet/paymaster/rpc-methods-v2/',
+            to: '/wallet/paymaster/rpc-methods/',
+          },
+          {
             from: '/wallet/bundler/rpc-endpoints/',
             to: '/wallet/api/supported-networks/',
           },

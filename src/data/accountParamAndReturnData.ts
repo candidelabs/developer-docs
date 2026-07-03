@@ -687,9 +687,9 @@ export const createBaseUserOperationOverrides = [
       "Set the maxPriorityFeePerGasPercentageMultiplier instead of querying the current gas price from the RPC node",
   },
   {
-    key: "stateOverrideSetType",
+    key: "state_override_set?",
     type: stateOverrideSetType,
-    description: "Pass state overrides",
+    description: "Pass state overrides for gas estimation",
   },
   {
     key: "dummySignerSignaturePairs[]",

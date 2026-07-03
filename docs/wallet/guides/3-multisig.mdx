@@ -41,7 +41,7 @@ const smartAccount = SafeAccount.initializeNewAccount(
 console.log("Multisig Account Address:", smartAccount.accountAddress);
 ```
 
-> Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-unified-account/)
+> Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-unified-account/#initializenewaccount)
 
 :::tip Fund Your Account
 Make sure to fund your multisig account with ETH before sending transactions, or use a [paymaster for gas sponsorship](/wallet/guides/send-gasless-tx/).
@@ -87,7 +87,7 @@ userOperation.signature = smartAccount.signUserOperation(
 );
 ```
 
-> Learn more: [`signUserOperation`](/wallet/abstractionkit/safe-unified-account/)
+> Learn more: [`signUserOperation`](/wallet/abstractionkit/safe-unified-account/#signuseroperation)
 
 </TabItem>
 
@@ -114,7 +114,7 @@ userOperation.signature = smartAccount.signUserOperation(
 );
 ```
 
-> Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-unified-account/) | [`signUserOperation`](/wallet/abstractionkit/safe-unified-account/)
+> Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-unified-account/#initializenewaccount) | [`signUserOperation`](/wallet/abstractionkit/safe-unified-account/#signuseroperation)
 
 </TabItem>
 </Tabs>
@@ -222,7 +222,7 @@ async function main(): Promise<void> {
 main().catch(console.error)
 ```
 
-> Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-unified-account/) | [`createUserOperation`](/wallet/abstractionkit/safe-unified-account/) | [`signUserOperation`](/wallet/abstractionkit/safe-unified-account/) | [`sendUserOperation`](/wallet/abstractionkit/safe-unified-account/)
+> Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-unified-account/#initializenewaccount) | [`createUserOperation`](/wallet/abstractionkit/safe-unified-account/#createuseroperation) | [`signUserOperation`](/wallet/abstractionkit/safe-unified-account/#signuseroperation) | [`sendUserOperation`](/wallet/abstractionkit/safe-unified-account/#senduseroperation)
 
 </TabItem>
 
@@ -281,7 +281,7 @@ userOperation.signature = smartAccount.signUserOperation(
 );
 ```
 
-> Learn more: [`createAddOwnerWithThresholdMetaTransactions`](/wallet/abstractionkit/safe-unified-account/)
+> Learn more: [`createAddOwnerWithThresholdMetaTransactions`](/wallet/abstractionkit/safe-unified-account/#createaddownerwiththresholdmetatransactions)
 
 </TabItem>
 
@@ -312,7 +312,7 @@ userOperation.signature = smartAccount.signUserOperation(
 );
 ```
 
-> Learn more: [`createRemoveOwnerMetaTransaction`](/wallet/abstractionkit/safe-unified-account/)
+> Learn more: [`createRemoveOwnerMetaTransaction`](/wallet/abstractionkit/safe-account-v3/#createremoveownermetatransaction)
 
 </TabItem>
 
@@ -343,7 +343,7 @@ userOperation.signature = smartAccount.signUserOperation(
 );
 ```
 
-> Learn more: [`createSwapOwnerMetaTransactions`](/wallet/abstractionkit/safe-unified-account/)
+> Learn more: [`createSwapOwnerMetaTransactions`](/wallet/abstractionkit/safe-account-v3/#createswapownermetatransactions)
 
 </TabItem>
 </Tabs>

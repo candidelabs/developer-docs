@@ -53,6 +53,8 @@ Each account class exposes its own signing method and accepts a different subset
 | `Simple7702Account`, `Simple7702AccountV09` | `signUserOperationWithSigner(userOperation, signer, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, custom |
 | `Calibur7702Account` | `signUserOperationWithSigner(userOperation, signer, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, custom |
 
+`SafeAccountV1_5_0_M_0_3_0` is the Safe v1.5.0 contracts variant with 4337 module 0.3.0: it extends `SafeAccountV0_3_0` (EntryPoint v0.7) but deploys with the Safe L2 v1.5.0 singleton instead of v1.4.1. See its [source](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccountV1_5_0_M_0_3_0.ts#L28).
+
 For Safe accounts, pass one signer per owner required by the threshold. For multi-chain Safe signing, pass the UserOperations and chain IDs together:
 
 ```ts
