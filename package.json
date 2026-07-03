@@ -6,6 +6,7 @@
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
     "build": "docusaurus build && node scripts/fix-markdown-links.js",
+    "check-docs": "node scripts/check-docs-code.mjs",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
@@ -30,8 +31,16 @@
     "@docusaurus/faster": "3.10.1",
     "@docusaurus/module-type-aliases": "3.10.1",
     "@tailwindcss/postcss": "^4.3.1",
+    "@types/node": "^26.1.0",
+    "abstractionkit": "0.4.0",
+    "dotenv": "^17.4.2",
+    "ethers": "^6.17.0",
+    "safe-recovery-service-sdk": "^0.0.4",
+    "siwe": "^3.0.0",
     "tailwindcss": "^4.3.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "viem": "^2.54.2",
+    "wagmi": "^3.6.21"
   },
   "browserslist": {
     "production": [
