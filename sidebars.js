@@ -58,6 +58,11 @@ const sidebars = {
         },
         {
           type: "doc",
+          id: "wallet/api/authenticated-endpoints",
+          label: "API Keys & Endpoints"
+        },
+        {
+          type: "doc",
           id: "wallet/api/public-endpoints",
           label: "Public Endpoints"
         },

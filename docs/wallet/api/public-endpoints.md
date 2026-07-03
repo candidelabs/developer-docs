@@ -37,5 +37,5 @@ See the list of the [Bundler API](/wallet/bundler/rpc-methods/) and [Paymaster A
 To keep things running smoothly for everyone, we limit the number of requests you can make from a single IP address. If you send too many requests, you'll get a `Too Many Requests` error.
 
 :::info
-Need Higher Limits? For production use or higher rate limits, signup on [Candide's Dashboard](https://dashboard.candide.dev) to get your own Bundler and Paymaster URLs.
+Need Higher Limits? For production use or higher rate limits, signup on [Candide's Dashboard](https://dashboard.candide.dev) to get your own Bundler and Paymaster URLs. See [API Keys & Endpoints](/wallet/api/authenticated-endpoints/) for the URL format and setup.
 :::
