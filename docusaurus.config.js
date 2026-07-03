@@ -236,7 +236,7 @@ const config = {
           {
             to: '/wallet/intro',
             position: 'left',
-            label: 'SDK',
+            label: 'Get Started',
           },
           {
             to: '/wallet/plugins/passkeys',
