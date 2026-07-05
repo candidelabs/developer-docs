@@ -463,9 +463,22 @@ const sidebars = {
           label: "Sponsor Gas"
         },
         {
-          type: "doc",
-          id: "wallet/guides/pay-gas-in-erc20",
-          label: "Pay Gas in ERC-20"
+          type: "category",
+          label: "Pay Gas in Tokens",
+          className: "sidebar-badge-new",
+          collapsed: true,
+          items: [
+            {
+              type: "doc",
+              id: "wallet/guides/pay-gas-in-erc20",
+              label: "EVM"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/pay-gas-in-usdt-solana",
+              label: "Solana"
+            },
+          ],
         },
         {
           type: "doc",

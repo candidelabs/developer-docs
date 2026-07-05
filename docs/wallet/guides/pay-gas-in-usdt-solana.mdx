@@ -1,0 +1,135 @@
+---
+title: Pay Gas in USDT on Solana
+description: Send Solana transactions from accounts with zero SOL and pay the network fee in USDT using Candide's Solana Paymaster and Tether's WDK
+keywords: [solana, kora, gasless, usdt, spl, fee-payer, wdk]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Pay Gas in USDT on Solana
+
+Send SPL token transfers from Solana accounts that hold **zero SOL**. Candide's **Solana Paymaster**, a hosted [Kora](https://solana.com/docs/tools/kora) endpoint, signs as the transaction fee payer and collects the fee in USDT inside the same transaction.
+
+This guide uses [`@tetherto/wdk-wallet-solana-gasless`](https://github.com/tetherto/wdk-wallet-solana-gasless), part of Tether's [Wallet Development Kit](https://docs.wallet.tether.io), which wraps the whole flow behind a simple `transfer()` call.
+
+## How It Works
+
+The paymaster speaks Kora's JSON-RPC protocol, the Solana Foundation's open fee-payer standard, so any Kora client can point at it. For each transaction:
+
+1. Your app builds an SPL transfer and includes a small USDT payment to the fee payer
+2. The paymaster validates the transaction against its policy, co-signs as fee payer, and submits it
+3. The fee payer spends the SOL for fees and rent; the user pays in USDT
+
+The USDT fee is priced from the live SOL cost of the transaction. If the recipient does not yet have a USDT token account, the rent for creating it is included in the quoted fee.
+
+:::info Supported fee token
+Mainnet USDT (`Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB`) is the only fee token the paymaster accepts for now.
+:::
+
+## Quickstart
+
+> You can also [fork the complete example](https://github.com/candidelabs/tether-wdk-candide/tree/main/solana-gasless/01-usdt-gas) and follow along.
+
+### Step 1: Install
+
+```bash
+npm install @tetherto/wdk-wallet-solana-gasless @solana/kora
+```
+
+`@solana/kora` is only used to discover the paymaster's fee payer address at runtime.
+
+### Step 2: Configure the Wallet
+
+Get your Solana Paymaster URL from the [Candide dashboard](https://dashboard.candide.dev). The URL includes your API key, so keep it in an environment variable.
+
+<Tabs>
+<TabItem value="index.ts" label="index.ts">
+
+```ts
+import WalletManagerSolanaGasless from '@tetherto/wdk-wallet-solana-gasless'
+import { KoraClient } from '@solana/kora'
+
+const nodeUrl = process.env.SOLANA_NODE_URL as string
+const paymasterUrl = process.env.SOLANA_PAYMASTER_URL as string
+const usdtMint = 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'
+
+// The paymaster reports its fee payer address; transactions must name it
+const kora = new KoraClient({ rpcUrl: paymasterUrl })
+const { signer_address: paymasterAddress } = await kora.getPayerSigner()
+
+const wallet = new WalletManagerSolanaGasless(seedPhrase, {
+    provider: nodeUrl,
+    paymasterUrl,
+    paymasterAddress,
+    paymasterToken: { address: usdtMint },
+    transferMaxFee: 1_000000n, // abort if the quoted fee exceeds 1 USDT
+})
+
+const account = await wallet.getAccount(0)
+console.log(`Solana account: ${await account.getAddress()}`)
+```
+
+</TabItem>
+
+<TabItem value=".env" label=".env">
+
+```bash
+# Candide's Solana Paymaster endpoint (hosted Kora). The URL includes your API key: keep it secret.
+SOLANA_PAYMASTER_URL=
+
+# Solana mainnet RPC. Use a paid provider for production.
+SOLANA_NODE_URL=https://api.mainnet-beta.solana.com
+```
+
+</TabItem>
+</Tabs>
+
+WDK wallets are seed-phrase based: the account is derived from a BIP-39 mnemonic at `m/44'/501'/0'/0'`. Use `WalletManagerSolanaGasless.getRandomSeedPhrase()` to generate one.
+
+### Step 3: Quote the Fee
+
+`quoteTransfer` prices the transfer without submitting it. The fee is returned in USDT base units (6 decimals).
+
+```ts
+const quote = await account.quoteTransfer({
+    token: usdtMint,
+    recipient,
+    amount: 100000n, // 0.1 USDT
+})
+console.log(`Estimated network fee: ${Number(quote.fee) / 1e6} USDT`)
+```
+
+### Step 4: Send the Transfer
+
+`transfer()` builds the transaction, gets it co-signed by the fee payer, and submits it. The account pays the fee from its USDT balance and never touches SOL.
+
+```ts
+const result = await account.transfer({
+    token: usdtMint,
+    recipient,
+    amount: 100000n,
+})
+console.log(`Transaction signature: ${result.hash}`)
+console.log(`Fee paid: ${Number(result.fee) / 1e6} USDT`)
+```
+
+`transfer()` returns as soon as the transaction is submitted. Poll `getSignatureStatuses` on your RPC if you need to wait for confirmation, as the complete example below does.
+
+## Complete Runnable Example
+
+The full example lives in the [WDK + Candide examples repository](https://github.com/candidelabs/tether-wdk-candide/tree/main/solana-gasless/01-usdt-gas). It checks the account's USDT balance, quotes the fee, sends the transfer, and waits for on-chain confirmation:
+
+```bash
+git clone https://github.com/candidelabs/tether-wdk-candide.git
+cd tether-wdk-candide && npm install
+cp .env.example .env   # fill in SOLANA_PAYMASTER_URL
+npm run solana-transfer-usdt-gas
+```
+
+## Good to Know
+
+- **Fee guardrail**: `transferMaxFee` aborts any transfer whose quoted fee exceeds the limit, protecting users from fee spikes.
+- **New recipients cost more**: the first transfer to an address without a USDT token account includes the account's rent in the fee. Subsequent transfers cost a fraction of a cent.
+- **Token program support**: the paymaster accepts the legacy SPL Token program; Token-2022 mints are not supported yet.
+- **No SOL ever needed**: the account never holds SOL, not for fees and not for rent.
