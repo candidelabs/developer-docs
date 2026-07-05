@@ -4,9 +4,6 @@ description: Send Solana transactions from accounts with zero SOL and pay the ne
 keywords: [solana, kora, gasless, usdt, spl, fee-payer, wdk]
 ---
 
-import Tabs from "@theme/Tabs";
-import TabItem from "@theme/TabItem";
-
 # Pay Gas in USDT on Solana
 
 Send SPL token transfers from Solana accounts that hold **zero SOL**. Candide's **Solana Paymaster**, a hosted [Kora](https://solana.com/docs/tools/kora) endpoint, signs as the transaction fee payer and collects the fee in USDT inside the same transaction.
@@ -39,20 +36,31 @@ npm install @tetherto/wdk-wallet-solana-gasless @solana/kora
 
 `@solana/kora` is only used to discover the paymaster's fee payer address at runtime.
 
+The code in this guide was verified on Solana mainnet against `@tetherto/wdk-wallet-solana-gasless@1.0.0-beta.1` and `@solana/kora@0.2.1`.
+
 ### Step 2: Configure the Wallet
 
 Get your Solana Paymaster URL from the [Candide dashboard](https://dashboard.candide.dev). The URL includes your API key, so keep it in an environment variable.
 
-<Tabs>
-<TabItem value="index.ts" label="index.ts">
+```bash title=".env"
+# Candide's Solana Paymaster endpoint (hosted Kora). The URL includes your API key: keep it secret.
+SOLANA_PAYMASTER_URL=
 
-```ts
+# Solana mainnet RPC. Use a paid provider for production.
+SOLANA_NODE_URL=https://api.mainnet-beta.solana.com
+```
+
+```ts title="index.ts"
 import WalletManagerSolanaGasless from '@tetherto/wdk-wallet-solana-gasless'
 import { KoraClient } from '@solana/kora'
 
 const nodeUrl = process.env.SOLANA_NODE_URL as string
 const paymasterUrl = process.env.SOLANA_PAYMASTER_URL as string
 const usdtMint = 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB'
+
+// WDK wallets are seed-phrase based: the account is derived from a
+// BIP-39 mnemonic at m/44'/501'/0'/0'
+const seedPhrase = process.env.SEED_PHRASE || WalletManagerSolanaGasless.getRandomSeedPhrase()
 
 // The paymaster reports its fee payer address; transactions must name it
 const kora = new KoraClient({ rpcUrl: paymasterUrl })
@@ -69,23 +77,6 @@ const wallet = new WalletManagerSolanaGasless(seedPhrase, {
 const account = await wallet.getAccount(0)
 console.log(`Solana account: ${await account.getAddress()}`)
 ```
-
-</TabItem>
-
-<TabItem value=".env" label=".env">
-
-```bash
-# Candide's Solana Paymaster endpoint (hosted Kora). The URL includes your API key: keep it secret.
-SOLANA_PAYMASTER_URL=
-
-# Solana mainnet RPC. Use a paid provider for production.
-SOLANA_NODE_URL=https://api.mainnet-beta.solana.com
-```
-
-</TabItem>
-</Tabs>
-
-WDK wallets are seed-phrase based: the account is derived from a BIP-39 mnemonic at `m/44'/501'/0'/0'`. Use `WalletManagerSolanaGasless.getRandomSeedPhrase()` to generate one.
 
 ### Step 3: Quote the Fee
 
@@ -125,6 +116,27 @@ git clone https://github.com/candidelabs/tether-wdk-candide.git
 cd tether-wdk-candide && npm install
 cp .env.example .env   # fill in SOLANA_PAYMASTER_URL
 npm run solana-transfer-usdt-gas
+```
+
+```ts reference title="solana-gasless/01-usdt-gas/index.ts"
+https://github.com/candidelabs/tether-wdk-candide/blob/main/solana-gasless/01-usdt-gas/index.ts
+```
+
+```bash title=".env"
+# Candide's Solana Paymaster endpoint (hosted Kora). The URL includes your API key: keep it secret.
+SOLANA_PAYMASTER_URL=
+
+# Solana mainnet RPC. Use a paid provider for production.
+SOLANA_NODE_URL=https://api.mainnet-beta.solana.com
+
+# BIP-39 seed phrase. If not set, the script generates one and prints it.
+SEED_PHRASE=
+
+# Optional: transfer recipient. Defaults to the account's own address.
+# SOLANA_RECIPIENT=
+
+# Optional: amount in USDT base units (6 decimals). Defaults to 100000 (0.1 USDT).
+# SOLANA_TRANSFER_AMOUNT=
 ```
 
 ## Good to Know
