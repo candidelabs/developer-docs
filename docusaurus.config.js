@@ -212,9 +212,9 @@ const config = {
       },
       image: 'img/posters/atelier-meta.png',
       announcementBar: {
-        id: 'new-chains-somnia-hyperevm-tempo',
+        id: 'solana-paymaster-launch',
         content:
-          'Now live on Somnia, HyperEVM, and Tempo. <a href="/wallet/api/supported-networks">See all supported networks</a>',
+          'Pay gas in USDT on Solana is live. <a href="/wallet/guides/pay-gas-in-usdt-solana/">Read the guide</a>',
         backgroundColor: '#fce7f0',
         textColor: '#1a1a1a',
         isCloseable: true,
