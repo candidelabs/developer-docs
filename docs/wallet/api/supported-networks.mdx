@@ -168,15 +168,23 @@ export const exclusiveChainList = [
 
 # Supported Networks
 
-### Mainnet
+### EVM Mainnet
 <ChainListTable items={chainList} />
 
-### Testnet
+### EVM Testnet
 <ChainListTable items={testChainList} />
 
-## Exclusive Networks
+## Solana
 
-These networks are available as an add-on by request. Don't see yours? We can evaluate support for any EVM-equivalent chain on demand. [Contact us](https://t.me/heymarcopolo) to request access.
+The Solana Paymaster covers transaction fees and collects them in USDT, so accounts never need to hold SOL. It runs [Kora](https://solana.com/docs/tools/kora), the Solana Foundation's open fee-payer standard. See the [guide](/wallet/guides/pay-gas-in-usdt-solana/).
+
+| Network | Service | Fee token |
+|---------|---------|-----------|
+| <img src="/img/networks/solana.svg" width="20" style={{verticalAlign: "middle", marginRight: "6px"}} /> Solana Mainnet | Solana Paymaster (Kora) | USDT |
+
+## Extended Networks
+
+These networks are available as an add-on by request. Don't see yours? We can evaluate support for any EVM-equivalent chain on demand. [Contact us](https://www.candide.dev/contact) to request access.
 
 <ChainListTable items={exclusiveChainList} />
 

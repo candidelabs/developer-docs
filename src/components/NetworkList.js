@@ -12,6 +12,7 @@ const networks = [
   { src: "/img/networks/10.png", name: "Optimism" },
   { src: "/img/networks/9745.svg", name: "Plasma" },
   { src: "/img/networks/137.png", name: "Polygon" },
+  { src: "/img/networks/solana.svg", name: "Solana" },
   { src: "/img/networks/5031.png", name: "Somnia" },
   { src: "/img/networks/4217.png", name: "Tempo" },
   { src: "/img/networks/480.svg", name: "World Chain" },
