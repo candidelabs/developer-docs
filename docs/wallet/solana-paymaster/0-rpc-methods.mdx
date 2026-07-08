@@ -71,6 +71,21 @@ The [Pay Gas in USDT on Solana guide](/wallet/guides/pay-gas-in-usdt-solana/) wa
 Newer Kora versions describe a `getPaymentInstruction` method that builds the fee payment instruction of step 4 for you. It is not enabled on this endpoint and returns error `-32600`, `"Unsupported method - getPaymentInstruction not supported"`. Build the payment instruction as a plain SPL transfer instead.
 :::
 
+## Supported Tokens
+
+| Token | Mint Address | Decimals | Network |
+|-------|--------------|----------|---------|
+| USDT | `Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB` | 6 | Solana Mainnet |
+
+Query [`getSupportedTokens`](#getsupportedtokens) for the live list; new tokens are added there first.
+
+## Sponsorship Mode
+
+The Solana Paymaster currently supports one sponsorship mode:
+
+- **Token gas payments** (available): the user pays the network fee in a supported SPL token inside the same transaction, and the paymaster fronts the SOL. Every transaction must include the fee payment; this is the mode this API implements. It is the Solana counterpart of [ERC-20 gas payments](/wallet/paymaster/rpc-methods/) on Candide's EVM Paymaster.
+- **Full gas sponsorship** (not yet available on Solana): the app covers the fee so the user pays nothing. On EVM this is offered through [InstaGas gas policies](/instagas/overview/).
+
 ## Current Policy
 
 The endpoint validates every transaction against the policy in [`getConfig`](#getconfig). As of this writing, the rules that most often reject a transaction are:
@@ -79,7 +94,6 @@ The endpoint validates every transaction against the policy in [`getConfig`](#ge
 - **The fee payment must be included.** `signTransaction` and `signAndSendTransaction` reject transactions that do not pay at least the quoted fee to the payment address, with `"Insufficient token payment. Required ... lamports"`.
 - **Only five programs may be invoked**: System, SPL Token, Associated Token Account, Compute Budget, and Address Lookup Table. Token-2022 is not among them, so Token-2022 mints are rejected.
 - **The fee payer spends at most 9,000,000 lamports per transaction** (fees plus rent), transactions are capped at 10 signatures, and durable nonce transactions are not accepted.
-- Fees are priced from live [Jupiter](https://jup.ag) quotes with a 5% margin over the network cost, including rent for any token account the transaction creates.
 
 ## Methods
 
