@@ -12,7 +12,7 @@ This guide uses [`@tetherto/wdk-wallet-solana-gasless`](https://github.com/tethe
 
 ## How It Works
 
-The paymaster speaks Kora's JSON-RPC protocol, the Solana Foundation's open fee-payer standard, so any Kora client can point at it. For each transaction:
+The paymaster speaks Kora's JSON-RPC protocol, the Solana Foundation's open fee-payer standard, so any Kora client can point at it. The full API is documented in the [Solana Paymaster API reference](/wallet/solana-paymaster/rpc-methods/). For each transaction:
 
 1. Your app builds an SPL transfer and includes a small USDT payment to the fee payer
 2. The paymaster validates the transaction against its policy, co-signs as fee payer, and submits it

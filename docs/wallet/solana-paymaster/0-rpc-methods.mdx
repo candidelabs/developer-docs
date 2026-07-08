@@ -1,0 +1,633 @@
+---
+title: Candide Solana Paymaster API Reference
+description: JSON-RPC API reference for Candide's Solana Paymaster, a hosted Kora endpoint for gasless Solana transactions. Sign transactions with a fee payer and pay network fees in USDT.
+image: /img/posters/paymaster-meta.png
+keywords: [solana paymaster, kora, gasless solana, fee payer, pay gas in usdt, kora json-rpc]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+
+import {
+  estimateTransactionFeeParams,
+  estimateTransactionFeeReturn,
+  getBlockhashReturn,
+  getPayerSignerReturn,
+  getSupportedTokensReturn,
+  transferTransactionParams,
+  transferTransactionReturn,
+  signTransactionParams,
+  signTransactionReturn,
+  signAndSendTransactionParams,
+  signAndSendTransactionReturn,
+  getConfigReturn,
+} from "/src/data/solanaPaymaster";
+
+# Solana Paymaster RPC Methods
+
+JSON-RPC API reference for Candide's **Solana Paymaster**, a hosted [Kora](https://solana.com/docs/tools/kora) endpoint. The paymaster acts as the transaction fee payer, so your users can transact from accounts that hold zero SOL and pay the network fee in USDT instead. Kora is the Solana Foundation's open fee-payer standard: any Kora client, such as [`@solana/kora`](https://www.npmjs.com/package/@solana/kora), works against this endpoint unchanged.
+
+Visit the [dashboard](https://dashboard.candide.dev) to get an API key. The endpoint URL is:
+
+```
+https://api.candide.dev/api/v3/solana/YOUR_API_KEY
+```
+
+You can also keep the key out of the URL by sending it in an `x-api-key` header against `https://api.candide.dev/api/v3/solana`.
+
+To check connectivity and discover the fee payer address in one call:
+
+```bash
+curl https://api.candide.dev/api/v3/solana/YOUR_API_KEY \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc": "2.0", "id": 1, "method": "getPayerSigner", "params": []}'
+```
+
+Every example request and response on this page was captured against the live endpoint. Long base64 strings are shortened with `...` for readability; everything else is verbatim, including the [mainnet transaction](https://explorer.solana.com/tx/1QdRg6ThqLHa776Dq7FHjjzJTS3ZG8Me6FPgqTAa7mND1Wfc86Qk9B39i2p1dy5tvG9AuVHYLbHNTqdVUsJk1UZ) in `signAndSendTransaction`.
+
+## Conventions
+
+These differ from Candide's [EVM Paymaster API](/wallet/paymaster/rpc-methods/), so read them before reusing patterns from there:
+
+- Transactions are the **base64-encoded serialized wire format** (what `transaction.serialize()` returns in `@solana/web3.js`), not hex.
+- Amounts and fees are **plain decimal integers in base units** (USDT has 6 decimals), not hex strings.
+- Methods that take arguments use a **named params object** (`"params": {...}`); methods without arguments take `"params": []`.
+- Method names are camelCase; **response fields are snake_case** (`signer_address`, `fee_in_token`).
+
+## Transaction Flow
+
+A gasless transaction goes through the API like this:
+
+1. Call [`getPayerSigner`](#getpayersigner) and set `signer_address` as the transaction's fee payer.
+2. Build the transaction, or have the paymaster build a token transfer for you with [`transferTransaction`](#transfertransaction).
+3. Call [`estimateTransactionFee`](#estimatetransactionfee) to get the fee in the fee token (`fee_in_token`).
+4. Add an SPL transfer of `fee_in_token` base units from the user to `payment_address` as the last instruction. Adding it changes the transaction, so re-estimate and adjust until the quoted fee stops changing (it converges in one step).
+5. Have the user sign, then call [`signAndSendTransaction`](#signandsendtransaction) to co-sign and broadcast, or [`signTransaction`](#signtransaction) if you want to broadcast yourself.
+
+The [Pay Gas in USDT on Solana guide](/wallet/guides/pay-gas-in-usdt-solana/) walks through the same flow with Tether's WDK handling steps 2 to 5 behind one `transfer()` call.
+
+:::info getPaymentInstruction is not available
+Newer Kora versions describe a `getPaymentInstruction` method that builds the fee payment instruction of step 4 for you. It is not enabled on this endpoint and returns error `-32600`, `"Unsupported method - getPaymentInstruction not supported"`. Build the payment instruction as a plain SPL transfer instead.
+:::
+
+## Supported Tokens
+
+| Token | Mint Address | Decimals | Network |
+|-------|--------------|----------|---------|
+| USDT | `Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB` | 6 | Solana Mainnet |
+
+Query [`getSupportedTokens`](#getsupportedtokens) for the live list; new tokens are added there first.
+
+## Sponsorship Mode
+
+The Solana Paymaster currently supports one sponsorship mode:
+
+- **Token gas payments** (available): the user pays the network fee in a supported SPL token inside the same transaction, and the paymaster fronts the SOL. Every transaction must include the fee payment; this is the mode this API implements. It is the Solana counterpart of [ERC-20 gas payments](/wallet/paymaster/rpc-methods/) on Candide's EVM Paymaster.
+- **Full gas sponsorship** (not yet available on Solana): the app covers the fee so the user pays nothing. On EVM this is offered through [InstaGas gas policies](/instagas/overview/).
+
+## Current Policy
+
+The endpoint validates every transaction against the policy in [`getConfig`](#getconfig). As of this writing, the rules that most often reject a transaction are:
+
+- **USDT is the only fee token.** Mainnet USDT (`Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB`) is the only accepted value for `fee_token` and the only token that may be transferred. Any other mint fails with `"Token ... is not supported"`.
+- **The fee payment must be included.** `signTransaction` and `signAndSendTransaction` reject transactions that do not pay at least the quoted fee to the payment address, with `"Insufficient token payment. Required ... lamports"`.
+- **Only five programs may be invoked**: System, SPL Token, Associated Token Account, Compute Budget, and Address Lookup Table. Token-2022 is not among them, so Token-2022 mints are rejected.
+- **The fee payer spends at most 9,000,000 lamports per transaction** (fees plus rent), transactions are capped at 10 signatures, and durable nonce transactions are not accepted.
+
+## Methods
+
+### getPayerSigner
+
+Returns the paymaster's fee payer address and the address that fee payments must be sent to. Set `signer_address` as the transaction fee payer; send the USDT fee to `payment_address`.
+
+#### Invocation
+
+```json
+{ "method": "getPayerSigner", "params": [] }
+```
+
+#### Return
+
+```json
+{ "result": { signer_address: string, payment_address: string } }
+```
+
+<Tabs>
+<TabItem value="request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getPayerSigner",
+  "params": []
+}
+```
+
+</TabItem>
+<TabItem value="response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "signer_address": "CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz",
+    "payment_address": "CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz"
+  }
+}
+```
+
+</TabItem>
+<TabItem value="response type" label="Response Type">
+  <DataTable items={getPayerSignerReturn} />
+</TabItem>
+</Tabs>
+
+### getSupportedTokens
+
+Returns the mint addresses of the SPL tokens accepted for fee payment.
+
+#### Invocation
+
+```json
+{ "method": "getSupportedTokens", "params": [] }
+```
+
+#### Return
+
+```json
+{ "result": { tokens: string[] } }
+```
+
+<Tabs>
+<TabItem value="request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getSupportedTokens",
+  "params": []
+}
+```
+
+</TabItem>
+<TabItem value="response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "tokens": ["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"]
+  }
+}
+```
+
+</TabItem>
+<TabItem value="response type" label="Response Type">
+  <DataTable items={getSupportedTokensReturn} />
+</TabItem>
+</Tabs>
+
+### estimateTransactionFee
+
+Prices a transaction. Returns the total fee in lamports and in the requested fee token, including rent for any accounts the transaction creates and the paymaster margin. The transaction must already name the paymaster's fee payer; it does not need to be signed.
+
+#### Invocation
+
+```json
+{ "method": "estimateTransactionFee", "params": { transaction: string, fee_token: string } }
+```
+
+#### Return
+
+```json
+{
+  "result": {
+    fee_in_lamports: number,
+    fee_in_token: number,
+    signer_pubkey: string,
+    payment_address: string
+  }
+}
+```
+
+<Tabs>
+<TabItem value="request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "estimateTransactionFee",
+  "params": {
+    "transaction": "AmkNdD6EK2jjAaPzHhOfmyTqxYGGM0cemhhypHFRe8Wy...",
+    "fee_token": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
+  }
+}
+```
+
+</TabItem>
+<TabItem value="response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "fee_in_lamports": 10553,
+    "fee_in_token": 818,
+    "signer_pubkey": "CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz",
+    "payment_address": "CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz"
+  }
+}
+```
+
+`fee_in_token` is in base units of `fee_token`: 818 is 0.000818 USDT.
+
+</TabItem>
+<TabItem value="request type" label="Request Types">
+  <DataTable items={estimateTransactionFeeParams} />
+</TabItem>
+<TabItem value="response type" label="Response Type">
+  <DataTable items={estimateTransactionFeeReturn} />
+</TabItem>
+</Tabs>
+
+### transferTransaction
+
+Builds an unsigned SPL token transfer with the paymaster set as fee payer. Use it when you do not want to construct the transaction yourself. The returned transaction does **not** include the fee payment: estimate it, append the payment transfer, and re-sign before submitting.
+
+`source` and `destination` are wallet (owner) addresses; the paymaster resolves the associated token accounts. If the destination's token account does not exist, the transaction includes its creation and the rent shows up in the fee quote.
+
+#### Invocation
+
+```json
+{ "method": "transferTransaction", "params": { amount: number, token: string, source: string, destination: string } }
+```
+
+#### Return
+
+```json
+{
+  "result": {
+    transaction: string,
+    message: string,
+    blockhash: string,
+    signer_pubkey: string
+  }
+}
+```
+
+<Tabs>
+<TabItem value="request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "transferTransaction",
+  "params": {
+    "amount": 100000,
+    "token": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+    "source": "A3scQhn4rbkybHyCd1C5rcAQ3ZKHTLwsCrXw7fTSo2zN",
+    "destination": "A3scQhn4rbkybHyCd1C5rcAQ3ZKHTLwsCrXw7fTSo2zN"
+  }
+}
+```
+
+`amount` is in base units: 100000 is 0.1 USDT.
+
+</TabItem>
+<TabItem value="response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "transaction": "AmkNdD6EK2jjAaPzHhOfmyTqxYGGM0cemhhypHFRe8Wy...",
+    "message": "AgECBbHnR3w2nftr0eljJIxb7sUoC7kqYxLzxCJsijx6...",
+    "blockhash": "FFkAKnzBcUvKv3erAh3KoGsSMv4zmJSip6e1fduDWb3B",
+    "signer_pubkey": "CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz"
+  }
+}
+```
+
+</TabItem>
+<TabItem value="request type" label="Request Types">
+  <DataTable items={transferTransactionParams} />
+</TabItem>
+<TabItem value="response type" label="Response Type">
+  <DataTable items={transferTransactionReturn} />
+</TabItem>
+</Tabs>
+
+### signTransaction
+
+Validates a transaction against the policy and, if it passes, signs it with the fee payer key. The transaction is **not** broadcast: submit the returned `signed_transaction` yourself. The transaction must include the fee payment to the payment address, or it is rejected with `"Insufficient token payment"`.
+
+#### Invocation
+
+```json
+{ "method": "signTransaction", "params": { transaction: string } }
+```
+
+#### Return
+
+```json
+{ "result": { signed_transaction: string, signer_pubkey: string } }
+```
+
+<Tabs>
+<TabItem value="request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "signTransaction",
+  "params": {
+    "transaction": "AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..."
+  }
+}
+```
+
+The user has already signed; the fee payer's signature slot is still empty (the leading zero bytes).
+
+</TabItem>
+<TabItem value="response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "signed_transaction": "AgBZ71/kM9Ccb3i4Arc1npZnyHlETph7p7SY747zb7gt...",
+    "signer_pubkey": "CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz"
+  }
+}
+```
+
+</TabItem>
+<TabItem value="request type" label="Request Types">
+  <DataTable items={signTransactionParams} />
+</TabItem>
+<TabItem value="response type" label="Response Type">
+  <DataTable items={signTransactionReturn} />
+</TabItem>
+</Tabs>
+
+### signAndSendTransaction
+
+Same validation and signing as [`signTransaction`](#signtransaction), then broadcasts the transaction to the network and returns its signature. This is the last call of the [transaction flow](#transaction-flow). It returns as soon as the transaction is submitted; poll `getSignatureStatuses` on your Solana RPC to wait for confirmation.
+
+#### Invocation
+
+```json
+{ "method": "signAndSendTransaction", "params": { transaction: string } }
+```
+
+#### Return
+
+```json
+{
+  "result": {
+    signature: string,
+    signed_transaction: string,
+    signer_pubkey: string
+  }
+}
+```
+
+<Tabs>
+<TabItem value="request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "signAndSendTransaction",
+  "params": {
+    "transaction": "AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA..."
+  }
+}
+```
+
+</TabItem>
+<TabItem value="response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "signature": "1QdRg6ThqLHa776Dq7FHjjzJTS3ZG8Me6FPgqTAa7mND1Wfc86Qk9B39i2p1dy5tvG9AuVHYLbHNTqdVUsJk1UZ",
+    "signed_transaction": "AgBZ71/kM9Ccb3i4Arc1npZnyHlETph7p7SY747zb7gt...",
+    "signer_pubkey": "CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz"
+  }
+}
+```
+
+This response is a real mainnet transaction: [view it on the explorer](https://explorer.solana.com/tx/1QdRg6ThqLHa776Dq7FHjjzJTS3ZG8Me6FPgqTAa7mND1Wfc86Qk9B39i2p1dy5tvG9AuVHYLbHNTqdVUsJk1UZ).
+
+</TabItem>
+<TabItem value="request type" label="Request Types">
+  <DataTable items={signAndSendTransactionParams} />
+</TabItem>
+<TabItem value="response type" label="Response Type">
+  <DataTable items={signAndSendTransactionReturn} />
+</TabItem>
+</Tabs>
+
+### getBlockhash
+
+Returns a recent blockhash from the Solana RPC node the paymaster is connected to. Useful when your app does not have its own RPC connection at transaction-build time.
+
+#### Invocation
+
+```json
+{ "method": "getBlockhash", "params": [] }
+```
+
+#### Return
+
+```json
+{ "result": { blockhash: string } }
+```
+
+<Tabs>
+<TabItem value="request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getBlockhash",
+  "params": []
+}
+```
+
+</TabItem>
+<TabItem value="response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "blockhash": "kZEkyRwERAqSXNULXRtg2rcnvUgKJPXyXGgXqFsPErk"
+  }
+}
+```
+
+</TabItem>
+<TabItem value="response type" label="Response Type">
+  <DataTable items={getBlockhashReturn} />
+</TabItem>
+</Tabs>
+
+### getConfig
+
+Returns the paymaster's full configuration: fee payer addresses, the validation policy every transaction is checked against, and which RPC methods are enabled. Use it to discover limits programmatically instead of hardcoding the [current policy](#current-policy).
+
+#### Invocation
+
+```json
+{ "method": "getConfig", "params": [] }
+```
+
+#### Return
+
+```json
+{
+  "result": {
+    fee_payers: string[],
+    validation_config: object,
+    enabled_methods: object
+  }
+}
+```
+
+<Tabs>
+<TabItem value="request" label="Example Request">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getConfig",
+  "params": []
+}
+```
+
+</TabItem>
+<TabItem value="response" label="Example Response">
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "fee_payers": ["CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz"],
+    "validation_config": {
+      "max_allowed_lamports": 9000000,
+      "max_signatures": 10,
+      "allowed_programs": [
+        "11111111111111111111111111111111",
+        "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+        "ComputeBudget111111111111111111111111111111",
+        "AddressLookupTab1e1111111111111111111111111"
+      ],
+      "allowed_tokens": ["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"],
+      "allowed_spl_paid_tokens": ["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"],
+      "disallowed_accounts": [],
+      "price_source": "Jupiter",
+      "fee_payer_policy": {
+        "system": {
+          "allow_transfer": false,
+          "allow_assign": false,
+          "allow_create_account": true,
+          "allow_allocate": false,
+          "nonce": {
+            "allow_initialize": false,
+            "allow_advance": false,
+            "allow_withdraw": false,
+            "allow_authorize": false
+          }
+        },
+        "spl_token": {
+          "allow_transfer": false,
+          "allow_burn": false,
+          "allow_close_account": false,
+          "allow_approve": false,
+          "allow_revoke": false,
+          "allow_set_authority": false,
+          "allow_mint_to": false,
+          "allow_initialize_mint": false,
+          "allow_initialize_account": false,
+          "allow_initialize_multisig": false,
+          "allow_freeze_account": false,
+          "allow_thaw_account": false
+        },
+        "token_2022": {
+          "allow_transfer": false,
+          "allow_burn": false,
+          "allow_close_account": false,
+          "allow_approve": false,
+          "allow_revoke": false,
+          "allow_set_authority": false,
+          "allow_mint_to": false,
+          "allow_initialize_mint": false,
+          "allow_initialize_account": false,
+          "allow_initialize_multisig": false,
+          "allow_freeze_account": false,
+          "allow_thaw_account": false
+        }
+      },
+      "price": { "type": "margin", "margin": 0.05 },
+      "token_2022": {
+        "blocked_mint_extensions": ["permanent_delegate"],
+        "blocked_account_extensions": []
+      },
+      "allow_durable_transactions": false
+    },
+    "enabled_methods": {
+      "liveness": true,
+      "estimate_transaction_fee": true,
+      "get_supported_tokens": true,
+      "get_payer_signer": true,
+      "sign_transaction": true,
+      "sign_and_send_transaction": true,
+      "transfer_transaction": true,
+      "get_blockhash": true,
+      "get_config": true
+    }
+  }
+}
+```
+
+</TabItem>
+<TabItem value="response type" label="Response Type">
+  <DataTable items={getConfigReturn} />
+</TabItem>
+</Tabs>
+
+## Errors
+
+Failures use standard JSON-RPC 2.0 error objects. The messages below were captured from the live endpoint:
+
+```json
+{ "jsonrpc": "2.0", "id": 1, "error": { "code": -32000, "message": "..." } }
+```
+
+| Code | Example message | Cause |
+|------|-----------------|-------|
+| -32000 | `Invalid transaction: Insufficient token payment. Required 10553 lamports` | The transaction does not transfer at least the quoted fee to the payment address. The required amount is expressed in lamports; convert with `estimateTransactionFee` |
+| -32000 | `Invalid request: Token EPjFW...Dt1v is not supported` | `fee_token` or a transferred token is not in the allowed token list (USDT only) |
+| -32000 | `Invalid transaction: Failed to deserialize transaction: io error: unexpected end of file` | `transaction` is not a base64-encoded serialized Solana transaction |
+| -32600 | `Unsupported method - getPaymentInstruction not supported` | The method does not exist or is disabled on this endpoint |
