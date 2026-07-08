@@ -274,6 +274,19 @@ const sidebars = {
     },
     {
       type: "category",
+      label: "Solana Paymaster",
+      className: "category-not-collapsible",
+      collapsible: false,
+      items: [
+        {
+          type: "doc",
+          id: "wallet/solana-paymaster/rpc-methods",
+          label: "RPC Methods"
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "Self-hosting",
       collapsed: true,
       items: [
