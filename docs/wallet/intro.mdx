@@ -10,7 +10,7 @@ sidebar_position: 1
 
 A developer platform for building Ethereum smart wallets: gas sponsorship, passkeys, chain abstraction, and account recovery, all on top of Safe contracts.
 
-In production since ERC-4337 launched in 2023, Candide is the longest-running account abstraction infrastructure provider: millions of UserOperations bundled across hundreds of thousands of accounts. Every contract in these docs ships with public audits from OpenZeppelin, Ackee, Certora, Nethermind, and Cantina.
+In production since ERC-4337 launched in 2023, Candide is the longest running account abstraction infrastructure provider: millions of UserOperations bundled across hundreds of thousands of accounts. Every account contract in these docs ships with public audits from auditors such as OpenZeppelin, Ackee, Certora, Nethermind, and Cantina.
 
 ## Quick Start
 
@@ -65,13 +65,12 @@ export const GETTING_STARTED_ITEMS = [
 
 <CardList items={GETTING_STARTED_ITEMS} />
 
-<Callout title="Using AI to build faster">
-  Every page has a <strong>Copy Page</strong> button in the toolbar. Paste it directly into Claude or ChatGPT with a pre-filled prompt. For agents and IDE integrations like Claude Code or Cursor, point them to <a href="https://docs.candide.dev/llms.txt"><code>/llms.txt</code></a> for a full index of the docs.
-</Callout>
 
 ## Core Features
 
-*Smart accounts are programmable contracts, unlocking capabilities impossible with traditional EOAs.*
+### Onboarding & Deposits
+
+- Let users deposit from any chain to wallet using a single address via [Forwarding Address](/forwarding-address/overview/).
 
 ### Gas Abstraction
 - Gasless transactions: [Sponsor user fees](/wallet/guides/send-gasless-tx/) with flexible rules and policies
@@ -93,9 +92,6 @@ export const GETTING_STARTED_ITEMS = [
 - Account recovery: [Social Recovery](/wallet/plugins/recovery-with-guardians) or [traditional](/wallet/recovery/auth-api/) recovery options
 - Multi-signature: A single account controlled with [multiple signatures](/wallet/guides/multisig/)
 
-## Onboarding & Deposits
-
-Users don't always arrive on the chain your app runs on. [Forwarding Address](/forwarding-address/overview/) gives each user one deposit address that accepts funds from any supported chain and routes them automatically to the destination wallet. Built for onramps, exchange withdrawals, and payment flows.
 
 ## Developer Tools
 
@@ -104,7 +100,8 @@ Users don't always arrive on the chain your app runs on. [Forwarding Address](/f
 | [AbstractionKit SDK](/wallet/abstractionkit/introduction/) | TypeScript library for building and sending UserOperations. First-class support for Safe and EIP-7702 accounts. |
 | [Bundler](/wallet/bundler/rpc-methods/) | ERC-4337 compliant nodes for submitting UserOperations on all major EVM chains |
 | [Paymaster](/wallet/paymaster/rpc-methods/) | Sponsor gas or accept ERC-20 token payments with configurable policies |
-| [InstaGas](/instagas/overview/) | No-code dashboard to set gas sponsorship rules. No Solidity required |
+| [Solana Paymaster](/wallet/guides/pay-gas-in-usdt-solana/) | Gasless Solana transactions with fees collected in USDT. Built on Kora |
+| [InstaGas](/instagas/overview/) | No-code dashboard to set gas sponsorship rules |
 | [Forwarding Address](/forwarding-address/overview/) | One deposit address per user that routes funds from any supported chain to the destination wallet |
 | [Account Recovery](/wallet/recovery/overview/) | Email/SMS recovery with an alert system and automatic on-chain execution |
 
@@ -112,19 +109,18 @@ Access [Candide's Dashboard](https://dashboard.candide.dev) to get API keys and 
 
 ## Chains Supported
 
-Candide is available on all major EVM equivalent networks. Reach out if you need a network added.
+Candide is available on all major EVM equivalent networks, plus Solana through the [Solana Paymaster](/wallet/guides/pay-gas-in-usdt-solana/). Reach out if you need a network added.
 
 import { NetworkList } from "/src/components/NetworkList";
 
 <NetworkList />
 
-See the full list of [supported networks](/wallet/api/supported-networks/), including testnets and exclusive networks.
+See the full list of [supported networks](/wallet/api/supported-networks/), including testnets and extended networks.
 
 ## Support & Feedback
 
-- Join our [Discord](https://discord.gg/7R4g9XcxDQ)
-- Twitter: [@candidelabs](https://twitter.com/candidelabs)
-- Email: team@candidelabs.com
-- Telegram: [@heymarcopolo](https://t.me/heymarcopolo)
+Find us on [Discord](https://discord.gg/7R4g9XcxDQ), [Twitter](https://twitter.com/candidelabs), [Telegram](https://t.me/heymarcopolo), or at team@candidelabs.com. We have night owls and early birds on the team. Expect a reply regardless of your timezone.
 
-We have night owls and early birds on the team. Expect a reply regardless of your timezone.
+<Callout title="Using AI to build faster">
+  Every page has a <strong>Copy Page</strong> button in the toolbar. Paste it directly into Claude or ChatGPT with a pre-filled prompt. For agents and IDE integrations like Claude Code or Cursor, point them to <a href="https://docs.candide.dev/llms.txt"><code>/llms.txt</code></a> for a full index, or install the <a href="https://github.com/candidelabs/skills">Candide agent skills</a>.
+</Callout>

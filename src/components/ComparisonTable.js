@@ -16,7 +16,7 @@ const groups = [
       { feature: "Mainnet UserOps", values: ["2,500 Ops — 90 Day Trial", "100,000/mo", "500,000/mo", "Unlimited"] },
       { feature: "Testnet Usage", values: ["Unlimited", "Unlimited", "Unlimited", "Unlimited"] },
       { feature: "Mainnet Chains", values: ["2", "7", "All", "All"] },
-      { feature: "Exclusive Networks", values: [null, "Add-on", "1 Included", "Custom"] },
+      { feature: "Extended Networks", values: [null, "Add-on", "1 Included", "Custom"] },
     ],
   },
   {
