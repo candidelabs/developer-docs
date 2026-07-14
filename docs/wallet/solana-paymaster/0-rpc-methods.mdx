@@ -73,24 +73,23 @@ Newer Kora versions describe a `getPaymentInstruction` method that builds the fe
 
 ## Supported Tokens
 
-| Token | Mint Address | Decimals | Network |
-|-------|--------------|----------|---------|
-| USDT | `Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB` | 6 | Solana Mainnet |
+| Token | Mint Address | Decimals | Network | Availability |
+|-------|--------------|----------|---------|--------------|
+| USDT | `Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB` | 6 | Solana Mainnet | Default |
+| USDC | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` | 6 | Solana Mainnet | On request |
 
-Query [`getSupportedTokens`](#getsupportedtokens) for the live list; new tokens are added there first.
+USDT is enabled on every endpoint. USDC is enabled on request, and any other SPL token can be evaluated on demand: [contact us](https://www.candide.dev/contact) to request it for your API key. Query [`getSupportedTokens`](#getsupportedtokens) for the live list enabled on your endpoint.
 
-## Sponsorship Mode
+## Sponsorship Modes
 
-The Solana Paymaster currently supports one sponsorship mode:
-
-- **Token gas payments** (available): the user pays the network fee in a supported SPL token inside the same transaction, and the paymaster fronts the SOL. Every transaction must include the fee payment; this is the mode this API implements. It is the Solana counterpart of [ERC-20 gas payments](/wallet/paymaster/rpc-methods/) on Candide's EVM Paymaster.
-- **Full gas sponsorship** (not yet available on Solana): the app covers the fee so the user pays nothing. On EVM this is offered through [InstaGas gas policies](/instagas/overview/).
+- **Token gas payments** (default): the user pays the network fee in a supported SPL token inside the same transaction, and the paymaster fronts the SOL. Every transaction must include the fee payment; this is the mode this API implements. It is the Solana counterpart of [ERC-20 gas payments](/wallet/paymaster/rpc-methods/) on Candide's EVM Paymaster.
+- **Full gas sponsorship** (on request): the app covers the fee so the user pays nothing, like [InstaGas gas policies](/instagas/overview/) on EVM. [Contact us](https://www.candide.dev/contact) to enable it for your API key.
 
 ## Current Policy
 
 The endpoint validates every transaction against the policy in [`getConfig`](#getconfig). As of this writing, the rules that most often reject a transaction are:
 
-- **USDT is the only fee token.** Mainnet USDT (`Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB`) is the only accepted value for `fee_token` and the only token that may be transferred. Any other mint fails with `"Token ... is not supported"`.
+- **Only the tokens enabled for your endpoint are accepted.** USDT is enabled by default; [USDC and other tokens are enabled on request](#supported-tokens). A mint that is not enabled fails with `"Token ... is not supported"`, both as `fee_token` and as a transferred token.
 - **The fee payment must be included.** `signTransaction` and `signAndSendTransaction` reject transactions that do not pay at least the quoted fee to the payment address, with `"Insufficient token payment. Required ... lamports"`.
 - **Only five programs may be invoked**: System, SPL Token, Associated Token Account, Compute Budget, and Address Lookup Table. Token-2022 is not among them, so Token-2022 mints are rejected.
 - **The fee payer spends at most 9,000,000 lamports per transaction** (fees plus rent), transactions are capped at 10 signatures, and durable nonce transactions are not accepted.
@@ -99,7 +98,7 @@ The endpoint validates every transaction against the policy in [`getConfig`](#ge
 
 ### getPayerSigner
 
-Returns the paymaster's fee payer address and the address that fee payments must be sent to. Set `signer_address` as the transaction fee payer; send the USDT fee to `payment_address`.
+Returns the paymaster's fee payer address and the address that fee payments must be sent to. Set `signer_address` as the transaction fee payer; send the token fee to `payment_address`.
 
 #### Invocation
 
@@ -628,6 +627,6 @@ Failures use standard JSON-RPC 2.0 error objects. The messages below were captur
 | Code | Example message | Cause |
 |------|-----------------|-------|
 | -32000 | `Invalid transaction: Insufficient token payment. Required 10553 lamports` | The transaction does not transfer at least the quoted fee to the payment address. The required amount is expressed in lamports; convert with `estimateTransactionFee` |
-| -32000 | `Invalid request: Token EPjFW...Dt1v is not supported` | `fee_token` or a transferred token is not in the allowed token list (USDT only) |
+| -32000 | `Invalid request: Token EPjFW...Dt1v is not supported` | `fee_token` or a transferred token is not enabled for your endpoint (here USDC on an endpoint with only the default USDT). See [Supported Tokens](#supported-tokens) |
 | -32000 | `Invalid transaction: Failed to deserialize transaction: io error: unexpected end of file` | `transaction` is not a base64-encoded serialized Solana transaction |
 | -32600 | `Unsupported method - getPaymentInstruction not supported` | The method does not exist or is disabled on this endpoint |
