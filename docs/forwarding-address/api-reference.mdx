@@ -682,13 +682,6 @@ interface ForwardsResult {
 - New [`forwarding_getForwardById`](#forwarding_getforwardbyid) endpoint. Resolves a single forward by its opaque `forwardId`, for cheaper targeted status polling.
 - Every `Forward` now carries an opaque, round-trippable `forwardId` (UUID).
 
-### 2026-07-12
-
-**Changed**
-
-- Fee model for cross-chain forwards (Across, CCTP, OFT) changed from a flat fee to a pass-through model: the service fee (`feeBps`) is now a fixed cost, and gas plus bridge protocol fees are passed through to the user on top of it, rather than absorbed by the relayer out of its fee revenue. As a result, minimum viable deposit amounts returned by [`forwarding_getMinimumAmount`](#forwarding_getminimumamount) have dropped significantly on several routes (in some cases by an order of magnitude). Always query minimums fresh rather than caching or hardcoding past values.
-- `relayerBotFee` in [`forwarding_estimateOutput`](#forwarding_estimateoutput) responses now includes gas cost reimbursement in addition to the service fee, so it may report a higher value than before this change on the same route and amount. `bridgeProtocolFee` is unaffected.
-
 ### 2026-05-06
 
 **Changed**
