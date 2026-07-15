@@ -1,7 +1,7 @@
 ---
 slug: reliability
 title: Reliability & Monitoring
-description: How Candide maintains 99.9% uptime across the Bundler and Paymaster, on every supported chain.
+description: How Candide keeps the Bundler and Paymaster available on every supported chain, and the SLA that applies to each plan.
 image: /img/posters/voltaire-meta.png
 authors: [marc]
 ---
@@ -10,20 +10,27 @@ Smart wallet infrastructure has one job: be there when a transaction needs to go
 
 ## How we verify liveness
 
-We don't rely on node health checks alone. Every minute, on every chain we support, we execute a real signed transaction end to end. This confirms the full path works: RPC connectivity, bundler availability, and finality, not just that a server returned `200 OK`.
+Every minute, on every chain we support, we execute a real signed transaction end to end. This confirms the full path works: RPC connectivity, bundler availability, and finality. A node health check only confirms a server responded, it says nothing about whether a transaction actually landed.
 
 ## RPC redundancy
 
-Every chain we support is backed by multiple independent RPC providers. If one degrades or goes down, traffic fails over automatically. This happens without operator intervention and without a visible interruption to requests in flight.
+Every chain we support runs behind multiple independent RPC providers. If one degrades or goes down, traffic fails over automatically, without operator intervention and without a visible interruption to requests in flight.
 
-## Monitoring built for chains, not servers
+## Monitoring built for chains
 
-Standard uptime tooling checks if an endpoint responds. It won't catch a stuck mempool, a reorg, a gas spike, or a nonce gap, the failure modes that actually cause stuck transactions. We built our own monitoring for these cases specifically, so an issue is caught and alerted on before it reaches a production wallet.
+Chain failures look different from server failures: stuck mempools, reorgs, gas spikes, nonce gaps. We built monitoring for these specifically. An issue triggers an alert before it reaches a production wallet.
+
+## SLA by plan
+
+| Plan | SLA |
+|------|-----|
+| Starter | No SLA |
+| Launch Prod | No SLA |
+| Grow | 99% uptime |
+| Enterprise | 99.9% uptime, or as specified in contract |
+
+Full terms, downtime definition, and service credits are in our [Terms of Service](https://www.candide.dev/legal/tos).
 
 ## Live status
 
 Current and historical uptime is public at [status.candide.dev](https://status.candide.dev).
-
-## What we don't publish
-
-We don't disclose our specific RPC providers, alert thresholds, or failover logic publicly. If you're doing vendor diligence and need detail beyond what's here, [contact us](https://www.candide.dev/contact) and we'll walk through it under NDA.

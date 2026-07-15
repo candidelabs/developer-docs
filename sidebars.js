@@ -66,11 +66,6 @@ const sidebars = {
           id: "wallet/api/public-endpoints",
           label: "Public Endpoints"
         },
-        {
-          type: "doc",
-          id: "wallet/api/reliability",
-          label: "Reliability & Monitoring"
-        },
       ],
     },
     {
@@ -688,6 +683,11 @@ const sidebars = {
           type: "doc",
           id: "wallet/technical-reference/deployments",
           label: "Deployment Addresses"
+        },
+        {
+          type: "doc",
+          id: "wallet/api/reliability",
+          label: "Reliability & Monitoring"
         },
       ],
     },
