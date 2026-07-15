@@ -19,7 +19,7 @@ flowchart TD
     A[Discover supported routes] --> B[Compute forwarding address]
     B --> C[Activate monitoring on source chains]
     C --> D[Show address to user]
-    D --> E[Watch for status on destination chain]
+    D --> E[Poll forwarding_getForwardsByRecipient for delivery status]
 ```
 
 See the [API Reference](./api-reference.mdx) for details on each method. 
@@ -48,6 +48,16 @@ Monitoring is TTL-based. When the activation expires, the relayer stops watching
 Use the optional `salt` parameter in `forwarding_getAddress` and `account_activateForwardingAddress` to generate distinct forwarding addresses for the same recipient and destination pair. Each unique salt produces a different deterministic address. This is useful for tracking individual deposits or creating per-transaction deposit addresses.
 
 Each account is capped at 500 active forwarding addresses; refreshing an existing address does not count against the cap. If you need many short-lived per-deposit addresses, plan for the cap or contact Candide.
+
+---
+
+## Tracking Deposit Status
+
+Poll [`forwarding_getForwardsByRecipient`](./api-reference.mdx#forwarding_getforwardsbyrecipient) with the `recipient` and `destinationChainId` to see forwards as they're picked up and delivered. Each entry is a self-describing [`Forward`](./api-reference.mdx#the-forward-object) with a normalized `status` of `pending`, `delivered`, or `failed` — you don't need to branch on which bridge (Across, LayerZero, CCTP, or same-chain) handled the deposit.
+
+If you already have the source transaction hash (e.g. from watching the user's wallet), [`forwarding_getForwardsByTx`](./api-reference.mdx#forwarding_getforwardsbytx) returns every forward that transaction produced without a recipient filter. Once you have a `forwardId` from either method, poll [`forwarding_getForwardById`](./api-reference.mdx#forwarding_getforwardbyid) instead of refetching the full list.
+
+There is still no webhook for deposit completion. Polling the destination chain balance directly remains a valid fallback, but the `Forward` methods give you delivery status, failure reasons, and bridge-specific tracking data (Across deposit ID, LayerZero GUID, CCTP nonce) without needing to know each provider's API.
 
 ---
 

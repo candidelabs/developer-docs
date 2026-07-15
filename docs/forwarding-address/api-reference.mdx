@@ -362,9 +362,15 @@ To format `outputAmount` for display, look up the output token's decimals from [
 
 ## Status
 
-### `forwarding_getStatus`
+Three methods return a unified, self-describing `Forward` object (see [The `Forward` object](#the-forward-object) below). Each `Forward` carries its own source context (`sourceChainId`, `sourceTxHash`, `proxyAddress`, `sourceBlockTimestamp`), so there is no wrapping "transfer" grouping type to unpack.
 
-Returns confirmed forwards for a recipient on a destination chain, including per-bridge delivery statuses. Use this to track when a deposit has been picked up and whether it has been delivered, attested, refunded, etc.
+:::note Renamed from `forwarding_getStatus`
+`forwarding_getStatus` was renamed to [`forwarding_getForwardsByRecipient`](#forwarding_getforwardsbyrecipient) and its response reshaped from a per-tx `{transfers: [{bridgeStatuses}]}` grouping into a flat `{forwards: Forward[]}` list. See the [changelog](#changelog).
+:::
+
+### `forwarding_getForwardsByRecipient`
+
+Returns every confirmed forward for a recipient on a destination chain. This is the primary method for tracking deposit status: call it after activating a forwarding address to see forwards as they're picked up and delivered.
 
 Parameters:
 
@@ -379,7 +385,7 @@ Request:
 {
   "jsonrpc": "2.0",
   "id": 1,
-  "method": "forwarding_getStatus",
+  "method": "forwarding_getForwardsByRecipient",
   "params": [{
     "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
     "destinationChainId": 10
@@ -394,29 +400,162 @@ Response:
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "transfers": [
+    "forwards": [
       {
-        "sourceTxHash": "0x123...abc",
+        "forwardId": "550e8400-e29b-41d4-a716-446655440000",
+        "route": "across",
+        "status": "delivered",
+        "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
         "sourceChainId": 1,
+        "sourceTxHash": "0x123...abc",
         "proxyAddress": "0xDEF456...",
-        "createdAt": 1741132800,
-        "bridgeStatuses": [
-          {
-            "bridge": "across",
-            "status": "delivered",
-            "destinationTxHash": "0x789...def"
-          }
-        ]
+        "sourceBlockTimestamp": 1741132800,
+        "destinationChainId": 10,
+        "destinationTxHash": "0x789...def",
+        "depositId": 12345
       }
     ]
   }
 }
 ```
 
+---
+
+### `forwarding_getForwardsByTx`
+
+Returns every forward that fanned out from a single source transaction, with no recipient or destination filter. Mirrors LayerZero Scan's and Circle Iris's tx-keyed lookups. Useful when you already have the source tx hash (e.g. from watching the user's wallet) and want every forward it produced, including ones sent to other recipients in the same batch.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `sourceChainId` | `number` | Yes | Source chain ID |
+| `sourceTxHash` | `hash` | Yes | Source transaction hash |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_getForwardsByTx",
+  "params": [{
+    "sourceChainId": 8453,
+    "sourceTxHash": "0x123...abc"
+  }]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "forwards": [
+      {
+        "forwardId": "550e8400-e29b-41d4-a716-446655440000",
+        "route": "layerzero",
+        "status": "pending",
+        "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
+        "sourceChainId": 8453,
+        "sourceTxHash": "0x123...abc",
+        "destinationChainId": 10,
+        "guid": "0x..."
+      }
+    ]
+  }
+}
+```
+
+An empty `forwards` array means the source tx has no confirmed forward rows yet, either because it isn't one of ours or because it hasn't been indexed yet.
+
+---
+
+### `forwarding_getForwardById`
+
+Resolves a single forward by its opaque `forwardId` — the round-trippable UUID returned on every `Forward`. Pluck an id from a `forwarding_getForwardsByRecipient` or `forwarding_getForwardsByTx` response and poll this method for cheaper, targeted status refreshes instead of refetching the whole list.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `forwardId` | `string` | Yes | Opaque Forward UUID (`public_id`) |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_getForwardById",
+  "params": [{
+    "forwardId": "550e8400-e29b-41d4-a716-446655440000"
+  }]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "forward": {
+      "forwardId": "550e8400-e29b-41d4-a716-446655440000",
+      "route": "across",
+      "status": "delivered",
+      "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
+      "sourceChainId": 1,
+      "sourceTxHash": "0x123...abc",
+      "destinationChainId": 10,
+      "destinationTxHash": "0x789...def"
+    }
+  }
+}
+```
+
+Returns `{ "forward": null }` if the id is unknown.
+
+---
+
+### The `Forward` object
+
+Every `Forward` is discriminated on `route` and carries a normalized `status`, regardless of which bridge protocol moved the funds.
+
 | Field | Description |
 |-------|-------------|
-| `transfers` | Array of confirmed forwards routed through the proxy address derived from `recipient` |
-| `bridgeStatuses[].status` | One of `pending`, `attested`, `delivered`, `failed`, `expired`, `refunded` |
+| `forwardId` | Opaque round-trippable UUID. Pass it to [`forwarding_getForwardById`](#forwarding_getforwardbyid) for a targeted refresh |
+| `route` | `"across"`, `"layerzero"`, `"cctp"`, or `"same_chain"` |
+| `status` | Normalized delivery state: `"pending"`, `"delivered"`, or `"failed"` |
+| `recipient` | Destination recipient address |
+| `sourceChainId` | Chain ID the deposit originated on |
+| `sourceTxHash` | Source transaction hash |
+| `proxyAddress` | Forwarding address the deposit was sent to (present once known) |
+| `sourceBlockTimestamp` | Unix timestamp (seconds) of the source block (present once known) |
+| `destinationChainId` | Destination chain ID (present once known) |
+| `destinationTxHash` | Delivery transaction hash on the destination chain (present once known) |
+| `refundTxHash` | Refund transaction hash, only set on Across forwards refunded to the sender |
+| `failureReason` | Set only when `status` is `"failed"`: `"refunded"`, `"expired"`, or `"reverted"` |
+| `providerSubStatus` | Raw upstream provider status string, for display or debugging |
+
+Route-specific fields, present only on the matching `route`:
+
+| Field | Route | Description |
+|-------|-------|-------------|
+| `depositId` | `across` | Across deposit ID |
+| `guid` | `layerzero` | LayerZero message GUID |
+| `sourceEid` / `destinationEid` | `layerzero` | LayerZero endpoint IDs for the source/destination chain |
+| `lzScanUpdatedAt` | `layerzero` | Timestamp of the last LayerZero Scan update |
+| `eventNonce` | `cctp` | Circle CCTP message nonce |
+| `sourceDomain` / `destinationDomain` | `cctp` | Circle CCTP domain IDs for the source/destination chain |
+| `messageHash` | `cctp` | Circle CCTP message hash |
+
+:::note
+CCTP forwards top out at `"pending"` — Circle's attestation API only confirms the message was signed, not that the destination-chain mint executed. `same_chain` forwards are always `"delivered"` immediately, since there is no bridge: delivery is the source-tx confirmation itself.
+:::
 
 ---
 
@@ -490,11 +629,65 @@ interface EstimateResult {
   relayerBotFee: string;           // smallest unit, source token decimals
   bridgeProtocolFee: string;       // smallest unit, source token decimals
 }
+
+type ForwardRoute = "across" | "layerzero" | "cctp" | "same_chain";
+type ForwardStatus = "pending" | "delivered" | "failed";
+
+interface Forward {
+  forwardId: string | null;
+  route: ForwardRoute | string;
+  status: ForwardStatus | string;
+  recipient: string;
+  sourceChainId: number;
+  sourceTxHash: string;
+  proxyAddress?: string;
+  sourceBlockTimestamp?: number;   // unix seconds
+  destinationChainId?: number;
+  destinationTxHash?: string;
+  refundTxHash?: string;
+  failureReason?: string;          // "refunded" | "expired" | "reverted" | ...
+  providerSubStatus?: string;
+  // Across-specific
+  depositId?: number;
+  // LayerZero-specific
+  guid?: string;
+  sourceEid?: number;
+  destinationEid?: number;
+  lzScanUpdatedAt?: string;
+  // CCTP-specific
+  eventNonce?: string;
+  sourceDomain?: number;
+  destinationDomain?: number;
+  messageHash?: string;
+}
+
+interface ForwardsResult {
+  forwards: Forward[];
+}
 ```
 
 ---
 
 ## Changelog
+
+### 2026-07-13
+
+**Changed**
+
+- `forwarding_getStatus` has been renamed to [`forwarding_getForwardsByRecipient`](#forwarding_getforwardsbyrecipient). The response reshaped from a per-tx `{transfers: [{bridgeStatuses}]}` grouping into a flat `{forwards: Forward[]}` list of self-describing entries. See [The `Forward` object](#the-forward-object).
+
+**Added**
+
+- New [`forwarding_getForwardsByTx`](#forwarding_getforwardsbytx) endpoint. Returns every forward that fanned out from a single source transaction, with no recipient or destination filter.
+- New [`forwarding_getForwardById`](#forwarding_getforwardbyid) endpoint. Resolves a single forward by its opaque `forwardId`, for cheaper targeted status polling.
+- Every `Forward` now carries an opaque, round-trippable `forwardId` (UUID).
+
+### 2026-07-12
+
+**Changed**
+
+- Fee model for cross-chain forwards (Across, CCTP, OFT) changed from a flat fee to a pass-through model: the service fee (`feeBps`) is now a fixed cost, and gas plus bridge protocol fees are passed through to the user on top of it, rather than absorbed by the relayer out of its fee revenue. As a result, minimum viable deposit amounts returned by [`forwarding_getMinimumAmount`](#forwarding_getminimumamount) have dropped significantly on several routes (in some cases by an order of magnitude). Always query minimums fresh rather than caching or hardcoding past values.
+- `relayerBotFee` in [`forwarding_estimateOutput`](#forwarding_estimateoutput) responses now includes gas cost reimbursement in addition to the service fee, so it may report a higher value than before this change on the same route and amount. `bridgeProtocolFee` is unaffected.
 
 ### 2026-05-06
 
@@ -505,7 +698,7 @@ interface EstimateResult {
 **Added**
 
 - Per-account cap of 500 active forwarding addresses. Refreshing an existing address does not count against the cap. Exceeding the cap returns error code `-32013`.
-- New [`forwarding_getStatus`](#forwarding_getstatus) endpoint. Returns confirmed forwards for a recipient on a destination chain, with per-bridge delivery statuses (`pending`, `attested`, `delivered`, `failed`, `expired`, `refunded`).
+- New `forwarding_getStatus` endpoint. Returns confirmed forwards for a recipient on a destination chain, with per-bridge delivery statuses (`pending`, `attested`, `delivered`, `failed`, `expired`, `refunded`). Renamed to [`forwarding_getForwardsByRecipient`](#forwarding_getforwardsbyrecipient) on 2026-07-13, see above.
 - Same-chain forwards is now fee free. Only the gas cost is taken into account in the relayer fee.
 
 ### 2026-04-22
