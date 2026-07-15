@@ -684,6 +684,11 @@ const sidebars = {
           id: "wallet/technical-reference/deployments",
           label: "Deployment Addresses"
         },
+        {
+          type: "doc",
+          id: "wallet/api/reliability",
+          label: "Reliability & Monitoring"
+        },
       ],
     },
   ],
