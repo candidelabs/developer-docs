@@ -66,6 +66,11 @@ const sidebars = {
           id: "wallet/api/public-endpoints",
           label: "Public Endpoints"
         },
+        {
+          type: "doc",
+          id: "wallet/api/reliability",
+          label: "Reliability & Monitoring"
+        },
       ],
     },
     {

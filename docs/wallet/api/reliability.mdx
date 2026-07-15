@@ -1,0 +1,29 @@
+---
+slug: reliability
+title: Reliability & Monitoring
+description: How Candide maintains 99.9% uptime across the Bundler and Paymaster, on every supported chain.
+image: /img/posters/voltaire-meta.png
+authors: [marc]
+---
+
+Smart wallet infrastructure has one job: be there when a transaction needs to go through. A stuck transaction isn't an inconvenience, it's a stuck user, a failed payment, a support ticket you can't explain.
+
+## How we verify liveness
+
+We don't rely on node health checks alone. Every minute, on every chain we support, we execute a real signed transaction end to end. This confirms the full path works: RPC connectivity, bundler availability, and finality, not just that a server returned `200 OK`.
+
+## RPC redundancy
+
+Every chain we support is backed by multiple independent RPC providers. If one degrades or goes down, traffic fails over automatically. This happens without operator intervention and without a visible interruption to requests in flight.
+
+## Monitoring built for chains, not servers
+
+Standard uptime tooling checks if an endpoint responds. It won't catch a stuck mempool, a reorg, a gas spike, or a nonce gap, the failure modes that actually cause stuck transactions. We built our own monitoring for these cases specifically, so an issue is caught and alerted on before it reaches a production wallet.
+
+## Live status
+
+Current and historical uptime is public at [status.candide.dev](https://status.candide.dev).
+
+## What we don't publish
+
+We don't disclose our specific RPC providers, alert thresholds, or failover logic publicly. If you're doing vendor diligence and need detail beyond what's here, [contact us](https://www.candide.dev/contact) and we'll walk through it under NDA.
