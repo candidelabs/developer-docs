@@ -38,7 +38,7 @@ function fixMarkdownLinks(filePath) {
   });
 
   // Fix links with fragments: /path/.md#section -> /path.md#section
-  content = content.replace(/\/\.md(?=#[^\s)]*(?:\)|\s))/g, () => {
+  content = content.replace(/\/\.md(?=#[^\s)]*(?:\)|\s|$))/g, () => {
     modified = true;
     return '.md';
   });
@@ -74,6 +74,10 @@ function processDirectory(dir) {
   return filesFixed;
 }
 
-console.log('Fixing markdown links in build directory...\n');
-const filesFixed = processDirectory(BUILD_DIR);
-console.log(`\n✅ Fixed broken links in ${filesFixed} file(s)`);
+if (require.main === module) {
+  console.log('Fixing markdown links in build directory...\n');
+  const filesFixed = processDirectory(BUILD_DIR);
+  console.log(`\n✅ Fixed broken links in ${filesFixed} file(s)`);
+}
+
+module.exports = { fixMarkdownLinks };
