@@ -8,6 +8,10 @@ keywords: [api key, bundler endpoint, paymaster endpoint, authentication, rate l
 
 Production integrations use authenticated endpoints with an API key. Get yours from [Candide's Dashboard](https://dashboard.candide.dev). No sales call required.
 
+:::info API keys and management keys are different
+This page covers runtime Bundler and Paymaster API keys. The [Platform API](/platform/overview) uses a separate team management key in an `Authorization: Bearer` header to create and maintain gas policies. Never expose a management key in client-side code.
+:::
+
 ## Endpoint URL Format
 
 One URL serves both the **Bundler** and **Paymaster** APIs. Add the chain ID and your API key:

@@ -9,6 +9,9 @@
  *
  * This script fixes them to:
  *   https://docs.candide.dev/wallet/paymaster/tokens-supported.md (correct)
+ * The same malformed links can appear in llms-full.txt, so generated LLM text
+ * artifacts are processed alongside per-page Markdown files.
+ *
  *
  * It also fixes relative path versions like /wallet/paymaster/tokens-supported/.md
  */
@@ -34,6 +37,12 @@ function fixMarkdownLinks(filePath) {
     return beforeSlash + ending;
   });
 
+  // Fix links with fragments: /path/.md#section -> /path.md#section
+  content = content.replace(/\/\.md(?=#[^\s)]*(?:\)|\s))/g, () => {
+    modified = true;
+    return '.md';
+  });
+
   if (modified) {
     fs.writeFileSync(filePath, content, 'utf8');
     const relativePath = path.relative(BUILD_DIR, filePath);
@@ -54,7 +63,10 @@ function processDirectory(dir) {
 
     if (entry.isDirectory()) {
       filesFixed += processDirectory(fullPath);
-    } else if (entry.isFile() && entry.name.endsWith('.md')) {
+    } else if (
+      entry.isFile() &&
+      (entry.name.endsWith('.md') || /^llms(?:-full)?\.txt$/.test(entry.name))
+    ) {
       filesFixed += fixMarkdownLinks(fullPath);
     }
   }
