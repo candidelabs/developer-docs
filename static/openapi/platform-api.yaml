@@ -1,0 +1,799 @@
+openapi: 3.1.0
+
+info:
+  title: Candide Gas Policy Management API
+  version: "1.0.0"
+  license:
+    name: Proprietary
+  description: >-
+    Team-scoped REST API for managing gas policies, authenticated with a team
+    management key. Every route is scoped to the team that owns the key.
+
+servers:
+  - url: https://platform-api.candide.dev
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Identity
+    description: "Information about the calling management key."
+  - name: Gas Policies
+    description: "Create, read, update and delete gas policies."
+  - name: Access Rules
+    description: "Account, origin and IP whitelists of a policy."
+  - name: Transactions
+    description: "Allowed target transactions of a policy."
+
+paths:
+  /v1/me:
+    get:
+      tags: [Identity]
+      operationId: getKeyInfo
+      summary: "Return the calling key's team and scopes."
+      responses:
+        "200":
+          description: "Key info."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KeyInfo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /v1/gas-policies:
+    get:
+      tags: [Gas Policies]
+      operationId: listGasPolicies
+      summary: "List the team's gas policies. Requires scope gas-policies:read."
+      parameters:
+        - name: chainId
+          in: query
+          description: "Filter by chain id."
+          schema:
+            type: integer
+        - name: enabled
+          in: query
+          description: "Filter by enabled state."
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          description: "Zero-based page index."
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: pageSize
+          in: query
+          description: "Items per page."
+          schema:
+            type: integer
+            enum: [10, 25, 50, 100]
+            default: 25
+      responses:
+        "200":
+          description: "Paginated policies."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyList"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    post:
+      tags: [Gas Policies]
+      operationId: createGasPolicy
+      summary: "Create a gas policy. Requires scope gas-policies:write."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PolicyCreate"
+      responses:
+        "201":
+          description: "Created policy."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /v1/gas-policies/{policyId}:
+    parameters:
+      - $ref: "#/components/parameters/PolicyId"
+    get:
+      tags: [Gas Policies]
+      operationId: getGasPolicy
+      summary: "Fetch one gas policy. Requires scope gas-policies:read."
+      responses:
+        "200":
+          description: "Policy detail."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    patch:
+      tags: [Gas Policies]
+      operationId: updateGasPolicy
+      summary: "Update any subset of a policy's fields. Requires scope gas-policies:write."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PolicyUpdate"
+      responses:
+        "200":
+          description: "Updated policy."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    delete:
+      tags: [Gas Policies]
+      operationId: deleteGasPolicy
+      summary: "Delete a policy. Requires scope gas-policies:write."
+      responses:
+        "200":
+          description: "Deletion acknowledged."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /v1/gas-policies/{policyId}/access-rules:
+    parameters:
+      - $ref: "#/components/parameters/PolicyId"
+    patch:
+      tags: [Access Rules]
+      operationId: updateAccessRules
+      summary: "Add, remove or replace whitelist entries. Requires scope gas-policies:write."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccessRulesUpdate"
+      responses:
+        "200":
+          description: "Updated policy."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyDetail"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /v1/gas-policies/{policyId}/transactions:
+    parameters:
+      - $ref: "#/components/parameters/PolicyId"
+    put:
+      tags: [Transactions]
+      operationId: replaceTransactions
+      summary: "Replace the ordered transaction list. Requires scope gas-policies:write."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [transactions]
+              properties:
+                transactions:
+                  type: array
+                  description: "Desired transaction list, in order."
+                  items:
+                    $ref: "#/components/schemas/TransactionInput"
+      responses:
+        "200":
+          description: "Updated policy."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+    post:
+      tags: [Transactions]
+      operationId: addTransaction
+      summary: "Append one transaction. Requires scope gas-policies:write."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionInput"
+      responses:
+        "201":
+          description: "Created transaction and the updated policy."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactionId:
+                    type: string
+                    description: "Id of the created transaction."
+                  policy:
+                    $ref: "#/components/schemas/PolicyDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /v1/gas-policies/{policyId}/transactions/{transactionId}:
+    parameters:
+      - $ref: "#/components/parameters/PolicyId"
+      - name: transactionId
+        in: path
+        required: true
+        description: "Transaction id."
+        schema:
+          type: string
+    delete:
+      tags: [Transactions]
+      operationId: removeTransaction
+      summary: "Remove one transaction. Requires scope gas-policies:write."
+      responses:
+        "200":
+          description: "Updated policy."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyDetail"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: "Team management key, sent as an Authorization Bearer token (mk_...)."
+
+  parameters:
+    PolicyId:
+      name: policyId
+      in: path
+      required: true
+      description: "Gas policy id."
+      schema:
+        type: string
+
+  responses:
+    BadRequest:
+      description: |
+        Malformed request. Messages:
+        "Request body is not valid JSON."
+        "chainId must be an integer."
+        "enabled must be 'true' or 'false'."
+        "page must be a non-negative integer."
+        "pageSize must be one of 10, 25, 50, 100."
+        "Chain {chainId} is not available for this team."
+        "Provide at least one field to update: name, general, accountRules, accessRules."
+        "Provide at least one of: accounts, origins, ips."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: |
+        Missing or invalid management key. Messages:
+        "Missing or malformed Authorization header. Use 'Authorization: Bearer <management_key>'."
+        "Missing management key."
+        "Invalid management key."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Forbidden:
+      description: |
+        Messages:
+        "This management key is missing the required scope: {scope}"
+        "Your plan does not allow more than {n} gas policies on mainnets. Upgrade your plan for more."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: |
+        Unknown, deleted or cross-team resource. Messages:
+        "Gas policy not found."
+        "Transaction {transactionId} not found on this policy."
+        "The requested endpoint does not exist."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ValidationError:
+      description: |
+        Message: "Request validation failed."
+        `details` maps each rejected field to its reason, for example
+        {"accountRules.maxPerOp": "must be a valid non-negative hex amount"}.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ServerError:
+      description: |
+        Message: "An unexpected error occurred."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: "Machine-readable error code."
+              enum:
+                - bad_request
+                - unauthorized
+                - forbidden
+                - not_found
+                - validation_error
+                - internal_error
+            message:
+              type: string
+              description: "Human-readable message."
+            details:
+              type: object
+              description: "Present on validation errors; maps a field path to its reason."
+              additionalProperties:
+                type: string
+
+    KeyInfo:
+      type: object
+      properties:
+        keyId:
+          type: string
+          description: "Management key id."
+        teamId:
+          type: string
+          description: "Team the key belongs to."
+        scopes:
+          type: array
+          description: "Scopes granted to the key."
+          items:
+            type: string
+            enum: ["gas-policies:read", "gas-policies:write"]
+
+    PolicyList:
+      type: object
+      properties:
+        items:
+          type: array
+          description: "Policies on this page."
+          items:
+            $ref: "#/components/schemas/PolicyListItem"
+        total:
+          type: integer
+          description: "Total policies matching the filters."
+        page:
+          type: integer
+          description: "Zero-based page index."
+        pageSize:
+          type: integer
+          description: "Items per page."
+
+    PolicyListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "Policy id."
+        name:
+          type: string
+          description: "Display name."
+        chainId:
+          type: integer
+          description: "Chain the policy sponsors on."
+        enabled:
+          type: boolean
+          description: "Whether the policy is active."
+        private:
+          type: boolean
+          description: "Private policies must be requested by their sponsorship policy id."
+        createdAt:
+          type: integer
+          description: "Creation time in milliseconds since epoch."
+        billing:
+          $ref: "#/components/schemas/Billing"
+
+    PolicyDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "Policy id."
+        name:
+          type: string
+          description: "Display name."
+        chainId:
+          type: integer
+          description: "Chain the policy sponsors on."
+        createdAt:
+          type: integer
+          description: "Creation time in milliseconds since epoch."
+        general:
+          $ref: "#/components/schemas/General"
+        accountRules:
+          $ref: "#/components/schemas/AccountRules"
+        accessRules:
+          $ref: "#/components/schemas/AccessRules"
+        transactions:
+          type: array
+          description: "Allowed target transactions, in order."
+          items:
+            $ref: "#/components/schemas/Transaction"
+        billing:
+          $ref: "#/components/schemas/Billing"
+
+    General:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: "Whether the policy is active."
+        private:
+          type: boolean
+          description: "Private policies must be requested by their sponsorship policy id."
+        sponsorshipPolicyId:
+          type: string
+          description: "Public id used to request this policy."
+        startDate:
+          type: integer
+          description: "Active from, in milliseconds since epoch."
+        endDate:
+          type: integer
+          description: "Active until, in milliseconds since epoch."
+
+    AccountRules:
+      type: object
+      properties:
+        rate:
+          type: integer
+          description: "Max sponsorships per account per period; -1 disables rate limiting."
+        ratePeriod:
+          type: integer
+          description: "Rate limit window in seconds."
+        totalMax:
+          type: string
+          description: "Max total gas spend per account, hex wei."
+        maxPerOp:
+          type: string
+          description: "Max gas spend for a single user operation, hex wei."
+
+    AccessRules:
+      type: object
+      properties:
+        accounts:
+          $ref: "#/components/schemas/AccessRule"
+        origins:
+          $ref: "#/components/schemas/AccessRule"
+        ips:
+          $ref: "#/components/schemas/AccessRule"
+
+    AccessRule:
+      type: object
+      properties:
+        allowAll:
+          type: boolean
+          description: "When true every value is allowed and entries is empty."
+        entries:
+          type: array
+          description: "Whitelisted entries."
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: "Whitelisted value."
+              label:
+                type: string
+                description: "Optional note; defaults to a dash."
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "Transaction id."
+        to:
+          type: string
+          description: 'Target contract address, or the "${userop.sender}" literal.'
+        contractName:
+          type: string
+          description: "Resolved contract name, or a dash when unknown."
+        selector:
+          type: string
+          description: "4-byte function selector."
+        abi:
+          type: string
+          description: "JSON ABI fragment."
+        parameters:
+          type: array
+          description: "Constraints on the call arguments."
+          items:
+            $ref: "#/components/schemas/TransactionParameter"
+
+    TransactionParameter:
+      type: object
+      properties:
+        index:
+          type: string
+          description: 'Argument index; use ";" to reach into tuples, e.g. "0;3".'
+        operator:
+          type: string
+          description: "Comparison operator allowed for the argument type."
+          enum: ["$eq", "$gt", "$gte", "$lt", "$lte", "$startsWith"]
+        value:
+          type: string
+          description: "Value the argument is compared against."
+
+    Billing:
+      type: object
+      properties:
+        currency:
+          type: string
+          description: "Native token symbol of the chain."
+        balance:
+          type: string
+          description: "Total funds, hex wei."
+        lockedBalance:
+          type: string
+          description: "Funds reserved for in-flight operations, hex wei."
+        available:
+          type: string
+          description: "Balance minus locked, hex wei."
+
+    PolicyCreate:
+      type: object
+      required: [name, chainId]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: "Display name."
+        chainId:
+          type: integer
+          description: "Chain to sponsor on; must be enabled for the team."
+        general:
+          $ref: "#/components/schemas/GeneralInput"
+        accountRules:
+          $ref: "#/components/schemas/AccountRulesInput"
+        accessRules:
+          $ref: "#/components/schemas/AccessRulesInput"
+        transactions:
+          type: array
+          description: "Initial transaction list."
+          items:
+            $ref: "#/components/schemas/TransactionInput"
+
+    PolicyUpdate:
+      type: object
+      description: "At least one field is required. Omitted fields are left unchanged."
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: "Display name."
+        general:
+          $ref: "#/components/schemas/GeneralInput"
+        accountRules:
+          $ref: "#/components/schemas/AccountRulesInput"
+        accessRules:
+          $ref: "#/components/schemas/AccessRulesInput"
+
+    GeneralInput:
+      type: object
+      description: "Merged over the current values."
+      properties:
+        enabled:
+          type: boolean
+          description: "Whether the policy is active."
+        private:
+          type: boolean
+          description: "Require the sponsorship policy id to match."
+        startDate:
+          type: integer
+          description: "Active from, ms since epoch; cannot move more than a day into the past."
+        endDate:
+          type: integer
+          description: "Active until, ms since epoch; must be after startDate."
+
+    AccountRulesInput:
+      type: object
+      description: "Merged over the current values."
+      properties:
+        rate:
+          type: integer
+          description: "Positive limit, or -1 for no rate limiting."
+        ratePeriod:
+          type: integer
+          description: "Window in seconds; required unless rate is -1."
+          enum: [3600, 43200, 86400, 604800, 1296000, 2592000, 3153600000]
+        totalMax:
+          type: string
+          description: "Max total gas spend per account, hex wei."
+        maxPerOp:
+          type: string
+          description: "Max gas spend per user operation, hex wei."
+
+    AccessRulesInput:
+      type: object
+      description: "Replaces each listed whitelist; an empty list means allow all."
+      properties:
+        accounts:
+          $ref: "#/components/schemas/AccessEntryList"
+        origins:
+          $ref: "#/components/schemas/AccessEntryList"
+        ips:
+          $ref: "#/components/schemas/AccessEntryList"
+
+    AccessEntryList:
+      type: array
+      description: "Entries; an address, https origin or IPv4 depending on the rule."
+      items:
+        oneOf:
+          - type: string
+          - type: object
+            required: [value]
+            properties:
+              value:
+                type: string
+                description: "Whitelisted value."
+              label:
+                type: string
+                description: "Optional note."
+
+    AccessRulesUpdate:
+      type: object
+      description: "At least one rule is required."
+      minProperties: 1
+      properties:
+        accounts:
+          $ref: "#/components/schemas/AccessRuleOps"
+        origins:
+          $ref: "#/components/schemas/AccessRuleOps"
+        ips:
+          $ref: "#/components/schemas/AccessRuleOps"
+
+    AccessRuleOps:
+      type: object
+      description: >-
+        Use add and remove together, or set or allowAll alone; combining the two
+        groups is rejected. add and remove are idempotent, and remove is applied
+        first.
+      minProperties: 1
+      properties:
+        add:
+          description: "Entries to append; values already present are skipped."
+          $ref: "#/components/schemas/AccessEntryList"
+        remove:
+          description: "Values to drop; values not present are ignored."
+          $ref: "#/components/schemas/AccessEntryList"
+        set:
+          description: "Replaces the whole list; an empty list means allow all."
+          $ref: "#/components/schemas/AccessEntryList"
+        allowAll:
+          type: boolean
+          description: "Set to true to reset the rule to allow all."
+
+    TransactionInput:
+      type: object
+      required: [to, abi, selector, parameters]
+      properties:
+        to:
+          type: string
+          description: 'Target contract address, or the "${userop.sender}" literal.'
+        abi:
+          type: string
+          description: "JSON ABI fragment containing the function."
+        selector:
+          type: string
+          description: "4-byte function selector, 8 hex characters."
+        parameters:
+          type: array
+          description: "Constraints on the call arguments; may be empty."
+          items:
+            $ref: "#/components/schemas/TransactionParameter"
+
+    DeleteResult:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "Deleted policy id."
+        deleted:
+          type: boolean
+          description: "Always true."

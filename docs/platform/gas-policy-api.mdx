@@ -1,0 +1,486 @@
+---
+title: Gas Policy Management API Reference
+description: REST API reference for creating and managing team-scoped Candide gas policies, access rules, and allowed transactions.
+keywords: [gas policy api, platform api, rest api, gas sponsorship, openapi]
+image: /img/posters/paymaster-meta.png
+---
+
+# Gas Policy Management API
+
+Use this team-scoped REST API to create, inspect, update, and delete Candide gas policies programmatically.
+
+- Base URL: `https://platform-api.candide.dev`
+- Content type: `application/json`
+- Authentication: `Authorization: Bearer <management_key>`
+- OpenAPI: [download the complete OpenAPI 3.1 specification](/openapi/platform-api.yaml)
+
+Management keys begin with `mk_` and belong to one team. Keep them in trusted server-side environments. See the [Platform API overview](/platform/overview) for a safe first integration.
+
+## Endpoint summary
+
+| Method | Path | Required scope | Success |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/v1/me` | Valid management key | `200` |
+| `GET` | `/v1/gas-policies` | `gas-policies:read` | `200` |
+| `POST` | `/v1/gas-policies` | `gas-policies:write` | `201` |
+| `GET` | `/v1/gas-policies/{policyId}` | `gas-policies:read` | `200` |
+| `PATCH` | `/v1/gas-policies/{policyId}` | `gas-policies:write` | `200` |
+| `DELETE` | `/v1/gas-policies/{policyId}` | `gas-policies:write` | `200` |
+| `PATCH` | `/v1/gas-policies/{policyId}/access-rules` | `gas-policies:write` | `200` |
+| `PUT` | `/v1/gas-policies/{policyId}/transactions` | `gas-policies:write` | `200` |
+| `POST` | `/v1/gas-policies/{policyId}/transactions` | `gas-policies:write` | `201` |
+| `DELETE` | `/v1/gas-policies/{policyId}/transactions/{transactionId}` | `gas-policies:write` | `200` |
+
+## Conventions
+
+- `policyId` and `transactionId` are opaque strings.
+- Policy list pages use a zero-based `page` index.
+- Dates are Unix timestamps in milliseconds.
+- `ratePeriod` is measured in seconds.
+- Gas spending limits and billing amounts are hexadecimal wei strings.
+- Unknown, deleted, and cross-team resources return `404`.
+- A validation error returns `422` with field paths in `error.details`.
+
+## Identity
+
+### Get management key information
+
+`GET /v1/me`
+
+Returns the team and scopes associated with the calling key.
+
+```bash
+curl --request GET \
+  --url https://platform-api.candide.dev/v1/me \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY"
+```
+
+```json
+{
+  "keyId": "key_123",
+  "teamId": "team_123",
+  "scopes": ["gas-policies:read", "gas-policies:write"]
+}
+```
+
+Possible scopes are `gas-policies:read` and `gas-policies:write`. This endpoint returns `401` for a missing or invalid key and `500` for an unexpected server error.
+
+## Gas policies
+
+### List gas policies
+
+`GET /v1/gas-policies`
+
+| Query parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `chainId` | integer | — | Return policies for one chain ID |
+| `enabled` | boolean | — | Return only enabled or disabled policies |
+| `page` | non-negative integer | `0` | Zero-based page index |
+| `pageSize` | integer | `25` | One of `10`, `25`, `50`, or `100` |
+
+```bash
+curl --request GET \
+  --url "https://platform-api.candide.dev/v1/gas-policies?chainId=11155111&enabled=false&page=0&pageSize=25" \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY"
+```
+
+```json
+{
+  "items": [
+    {
+      "id": "policy_123",
+      "name": "Onboarding sponsorship",
+      "chainId": 11155111,
+      "enabled": false,
+      "private": true,
+      "createdAt": 1784678400000,
+      "billing": {
+        "currency": "ETH",
+        "balance": "0x0",
+        "lockedBalance": "0x0",
+        "available": "0x0"
+      }
+    }
+  ],
+  "total": 1,
+  "page": 0,
+  "pageSize": 25
+}
+```
+
+Returns `400` for invalid filters or pagination and `403` when the key lacks `gas-policies:read`.
+
+### Create a gas policy
+
+`POST /v1/gas-policies`
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `name` | string | Yes | Display name, 3–50 characters |
+| `chainId` | integer | Yes | Chain enabled for the calling team |
+| `general` | [General input](#general-input) | No | General policy settings |
+| `accountRules` | [Account rules input](#account-rules-input) | No | Per-account limits |
+| `accessRules` | [Access rules input](#access-rules-input) | No | Initial account, origin, and IP allowlists |
+| `transactions` | [Transaction input](#transaction-input)[] | No | Initial ordered transaction list |
+
+```bash
+curl --request POST \
+  --url https://platform-api.candide.dev/v1/gas-policies \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "name": "Onboarding sponsorship",
+    "chainId": 11155111,
+    "general": {
+      "enabled": false,
+      "private": true
+    },
+    "accountRules": {
+      "rate": 3,
+      "ratePeriod": 86400,
+      "totalMax": "0x6f05b59d3b20000",
+      "maxPerOp": "0x5af3107a4000"
+    },
+    "accessRules": {
+      "origins": [
+        {
+          "value": "https://app.example.com",
+          "label": "Production app"
+        }
+      ]
+    }
+  }'
+```
+
+Returns `201` with a complete [policy detail](#policy-detail). A plan limit on mainnet policies returns `403`; invalid field values return `422`.
+
+### Get a gas policy
+
+`GET /v1/gas-policies/{policyId}`
+
+```bash
+curl --request GET \
+  --url https://platform-api.candide.dev/v1/gas-policies/POLICY_ID \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY"
+```
+
+Returns `200` with a [policy detail](#policy-detail), `403` without the read scope, or `404` when the policy is unavailable to the calling team.
+
+### Update a gas policy
+
+`PATCH /v1/gas-policies/{policyId}`
+
+Provide at least one of `name`, `general`, `accountRules`, or `accessRules`. Omitted fields remain unchanged. Fields inside `general` and `accountRules` are merged over their current values. Each whitelist included in `accessRules` replaces that complete whitelist.
+
+```bash
+curl --request PATCH \
+  --url https://platform-api.candide.dev/v1/gas-policies/POLICY_ID \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "name": "Production onboarding",
+    "general": {
+      "enabled": true
+    },
+    "accountRules": {
+      "rate": 5,
+      "ratePeriod": 86400
+    }
+  }'
+```
+
+Returns `200` with the updated [policy detail](#policy-detail). Use the dedicated access-rules endpoint for additive changes and the transactions endpoints for transaction changes.
+
+### Delete a gas policy
+
+`DELETE /v1/gas-policies/{policyId}`
+
+```bash
+curl --request DELETE \
+  --url https://platform-api.candide.dev/v1/gas-policies/POLICY_ID \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY"
+```
+
+```json
+{
+  "id": "policy_123",
+  "deleted": true
+}
+```
+
+## Access rules
+
+### Update access rules
+
+`PATCH /v1/gas-policies/{policyId}/access-rules`
+
+Provide at least one of `accounts`, `origins`, or `ips`. Each provided rule accepts one operation mode:
+
+| Mode | Behavior |
+| :--- | :--- |
+| `add` and/or `remove` | Modify the existing entries. Both are idempotent; removal runs first |
+| `set` | Replace the complete entry list. An empty list allows all values |
+| `allowAll: true` | Reset the rule to allow all values |
+
+Do not combine `set` or `allowAll` with the `add`/`remove` group for the same rule.
+
+```bash
+curl --request PATCH \
+  --url https://platform-api.candide.dev/v1/gas-policies/POLICY_ID/access-rules \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "accounts": {
+      "remove": ["0x1111111111111111111111111111111111111111"],
+      "add": [
+        {
+          "value": "0x2222222222222222222222222222222222222222",
+          "label": "New beta tester"
+        }
+      ]
+    },
+    "origins": {
+      "set": ["https://app.example.com"]
+    }
+  }'
+```
+
+Returns `200` with the updated [policy detail](#policy-detail).
+
+## Transactions
+
+Transaction entries are ordered. Each input must contain `to`, `abi`, `selector`, and `parameters`.
+
+### Replace all transactions
+
+`PUT /v1/gas-policies/{policyId}/transactions`
+
+Replaces the complete ordered transaction list. Pass an empty array to set the list to empty.
+
+```bash
+curl --request PUT \
+  --url https://platform-api.candide.dev/v1/gas-policies/POLICY_ID/transactions \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "transactions": [
+      {
+        "to": "0x1111111111111111111111111111111111111111",
+        "abi": "{\"type\":\"function\",\"name\":\"transfer\",\"inputs\":[{\"name\":\"to\",\"type\":\"address\"},{\"name\":\"amount\",\"type\":\"uint256\"}]}",
+        "selector": "0xa9059cbb",
+        "parameters": [
+          {
+            "index": "1",
+            "operator": "$lte",
+            "value": "1000000"
+          }
+        ]
+      }
+    ]
+  }'
+```
+
+Returns `200` with the updated [policy detail](#policy-detail).
+
+### Append a transaction
+
+`POST /v1/gas-policies/{policyId}/transactions`
+
+The request body is one [transaction input](#transaction-input).
+
+```bash
+curl --request POST \
+  --url https://platform-api.candide.dev/v1/gas-policies/POLICY_ID/transactions \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "to": "${userop.sender}",
+    "abi": "{\"type\":\"function\",\"name\":\"execute\",\"inputs\":[]}",
+    "selector": "0x61461954",
+    "parameters": []
+  }'
+```
+
+```json
+{
+  "transactionId": "transaction_123",
+  "policy": {
+    "id": "policy_123",
+    "name": "Onboarding sponsorship",
+    "chainId": 11155111,
+    "createdAt": 1784678400000,
+    "general": {
+      "enabled": false,
+      "private": true,
+      "sponsorshipPolicyId": "sp_123",
+      "startDate": 1784678400000,
+      "endDate": 1787356800000
+    },
+    "accountRules": {
+      "rate": 3,
+      "ratePeriod": 86400,
+      "totalMax": "0x6f05b59d3b20000",
+      "maxPerOp": "0x5af3107a4000"
+    },
+    "accessRules": {
+      "accounts": {"allowAll": true, "entries": []},
+      "origins": {"allowAll": false, "entries": [{"value": "https://app.example.com", "label": "Production app"}]},
+      "ips": {"allowAll": true, "entries": []}
+    },
+    "transactions": [
+      {
+        "id": "transaction_123",
+        "to": "${userop.sender}",
+        "contractName": "-",
+        "selector": "0x61461954",
+        "abi": "{\"type\":\"function\",\"name\":\"execute\",\"inputs\":[]}",
+        "parameters": []
+      }
+    ],
+    "billing": {
+      "currency": "ETH",
+      "balance": "0x0",
+      "lockedBalance": "0x0",
+      "available": "0x0"
+    }
+  }
+}
+```
+
+### Remove a transaction
+
+`DELETE /v1/gas-policies/{policyId}/transactions/{transactionId}`
+
+```bash
+curl --request DELETE \
+  --url https://platform-api.candide.dev/v1/gas-policies/POLICY_ID/transactions/TRANSACTION_ID \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY"
+```
+
+Returns `200` with the updated policy. A transaction that is not on the policy returns `404`.
+
+## Input models
+
+### General input
+
+All fields are optional and merge over the current general settings.
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `enabled` | boolean | Whether the policy is active |
+| `private` | boolean | Require the sponsorship policy ID to match |
+| `startDate` | integer | Active-from time in milliseconds; cannot move more than one day into the past |
+| `endDate` | integer | Active-until time in milliseconds; must be after `startDate` |
+
+### Account rules input
+
+All fields are optional and merge over the current account rules.
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `rate` | integer | Positive sponsorship limit, or `-1` to disable rate limiting |
+| `ratePeriod` | integer | Required unless `rate` is `-1`; allowed values are `3600`, `43200`, `86400`, `604800`, `1296000`, `2592000`, and `3153600000` |
+| `totalMax` | string | Maximum total gas spending per account, in hex wei |
+| `maxPerOp` | string | Maximum gas spending for one UserOperation, in hex wei |
+
+### Access rules input
+
+`accounts`, `origins`, and `ips` each accept an array of strings or `{"value": string, "label": string}` objects. A label is optional. An empty array means allow all.
+
+- Account values are account addresses.
+- Origin values are HTTPS origins.
+- IP values are IPv4 addresses.
+
+### Transaction input
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `to` | string | Yes | Target contract address or the literal `"${userop.sender}"` |
+| `abi` | string | Yes | JSON ABI fragment containing the function |
+| `selector` | string | Yes | Four-byte function selector with eight hex digits |
+| `parameters` | transaction parameter[] | Yes | Argument constraints; may be empty |
+
+Each transaction parameter has:
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `index` | string | Argument index. Use semicolons to descend into tuples, for example `"0;3"` |
+| `operator` | string | `$eq`, `$gt`, `$gte`, `$lt`, `$lte`, or `$startsWith` |
+| `value` | string | Value to compare against |
+
+## Response models
+
+### Policy detail
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `id` | string | Policy ID |
+| `name` | string | Display name |
+| `chainId` | integer | Sponsored chain |
+| `createdAt` | integer | Creation time in milliseconds since Unix epoch |
+| `general` | object | `enabled`, `private`, `sponsorshipPolicyId`, `startDate`, and `endDate` |
+| `accountRules` | object | `rate`, `ratePeriod`, `totalMax`, and `maxPerOp` |
+| `accessRules` | object | Account, origin, and IP access-rule states |
+| `transactions` | transaction[] | Ordered allowed transactions |
+| `billing` | object | Policy funding information |
+
+Each returned access rule contains `allowAll` and `entries`. Each entry contains `value` and `label`; the label defaults to a dash.
+
+Each returned transaction contains its `id`, `to`, resolved `contractName` (or a dash), `selector`, `abi`, and `parameters`.
+
+Billing fields are hexadecimal wei strings:
+
+| Field | Description |
+| :--- | :--- |
+| `currency` | Native token symbol for the policy's chain |
+| `balance` | Total policy funds |
+| `lockedBalance` | Funds reserved for in-flight operations |
+| `available` | Balance minus locked balance |
+
+## Errors
+
+Every error response uses this envelope:
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Request validation failed.",
+    "details": {
+      "accountRules.maxPerOp": "must be a valid non-negative hex amount"
+    }
+  }
+}
+```
+
+`details` is present on validation errors and maps field paths to reasons.
+
+| Status | Code | Meaning |
+| :--- | :--- | :--- |
+| `400` | `bad_request` | Malformed JSON, query value, unavailable team chain, or empty update |
+| `401` | `unauthorized` | Missing, malformed, or invalid management key |
+| `403` | `forbidden` | Missing scope or team plan policy limit |
+| `404` | `not_found` | Unknown, deleted, or cross-team policy or transaction |
+| `422` | `validation_error` | One or more request fields failed validation |
+| `500` | `internal_error` | Unexpected server error |
+
+Documented messages include:
+
+- `Request body is not valid JSON.`
+- `chainId must be an integer.`
+- `enabled must be 'true' or 'false'.`
+- `page must be a non-negative integer.`
+- `pageSize must be one of 10, 25, 50, 100.`
+- `Chain {chainId} is not available for this team.`
+- `Provide at least one field to update: name, general, accountRules, accessRules.`
+- `Provide at least one of: accounts, origins, ips.`
+- `Missing or malformed Authorization header. Use 'Authorization: Bearer <management_key>'.`
+- `Missing management key.`
+- `Invalid management key.`
+- `This management key is missing the required scope: {scope}`
+- `Your plan does not allow more than {n} gas policies on mainnets. Upgrade your plan for more.`
+- `Gas policy not found.`
+- `Transaction {transactionId} not found on this policy.`
+- `The requested endpoint does not exist.`
+- `Request validation failed.`
+- `An unexpected error occurred.`

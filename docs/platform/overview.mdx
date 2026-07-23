@@ -1,0 +1,143 @@
+---
+title: Platform API
+description: Manage Candide gas sponsorship policies programmatically with a team-scoped REST API.
+keywords: [platform api, gas policy api, gas sponsorship, management key, automation]
+image: /img/posters/paymaster-meta.png
+---
+
+# Platform API
+
+The Platform API lets you create and maintain Candide gas policies from backend services, deployment scripts, and internal tools. It provides the same policy-management capabilities as the Candide Dashboard, without requiring someone to configure every policy manually.
+
+Use it when policy configuration is part of your application's workflow—for example, provisioning a policy for each customer, updating allowlists from an admin service, or keeping policy configuration in sync across environments.
+
+## Choose the right interface
+
+| Interface | Use it for |
+| :--- | :--- |
+| [Dashboard](https://dashboard.candide.dev) | Creating and reviewing policies interactively |
+| Platform API | Creating, reading, updating, and deleting policies from trusted server-side code |
+| [Paymaster API](/wallet/paymaster/rpc-methods) | Requesting sponsorship for a UserOperation at runtime |
+
+The Platform API is a control-plane API: it configures which operations Candide may sponsor. It does not submit or sponsor UserOperations itself.
+
+## Base URL
+
+```text
+https://platform-api.candide.dev
+```
+
+All routes in the current version start with `/v1`.
+
+## Authentication
+
+Create a team management key in the [Dashboard](https://dashboard.candide.dev), grant only the scopes your integration needs, and send it as a bearer token:
+
+```http
+Authorization: Bearer mk_...
+```
+
+| Scope | Allows |
+| :--- | :--- |
+| `gas-policies:read` | List and fetch gas policies |
+| `gas-policies:write` | Create, update, and delete gas policies |
+
+Every request is scoped to the team that owns the key. A policy belonging to another team is treated as not found.
+
+:::danger Keep management keys on the server
+A management key can change sponsorship rules and must never be embedded in browser code, mobile applications, public repositories, or logs. It is separate from the API key used in a Bundler or Paymaster endpoint.
+:::
+
+## Quickstart
+
+Set your management key in the shell. Do not commit it to source control:
+
+```bash
+export CANDIDE_MANAGEMENT_KEY="mk_..."
+```
+
+### 1. Verify the key
+
+```bash
+curl --request GET \
+  --url https://platform-api.candide.dev/v1/me \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY"
+```
+
+The response identifies the key's team and granted scopes:
+
+```json
+{
+  "keyId": "key_123",
+  "teamId": "team_123",
+  "scopes": ["gas-policies:read", "gas-policies:write"]
+}
+```
+
+### 2. Create a policy
+
+Start with the policy disabled and private. Add and review the necessary account, access, and transaction restrictions before enabling it.
+
+```bash
+curl --request POST \
+  --url https://platform-api.candide.dev/v1/gas-policies \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{
+    "name": "Onboarding sponsorship",
+    "chainId": 11155111,
+    "general": {
+      "enabled": false,
+      "private": true
+    },
+    "accountRules": {
+      "rate": 3,
+      "ratePeriod": 86400,
+      "totalMax": "0x6f05b59d3b20000",
+      "maxPerOp": "0x5af3107a4000"
+    }
+  }'
+```
+
+The API returns the complete policy with status `201 Created`. Save its `id` for management calls. For a private policy, use `general.sponsorshipPolicyId` when requesting sponsorship from the Paymaster API.
+
+### 3. Add restrictions
+
+Use the dedicated endpoints when you need precise list operations:
+
+- `PATCH /v1/gas-policies/{policyId}/access-rules` adds, removes, replaces, or resets access allowlists.
+- `POST /v1/gas-policies/{policyId}/transactions` appends one allowed transaction.
+- `PUT /v1/gas-policies/{policyId}/transactions` replaces the complete ordered transaction list.
+- `DELETE /v1/gas-policies/{policyId}/transactions/{transactionId}` removes one transaction.
+
+An empty account, origin, or IP list means **allow all values for that rule**. Review empty lists carefully before activating a policy.
+
+See the [policy rules overview](/instagas/gas-policies) for the purpose of each rule and the [Gas Policy API reference](/platform/gas-policy-api) for exact request formats.
+
+### 4. Enable the policy
+
+After reviewing the policy, enable it with a partial update:
+
+```bash
+curl --request PATCH \
+  --url https://platform-api.candide.dev/v1/gas-policies/POLICY_ID \
+  --header "Authorization: Bearer $CANDIDE_MANAGEMENT_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{"general":{"enabled":true}}'
+```
+
+Omitted fields remain unchanged.
+
+## Automation guidance
+
+- Call `GET /v1/me` during setup to fail early when a key has the wrong team or scopes.
+- Treat policy and transaction IDs as opaque strings.
+- Validate HTTP status codes before reading a success response.
+- Read `error.code` for program logic and `error.details` for field-level validation failures.
+- Prefer the idempotent access-rule operations when synchronizing allowlists.
+- Use `PUT /transactions` only when your system owns the complete ordered list.
+- Keep policies disabled until all required restrictions and funding are in place.
+
+## Machine-readable specification
+
+Download the complete [OpenAPI 3.1 specification](/openapi/platform-api.yaml) for client generation and agent tooling.

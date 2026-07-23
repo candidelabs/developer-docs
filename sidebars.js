@@ -46,6 +46,25 @@ const sidebars = {
   infraSideBar: [
     {
       type: "category",
+      label: "Platform API",
+      className: "category-not-collapsible",
+      collapsible: false,
+      collapsed: false,
+      items: [
+        {
+          type: "doc",
+          id: "platform/overview",
+          label: "Overview"
+        },
+        {
+          type: "doc",
+          id: "platform/gas-policy-api",
+          label: "Gas Policy API"
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "Bundler & Paymaster",
       className: "category-not-collapsible",
       collapsible: false,

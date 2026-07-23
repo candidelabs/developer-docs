@@ -1,6 +1,6 @@
 ---
 title: InstaGas Gas Policies
-description: A No-Code Gas Sponsorship Paymaster for dapps to define gas policies to directly sponsor gas for Smart Wallets end-users
+description: Understand the general, account, access, and transaction rules available to Candide gas sponsorship policies.
 keywords: [InstaGas, gas policy, gas sponsorship, smart contracts, eip-7702]
 image: /img/posters/paymaster-meta.png
 ---
@@ -87,48 +87,47 @@ For each function, you can specify a list of parameters, and each parameter can 
 
 By specifying these constraints, you can control the behavior of the swap transaction and ensure that it is executed according to your requirements. For instance, you can ensure that the swap transaction only occurs if the amount being swapped is greater than 350, and if the tokens being swapped are USDT and WETH.
 
-## Policy Object Reference
+## Policy configuration example
 
-Policies are created and edited in the [dashboard](https://dashboard.candide.dev). This section defines the underlying policy object precisely, so you can plan a configuration before opening the dashboard, review an existing one, or have an AI agent draft the exact values to enter.
+Policies can be created and edited in the [Dashboard](https://dashboard.candide.dev) or through the [Platform API](/platform/overview). The example below is a policy creation body using the public API field names.
+
+For request validation, update semantics, and response fields, use the [Gas Policy API reference](/platform/gas-policy-api) as the canonical source.
 
 ```json
 {
   "name": "Onboarding sponsorship",
   "chainId": 10,
-  "generalPolicy": {
+  "general": {
     "enabled": true,
     "private": false,
-    "policyId": "175c73...",
     "startDate": 1751500800000,
     "endDate": 1754179200000
   },
-  "accountPolicy": {
+  "accountRules": {
     "totalMax": "0x6f05b59d3b20000",
     "maxPerOp": "0x5af3107a4000",
     "rate": 3,
     "ratePeriod": 86400
   },
-  "accessPolicy": {
-    "whitelistedAccounts": [
-      { "address": "0xA1b2C3d4E5f6A7b8C9d0E1f2A3b4C5d6E7f8A9b0", "label": "Beta tester" }
+  "accessRules": {
+    "accounts": [
+      { "value": "0xA1b2C3d4E5f6A7b8C9d0E1f2A3b4C5d6E7f8A9b0", "label": "Beta tester" }
     ],
-    "whitelistedOrigins": [
-      { "origin": "https://*.example.com", "label": "Our app" }
+    "origins": [
+      { "value": "https://*.example.com", "label": "Our app" }
     ],
-    "whitelistedIPs": []
+    "ips": []
   },
-  "transactionsPolicy": {
-    "transactions": [
-      {
-        "to": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
-        "selector": "0x414bf389",
-        "abi": "{\"name\": \"exactInputSingle\", \"type\": \"function\", ...}",
-        "params": [
-          { "indexes": [0, 5], "operator": "$gte", "value": "1000000" }
-        ]
-      }
-    ]
-  }
+  "transactions": [
+    {
+      "to": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
+      "selector": "0x414bf389",
+      "abi": "{\"name\": \"exactInputSingle\", \"type\": \"function\", ...}",
+      "parameters": [
+        { "index": "0;5", "operator": "$gte", "value": "1000000" }
+      ]
+    }
+  ]
 }
 ```
 
@@ -138,7 +137,7 @@ Policies are created and edited in the [dashboard](https://dashboard.candide.dev
 | :--- | :--- | :--- |
 | `enabled` | `boolean` | Whether the policy is active. Disabled policies never sponsor, regardless of dates. |
 | `private` | `boolean` | Private policies require the wallet to pass the policy ID when requesting sponsorship. Public policies apply without one. |
-| `policyId` | `string` | Assigned by InstaGas at creation. Wallets reference it as the sponsorship policy ID for private policies. |
+| `sponsorshipPolicyId` | `string` | Assigned by InstaGas at creation. Wallets reference it as the sponsorship policy ID for private policies. |
 | `startDate` | `number` | Unix timestamp in milliseconds. Sponsorship starts at this time. |
 | `endDate` | `number` | Unix timestamp in milliseconds. Sponsorship stops at this time. |
 
@@ -157,9 +156,9 @@ Amounts are entered in ETH in the dashboard and stored as hex-encoded wei.
 
 | field | type | description |
 | :--- | :--- | :--- |
-| `whitelistedAccounts` | `{address, label}[]` | Sender addresses eligible for sponsorship. Empty allows all senders. |
-| `whitelistedOrigins` | `{origin, label}[]` | Web origins eligible for sponsorship. Empty allows all origins. Subdomain wildcards are supported, and the scheme is required: `https://*.example.com` is valid, `*.example.com` is not. |
-| `whitelistedIPs` | `{ip, label}[]` | IP addresses eligible for sponsorship. Empty allows all IPs. |
+| `accounts` | `{value, label}[]` | Sender addresses eligible for sponsorship. Empty allows all senders. |
+| `origins` | `{value, label}[]` | Web origins eligible for sponsorship. Empty allows all origins. Subdomain wildcards are supported, and the scheme is required: `https://*.example.com` is valid, `*.example.com` is not. |
+| `ips` | `{value, label}[]` | IP addresses eligible for sponsorship. Empty allows all IPs. |
 
 ### Transactions
 
@@ -170,13 +169,13 @@ Each entry describes one allowed contract call. Constraints within an entry must
 | `to` | `string` (address) | The contract the call must target. |
 | `selector` | `string` (4-byte hex) | The function selector the call must invoke. |
 | `abi` | `string` | The ABI fragment of the function, used to decode call parameters for constraint checks. |
-| `params` | `constraint[]` | Constraints on the decoded call parameters. Empty sponsors any call to this function. |
+| `parameters` | `constraint[]` | Constraints on the decoded call parameters. Empty sponsors any call to this function. |
 
 Each parameter constraint:
 
 | field | type | description |
 | :--- | :--- | :--- |
-| `indexes` | `number[]` | Path to the parameter: the top-level argument position, followed by component positions for nested tuples. `[0, 5]` targets the sixth field of the first argument. |
+| `index` | `string` | Argument index. Use semicolons for nested tuples: `0;5` targets the sixth field of the first argument. |
 | `operator` | `string` | One of the operators below. |
 | `value` | `string` | The value the decoded argument is compared against. Token amounts are in the token's smallest unit. |
 
