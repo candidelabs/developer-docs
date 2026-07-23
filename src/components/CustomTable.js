@@ -64,7 +64,7 @@ export function PaymasterSupportedToken({ items }) {
     <Table
       items={items}
       leftHeading="Token"
-      centerHeading="Address"
+      centerHeading="Contract / Mint Address"
       rightHeading="Website"
       renderLeftItem={(item) => (
         <div

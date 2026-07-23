@@ -282,25 +282,17 @@ const sidebars = {
         {
           type: "doc",
           id: "wallet/paymaster/rpc-methods",
-          label: "RPC Methods"
+          label: "EVM RPC Methods"
+        },
+        {
+          type: "doc",
+          id: "wallet/solana-paymaster/rpc-methods",
+          label: "Solana RPC Methods"
         },
         {
           type: "doc",
           id: "wallet/paymaster/tokens-supported",
-          label: "Supported ERC-20 Tokens"
-        },
-      ],
-    },
-    {
-      type: "category",
-      label: "Solana Paymaster",
-      className: "category-not-collapsible",
-      collapsible: false,
-      items: [
-        {
-          type: "doc",
-          id: "wallet/solana-paymaster/rpc-methods",
-          label: "RPC Methods"
+          label: "Supported Gas Tokens"
         },
       ],
     },
