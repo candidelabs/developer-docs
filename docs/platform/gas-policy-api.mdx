@@ -266,13 +266,13 @@ curl --request PUT \
     "transactions": [
       {
         "to": "0x1111111111111111111111111111111111111111",
-        "abi": "{\"type\":\"function\",\"name\":\"transfer\",\"inputs\":[{\"name\":\"to\",\"type\":\"address\"},{\"name\":\"amount\",\"type\":\"uint256\"}]}",
+        "abi": "[{\"type\":\"function\",\"name\":\"transfer\",\"constant\":false,\"payable\":false,\"inputs\":[{\"type\":\"address\",\"name\":\"to\"},{\"type\":\"uint256\",\"name\":\"amount\"}],\"outputs\":[{\"type\":\"bool\",\"name\":\"\"}]}]",
         "selector": "0xa9059cbb",
         "parameters": [
           {
             "index": "1",
             "operator": "$lte",
-            "value": "1000000"
+            "value": "0x0f4240"
           }
         ]
       }
@@ -295,7 +295,7 @@ curl --request POST \
   --header "Content-Type: application/json" \
   --data '{
     "to": "${userop.sender}",
-    "abi": "{\"type\":\"function\",\"name\":\"execute\",\"inputs\":[]}",
+    "abi": "[{\"type\":\"function\",\"name\":\"execute\",\"constant\":false,\"payable\":false,\"inputs\":[],\"outputs\":[]}]",
     "selector": "0x61461954",
     "parameters": []
   }'
@@ -333,7 +333,7 @@ curl --request POST \
         "to": "${userop.sender}",
         "contractName": "-",
         "selector": "0x61461954",
-        "abi": "{\"type\":\"function\",\"name\":\"execute\",\"inputs\":[]}",
+        "abi": "[{\"type\":\"function\",\"name\":\"execute\",\"constant\":false,\"payable\":false,\"inputs\":[],\"outputs\":[]}]",
         "parameters": []
       }
     ],
@@ -396,7 +396,7 @@ All fields are optional and merge over the current account rules.
 | Field | Type | Required | Description |
 | :--- | :--- | :--- | :--- |
 | `to` | string | Yes | Target contract address or the literal `"${userop.sender}"` |
-| `abi` | string | Yes | JSON ABI fragment containing the function |
+| `abi` | string | Yes | JSON-stringified ABI array containing the complete function fragment |
 | `selector` | string | Yes | Four-byte function selector with eight hex digits |
 | `parameters` | transaction parameter[] | Yes | Argument constraints; may be empty |
 
@@ -406,7 +406,7 @@ Each transaction parameter has:
 | :--- | :--- | :--- |
 | `index` | string | Argument index. Use semicolons to descend into tuples, for example `"0;3"` |
 | `operator` | string | `$eq`, `$gt`, `$gte`, `$lt`, `$lte`, or `$startsWith` |
-| `value` | string | Value to compare against |
+| `value` | string | Value to compare against. Encode `uint` and `bytes` values as `0x`-prefixed hexadecimal strings; use `"true"` or `"false"` for booleans |
 
 ## Response models
 

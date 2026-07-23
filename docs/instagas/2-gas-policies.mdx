@@ -122,9 +122,9 @@ For request validation, update semantics, and response fields, use the [Gas Poli
     {
       "to": "0xE592427A0AEce92De3Edee1F18E0157C05861564",
       "selector": "0x414bf389",
-      "abi": "{\"name\": \"exactInputSingle\", \"type\": \"function\", ...}",
+      "abi": "[{\"type\":\"function\",\"name\":\"exactInputSingle\",\"constant\":false,\"payable\":true,\"inputs\":[{\"type\":\"tuple\",\"name\":\"params\",\"components\":[{\"type\":\"address\",\"name\":\"tokenIn\"},{\"type\":\"address\",\"name\":\"tokenOut\"},{\"type\":\"uint24\",\"name\":\"fee\"},{\"type\":\"address\",\"name\":\"recipient\"},{\"type\":\"uint256\",\"name\":\"deadline\"},{\"type\":\"uint256\",\"name\":\"amountIn\"},{\"type\":\"uint256\",\"name\":\"amountOutMinimum\"},{\"type\":\"uint160\",\"name\":\"sqrtPriceLimitX96\"}]}],\"outputs\":[{\"type\":\"uint256\",\"name\":\"amountOut\"}]}]",
       "parameters": [
-        { "index": "0;5", "operator": "$gte", "value": "1000000" }
+        { "index": "0;5", "operator": "$gte", "value": "0x0f4240" }
       ]
     }
   ]
@@ -168,7 +168,7 @@ Each entry describes one allowed contract call. Constraints within an entry must
 | :--- | :--- | :--- |
 | `to` | `string` (address) | The contract the call must target. |
 | `selector` | `string` (4-byte hex) | The function selector the call must invoke. |
-| `abi` | `string` | The ABI fragment of the function, used to decode call parameters for constraint checks. |
+| `abi` | `string` | A JSON-stringified ABI array containing the complete function fragment, used to decode call parameters for constraint checks. |
 | `parameters` | `constraint[]` | Constraints on the decoded call parameters. Empty sponsors any call to this function. |
 
 Each parameter constraint:
@@ -177,7 +177,7 @@ Each parameter constraint:
 | :--- | :--- | :--- |
 | `index` | `string` | Argument index. Use semicolons for nested tuples: `0;5` targets the sixth field of the first argument. |
 | `operator` | `string` | One of the operators below. |
-| `value` | `string` | The value the decoded argument is compared against. Token amounts are in the token's smallest unit. |
+| `value` | `string` | The value the decoded argument is compared against. Encode `uint` and `bytes` values as `0x`-prefixed hexadecimal strings. Token amounts are in the token's smallest unit. |
 
 Supported operators:
 

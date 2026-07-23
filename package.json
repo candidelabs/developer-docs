@@ -5,12 +5,15 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
+    "prebuild": "npm run test:gas-policy-examples",
     "build": "docusaurus build && node scripts/fix-markdown-links.js",
     "test:markdown-links": "node --test scripts/fix-markdown-links.test.js",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
+    "test:gas-policy-examples": "node --test scripts/gas-policy-api-examples.test.js",
+    "test:gas-policy-api-integration": "node --test scripts/gas-policy-api-integration.test.js",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids"
   },
