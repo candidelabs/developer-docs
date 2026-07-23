@@ -1,6 +1,6 @@
 ---
-title: List of ERC-20 Tokens Supported as Gas Payments with Candide Paymaster
-description: List of ERC-20 Token accepted for Candide's Paymaster. Learn about sponsoring gas, and how to enable gas payments in stablecoins
+title: List of Gas Tokens Supported with Candide Paymaster
+description: List of Gas Tokens accepted for Candide's Paymaster. Learn about sponsoring gas, and how to enable gas payments in stablecoins
 image: /img/posters/paymaster-meta.png
 keywords: [paymaster, gas sponsorship, pay gas in stablecoin]
 ---
@@ -17,6 +17,7 @@ import {
     ethereumList,
     gnosisList,
     optimismList,
+    solanaList,
     worldchainList,
     arbitrumSepoliaList,
     amoyList,
@@ -25,12 +26,12 @@ import {
     sepoliaList,
 } from "/src/data/tokens-list.ts";
 
-List of ERC-20 Tokens accepted by Candide's Paymaster. Visit the [dashboard](https://dashboard.candide.dev) to get an API key. 
+List of tokens accepted by Candide's Paymaster for gas payments. Visit the [dashboard](https://dashboard.candide.dev) to get an API key.
 
-We constantly add support for new ERC-20 tokens as gas payments. To check for the latest list of supported tokens, developers can:
+We constantly add support for new tokens and networks. To check the live list available to your API key:
 
-- Call the [`pm_supportedERC20Tokens`](/wallet/paymaster/rpc-methods/#pm_supportederc20tokens) API endpoint
-- Use the SDK's [`fetchSupportedERC20TokensAndPaymasterMetadata`](https://docs.candide.dev/wallet/abstractionkit/safe-account/#fetchsupportederc20tokensandpaymastermetadata) method
+- On EVM networks, call [`pm_supportedERC20Tokens`](/wallet/paymaster/rpc-methods/#pm_supportederc20tokens) or use the SDK's [`fetchSupportedERC20TokensAndPaymasterMetadata`](https://docs.candide.dev/wallet/abstractionkit/safe-account/#fetchsupportederc20tokensandpaymastermetadata) method
+- On Solana, call [`getSupportedTokens`](/wallet/solana-paymaster/rpc-methods/#getsupportedtokens)
 
 :::info
 If you would like to see a token or network supported, email team@candidelabs.com
@@ -68,6 +69,8 @@ If you would like to see a token or network supported, email team@candidelabs.co
 ### Plasma
 <PaymasterSupportedToken items={plasmaList} />
 
+### Solana
+<PaymasterSupportedToken items={solanaList} />
 
 ### Worldchain Mainnet
 <PaymasterSupportedToken items={worldchainList}/>

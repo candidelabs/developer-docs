@@ -290,6 +290,16 @@ export const plasmaList = [
   },
 ];
 
+export const solanaList = [
+  {
+    token: "USDT",
+    logo: "/img/tokens/usdt-logo.svg",
+    address: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+    blockExplorer: "https://explorer.solana.com/address/",
+    website: "https://tether.io/",
+  },
+];
+
 export const worldchainList = [
   {
     token: "USDC.e (Bridged)",
