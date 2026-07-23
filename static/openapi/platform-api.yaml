@@ -596,7 +596,7 @@ components:
           description: "4-byte function selector."
         abi:
           type: string
-          description: "JSON ABI fragment."
+          description: "JSON-stringified ABI array containing the complete function fragment."
         parameters:
           type: array
           description: "Constraints on the call arguments."
@@ -615,7 +615,7 @@ components:
           enum: ["$eq", "$gt", "$gte", "$lt", "$lte", "$startsWith"]
         value:
           type: string
-          description: "Value the argument is compared against."
+          description: 'Value the argument is compared against. uint and bytes values must be "0x"-prefixed hexadecimal strings; booleans must be "true" or "false".'
 
     Billing:
       type: object
@@ -778,7 +778,7 @@ components:
           description: 'Target contract address, or the "${userop.sender}" literal.'
         abi:
           type: string
-          description: "JSON ABI fragment containing the function."
+          description: "JSON-stringified ABI array containing the complete function fragment."
         selector:
           type: string
           description: "4-byte function selector, 8 hex characters."
