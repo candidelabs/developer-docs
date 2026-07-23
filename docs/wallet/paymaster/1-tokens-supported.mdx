@@ -1,8 +1,8 @@
 ---
-title: List of Gas Tokens Supported with Candide Paymaster
-description: List of Gas Tokens accepted for Candide's Paymaster. Learn about sponsoring gas, and how to enable gas payments in stablecoins
+title: Supported Gas Payment Tokens
+description: Tokens accepted by Candide's Paymaster for gas payments across EVM networks and Solana.
 image: /img/posters/paymaster-meta.png
-keywords: [paymaster, gas sponsorship, pay gas in stablecoin]
+keywords: [paymaster, gas sponsorship, gas token, ERC-20, SPL token, Solana, USDT]
 ---
 
 import { plasmaList } from "../../../src/data/tokens-list";
@@ -26,9 +26,9 @@ import {
     sepoliaList,
 } from "/src/data/tokens-list.ts";
 
-List of tokens accepted by Candide's Paymaster for gas payments. Visit the [dashboard](https://dashboard.candide.dev) to get an API key.
+Candide's Paymaster lets users pay gas with supported tokens instead of a network's native token. Visit the [dashboard](https://dashboard.candide.dev) to get an API key.
 
-We constantly add support for new tokens and networks. To check the live list available to your API key:
+The tables below show the documented baseline. Availability can vary by API key, so use these methods as the source of truth:
 
 - On EVM networks, call [`pm_supportedERC20Tokens`](/wallet/paymaster/rpc-methods/#pm_supportederc20tokens) or use the SDK's [`fetchSupportedERC20TokensAndPaymasterMetadata`](https://docs.candide.dev/wallet/abstractionkit/safe-account/#fetchsupportederc20tokensandpaymastermetadata) method
 - On Solana, call [`getSupportedTokens`](/wallet/solana-paymaster/rpc-methods/#getsupportedtokens)
