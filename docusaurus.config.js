@@ -212,9 +212,9 @@ const config = {
       },
       image: 'img/posters/atelier-meta.png',
       announcementBar: {
-        id: 'solana-paymaster-launch',
+        id: 'platform-api-launch',
         content:
-          'Pay gas in USDT on Solana is live. <a href="/wallet/guides/pay-gas-in-usdt-solana/">Read the guide</a>',
+          'Create gas policies programmatically with the new Platform API. <a href="/platform/overview/">Read the docs</a>',
         backgroundColor: '#fce7f0',
         textColor: '#1a1a1a',
         isCloseable: true,
