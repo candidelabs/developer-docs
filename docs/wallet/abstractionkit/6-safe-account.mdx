@@ -43,7 +43,7 @@ import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit";
 
 ## How to Use
 
-AbstractionKit classes are designed to support the same methods across all versions, ensuring compatibility within the essential classes. This allows developers to move between Safe V2, Safe V3 and the Safe Unified Account seamlessly without breaking functionality or requiring significant code changes. Targeting a different EntryPoint is a change of account class rather than a separate integration — see [Compatibility with Safe Account V3](/wallet/abstractionkit/safe-unified-account#compatibility-with-safe-account-v3). Note that each version derives a different account address for the same owner.
+AbstractionKit classes are designed to support the same methods across all versions, ensuring compatibility within the essential classes. This allows developers to move between Safe V2, Safe V3 and the Safe Unified Account seamlessly without breaking functionality or requiring significant code changes. Targeting a different EntryPoint is a change of account class rather than a separate integration — see [Compatibility with Safe Account V3](/wallet/abstractionkit/safe-unified-account#compatibility-with-safe-account-v3). Each version derives a different account address for the same owner, and an already-deployed Safe needs a module migration before another version's class can operate on it.
 
 To initialize a new Safe Account and calculate its address:
 
