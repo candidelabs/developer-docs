@@ -58,6 +58,32 @@ console.log("Account address:", smartAccount.accountAddress);
 
 This class inherits all methods from [Safe Account](/wallet/abstractionkit/safe-account). The methods below are specific to multichain operations or override the base class with multichain defaults.
 
+## Compatibility with Safe Account V3
+
+`SafeMultiChainSigAccountV1` is API-compatible with [`SafeAccountV0_3_0`](/wallet/abstractionkit/safe-account-v3). Both extend the same `SafeAccount` base and expose the same methods with the same signatures, so moving to EntryPoint v0.9 is a change of account class — not a separate integration:
+
+| Method | `SafeAccountV0_3_0` | `SafeMultiChainSigAccountV1` |
+| --- | --- | --- |
+| `createAccountAddress(owners, overrides)` | ✅ | ✅ |
+| `initializeNewAccount(owners, overrides)` | ✅ | ✅ |
+| `isDeployed(address, rpc)` | ✅ | ✅ |
+| `createUserOperation(txs, nodeRpc, bundlerRpc, overrides)` | ✅ | ✅ |
+| `estimateUserOperationGas(userOp, bundlerRpc, overrides)` | ✅ | ✅ |
+| `signUserOperation(userOp, privateKeys, chainId, options)` | ✅ | ✅ |
+| `signUserOperationWithSigners(userOp, signers, chainId, options)` | ✅ | ✅ |
+| `sendUserOperation(userOp, bundlerRpc)` | ✅ | ✅ |
+
+Both classes take the same `InitCodeOverrides` shape, so an integration that already threads `entrypointAddress`, `safe4337ModuleAddress`, `safeModuleSetupAddress`, `safeAccountSingleton`, `safeAccountFactoryAddress` and `c2Nonce` through its config needs no new plumbing.
+
+The multichain APIs — `signUserOperations`, `signUserOperationsWithSigners`, the Merkle-root EIP-712 helpers and the WebAuthn verifier helpers — are additional methods. Opt into them for chain abstraction, or ignore them and the account behaves as a single-chain Safe.
+
+A few differences to be aware of when migrating:
+
+- **The account address changes.** A different Safe module and EntryPoint derive a different counterfactual address for the same owner. Existing v0.7 accounts stay on `SafeAccountV0_3_0`; use `SafeMultiChainSigAccountV1` for new accounts, or migrate a deployed one with [`createMigrateToSafeMultiChainSigAccountV1MetaTransactions`](/wallet/abstractionkit/safe-account-v3#createmigratetosafemultichainsigaccountv1metatransactions).
+- **The UserOperation type is `UserOperationV9`.** It adds a nullable `eip7702Auth` field to the v0.7 shape; every other field, including the gas fields and the paymaster and factory fields, is unchanged.
+- **Signatures always use the multichain encoding.** `isMultiChainSignature` is set for you, including on single-chain UserOperations — the single-op path signs the leaf SafeOp hash directly rather than a Merkle root. This is handled inside AbstractionKit; you only need it when [formatting a signature yourself](#manual-eip-712-signing-for-a-single-useroperation).
+- **Your bundler and paymaster must serve EntryPoint v0.9.** Check that the v0.9 EntryPoint and the Safe multichain signature module are deployed on your target chains before predicting addresses for them.
+
 ## Methods
 
 ### initializeNewAccount
