@@ -59,7 +59,8 @@ const sidebars = {
         {
           type: "doc",
           id: "platform/gas-policy-api",
-          label: "Gas Policy API"
+          label: "Gas Policy API",
+          className: "sidebar-badge-new"
         },
       ],
     },
@@ -287,7 +288,8 @@ const sidebars = {
         {
           type: "doc",
           id: "wallet/solana-paymaster/rpc-methods",
-          label: "Solana RPC Methods"
+          label: "Solana RPC Methods",
+          className: "sidebar-badge-new"
         },
         {
           type: "doc",
@@ -489,8 +491,7 @@ const sidebars = {
         {
           type: "category",
           label: "Pay Gas in Tokens",
-          className: "sidebar-badge-new",
-          collapsed: true,
+          collapsed: false,
           items: [
             {
               type: "doc",
@@ -500,7 +501,8 @@ const sidebars = {
             {
               type: "doc",
               id: "wallet/guides/pay-gas-in-usdt-solana",
-              label: "Solana"
+              label: "Solana",
+              className: "sidebar-badge-new"
             },
           ],
         },
@@ -517,7 +519,6 @@ const sidebars = {
         {
           type: "category",
           label: "Chain Abstraction",
-          className: "sidebar-badge-new",
           collapsed: true,
           items: [
             {
