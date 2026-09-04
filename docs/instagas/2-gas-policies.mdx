@@ -50,16 +50,20 @@ InstaGas provides customizable rules for gas policies. These rules are organized
 
 ## Transaction Rules
 
-Transaction rules limit gas sponsorship to specific smart contract interactions, callable methods, input parameters, and constraints.
+Transaction rules describe the exact calldata a policy sponsors. A policy holds one ordered list of rules, one rule per call, and a UserOperation is sponsored only when its calls match that list exactly: the same calls, in the same order, with nothing extra.
 
-- **Contract Address**: Limit gas sponsorship to a specific smart contract address.
-    - Example: "Only sponsor transactions interacting with smart contract `0x123`."
-- **Method**: Limit gas sponsorship to a specific callable method on the smart contract.
-    - Example: "Only sponsor when the transaction calls the `swap` method."
-- **Parameters Constraints**: Limit gas sponsorship based on method parameters and constraints.
-    - Example: "Only sponsor when `tokenIn` amount is greater than or equal to 1 ETH."
-- **Batch Transaction**: Design rules to sponsor transaction batches, such as an ERC-20 token approval followed by a contract deposit.
-    - Example: "Only sponsor if the transaction includes both ERC-20 token `approval` and `deposit` calls."
+Rules are not a whitelist of methods. If a policy lists an ERC-20 `approve` followed by a `deposit`, a UserOperation must batch both calls in that order. A UserOperation that only sends the `approve` is not sponsored, and neither is one that adds a third call.
+
+Each rule constrains one call:
+
+- **Contract Address**: The smart contract the call must target.
+    - Example: "Call 1 must interact with smart contract `0x123`."
+- **Method**: The function the call must invoke on that contract.
+    - Example: "Call 1 must invoke the `swap` method."
+- **Parameters Constraints**: Conditions on the decoded input parameters of that call.
+    - Example: "Call 1 is only sponsored when `tokenIn` amount is greater than or equal to 1 ETH."
+
+To sponsor a single call, add one rule. To sponsor a batch, add one rule per call and order them the way the UserOperation executes them.
 
 <img src="/img/instagas/instagas-transaction-rules.png" width="900" />
 
@@ -162,7 +166,7 @@ Amounts are entered in ETH in the dashboard and stored as hex-encoded wei.
 
 ### Transactions
 
-Each entry describes one allowed contract call. Constraints within an entry must all pass for the call to qualify.
+The array is an ordered sequence. Entry `n` constrains the `n`th call of the UserOperation, and the UserOperation is sponsored only when it contains exactly this many calls, each matching its entry. Constraints within an entry must all pass for the call to qualify.
 
 | field | type | description |
 | :--- | :--- | :--- |
