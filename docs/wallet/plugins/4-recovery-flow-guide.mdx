@@ -74,7 +74,7 @@ Initialize the recovery service and guardian references.
 <details>
 <summary>About the Recovery Service</summary>
 
-The [Candide Recovery Service](/wallet/recovery/overview/) is an optional hosted service that streamlines recovery by automatically executing recovery after collecting required guardian signatures and finalizing it after the grace period expires.
+The [Candide Recovery Service](/wallet/recovery/overview/) is an optional hosted service that streamlines recovery by collecting guardian signatures off-chain and sponsoring gas for the execution and finalization transactions your application submits.
 Request access to the recovery service [here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).
 
 **Alternative**: Anyone can [execute](/blog/making-accounts-recoverable/#multi-confirm-recovery) and [finalize](/blog/making-accounts-recoverable/#finalize-recovery) recovery transactions directly using Social Recovery Module methods, which are public and callable once guardian signatures are collected and grace period requirements are met.
