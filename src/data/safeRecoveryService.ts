@@ -27,12 +27,12 @@ const recoveryRequestSchema = [
     {
         key: "newThreshold",
         type: "number",
-        description: "The new threshold for the Safe account",
+        description: "The signing threshold for the new Safe owners after recovery; not the guardian approval threshold",
     },
     {
         key: "nonce",
-        type: "bigint",
-        description: "Recovery module contract nonce",
+        type: "string",
+        description: "Recovery module nonce serialized as a hexadecimal string in JSON responses",
     },
     {
         key: "signatures",
@@ -52,7 +52,7 @@ const recoveryRequestSchema = [
                 description: "The transaction hash of the recovery execution",
             },
         ],
-        description: "An object field representing the finalization recovery transaction",
+        description: "Execution transaction details",
     },
     {
         key: "finalizeData",
@@ -72,7 +72,7 @@ const recoveryRequestSchema = [
     {
         key: "status",
         type: "string",
-        description: "The status of the recovery request: PENDING | EXECUTED | FINALIZED | FINALIZATION-IN-PROGRESS | FAILED"
+        description: "The status of the recovery request: PENDING | EXECUTION-IN-PROGRESS | EXECUTED | FINALIZATION-IN-PROGRESS | FINALIZED"
     },
     {
         key: "discoverable",
@@ -87,7 +87,7 @@ const recoveryRequestSchema = [
     {
         key: "updatedAt",
         type: "datetime",
-        description: "The date and time of the recovery request that was created",
+        description: "The date and time the recovery request was last updated",
     },
 ];
 
@@ -107,7 +107,7 @@ export const postRecoveriesCreate = [
     {
         key: "newThreshold",
         type: "number",
-        description: "The new threshold to the Safe account",
+        description: "The signing threshold for the new Safe owners after recovery; not the guardian approval threshold",
     },
     {
         key: "chainId",
@@ -141,8 +141,8 @@ export const getRecoveriesFetchByAddress = [
     },
     {
         key: "nonce",
-        type: "number",
-        description: "Recovery module contract nonce",
+        type: "string",
+        description: "Recovery module contract nonce as a hexadecimal string, such as 0x1",
     },
 ];
 
@@ -183,9 +183,9 @@ export const postRecoveriesSign = [
 ];
 
 export const postRecoveriesSignResponse = [{
-    key: "status",
-    type: "true",
-    description: "true = signature is valid",
+    key: "success",
+    type: "boolean",
+    description: "True when the guardian signature has been accepted",
 }];
 
 export const postRecoveriesExecuteById = [
@@ -199,8 +199,8 @@ export const postRecoveriesExecuteById = [
 export const postRecoveriesExecuteByIdResponse = [
     {
         key: "success",
-        type: "true",
-        description: "Return true once finilized. Else returns error",
+        type: "boolean",
+        description: "True when the execution request succeeds; use the recovery status to track on-chain progress",
     },
 ];
 
@@ -216,8 +216,8 @@ export const postRecoveriesFinalizeById = [
 export const postRecoveriesFinalizeByIdResponse = [
     {
         key: "success",
-        type: "true",
-        description: "Return true once finilized. Else returns error",
+        type: "boolean",
+        description: "True when the finalization request succeeds; use the recovery status to confirm completion",
     },
 ];
 
@@ -363,7 +363,7 @@ export const postAuthSubmitResponse = [
     {
         key: "guardianAddress",
         type: "string",
-        description: "The guardian address added to the Safe account",
+        description: "The service-managed guardian address to add to the Social Recovery Module on-chain",
     },
 ];
 
@@ -438,7 +438,7 @@ export const postAuthSignatureRequest = [
     {
         key: "newThreshold",
         type: "number",
-        description: "The new threshold for the Safe account",
+        description: "The signing threshold for the new Safe owners after recovery; not the guardian approval threshold",
     },
     {
         key: "chainId",

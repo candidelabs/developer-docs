@@ -1,106 +1,110 @@
 ---
-title: An overview of Safe Recovery Service API
-description: An overview of Candide's Safe Recovery Service and how it works. Features signature aggregation, gas sponsorship, recovery request monitoring, signature storage, and auto-execution.
+title: Safe Recovery Service API Overview
+description: Learn how Candide's Safe Recovery Service coordinates guardian recovery, sponsors transactions, sends alerts, and enables email/SMS recovery for Safe accounts.
 keywords: [safe recovery, social recovery, smart wallet, email recovery, guardian recovery]
 ---
 
-Secure Safe Accounts with diverse recovery options including trusted contacts, email/SMS verification, Passkeys, secondary devices, and more.
-The Safe Recovery service consists of two main components: [Recovery UX](#recovery-ux-api) and [Email/SMS Recovery](#emailsms-recovery-api).
+Candide's Safe Recovery Service helps wallets recover Safe accounts when users lose access to their signing keys. It works with the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/), which lets trusted guardians approve new account owners through a signature threshold and a time delay.
+
+The module enforces recovery rules on-chain. The service coordinates the process: collecting guardian signatures, submitting transactions, and notifying account owners.
 
 ## Who is this for
-Wallets implementing the Safe [Social Recovery Module](/wallet/plugins/recovery-with-guardians/) that want to provide a seamless and secure recovery experience for their end users.
+
+Wallet developers integrating the Social Recovery Module who want to automate recovery or offer email/SMS as a recovery method.
+
+The service provides two APIs:
+
+| API | Purpose |
+|-----|---------|
+| [Recovery UX API](#recovery-ux-api) | Coordinate recovery requests, collect signatures, sponsor transactions, and send alerts. |
+| [Email/SMS Recovery API](#emailsms-recovery-api) | Let users authorize a service-managed guardian through email or phone verification. |
 
 ## Recovery UX API
 
-### Automatic Execution
-The service provides automatic execution options to minimize UX friction and enhance privacy for recovery contacts and guardians.
-Configure the service to automatically execute:
-
-1. The recovery confirmation transaction once the signature threshold is met, eliminating the need for guardians to pay gas fees.
-2. The recovery finalization transaction after the grace period expires, removing the need for recovery contacts to return and complete the process.
+Use this API to manage recovery requests approved by guardians, such as trusted contacts or hardware wallets.
 
 ### Signature Aggregation and Storage
-Guardian signatures can be submitted to the service for off-chain collection. Once all required signatures are collected, the service automatically executes the recovery confirmation and finalization.
 
-### Gas Sponsorship Relayer
-The service includes a gas sponsorship relayer that covers gas costs for both confirmation and finalization transactions.
+The service collects and stores guardian signatures off-chain until the account's recovery threshold is met. For example, a 2-of-3 threshold requires approval from any two of the three guardians.
+
+### Automatic Execution and Gas Sponsorship {#automatic-execution}
+
+The service can be configured to submit two on-chain transactions automatically:
+
+1. **Execution:** Submit the approved recovery request once the guardian signature threshold is met. This starts the grace period.
+2. **Finalization:** Complete the ownership change after the grace period ends.
+
+The gas sponsorship relayer covers the costs of these transactions, so guardians do not need to hold funds or return to finalize recovery.
 
 ### Social Engineering Protection
-The API provides an emoji-based communication system that enables guardians to verify and approve legitimate recovery requests, effectively preventing social engineering attacks by malicious actors attempting to manipulate the recovery process.
+
+Each recovery request has an emoji sequence that guardians can check with the account owner through a trusted communication channel before signing. This helps guardians identify the intended request and reduces the risk of approving a fraudulent one.
 
 ### Alerts and Notifications
-Account owners can subscribe to email or SMS notifications when a recovery request is initiated, whether onchain or through the service, ensuring they remain informed throughout the recovery process.
-The service monitors transactions sent through the Safe Recovery Module, using events and tracing to index transactions and deliver timely alerts.  
+
+Account owners can subscribe to email or SMS alerts when recovery is initiated, including requests submitted directly on-chain or through the service. The service monitors Social Recovery Module activity to detect these requests.
+
+See the [Recovery UX API reference](/wallet/recovery/ux-api/) for endpoints and request formats.
 
 ## Email/SMS Recovery API
 
-A secure and user-friendly solution that uses email and phone verification for account recovery. Use it as a standalone recovery method or combine it with other guardians (hardware wallets, trusted contacts) to create a customized recovery threshold. Features include:
+Use this API to add a service-managed guardian that signs recovery requests after the user verifies their email address or phone number.
 
-### Email Recovery
-Supports SMTP and OAuth2-based protocols. To verify email ownership, a confirmation code is sent to the user's email address. The user must enter this code to enable the guardian service.
+1. **Set up recovery:** While the user still has access to the account, register their email address or phone number, verify it with a one-time code, and add the returned guardian address to the Social Recovery Module.
+2. **Authorize a recovery:** When the user needs to recover the account, verify a new one-time code to obtain the service-managed guardian's signature for the recovery request.
 
-### SMS Recovery
-Supports SMS OTP verification. To verify phone number ownership, a confirmation code is sent to the user. The user must enter this code to enable the guardian service.
+Email/SMS can be the sole recovery method or one guardian in a larger setup with trusted contacts or hardware wallets. The account's guardian threshold still determines how many approvals are needed.
 
-### Multi-Factor Authentication
-Supports MFA across multiple channels, including combinations of email and SMS.
+The service also supports multi-factor authentication across channels, such as email and SMS. Contact us to request additional channels such as WhatsApp or Telegram.
 
-### Custom Channels
-Supports additional channels including WhatsApp and Telegram. Contact us to request support for your preferred channel. 
+See the [Email/SMS Recovery API reference](/wallet/recovery/auth-api/) for registration and recovery endpoints.
 
 ## How it works
 
+Once guardians are configured, a successful recovery follows these steps:
+
+1. **Create a request.** A guardian submits a signed recovery request specifying the proposed new owners and their signing threshold. The service stores the request and alerts subscribed account owners.
+2. **Collect approvals.** Guardians verify the request and submit signatures until the guardian threshold is met.
+3. **Execute the request.** The approved request is submitted on-chain, starting the module's grace period.
+4. **Wait through the grace period.** The current owner can cancel an unauthorized recovery if they still control the account.
+5. **Finalize recovery.** After the grace period, finalization replaces the account's owners and applies the new signing threshold.
+
 ```mermaid
 flowchart TD
-    A[Start] --> B[Listen for recovery requests from guardians]
-    B --> C{Recovery request received?}
-    C -->|No| B
-    C -->|Yes| D[Store recovery request]
-    D --> E[Return request for guardians to sign]
-    E --> F[Collect and store guardian signatures]
-    F --> G{All signatures collected?}
-    G -->|No| F
-    G -->|Yes| H[Execute recovery request]
-    H --> I[Wait for grace period to end]
-    I --> J{Grace period ended?}
-    J -->|No| I
-    J -->|Yes| K[Finalize recovery request]
-    K --> L[End]
-    
-    R{Check alert subscription}
-    R -->|Email| S[Send email alert]
-    R -->|SMS| T[Send SMS alert]
-    
-    C -->|Yes| R
+    A[Create recovery request] --> B[Collect guardian signatures]
+    B -->|Guardian threshold met| C[Execute on-chain]
+    C --> D[Grace period]
+    D -->|Period ends without cancellation| E[Finalize ownership change]
+    D -->|Current owner cancels| F[Recovery cancelled]
 ```
+
+Execution and finalization are automatic when enabled in the service configuration. **New owners gain control only after finalization.**
+
+## Recovery Request States
+
+The API's `status` field tracks progress through a successful recovery:
+
+| State | Description |
+|-------|-------------|
+| `PENDING` | The request is stored and has not yet been executed. Guardian signatures can be collected. |
+| `EXECUTION-IN-PROGRESS` | The guardian threshold is met and the execution transaction is being processed. |
+| `EXECUTED` | The request has been executed on-chain. The grace period must end before finalization. Ownership has not changed. |
+| `FINALIZATION-IN-PROGRESS` | The grace period has ended and the finalization transaction is being processed. |
+| `FINALIZED` | Recovery is complete. The new owners and signing threshold are in effect. |
+
+## Get Started
+
+[Request service access](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5), then follow the guide for your recovery method:
+
+- **Personal guardians:** [Add a guardian](/wallet/plugins/how-to-add-a-guardian/), then follow the [Recovery Flow Guide](/wallet/plugins/recovery-flow-guide/).
+- **Email/SMS:** [Enable email/SMS recovery](/wallet/plugins/add-candide-guardian/), then follow the [Email/SMS Recovery Flow](/wallet/plugins/recover-account-candide-guardian/).
+- **Notifications:** Set up subscriptions with the [Recovery Alerts Guide](/wallet/plugins/recovery-alerts-guide/).
+- **TypeScript integration:** Use the [Recovery Service SDK reference](/wallet/plugins/recovery-service-sdk-reference/).
 
 ## Reference Links
 
 - [Recovery explainer](/blog/making-accounts-recoverable)
-- [Module SDK](/wallet/plugins/recovery-with-guardians)
+- [Social Recovery Module SDK reference](/wallet/plugins/recovery-module-reference/)
 - [Module contracts and audits](https://github.com/candidelabs/candide-contracts)
-- [Source code](https://github.com/candidelabs/safe-recovery-service)
-- [Recovery Service SDK](https://github.com/candidelabs/safe-recovery-service-sdk)
-
-## Recovery Request States
-
-A recovery request goes through the following states:
-
-```mermaid
-stateDiagram-v2
-    [*] --> PENDING
-    PENDING --> EXECUTION_IN_PROGRESS: All signatures collected
-    EXECUTION_IN_PROGRESS --> EXECUTED: Transaction confirmed
-    EXECUTED --> FINALIZATION_IN_PROGRESS: Grace period ended
-    FINALIZATION_IN_PROGRESS --> FINALIZED: Finalization confirmed
-    FINALIZED --> [*]
-    PENDING --> EXECUTED: Auto-execute enabled
-```
-
-| State | Description |
-|-------|-------------|
-| `PENDING` | Recovery request created, waiting for guardian signatures |
-| `EXECUTION-IN-PROGRESS` | All signatures collected, executing on-chain |
-| `EXECUTED` | Recovery confirmed, new owners set. Waiting for grace period |
-| `FINALIZATION-IN-PROGRESS` | Grace period ended, finalizing on-chain |
-| `FINALIZED` | Recovery complete, new owners take control |
+- [Recovery Service source code](https://github.com/candidelabs/safe-recovery-service)
+- [Recovery Service SDK source code](https://github.com/candidelabs/safe-recovery-service-sdk)

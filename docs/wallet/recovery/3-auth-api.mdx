@@ -1,6 +1,6 @@
 ---
-title: Safe Recovery Service using Email/SMS | API Reference
-description: API specification for Candide's Safe Recovery Service. Features email/SMS recovery, multifactor auth, and an alert system for on-chain and off-chain monitoring for active recovery.
+title: Email/SMS Recovery API Reference
+description: Register email/SMS recovery methods and obtain guardian signatures with Candide's Safe Recovery Service API.
 keywords: [safe recovery, social recovery, smart wallet, email-sms recovery, guardian recovery]
 ---
 
@@ -9,20 +9,6 @@ import TabItem from "@theme/TabItem";
 import { DataTable } from "/src/components/Table";
 
 import {
-    postRecoveriesCreate,
-    postRecoveriesCreateResponse,
-    getRecoveriesFetchByAddress,
-    getRecoveriesFetchByAddressResponse,
-    getRecoveriesFetchById,
-    getRecoveriesFetchByIdResponse,
-    postRecoveriesSign,
-    postRecoveriesSignResponse,
-    postRecoveriesFinalizeById,
-    postRecoveriesFinalizeByIdResponse,
-    postRecoveriesExecuteById,
-    postRecoveriesExecuteByIdResponse,
-    postAlertSubscribe,
-    postAlertSubscribeResponse,
     postAuthRegister,
     postAuthRegisterResponse,
     postAuthSubmit,
@@ -39,56 +25,74 @@ import {
 
 # Authentication-Based Recovery API (Email / SMS)
 
-A Safe guardian service that uses email and phone verification to facilitate account recovery. It can be used as a default recovery method or combined 
-with other guardians (such as hardware wallets or trusted contacts) to create a customized recovery threshold.
+Use this API to register an email address or phone number as a recovery method, then obtain a service-managed guardian's signature after the user verifies a one-time password (OTP).
 
-:::info
-To get started, request access [here](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5).
-:::
+The signature counts as one guardian approval under the account's recovery threshold. Submit it through the [Recovery UX API](/wallet/recovery/ux-api/) to continue recovery.
+
+## Before You Start
+
+- Deploy the Safe account and enable the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/).
+- [Request service access](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5) to obtain your service URL and Bearer token.
+- Register the recovery method while the user still controls the account. Registrations are specific to an account and chain.
+
+For a TypeScript walkthrough, see [Enable Email/SMS Recovery](/wallet/plugins/add-candide-guardian/) and the [Email/SMS Recovery Flow](/wallet/plugins/recover-account-candide-guardian/).
 
 ## Authentication
 
-All API requests require a Bearer token in the Authorization header:
+Include `Authorization: Bearer YOUR_BEARER_TOKEN` in every request. Replace `https://yourcompany.recovery.candide.dev` with your service URL.
+
+Registration, registration lookup, and deletion also require a **SIWE message signed by the Safe account**. During recovery, the user verifies codes sent to registered channels to authorize the service-managed guardian's signature. See [SIWE signing](#how-to-sign-messages-siwe-eip-4361).
+
+Examples use placeholder addresses, IDs, messages, and signatures. Replace them with values from your integration. Expressions such as `siwe(...)` and `sign(message)` describe values to generate in your application; they are not literal API inputs.
+
+## Integration Workflow
+
+**Set up recovery while the user has account access:**
+
+1. Call `/auth/register` with a Safe-signed SIWE message to send a verification code.
+2. Submit the code to `/auth/submit` to receive a `registrationId` and `guardianAddress`.
+3. Add that guardian address to the account's Social Recovery Module on-chain. Registration alone does not add the guardian.
+
+**Recover the account after access is lost:**
+
+1. Call `/auth/signature/request` with the proposed new owners and their signing threshold.
+2. Submit verification codes to `/auth/signature/submit` until the response includes `signer` and `signature`.
+3. Use that signature to [create a recovery request](/wallet/recovery/ux-api/#create-recovery-request), or [add it to an existing request](/wallet/recovery/ux-api/#collect-a-guardian-signature) with the same recovery data. Collect any other required guardian approvals, execute recovery, and finalize after the grace period.
+
+There are three separate thresholds:
+
+| Value | What it controls |
+|-------|------------------|
+| `requiredVerifications` | How many channel verifications are needed to obtain the service-managed guardian's signature. |
+| Guardian threshold | How many guardian approvals the Social Recovery Module requires to execute recovery. |
+| `newThreshold` | How many of the new Safe owners must sign account transactions after recovery. |
+
+## Endpoints
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | `/auth/register` | Request registration and send a verification code. |
+| POST | `/auth/submit` | Verify the code and return the guardian address. |
+| GET | `/auth/registrations` | List the account's registered methods on a chain. |
+| POST | `/auth/delete` | Delete a registered method. |
+| POST | `/auth/signature/request` | Request verification codes for a proposed recovery. |
+| POST | `/auth/signature/submit` | Verify a code and return a guardian signature once enough verifications are collected. |
+
+## Register and Manage Recovery Methods {#auth-registration}
+
+### Register an Email Address or Phone Number {#email--sms}
+
+Send a verification code to the selected email address or phone number. Save the returned `challengeId` for `/auth/submit`.
+
+#### `POST /auth/register`
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
 
 ```bash
 curl -X POST \
   https://yourcompany.recovery.candide.dev/auth/register \
-  -H 'Content-Type: application/json' \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
-  -d '{...}'
-```
-
-**/auth** (Registration)
-- **/auth/register**
-  - **POST**: Submit a registration request
-- **/auth/submit**
-  - **POST**: Submits the receive OTP
-- **/auth/registrations**
-  - **GET**: Fetch active registration
-- **/auth/delete**
-  - **POST**: Delete a registration
-
-**/auth/signature** (Recovery)
-- **/auth/signature/request**
-  - **POST**: Request to recover an account
-- **/auth/signature/submit**
-  - **POST**: Confirm recovery with OTP challenge
-
-
-
-## Auth Registration
-### Email / SMS
-
-Submit a registration request with the target smart account to protect using the choice of channel (email or SMS).
-The user will then receive an OTP code to later submit the challenge in `/auth/submit`.
-
-#### `POST /auth/register`
-<Tabs>
-<TabItem value="example-request" label="Example Request">
-
-```json
-curl -X POST \
-  https://yourcompany.recovery.candide.dev/auth/register \
   -H 'Content-Type: application/json' \
   -d '{
    "account":"0x...",
@@ -105,7 +109,7 @@ curl -X POST \
 
 ```json
 {
-   "challengeId":"unique-challenge-id",
+  "challengeId": "unique-challenge-id"
 }
 ```
 
@@ -119,30 +123,31 @@ curl -X POST \
 </Tabs>
 
 -   `account`: The smart account address requesting registration.
--   `chainId`: The chain id in which your account resides (for multi-chain wallets, users will need to register per chain)
+-   `chainId`: The chain where the Safe is deployed. Register separately for each chain.
 -   `channel`: Either `"email"` or `"sms"` (defines the authentication type).
 -   `target`: The email or phone number for authentication.
--   `message`: SIWE (EIP-4361) message statement. Statement: 
+-   `signature`: A signature valid for the Safe account over the complete SIWE message.
+-   `message`: The complete SIWE message containing this exact statement:
 
 ```
-I authorize Safe Recovery Service to sign a recovery request for my account after I authenticate using {{target}} via {{channel}}
+I authorize Safe Recovery Service to sign a recovery request for my account after I authenticate using {{target}} (via {{channel}})
 ```
 
--   `signature`: signature proving the request is initiated from the account
+See [SIWE signing](#how-to-sign-messages-siwe-eip-4361) for the exact statement and signing requirements.
 
-See [example guide](#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign-In with Ethereum (SIWE).
+### Verify Registration {#submit-confirmation-using-otp}
 
-### Submit Confirmation Using OTP
-Submit the received OTP code to confirm ownership of the target channel. 
+Submit the code to confirm ownership of the email address or phone number. The response returns the guardian address to add to the Social Recovery Module on-chain.
 
 #### `POST /auth/submit`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
-```json
+```bash
 curl -X POST \
   https://yourcompany.recovery.candide.dev/auth/submit \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
    "challengeId":"unique-challenge-id",
@@ -154,8 +159,8 @@ curl -X POST \
 <TabItem value="example-response" label="Example Response">
 ```json
 {
-   "registrationId": "unique-registration-id",
-   "guardianAddress": "0x...",
+  "registrationId": "unique-registration-id",
+  "guardianAddress": "0x..."
 }
 ```
 </TabItem>
@@ -167,18 +172,21 @@ curl -X POST \
 </TabItem>
 </Tabs>
 
-### Get active registration
-Fetch the registration of the protected smart account
-####  `GET /auth/registrations`
+### List Registered Recovery Methods {#get-active-registration}
+
+List the registered recovery methods for the specified Safe account and chain. The response contains an empty array if no methods are registered.
+
+#### `GET /auth/registrations`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
-```json
+```bash
 curl -G "https://yourcompany.recovery.candide.dev/auth/registrations" \
-   --data-urlencode "account=0x...",
-   --data-urlencode "chainId=0x1",
-   --data-urlencode "message=siwe(chainId, statement)",
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+   --data-urlencode "account=0x..." \
+   --data-urlencode "chainId=1" \
+   --data-urlencode "message=siwe(chainId, statement)" \
    --data-urlencode "signature=sign(message)"
 ```
 
@@ -191,7 +199,7 @@ curl -G "https://yourcompany.recovery.candide.dev/auth/registrations" \
     {
       "id": "unique-registration-id",
       "channel": "email",
-      "target": "user@example.com",
+      "target": "user@example.com"
     }
   ]
 }
@@ -205,23 +213,26 @@ curl -G "https://yourcompany.recovery.candide.dev/auth/registrations" \
 </TabItem>
 </Tabs>
 
-See [example guide](#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign in With Ethereum (SIWE)
+See [SIWE signing](#how-to-sign-messages-siwe-eip-4361) for the exact statement and signing requirements.
 
-### Delete
-Deletes a registration
+### Delete a Recovery Method {#delete}
+
+Delete the registration identified by `registrationId`, using a SIWE message signed by the Safe account. This removes the service registration; it does not revoke the guardian on-chain.
 
 #### `POST /auth/delete`
+
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
-```json
+```bash
 curl -X POST \
   https://yourcompany.recovery.candide.dev/auth/delete \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
    "registrationId":"unique-registration-id",
    "message": "siwe(chainId, statement(registrationId))",
-   "signature": "sign(registrationId, timestamp)"
+   "signature": "sign(message)"
 }'
 ```
 
@@ -230,7 +241,7 @@ curl -X POST \
 
 ```json
 {
-    "success": "true"
+  "success": true
 }
 ```
 </TabItem>
@@ -242,19 +253,23 @@ curl -X POST \
 </TabItem>
 </Tabs>
 
-See [example guide](#how-to-sign-messages-siwe-eip-4361) how to construct the message and signature using Sign in With Ethereum (SIWE)
+See [SIWE signing](#how-to-sign-messages-siwe-eip-4361) for the exact statement and signing requirements.
 
-## Auth Recovery
-### Request to recover an account
-Request a signature from the service to recover an account given the new owners and threshold 
+## Obtain a Recovery Signature {#auth-recovery}
+
+### Request Recovery Verification {#request-to-recover-an-account}
+
+Propose new Safe owners and their signing threshold. The service sends verification codes to registered channels and returns a `requestId`, the required number of verifications, and the available challenges.
+
 #### `POST /auth/signature/request`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
-```json
+```bash
 curl -X POST \
   https://yourcompany.recovery.candide.dev/auth/signature/request \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
     "account":"0x...",
@@ -269,15 +284,15 @@ curl -X POST \
 
 ```json
 {
-   "requestId":"unique-signature-request-id",
-   "requiredVerifications": 1,
-   "auths": [
-      {
-         "challengeId": "unique-challenge-id",
-         "channel": "email",
-         "target": "us**@exa****.com"
-      }
-   ]
+  "requestId": "unique-signature-request-id",
+  "requiredVerifications": 1,
+  "auths": [
+    {
+      "challengeId": "unique-challenge-id",
+      "channel": "email",
+      "target": "us**@exa****.com"
+    }
+  ]
 }
 ```
 </TabItem>
@@ -289,16 +304,19 @@ curl -X POST \
 </TabItem>
 </Tabs>
 
-### Confirm recovery with OTP challenge
-Request to submits the signature with the provided OTP code challenge and id
+### Verify a Code and Collect the Signature {#confirm-recovery-with-otp-challenge}
+
+Submit a code with its `challengeId` and the shared `requestId`. Each successful submission verifies one challenge. The response includes `signer` and `signature` only after `requiredVerifications` is met.
+
 #### `POST /auth/signature/submit`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
-```json
+```bash
 curl -X POST \
   https://yourcompany.recovery.candide.dev/auth/signature/submit \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
     "requestId": "unique-signature-request-id",
@@ -312,9 +330,9 @@ curl -X POST \
 
 ```json
 {
-   "success": true,
-   "signer": "0x...",
-   "signature": "0x..."
+  "success": true,
+  "signer": "0x...",
+  "signature": "0x..."
 }
 ```
 </TabItem>
@@ -326,95 +344,57 @@ curl -X POST \
 </TabItem>
 </Tabs>
 
-## How to Sign Messages (SIWE EIP-4361)
-
-<Tabs>
-<TabItem value="SIWE">
-
-```typescript
-import { SiweMessage } from "siwe";
-import { hexlify, randomBytes } from "ethers";
-
-import { personalSign, getMessageHashForSafe } from "./safe-utils"
-
-function generateSIWEMessageSignaturePair(safeAccountAddress: string, statement: string, chainId: string): [string, string] {
-  const siweMessage = new SiweMessage({
-    version: "1",
-    address: ethers.getAddress(accountAddress),
-    domain: "service://safe-recovery-safeAccountAddress",
-    uri: "service://safe-recovery-service",
-    statement,
-    chainId: Number(chainId),
-    nonce: hexlify(randomBytes(24)),
-  });
-  const message = siweMessage.prepareMessage();
-  const signature = personalSign(safeAccountAddress, message, BigInt(chainId));
-  return [message, signature];
-}
-```
-
-</TabItem>
-
-<TabItem value="safe-utils">
-```typescript
-import { hashMessage, Wallet } from "ethers";
-
-export function getMessageHashForSafe(safeAccountAddress: string, message: string, chainId: BigInt) {
-    const SAFE_MSG_TYPEHASH = "0x60b3cbf8b4a223d68d641b3b6ddf9a298e7f33710cf3d3a9d1146b5a6150fbca";
-    const DOMAIN_SEPARATOR_TYPEHASH = "0x47e79534a245952e8b16893a336b85a3d9ea9fa8c573f3d803afb92a79469218";
-    const domainSeparator = ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(
-        ["bytes32", "uint256", "address"],
-        [DOMAIN_SEPARATOR_TYPEHASH, chainId, safeAccountAddress]
-    ));
-    const encodedMessage = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["bytes32", "bytes32"],
-        [SAFE_MSG_TYPEHASH, ethers.keccak256(message)]
-    );
-    const messageHash = ethers.keccak256(ethers.solidityPacked(
-        ["bytes1", "bytes1", "bytes32", "bytes32",],
-        [Uint8Array.from([0x19]), Uint8Array.from([0x01]), domainSeparator, ethers.keccak256(encodedMessage)]
-    ));
-    return messageHash;
-}
-
-export function personalSign(safeAccountAddress: string, message: string, chainId: BigInt){
-  const hash = hashMessage(message);
-	const safeMessageHash = await getMessageHashForSafe(safeAccountAddress, message, chainId);
-  const signer = new Wallet(process.env.privateKey)
-  return signer.signingKey.sign(messageHash).serialized;
-}
-```
-</TabItem>
-
-<TabItem value="example of what users will see">
-
-```
-service://safe-recovery-service wants you to sign in with your Ethereum account:
-0x13D6D891307758afc45EE42C90bFE7636C32088b
-
-I request to retrieve all Social Recovery Module alert subscriptions linked to my account
-
-URI: service://safe-recovery-service
-Version: 1
-Chain ID: 11155420
-Nonce: 0x95e25544f0f05b90c12b92d5a0d29666b99c77a47b00e854
-Issued At: 2025-03-13T15:47:08.746Z
-```
-
-</TabItem>
-
-</Tabs>
-
-## Error Handling
-
-The API uses standard HTTP status codes to indicate the success or failure of a request. Error responses include a JSON object with the following structure:
+If more verifications are needed, a successful submission returns only:
 
 ```json
 {
-  "error": {
-    "code": 404,
-    "message": "Registration not found"
-  }
+  "success": true
+}
+```
+
+Continue with another challenge from the same request until `signer` and `signature` are returned. A guardian signature authorizes recovery; it does not execute a transaction or change ownership by itself.
+
+## How to Sign Messages (SIWE EIP-4361)
+
+SIWE (Sign-In with Ethereum) messages authorize registration and alert-management actions. Submit the complete prepared message in `message` and its corresponding signature in `signature`.
+
+### Choose the Signing Account
+
+| Endpoints | SIWE address and signature |
+|-----------|----------------------------|
+| `/auth/register`, `/auth/registrations`, `/auth/delete` | Use the **Safe account address** as the SIWE address. Produce a Safe-compatible signature that satisfies the account's owner threshold. |
+| `/alerts/subscribe`, `/alerts/subscriptions`, `/alerts/unsubscribe` | Use the **`owner` address** as the SIWE address. Sign with that owner. Subscription creation checks that this address is an owner of the Safe. |
+
+For Safe accounts, follow the [registration signing example](/wallet/plugins/add-candide-guardian/#step-3-sign-and-submit-registration), which uses the Safe message-signing helpers and formats the owner signatures for verification. For alert subscriptions, follow the [Recovery Alerts Guide](/wallet/plugins/recovery-alerts-guide/).
+
+### Use the Exact Statement
+
+The service checks the statement against the requested action. Preserve its wording and punctuation, and substitute the values in braces.
+
+| Action | Statement |
+|--------|-----------|
+| Register a recovery method | `I authorize Safe Recovery Service to sign a recovery request for my account after I authenticate using {{target}} (via {{channel}})` |
+| List recovery methods | `I request to retrieve all authentication methods currently registered to my account with Safe Recovery Service` |
+| Delete a recovery method | `I request to remove the authentication method with registration ID {{id}} from my account on Safe Recovery Service` |
+
+Use the registration ID for `{{id}}`, the email address or phone number for `{{target}}`, and `email` or `sms` for `{{channel}}`. The [alert endpoints](/wallet/recovery/ux-api/#alerts) list their own statements.
+
+### Prepare and Sign the Message
+
+1. Construct a SIWE message with the signing address above, the correct chain ID, the exact statement, a domain and URI, a fresh nonce, and an issued-at timestamp.
+2. Prepare the message with a SIWE library or the [Recovery Service SDK](/wallet/plugins/recovery-service-sdk-reference/).
+3. Sign that complete message using the appropriate signing account and submit both values unchanged.
+
+The statement alone is not the full SIWE message. The chain ID must match the request, or the registration's chain for deletion. Generate a fresh message when retrying an expired authorization.
+
+## Error Handling
+
+Use the HTTP status to determine whether a request succeeded. Service errors contain top-level `code` and `message` fields. For example:
+
+```json
+{
+  "code": 404,
+  "message": "Could not find registration with this id"
 }
 ```
 
@@ -425,16 +405,15 @@ The API uses standard HTTP status codes to indicate the success or failure of a 
 | 200 | Success |
 | 400 | Bad Request - Invalid parameters or missing required fields |
 | 401 | Unauthorized - Invalid or missing Bearer token |
+| 403 | Forbidden - Signature verification failed, challenge invalid or expired, or action not permitted |
 | 404 | Not Found - Resource not found |
+| 409 | Conflict - The recovery method is already registered |
 | 429 | Too Many Requests - Rate limit exceeded |
 | 500 | Internal Server Error - Something went wrong on the server |
 
-### Common Error Messages
+### Troubleshooting
 
-| Message | Description |
-|---------|-------------|
-| Registration not found | The requested registration ID does not exist |
-| Invalid signature | The SIWE signature verification failed |
-| Challenge expired | The OTP challenge has expired |
-| Invalid challenge | The OTP code provided is incorrect |
-| Rate limit exceeded | Too many requests, please try again later |
+- **Invalid signature:** Check the signing address, chain ID, and exact message or recovery data. SIWE messages must use the statement for the requested action.
+- **Invalid or expired code:** Verify that the code matches the challenge ID. If it has expired, start a new registration or recovery verification request as appropriate.
+- **Missing resource:** Use the ID returned by the corresponding creation endpoint.
+- **Rate limit:** Wait before retrying the request.
