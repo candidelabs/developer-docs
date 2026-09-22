@@ -1,6 +1,6 @@
 ---
 title: Safe Recovery UX API Reference
-description: API specification for Candide's Safe Recovery Service. Features signature aggregation, gas sponsorship, recovery request monitoring, signature storage, and auto-execution.
+description: API specification for Candide's Safe Recovery Service. Features signature aggregation and storage, recovery request monitoring, and gas-sponsored execution and finalization.
 keywords: [safe recovery, social recovery, smart wallet, email recovery, guardian recovery]
 ---
 
@@ -403,7 +403,9 @@ curl -G "https://yourcompany.recovery.candide.dev/recoveries/listByAddress" \
 ]
 ```
 
-The response is a plain array. There is no total count; request the next page by increasing `offset` until fewer than `limit` items are returned.
+The response is a plain array with no total count. Request each next page by increasing `offset` by `limit`.
+
+For queries without the `executed` and `finalized` filters, stop when fewer than `limit` items are returned. These two filters are applied after pagination, so queries using either filter can return a short or empty page even when later pages contain matching requests. For those queries, response length does not reliably indicate the end of the results.
 </TabItem>
 
 <TabItem value="request" label="Query Parameters">
