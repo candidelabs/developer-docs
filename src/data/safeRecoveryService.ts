@@ -67,7 +67,7 @@ const recoveryRequestSchema = [
                 description: "The transaction hash of the finalization execution",
             },
         ],
-        description: "An object field representing the finalization recovery transaction",
+        description: "Finalization transaction details",
     },
     {
         key: "status",
@@ -221,32 +221,6 @@ export const postRecoveriesFinalizeByIdResponse = [
     },
 ];
 
-export const postAlertSubscribe = [
-    {
-        key: "account",
-        type: "string",
-        description: "The Safe account address that should be monitored. Must be a valid Ethereum address",
-    },
-    {
-        key: "email",
-        type: "string",
-        description: "The email target to receive those alerts. Must be a valid email address.",
-    },
-    {
-        key: "signature",
-        type: "string",
-        description: "A signature from the account containing the email and a nonce",
-    },
-];
-
-export const postAlertSubscribeResponse = [
-    {
-        key: "success",
-        type: "true",
-        description: "Return true once finilized. Else returns error",
-    },
-];
-
 export const getRecoveriesListByAddress = [
     {
         key: "account",
@@ -274,27 +248,42 @@ export const getRecoveriesListByAddress = [
         description: "(Optional) Filter by finalized status. Cross-checked with indexed data",
     },
     {
+        key: "nonce",
+        type: "string",
+        description: "(Optional) Filter by recovery nonce as a hex string. Use nonce__lt, nonce__gt, nonce__lte, or nonce__gte for range comparisons",
+    },
+    {
+        key: "createdAt",
+        type: "string",
+        description: "(Optional) Filter by creation time as an ISO 8601 date. Use createdAt__lt, createdAt__gt, createdAt__lte, or createdAt__gte for range comparisons",
+    },
+    {
         key: "orderBy",
         type: "string",
-        description: "(Optional) Field to order by (e.g., 'createdAt', 'nonce')",
+        description: "(Optional) Field to order by: 'createdAt' or 'nonce'",
     },
     {
         key: "order",
         type: "string",
         description: "(Optional) Order direction: 'asc' or 'desc'. Defaults to 'desc'",
     },
+    {
+        key: "limit",
+        type: "number",
+        description: "(Optional) Maximum number of requests to return, between 1 and 50. Defaults to 20",
+    },
+    {
+        key: "offset",
+        type: "number",
+        description: "(Optional) Number of requests to skip for pagination. Defaults to 0",
+    },
 ];
 
 export const getRecoveriesListByAddressResponse = [
     {
-        key: "recoveries",
+        key: "RecoveryRequest[]",
         type: recoveryRequestSchema,
-        description: "A list of Recovery Requests matching the filters",
-    },
-    {
-        key: "total",
-        type: "number",
-        description: "Total number of recovery requests matching the filters",
+        description: "A list of Recovery Requests matching the filters, as a plain array",
     },
 ];
 

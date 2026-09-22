@@ -27,14 +27,14 @@ Use this API to manage recovery requests approved by guardians, such as trusted 
 
 The service collects and stores guardian signatures off-chain until the account's recovery threshold is met. For example, a 2-of-3 threshold requires approval from any two of the three guardians.
 
-### Automatic Execution and Gas Sponsorship {#automatic-execution}
+### Gas-Sponsored Execution and Finalization {#automatic-execution}
 
-The service can be configured to submit two on-chain transactions automatically:
+When enabled in the service configuration, the service submits and pays for two on-chain transactions on request:
 
 1. **Execution:** Submit the approved recovery request once the guardian signature threshold is met. This starts the grace period.
 2. **Finalization:** Complete the ownership change after the grace period ends.
 
-The gas sponsorship relayer covers the costs of these transactions, so guardians do not need to hold funds or return to finalize recovery.
+Your application triggers each step by calling `/recoveries/execute` and `/recoveries/finalize`. The service does not submit them on its own. The gas sponsorship relayer covers the transaction costs, so guardians do not need to hold funds.
 
 ### Social Engineering Protection
 
@@ -42,7 +42,7 @@ Each recovery request has an emoji sequence that guardians can check with the ac
 
 ### Alerts and Notifications
 
-Account owners can subscribe to email or SMS alerts when recovery is initiated, including requests submitted directly on-chain or through the service. The service monitors Social Recovery Module activity to detect these requests.
+Account owners can subscribe to email or SMS alerts for on-chain recovery activity. The service monitors Social Recovery Module events, so it detects executions, finalizations, and cancellations whether they were submitted through the service or directly on-chain. Alerts are not sent when a request is created off-chain; the first alert is sent once the request is executed on-chain.
 
 See the [Recovery UX API reference](/wallet/recovery/ux-api/) for endpoints and request formats.
 
@@ -63,11 +63,11 @@ See the [Email/SMS Recovery API reference](/wallet/recovery/auth-api/) for regis
 
 Once guardians are configured, a successful recovery follows these steps:
 
-1. **Create a request.** A guardian submits a signed recovery request specifying the proposed new owners and their signing threshold. The service stores the request and alerts subscribed account owners.
+1. **Create a request.** A guardian submits a signed recovery request specifying the proposed new owners and their signing threshold. The service stores the request off-chain.
 2. **Collect approvals.** Guardians verify the request and submit signatures until the guardian threshold is met.
-3. **Execute the request.** The approved request is submitted on-chain, starting the module's grace period.
+3. **Execute the request.** Your application submits the approved request on-chain through `/recoveries/execute`, starting the module's grace period. Subscribed account owners are alerted at this point.
 4. **Wait through the grace period.** The current owner can cancel an unauthorized recovery if they still control the account.
-5. **Finalize recovery.** After the grace period, finalization replaces the account's owners and applies the new signing threshold.
+5. **Finalize recovery.** After the grace period, your application calls `/recoveries/finalize`. Finalization replaces the account's owners and applies the new signing threshold.
 
 ```mermaid
 flowchart TD
@@ -78,7 +78,7 @@ flowchart TD
     D -->|Current owner cancels| F[Recovery cancelled]
 ```
 
-Execution and finalization are automatic when enabled in the service configuration. **New owners gain control only after finalization.**
+The service sponsors gas for execution and finalization when enabled in its configuration, but your application must trigger each step. **New owners gain control only after finalization.**
 
 ## Recovery Request States
 

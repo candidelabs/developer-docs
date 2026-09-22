@@ -49,10 +49,10 @@ Examples use placeholder addresses, IDs, messages, and signatures. Replace them 
 
 1. **Create:** Submit a request with the first guardian's signature using `/recoveries/create`.
 2. **Approve:** Other guardians check the request's emoji sequence with the account owner through a trusted channel, then submit signatures using `/recoveries/sign`.
-3. **Execute:** Once the guardian threshold is met, execution starts the on-chain grace period.
-4. **Finalize:** After the grace period, finalization applies the new owners and signing threshold. The current owner can cancel the recovery during the grace period.
+3. **Execute:** Once the guardian threshold is met, call `/recoveries/execute` to submit the request on-chain and start the grace period.
+4. **Finalize:** After the grace period, call `/recoveries/finalize` to apply the new owners and signing threshold. The current owner can cancel the recovery during the grace period.
 
-The service can automate and sponsor execution and finalization when configured. Guardians can submit signatures off-chain without holding funds. Use the lookup endpoints to monitor progress; a successful submission does not by itself mean ownership has changed. See [request states](/wallet/recovery/overview/#recovery-request-states).
+The service sponsors gas for execution and finalization when configured, but it does not submit them on its own: your application must call both endpoints. Guardians can submit signatures off-chain without holding funds. Use the lookup endpoints to monitor progress; a successful submission does not by itself mean ownership has changed. See [request states](/wallet/recovery/overview/#recovery-request-states).
 
 `newThreshold` is the signing threshold for the **new Safe owners** after recovery. The existing **guardian threshold** determines how many guardians must approve the recovery.
 
@@ -361,48 +361,49 @@ Lists all recovery requests for a Safe account with advanced filtering, paginati
 curl -G "https://yourcompany.recovery.candide.dev/recoveries/listByAddress" \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   --data-urlencode "account=0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba" \
-  --data-urlencode "chainId=1"
+  --data-urlencode "chainId=1" \
+  --data-urlencode "limit=20" \
+  --data-urlencode "offset=0"
 ```
 
 </TabItem>
 <TabItem value="example-response" label="Example Response">
 ```json
-{
-  "recoveries": [
-    {
-      "id": "123456789",
-      "emoji": "🤖😅🥵👻🖖",
-      "account": "0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba",
-      "chainId": 1,
-      "newOwners": [
-        "0x41153290c995c8c4410d50f95D87ee86A1B07eeC",
-        "0xB97A1C3993A551f0Febf030539630ACb77E6832D"
-      ],
-      "newThreshold": 2,
-      "nonce": "0x1",
-      "signatures": [
-        [
-          "0x795B9cD1E5419C54B07768d4AD09809407dfAF5b",
-          "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
-        ]
-      ],
-      "executeData": {
-        "sponsored": false,
-        "transactionHash": ""
-      },
-      "finalizeData": {
-        "sponsored": false,
-        "transactionHash": ""
-      },
-      "status": "PENDING",
-      "discoverable": true,
-      "createdAt": "2023-04-18T12:34:56.789Z",
-      "updatedAt": "2023-04-18T12:34:56.789Z"
-    }
-  ],
-  "total": 1
-}
+[
+  {
+    "id": "123456789",
+    "emoji": "🤖😅🥵👻🖖",
+    "account": "0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba",
+    "chainId": 1,
+    "newOwners": [
+      "0x41153290c995c8c4410d50f95D87ee86A1B07eeC",
+      "0xB97A1C3993A551f0Febf030539630ACb77E6832D"
+    ],
+    "newThreshold": 2,
+    "nonce": "0x1",
+    "signatures": [
+      [
+        "0x795B9cD1E5419C54B07768d4AD09809407dfAF5b",
+        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+      ]
+    ],
+    "executeData": {
+      "sponsored": false,
+      "transactionHash": ""
+    },
+    "finalizeData": {
+      "sponsored": false,
+      "transactionHash": ""
+    },
+    "status": "PENDING",
+    "discoverable": true,
+    "createdAt": "2023-04-18T12:34:56.789Z",
+    "updatedAt": "2023-04-18T12:34:56.789Z"
+  }
+]
 ```
+
+The response is a plain array. There is no total count; request the next page by increasing `offset` until fewer than `limit` items are returned.
 </TabItem>
 
 <TabItem value="request" label="Query Parameters">
@@ -682,9 +683,9 @@ Use the HTTP status to determine whether a request succeeded. Service errors con
 | Code | Description |
 |------|-------------|
 | 200 | Success |
-| 400 | Bad Request - Invalid parameters or missing required fields |
+| 400 | Bad Request - Invalid parameters, missing required fields, or an invalid guardian signature |
 | 401 | Unauthorized - Invalid or missing Bearer token |
-| 403 | Forbidden - Signature verification failed, challenge invalid or expired, or action not permitted |
+| 403 | Forbidden - SIWE signature verification failed, challenge invalid or expired, sponsorship not enabled for the network, or the request is not ready to execute (wrong nonce or insufficient signatures) |
 | 404 | Not Found - Resource not found |
 | 409 | Conflict - The alert subscription already exists |
 | 429 | Too Many Requests - Rate limit exceeded |
