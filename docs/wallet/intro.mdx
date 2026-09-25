@@ -1,126 +1,75 @@
 ---
 title: Candide Developer Platform
-description: Complete toolkit for building user-friendly Ethereum applications with Smart Accounts. Features ERC-4337 and EIP-7702 support, gas abstraction, chain abstraction, social login, and cross-chain deposit routing
+slug: /
+description: SDKs, APIs and guides for smart accounts on EVM chains and Solana. Build smart wallets, sponsor gas, accept deposits from any chain, and add account recovery to Safe.
 image: /img/posters/atelier-meta.png
-keywords: [erc-4337, account abstraction, paymaster, bundler, Smart Wallets, chain abstraction, forwarding address, solana, solana paymaster]
+keywords: [erc-4337, eip-7702, account abstraction, paymaster, bundler, Smart Wallets, chain abstraction, forwarding address, account recovery, solana, solana paymaster]
 sidebar_position: 1
 ---
 
-# Welcome to Candide
+import { ImageCards, LinkCards } from "/src/components/IntroCards";
+import AgentPrompt from "/src/components/IntroCards/AgentPrompt";
 
-A developer platform for building Ethereum smart wallets: gas sponsorship, passkeys, chain abstraction, and account recovery, all on top of Safe contracts.
+# Build with Candide
 
-In production since ERC-4337 launched in 2023, Candide is the longest running account abstraction infrastructure provider: millions of UserOperations bundled across hundreds of thousands of accounts. Every account contract in these docs ships with public audits from auditors such as OpenZeppelin, Ackee, Certora, Nethermind, and Cantina.
+Smart account infrastructure for wallets, payments and deposits, on every major EVM chain and Solana.
 
-## Quick Start
+<AgentPrompt />
 
-```bash
-npm install abstractionkit
-```
+## What are you building?
 
-```typescript
-import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
-
-const account = SafeAccount.initializeNewAccount([ownerPublicKey]);
-console.log(account.accountAddress); // 0x… deterministic smart wallet address
-```
-
-The account you just created is a [Safe Unified Account](/wallet/guides/chain-abstraction-overview/). It has the same address on every EVM chain, and a single signature can authorize execution across all of them.
-
-import CardList from "/src/components/CardList";
-import Callout from "/src/components/Callout";
-
-export const GETTING_STARTED_ITEMS = [
+<ImageCards items={[
   {
-    title: "Send your First Gasless Transaction",
-    description:
-      "Create a smart account and submit your first gasless UserOperation with batched transactions",
+    title: "Smart wallets",
+    description: "Create a smart account and send its first gasless, batched transaction.",
     route: "/wallet/guides/getting-started",
+    image: "/img/intro/wallets.svg",
   },
   {
-    title: "Pay Gas in ERC-20",
-    description:
-      "Let users pay transaction fees in USDC, DAI, or any ERC-20 token",
-    route: "/wallet/guides/pay-gas-in-erc20",
+    title: "Gas sponsorship",
+    description: "Get an API key and point any ERC-4337 SDK at the bundler and paymaster.",
+    route: "/wallet/api/authenticated-endpoints",
+    image: "/img/intro/gas.svg",
   },
   {
-    title: "Chain Abstraction",
-    description:
-      "Sign once, execute on every chain. One account, one address, every EVM network",
-    route: "/wallet/guides/chain-abstraction-getting-started",
+    title: "Deposits",
+    description: "One address per user that accepts funds from any chain.",
+    route: "/forwarding-address/overview",
+    image: "/img/intro/deposits.svg",
   },
   {
-    title: "EIP-7702 Account Upgrades",
-    description:
-      "Upgrade existing EOAs to smart accounts with Calibur (passkeys, multi-key) or Simple Account",
-    route: "/wallet/guides/getting-started-calibur",
+    title: "Account recovery",
+    description: "Let guardians, email or SMS restore access to a Safe account.",
+    route: "/wallet/plugins/recovery-with-guardians",
+    image: "/img/intro/recovery.svg",
+  },
+]} />
+
+## Start building
+
+<LinkCards items={[
+  {
+    icon: "book",
+    title: "How smart accounts work",
+    description: "UserOperations, bundlers, paymasters and the EntryPoint.",
+    route: "/account-abstraction/intro",
   },
   {
-    title: "Pay Gas in USDT on Solana",
-    description:
-      "Send SPL transfers from accounts with zero SOL through the Solana Paymaster, built on Kora",
-    route: "/wallet/guides/pay-gas-in-usdt-solana",
+    icon: "key",
+    title: "Get an API key",
+    description: "Create a project in the dashboard.",
+    route: "https://dashboard.candide.dev",
   },
-];
-
-<CardList items={GETTING_STARTED_ITEMS} />
-
-
-## Core Features
-
-### Onboarding & Deposits
-
-- Let users deposit from any chain to wallet using a single address via [Forwarding Address](/forwarding-address/overview/).
-
-### Gas Abstraction
-- Gasless transactions: [Sponsor user fees](/wallet/guides/send-gasless-tx/) with flexible rules and policies
-- ERC-20 gas payments: Let users [pay gas in any token](/wallet/guides/pay-gas-in-erc20/) (USDC, DAI, etc.). No ETH required
-
-### Modern Authentication
-- Passkey integration: [Onchain WebAuthn](/wallet/plugins/passkeys/) support for biometric login. No seed phrases
-- Social login: [Email and OAuth](/wallet/guides/authentication/#social--email) integration
-
-### Chain Abstraction
-- Sign once, execute on every chain: one signature authorizes [UserOperations across every chain](/wallet/guides/chain-abstraction-overview/) you target
-- Same account everywhere: one address on every EVM network where Safe is deployed
-
-### Advanced Transactions
-- Batch operations: [Execute multiple transactions](/wallet/guides/getting-started/) atomically
-- Spending controls: [Set limits and policies](/wallet/plugins/allowance) for subscriptions and recurring payments
-
-### Security
-- Account recovery: [Social Recovery](/wallet/plugins/recovery-with-guardians) or [traditional](/wallet/recovery/auth-api/) recovery options
-- Multi-signature: A single account controlled with [multiple signatures](/wallet/guides/multisig/)
-
-
-## Developer Tools
-
-| Tool | What it does |
-|------|-------------|
-| [AbstractionKit SDK](/wallet/abstractionkit/introduction/) | TypeScript library for building and sending UserOperations. First-class support for Safe and EIP-7702 accounts. |
-| [Bundler](/wallet/bundler/rpc-methods/) | ERC-4337 compliant nodes for submitting UserOperations on all major EVM chains |
-| [Paymaster](/wallet/paymaster/rpc-methods/) | Sponsor gas or accept ERC-20 token payments with configurable policies |
-| [Solana Paymaster](/wallet/guides/pay-gas-in-usdt-solana/) | Gasless Solana transactions with fees collected in USDT. Built on Kora |
-| [InstaGas](/instagas/overview/) | Dashboard and [Platform API](/platform/overview) for managing gas sponsorship rules |
-| [Forwarding Address](/forwarding-address/overview/) | One deposit address per user that routes funds from any supported chain to the destination wallet |
-| [Account Recovery](/wallet/recovery/overview/) | Email/SMS recovery with an alert system and automatic on-chain execution |
-
-Access [Candide's Dashboard](https://dashboard.candide.dev) to get API keys and configure your integration.
-
-## Chains Supported
-
-Candide is available on all major EVM equivalent networks, plus Solana through the [Solana Paymaster](/wallet/guides/pay-gas-in-usdt-solana/). Reach out if you need a network added. Every chain runs the same [reliability guarantees](/wallet/api/reliability/): 99.9% uptime SLA on Enterprise, verified every minute.
-
-import { NetworkList } from "/src/components/NetworkList";
-
-<NetworkList />
-
-See the full list of [supported networks](/wallet/api/supported-networks/), including testnets and extended networks.
-
-## Support & Feedback
-
-Find us on [Discord](https://discord.gg/7R4g9XcxDQ), [Twitter](https://twitter.com/candidelabs), [Telegram](https://t.me/heymarcopolo), or at team@candidelabs.com. We have night owls and early birds on the team. Expect a reply regardless of your timezone.
-
-<Callout title="Using AI to build faster">
-  Every page has a <strong>Copy Page</strong> button in the toolbar. Paste it directly into Claude or ChatGPT with a pre-filled prompt. For agents and IDE integrations like Claude Code or Cursor, point them to <a href="https://docs.candide.dev/llms.txt"><code>/llms.txt</code></a> for a full index, or install the <a href="https://github.com/candidelabs/skills">Candide agent skills</a>.
-</Callout>
+  {
+    icon: "code",
+    title: "API reference",
+    description: "Bundler and paymaster RPC methods.",
+    route: "/wallet/bundler/rpc-methods",
+  },
+  {
+    icon: "spark",
+    title: "Agent skills",
+    description: "Teach Claude Code or Codex to integrate Candide.",
+    route: "https://github.com/candidelabs/skills",
+  },
+]} />

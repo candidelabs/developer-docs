@@ -152,7 +152,6 @@ const config = {
           excludeRoutes: [
             '/tags',           // Exclude tags index
             '/tags/**',        // Exclude all tag pages
-            '/',               // Exclude homepage/index
           ]
         }
       }
@@ -163,7 +162,11 @@ const config = {
         redirects: [
           {
             from: '/wallet/atelier-intro/',
-            to: '/wallet/intro/',
+            to: '/',
+          },
+          {
+            from: '/wallet/intro/',
+            to: '/',
           },
           {
             from: '/wallet/paymaster/rpc-methods-v2/',
@@ -239,7 +242,7 @@ const config = {
         },
         items: [
           {
-            to: '/wallet/intro',
+            to: '/',
             position: 'left',
             label: 'Get Started',
           },

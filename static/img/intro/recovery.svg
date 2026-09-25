@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="98 78 764 430" fill="none" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#F1EDE7" fill-opacity="0.06"/>
+    </pattern>
+  </defs>
+  <rect width="960" height="540" fill="url(#dots)"/>
+  <!-- guardians -->
+  <g stroke-width="1.5">
+    <circle cx="340" cy="150" r="40" fill="#000" stroke="#E70073"/>
+    <circle cx="480" cy="150" r="40" fill="#000" stroke="#E70073"/>
+    <circle cx="620" cy="150" r="40" fill="#000" stroke="#F1EDE7" stroke-opacity="0.35"/>
+  </g>
+  <g stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M324 150l11 11 21-22" stroke="#E70073"/>
+    <path d="M464 150l11 11 21-22" stroke="#E70073"/>
+  </g>
+  <g fill="#888" font-size="17" text-anchor="middle">
+    <text x="340" y="216">Email</text>
+    <text x="480" y="216">Hardware key</text>
+    <text x="620" y="216">Friend</text>
+  </g>
+  <circle cx="620" cy="150" r="4" fill="#888"/>
+  <!-- joins -->
+  <g stroke-width="1.5">
+    <path d="M340 232V262H480" stroke="#E70073"/>
+    <path d="M480 232V300" stroke="#E70073"/>
+    <path d="M620 232V262H480" stroke="#F1EDE7" stroke-opacity="0.2" stroke-dasharray="4 5"/>
+  </g>
+  <!-- account -->
+  <rect x="330" y="300" width="300" height="140" rx="22" fill="#000" stroke="#F1EDE7" stroke-opacity="0.35" stroke-width="1.5"/>
+  <text x="362" y="344" fill="#F1EDE7" font-size="23" font-weight="600">Recovery approved</text>
+  <text x="362" y="370" fill="#888" font-size="18">2 of 3 guardians</text>
+  <rect x="362" y="390" width="236" height="8" rx="4" fill="#F1EDE7" fill-opacity="0.12"/>
+  <rect x="362" y="390" width="157" height="8" rx="4" fill="#E70073"/>
+</svg>
