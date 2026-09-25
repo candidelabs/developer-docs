@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="98 78 764 430" fill="none" font-family="Inter, system-ui, sans-serif">
+  <defs>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#F1EDE7" fill-opacity="0.06"/>
+    </pattern>
+  </defs>
+  <rect width="960" height="540" fill="url(#dots)"/>
+  <rect x="250" y="110" width="460" height="320" rx="24" fill="#000" stroke="#F1EDE7" stroke-opacity="0.35" stroke-width="1.5"/>
+  <text x="286" y="166" fill="#F1EDE7" font-size="25" font-weight="600">Review transaction</text>
+  <!-- rows -->
+  <text x="286" y="222" fill="#888" font-size="20">Send</text>
+  <text x="674" y="222" text-anchor="end" fill="#F1EDE7" font-size="20">25.00 USDC</text>
+  <line x1="286" y1="246" x2="674" y2="246" stroke="#F1EDE7" stroke-opacity="0.12"/>
+  <text x="286" y="282" fill="#888" font-size="20">Network fee</text>
+  <text x="674" y="282" text-anchor="end" fill="#888" font-size="20">0.00041 ETH</text>
+  <line x1="552" y1="276" x2="674" y2="277" stroke="#888" stroke-width="1.5"/>
+  <!-- sponsored pill -->
+  <rect x="548" y="296" width="126" height="34" rx="17" fill="#E70073" fill-opacity="0.14" stroke="#E70073" stroke-width="1.5"/>
+  <text x="611" y="319" text-anchor="middle" fill="#F599C2" font-size="18" font-weight="600">Sponsored</text>
+  <rect x="286" y="352" width="388" height="50" rx="14" fill="#F1EDE7"/>
+  <text x="480" y="383" text-anchor="middle" fill="#000" font-size="20" font-weight="600">Send</text>
+</svg>

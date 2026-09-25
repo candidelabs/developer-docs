@@ -58,8 +58,10 @@ export default function LLMToolsButton() {
   const containerRef = useRef(null);
 
   const permalink = metadata.permalink;
+  // The docs root is served as /index.md, every other page as <path>.md
+  const mdPath = permalink === '/' ? '/index.md' : permalink.replace(/\/$/, '') + '.md';
   // Evaluated lazily inside event handlers — never called during SSR
-  const getLocalMdUrl = () => window.location.origin + permalink.replace(/\/$/, '') + '.md';
+  const getLocalMdUrl = () => window.location.origin + mdPath;
   // Production URL for LLM prompt (always points to the live site)
   const prodMdUrl = siteConfig.url + permalink.replace(/\/$/, '');
   const prompt = `I'm building with Candide's Smart Account stack (AbstractionKit SDK, ERC-4337 Bundler & Paymaster APIs).
