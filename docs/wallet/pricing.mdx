@@ -1,90 +1,59 @@
 ---
-title: Pricing
-description: Candide API pricing plans for Bundler and Paymaster. Starter, Launch, Grow, and Enterprise tiers with usage-based pricing.
+title: Billing and usage
+description: How Candide counts UserOperations and API requests, how gas sponsorship is billed, and what happens when you reach your plan's limits.
 image: /img/posters/atelier-meta.png
 ---
 
-import PricingCards from '/src/components/PricingCards';
-import ComparisonTable from '/src/components/ComparisonTable';
-import GasSponsorshipTable from '/src/components/GasSponsorshipTable';
-import WhyChoose from '/src/components/WhyChoose';
-import CTASection from '/src/components/CTASection';
+# Billing and usage
 
+:::tip Plans and prices
+Plans, prices and each plan's allowances are on [candide.dev/pricing](https://candide.dev/pricing). This page explains how usage is counted and billed.
+:::
 
-# The Fastest Path to Production.
+{/*
+  Keep plan numbers (prices, allowances, per-op rates, rate limits) off this
+  page. They live on candide.dev/pricing, sourced from the landing page repo's
+  src/data/pricing.ts, so the two can't drift apart again.
+*/}
 
-From your first line of code to your millionth transaction, we give you the infrastructure and support to ship fast and scale confidently.
+## What counts as a UserOp
 
-Start building for free. The Starter tier includes the complete AbstractionKit SDK, all account features (Passkeys, Social Recovery, Spend Permissions), and unlimited testnet access, no credit card required. Mainnet access on the Starter plan is trial based: you get 2,500 UserOps across a 90 day window for both the API (Bundler and Paymaster endpoints) and gas policies, limited to 2 mainnet chains. Upgrade when you're ready to go to production.
+A UserOp (UserOperation) is one smart account transaction. Any UserOp on a production network such as Ethereum, Arbitrum, Optimism, Base or Polygon counts toward your plan.
 
-<PricingCards />
+Testnet UserOps never count. Testnet is free and unlimited on every plan, including Starter.
 
-> Billing is based on **API Requests**. A **UserOp (User Operation)** is the standard unit for Smart Account transactions and typically requires ≈ 10 API Requests to complete (estimating gas, sponsoring, signing, submitting, and confirming).
+## UserOps and API requests
 
----
+Getting one UserOp onchain takes about 10 API requests: estimating gas, sponsoring, signing, submitting and confirming. Each plan includes an allowance of both, sized to match at that ratio.
 
-## Full Feature Comparison
+Requests per second are also limited by plan. See [authenticated endpoints](/wallet/api/authenticated-endpoints/#rate-limits) for how rate limits work.
 
-<ComparisonTable />
+## How gas sponsorship is billed
 
----
+Gas is passed through at cost. We never mark up the gas itself. Sponsored operations are paid from the funds you deposit in your [gas policies](/instagas/gas-policies/).
 
-## Gas Sponsorship
+Each paid plan includes a monthly number of sponsored operations with no service fee. Past that, a flat fee applies per sponsored operation:
 
-Gas is always passed through at cost — we never mark up gas prices. The included ops per month are free. After the included amount, a small service fee applies.
+```
+service fee = (sponsored ops this month − included sponsored ops) × your plan's per-op fee
+```
 
-<GasSponsorshipTable />
+For example, on a plan that includes 10,000 sponsored ops, sponsoring 15,000 in a month means the per-op fee applies to 5,000 of them. You pay the gas for all 15,000 at cost either way.
 
----
+Because the fee is flat, it doesn't move with gas prices. A busy day on Ethereum raises your gas bill, not our fee.
 
-## FAQ
+## Reaching your plan's limits
 
-### Usage
+**Starter.** Starter includes a set number of mainnet UserOps, with no time limit. When you've used them, mainnet access pauses for both the API (Bundler and Paymaster endpoints) and gas policies. Testnet keeps working. Upgrade to a paid plan to restore mainnet access.
 
-#### When does the 90-day timer start?
-On your first mainnet UserOperation. Testnet usage doesn't start the clock.
+**Launch and Grow.** When you reach your monthly UserOp allowance, further requests are rejected with a `Too Many Requests` error until the allowance resets with your next billing cycle, or until you upgrade. The same error appears if you exceed your plan's requests per second.
 
-#### What counts as a "Mainnet UserOp"?
-Any transaction on a production network (Ethereum, Arbitrum, Optimism, Base, Polygon, etc.). Testnet transactions don't count.
+**Enterprise.** Volume and limits are set in your contract, up to unlimited.
 
-#### What happens when the Starter trial ends?
-Mainnet access pauses for both the API (Bundler and Paymaster endpoints) and gas policies. They can no longer be used on mainnet until you upgrade. Testnet continues working without any limits. Upgrade to Launch to restore mainnet access immediately.
+## Changing plans
 
-#### Can I switch between tiers?
-Yes. Upgrade anytime. Downgrade takes effect at the end of your current billing cycle.
+Upgrade any time. A downgrade takes effect at the end of your current billing cycle.
 
-#### Do I need a credit card for the free tier?
-No. Start building immediately. Add payment when you upgrade.
+No credit card is needed for Starter. You add one when you upgrade.
 
-#### What if I outgrow Launch but don't need all of Grow?
-Reach out for custom quotes or add-ons.
-
----
-
-### Extended Networks
-
-#### What is an Extended Network?
-Networks not available by default at Candide that can be supported on request. Any EVM-equivalent chain is supported — including your own L2 (Arbitrum Orbit, OP Stack, Polygon CDK, ZK Stack, etc.). We deploy all smart contracts and bundler infrastructure.
-
----
-
-### Support
-
-#### What support do I get with each tier?
-- Starter: Community Discord (best-effort)
-- Launch: Slack/Telegram (24h response) — reactive support. You ask, we answer any question
-- Grow: Slack/Telegram (4h business hours / 6h nights & weekends) + dedicated account team who proactively monitors your account
-- Enterprise: Slack/Telegram (1h business hours / 4h nights & weekends) + dedicated account team with 24/7 incident response
-
-#### What is Flash Support?
-Pay-per-incident emergency support ($149 per incident, max 2/year). When production breaks, activate Flash Support and get a 1-hour response (business hours) or 4-hour response (nights & weekends) for that specific incident. Not a subscription — pay only when you need it. Available as an add-on on the Launch plan.
-
----
-
-## Why Teams Choose Candide
-
-<WhyChoose />
-
----
-
-<CTASection />
+Outgrowing Launch but don't need everything in Grow? [Talk to us](https://t.me/heymarcopolo) about a custom quote.

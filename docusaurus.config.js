@@ -271,7 +271,7 @@ const config = {
             label: 'Company',
             position: 'right',
             items: [
-              { to: '/wallet/pricing', label: 'Pricing' },
+              { to: 'https://candide.dev/pricing', label: 'Pricing↗' },
               { to: 'https://candide.dev/blog', label: 'Blog↗' },
               { to: 'https://t.me/heymarcopolo', label: 'Contact Us↗' },
             ],
