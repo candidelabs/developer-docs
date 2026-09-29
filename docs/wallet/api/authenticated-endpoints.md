@@ -72,7 +72,7 @@ The full [Bundler API](/wallet/bundler/rpc-methods/) and [Paymaster API](/wallet
 
 ## Rate Limits
 
-Authenticated endpoints have higher rate limits than the [public endpoints](/wallet/api/public-endpoints/), scaled to your plan. UserOperation allotments per tier are listed on the [pricing page](/wallet/pricing/). If you hit a `Too Many Requests` error in production, [reach out](https://t.me/heymarcopolo) and we will look at your usage pattern together.
+Authenticated endpoints have higher rate limits than the [public endpoints](/wallet/api/public-endpoints/), scaled to your plan. Allowances per plan are listed on the [pricing page](https://candide.dev/pricing), and [billing and usage](/wallet/pricing/) explains what happens when you reach them. If you hit a `Too Many Requests` error in production, [reach out](https://t.me/heymarcopolo) and we will look at your usage pattern together.
 
 ## Key Safety
 
