@@ -46,6 +46,8 @@ Because the fee is flat, it doesn't move with gas prices. A busy day on Ethereum
 
 **Starter.** Starter includes a set number of mainnet UserOps, with no time limit. When you've used them, mainnet access pauses for both the API (Bundler and Paymaster endpoints) and gas policies. Testnet keeps working. Upgrade to a paid plan to restore mainnet access.
 
+Starter's sponsored operations are a separate, smaller allowance within those UserOps, and it doesn't reset. Once it's used, upgrade to Launch to sponsor more.
+
 **Launch and Grow.** When you reach your monthly UserOp allowance, further requests are rejected with a `Too Many Requests` error until the allowance resets with your next billing cycle, or until you upgrade. The same error appears if you exceed your plan's requests per second.
 
 **Enterprise.** Volume and limits are set in your contract, up to unlimited.
