@@ -28,28 +28,6 @@ const config = {
     locales: ['en'],
   },
 
-  headTags: [
-    {
-      tagName: 'link',
-      attributes: {
-        rel: 'preconnect',
-        href: 'https://fonts.googleapis.com',
-      },
-    },
-    {
-      tagName: 'link',
-      attributes: {
-        rel: 'preconnect',
-        href: 'https://fonts.gstatic.com',
-        crossorigin: 'anonymous',
-      },
-    },
-  ],
-
-  stylesheets: [
-    'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap',
-  ],
-
   markdown: {
     mermaid: true,
     hooks: {
@@ -98,7 +76,14 @@ const config = {
         },
         blog: false,
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: [
+            require.resolve('@fontsource/inter/400.css'),
+            require.resolve('@fontsource/inter/500.css'),
+            require.resolve('@fontsource/inter/600.css'),
+            require.resolve('@fontsource/inter/700.css'),
+            require.resolve('@fontsource/inter/800.css'),
+            require.resolve('./src/css/custom.css'),
+          ],
         },
       }),
     ],
