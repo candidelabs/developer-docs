@@ -8,7 +8,15 @@ keywords: [deployments, addresses, etherscan, verified]
 
 import { NetworkList } from "/src/components/NetworkList";
 
+All contracts on this page are on EVM networks. Supported EVM networks:
+
 <NetworkList />
+
+Unless a section says otherwise, each contract below is deployed at the same address on every supported EVM network and on the Ethereum Sepolia, Base Sepolia, Optimism Sepolia, Arbitrum Sepolia and Polygon Amoy testnets.
+
+Need a contract on a network that isn't listed? [Contact us](https://www.candide.dev/contact) and we'll be happy to deploy it.
+
+Building on Solana? Gas sponsorship there runs through the [Solana Paymaster](/wallet/solana-paymaster/rpc-methods/) and doesn't use these contracts.
 
 
 ## Account Abstraction EntryPoint
@@ -28,11 +36,36 @@ import { NetworkList } from "/src/components/NetworkList";
 | v0.9                  | 0xa46cc63eBF4Bd77888AA327837d20b23A63a56B5 | [eth-infinitism/account-abstraction/releases/tag/v0.9.0](https://github.com/eth-infinitism/account-abstraction/releases/tag/v0.9.0)|
 | v0.8                  | 0xe6Cae83BdE06E4c305530e199D7217f42808555B | [eth-infinitism/account-abstraction/releases/tag/v0.8.0](https://github.com/eth-infinitism/account-abstraction/releases/tag/v0.8.0)|
 
+## Calibur
+
+EIP-7702 delegation targets used by `Calibur7702Account`.
+
+| Contract              | Address                                    | Notes |
+| ----------------------| -------------------------------------------|-------|
+| Calibur v1.0.0 (Uniswap), EP v0.8 | 0x000000009B1D0aF20D8C6d0A44e162d11F9b8f00 | SDK default. Audited by OpenZeppelin and Cantina. [Uniswap/calibur](https://github.com/Uniswap/calibur) |
+
+Not deployed on Celo.
+
 ## Candide Paymasters
 | Contract              | Address                                    |
 | ----------------------| -------------------------------------------|
+| CandidePaymaster for EP v0.9 | 0xca944fb73fA5191969014DeD9bb075381d59C7DE |
+| CandidePaymaster for EP v0.8 | 0xa8151918EaC3818DEb713D3dBbB7930329fe86ed |
 | CandidePaymaster V3 for EP v0.7 | 0x8b1f6cb5d062aa2Ce8d581942bbb960420d875BA |
 | CandidePaymaster V3 for EP v0.6 | 0x36F4Aa64673568782461bF03C75462f8ef0A1b76 |
+
+Not deployed on Tempo.
+
+## Safe Core Contracts
+
+| Contract              | Address                                    |
+| ----------------------| -------------------------------------------|
+| SafeL2 v1.5.0 (singleton) | 0xEdd160fEBBD92E350D4D398fb636302fccd67C7e |
+| SafeL2 v1.4.1 (singleton) | 0x29fcB43b46531BcA003ddC8FCB67FFE91900C762 |
+| SafeProxyFactory v1.4.1 | 0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67 |
+| MultiSend v1.4.1 | 0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526 |
+
+For Safe code and audits, refer to [safe-smart-account](https://github.com/safe-global/safe-smart-account) and [safe-deployments](https://github.com/safe-global/safe-deployments).
 
 ## Safe 4337 Module
 
@@ -49,53 +82,52 @@ For Safe 4337 code and audits, refer to [safe-4337-module](https://github.com/sa
 
 | Contract              | Address                                    |
 | ----------------------| -------------------------------------------|
-| Safe4337MultiChainSignatureModule | 0x22939E839e3c0F479B713eAF95e0df128554AEAd |
+| Safe4337MultiChainSignatureModule (EP v0.9) | 0x22939E839e3c0F479B713eAF95e0df128554AEAd |
+
+Used by `SafeMultiChainSigAccountV1`. Not deployed on Tempo.
 
 For Safe 4337 MultiChain Signature Module code and audits, refer to [safe-4337-multi-chain-signature-module](https://github.com/candidelabs/safe-4337-multi-chain-signature-module).
 
 ## Social Recovery Module
 
-Addresses vary based on recovery grace periods.
-Deployments available for:
-- 3 Days
-- 7 Days
-- 14 Days
-- 3 Minutes (testnets only)
+Addresses vary based on the recovery grace period.
 
+| Recovery Grace Period | Address                                    |
+| ----------------------| -------------------------------------------|
+| 3 Days                | 0x38275826E1933303E508433dD5f289315Da2541c |
+| 7 Days                | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 |
+| 14 Days               | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |
+| 3 Minutes (testing only) | 0x949d01d424bE050D09C16025dd007CB59b3A8c66 |
 
-| Network                      | 3 Days Recovery Grace Period               | 7 Days Recovery Grace Period               | 14 Days Recovery Grace Period              | 3 minutes Recovery Grace Period            |
-| ---------------------------- | ------------------------------------------ | ------------------------------------------ | ------------------------------------------ |------------------------------------------  |
-| Arbitrum                     | 0x38275826E1933303E508433dD5f289315Da2541c | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |                                            |
-| Avalanche C                  | 0x38275826E1933303E508433dD5f289315Da2541c | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |                                            |
-| Base                         | 0x38275826E1933303E508433dD5f289315Da2541c | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |                                            |
-| BSC                          | 0x38275826E1933303E508433dD5f289315Da2541c | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |                                            |
-| Celo                         | 0x38275826E1933303E508433dD5f289315Da2541c | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |                                            |
-| Ethereum Mainnet             | 0x38275826E1933303E508433dD5f289315Da2541c | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |                                            |
-| Ethereum Sepolia             |                                            |                                            |                                            | 0x949d01d424bE050D09C16025dd007CB59b3A8c66 |
-| Gnosis                       | 0x38275826E1933303E508433dD5f289315Da2541c | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |                                            |
-| Moonbeam                     | 0x38275826E1933303E508433dD5f289315Da2541c | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |                                            |
-| Optimism                     | 0x38275826E1933303E508433dD5f289315Da2541c | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |                                            |
-| Plasma                       | 0x38275826E1933303E508433dD5f289315Da2541c | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |                                            |
-| Polygon                      | 0x38275826E1933303E508433dD5f289315Da2541c | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |                                            |
-| World Chain                  | 0x38275826E1933303E508433dD5f289315Da2541c | 0x088f6cfD8BB1dDb1BB069CCb3fc1A98927D233f2 | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |                                            |
+The 3, 7 and 14 day modules are not deployed on Tempo or Polygon Amoy. The 3 minute module is available on Ethereum Sepolia, Base Sepolia, Optimism Sepolia and Arbitrum Sepolia.
 
 For smart contract code, formal verification, and audits, refer to [candide-contracts](https://github.com/candidelabs/candide-contracts).
 
 ## Safe Passkeys
 
-The Safe Passkeys Module is deployed in the following networks:
+| Contract              | v0.2.1                                     | v0.2.0                                     |
+| ----------------------| -------------------------------------------| -------------------------------------------|
+| SafeWebAuthnSharedSigner | 0x94a4F6affBd8975951142c3999aEAB7ecee555c2 | 0xfD90FAd33ee8b58f32c00aceEad1358e4AFC23f9 |
+| SafeWebAuthnSignerSingleton | 0x4E27b51350e6c2083EE19011120F50DAfEc5CA50 | 0x270D7E4a57E6322f336261f3EaE2BADe72E68d72 |
+| SafeWebAuthnSignerFactory | 0x1d31F259eE307358a26dFb23EB365939E8641195 | 0xF7488fFbe67327ac9f37D5F722d83Fc900852Fbf |
+| DaimoP256Verifier | 0xc2b78104907F722DABAc4C69f826a522B2754De4 | 0xc2b78104907F722DABAc4C69f826a522B2754De4 |
+| FCLP256Verifier | | 0x445a0683e494ea0c5AF3E83c5159fBE47Cf9e765 |
 
-| Network                      | `SafeWebAuthnSignerFactory` Address        | `DaimoP256Verifier` Address                | `FCLP256Verifier` Address                  |
-| ---------------------------- | ------------------------------------------ | ------------------------------------------ | ------------------------------------------ |
-| Arbitrum                     | 0xF7488fFbe67327ac9f37D5F722d83Fc900852Fbf | 0xc2b78104907F722DABAc4C69f826a522B2754De4 | 0x445a0683e494ea0c5AF3E83c5159fBE47Cf9e765 |
-| Arbitrum Sepolia             | 0xF7488fFbe67327ac9f37D5F722d83Fc900852Fbf | 0xc2b78104907F722DABAc4C69f826a522B2754De4 | 0x445a0683e494ea0c5AF3E83c5159fBE47Cf9e765 |
-| Base                         | 0xF7488fFbe67327ac9f37D5F722d83Fc900852Fbf | 0xc2b78104907F722DABAc4C69f826a522B2754De4 | 0x445a0683e494ea0c5AF3E83c5159fBE47Cf9e765 |
-| Base Sepolia                 | 0xF7488fFbe67327ac9f37D5F722d83Fc900852Fbf | 0xc2b78104907F722DABAc4C69f826a522B2754De4 | 0x445a0683e494ea0c5AF3E83c5159fBE47Cf9e765 |
-| Ethereum Mainnet             | 0xF7488fFbe67327ac9f37D5F722d83Fc900852Fbf | 0xc2b78104907F722DABAc4C69f826a522B2754De4 | 0x445a0683e494ea0c5AF3E83c5159fBE47Cf9e765 |
-| Ethereum Sepolia             | 0xF7488fFbe67327ac9f37D5F722d83Fc900852Fbf | 0xc2b78104907F722DABAc4C69f826a522B2754De4 | 0x445a0683e494ea0c5AF3E83c5159fBE47Cf9e765 |
-| Optimism                     | 0xF7488fFbe67327ac9f37D5F722d83Fc900852Fbf | 0xc2b78104907F722DABAc4C69f826a522B2754De4 | 0x445a0683e494ea0c5AF3E83c5159fBE47Cf9e765 |
-| Optimism Sepolia             | 0xF7488fFbe67327ac9f37D5F722d83Fc900852Fbf | 0xc2b78104907F722DABAc4C69f826a522B2754De4 | 0x445a0683e494ea0c5AF3E83c5159fBE47Cf9e765 |
-| Polygon                      | 0xF7488fFbe67327ac9f37D5F722d83Fc900852Fbf | 0xc2b78104907F722DABAc4C69f826a522B2754De4 | 0x445a0683e494ea0c5AF3E83c5159fBE47Cf9e765 |
-| Polygon Amoy                 | 0xF7488fFbe67327ac9f37D5F722d83Fc900852Fbf | 0xc2b78104907F722DABAc4C69f826a522B2754De4 | 0x445a0683e494ea0c5AF3E83c5159fBE47Cf9e765 |
+`SafeAccountV0_2_0` and `SafeAccountV0_3_0` use v0.2.0. `SafeMultiChainSigAccountV1` uses v0.2.1. `SafeAccountV1_5_0_M_0_3_0` uses the v0.2.0 contracts with the Daimo verifier and the RIP-7951 P-256 precompile (`0x0000000000000000000000000000000000000100`).
+
+Not deployed on:
+- v0.2.1 `SafeWebAuthnSignerSingleton` and `SafeWebAuthnSignerFactory`: World Chain
+- v0.2.0 `SafeWebAuthnSharedSigner`, `SafeWebAuthnSignerSingleton`, `SafeWebAuthnSignerFactory` and `FCLP256Verifier`: HyperEVM
 
 For Safe Passkeys code and audits, refer to [safe-4337-module](https://github.com/safe-global/safe-modules/tree/main/modules/passkey#deploy)
+
+## Safe Allowance Module
+
+| Version               | Address                                    |
+| ----------------------| -------------------------------------------|
+| v1.0.0 | 0x691f59471Bfd2B7d639DCF74671a2d648ED1E331 |
+| v0.1.1 (deprecated) | 0xAA46724893dedD72658219405185Fb0Fc91e091C |
+
+v1.0.0 is not deployed on BSC, HyperEVM, Tempo, World Chain, Optimism Sepolia, Arbitrum Sepolia or Polygon Amoy.
+
+v1.0.0 replaces v0.1.1 with security fixes. See the [Allowance Module v1.0.0 Migration Guide](../plugins/4-allowance-migration.mdx).
