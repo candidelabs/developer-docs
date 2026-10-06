@@ -27,8 +27,28 @@ See the [API Reference](./api-reference.mdx) for details on each method.
 import Callout from "/src/components/Callout";
 
 <Callout title="Authentication">
-The activation call ([`account_activateForwardingAddress`](./api-reference.mdx#account_activateforwardingaddress)) requires `Authorization: Bearer <account_api_key>`. Account API keys are issued by Candide; every other method is public.
+Send every request to `https://api.candide.dev/forwarder/v3/<team-api-key>`. The activation call ([`account_activateForwardingAddress`](./api-reference.mdx#account_activateforwardingaddress)) also requires `Authorization: Bearer <token>`, using the bearer token of a forwarder policy. Both come from the [Candide Dashboard](https://dashboard.candide.dev).
 </Callout>
+
+---
+
+## Getting Access
+
+Forwarding Address access is self-serve through the [Candide Dashboard](https://dashboard.candide.dev):
+
+1. Create a team API key under [**API Keys**](https://dashboard.candide.dev/api-keys). It goes in the forwarder endpoint URL.
+2. Under **Forwarder Policies**, create a policy. Name it and pick the source networks it accepts deposits on.
+3. Configure sponsorship and its limits (see below).
+4. Generate the policy's bearer token and store it in your server's secrets. It is shown only once and can only be rotated, not retrieved.
+
+A forwarder policy controls the addresses activated with its bearer token:
+
+- **Source networks**: the chains where deposits arrive and are forwarded. Deposits arriving on a removed chain are held on the address until the chain is added back.
+- **Active**: pausing a policy holds all deposits on its addresses until it is re-enabled.
+- **Sponsorship**: when on, the policy pays the forwarding fees from its balance, within its limits. Deposits it cannot pay for are held. When off, fees are deducted from each deposit and the policy's balance and limits are not used.
+- **Sponsorship limits**: the maximum fee per forward, per address per UTC day, and per address over its lifetime, plus a rate limit per address.
+
+The policy page also lists every address activated under it, with its status, forwards count, and fees sponsored.
 
 ---
 
@@ -47,7 +67,7 @@ Monitoring is TTL-based. When the activation expires, the relayer stops watching
 
 Use the optional `salt` parameter in `forwarding_getAddress` and `account_activateForwardingAddress` to generate distinct forwarding addresses for the same recipient and destination pair. Each unique salt produces a different deterministic address. This is useful for tracking individual deposits or creating per-transaction deposit addresses.
 
-Each account is capped at 500 active forwarding addresses; refreshing an existing address does not count against the cap. If you need many short-lived per-deposit addresses, plan for the cap or contact Candide.
+Active forwarding addresses are capped per account; refreshing an existing address does not count against the cap. If you need many short-lived per-deposit addresses, plan for the cap or contact Candide.
 
 ---
 
@@ -95,4 +115,5 @@ If funds are stuck, use the [recovery frontend](https://forwarding-address.candi
 - The forwarding address accepts deposits on any supported chain, including the destination chain. Do not send on unsupported chains. Check `forwarding_getRoutes` for the full list of supported chains per route.
 - The output token on the destination chain may have different decimals than the input token. Use the token's `decimals` from [`forwarding_getRoutes`](./api-reference.mdx#forwarding_getroutes) when formatting amounts.
 - Cache `forwarding_getRoutes` on app load and refresh periodically. Routes, fees, and supported tokens can change.
-- The activation call needs an account API key (`Authorization: Bearer ...`). All other methods are public. Each account can have up to 500 active forwarding addresses; exceeding the cap returns error `-32013`.
+- The activation call needs a forwarder policy's bearer token (`Authorization: Bearer ...`). Keep it on your server: anyone holding it can activate addresses that spend your policy's balance. Exceeding the active address cap returns error `-32013`.
+- With sponsorship on, deposits are held (not forwarded) when the policy's balance or limits cannot cover the fee. Watch the policy balance in the Dashboard.

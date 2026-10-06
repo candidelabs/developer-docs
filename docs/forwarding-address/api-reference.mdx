@@ -14,11 +14,24 @@ keywords:
 
 ## Protocol
 
-The API uses JSON-RPC 2.0 over HTTP POST with `Content-Type: application/json`.
+The API uses JSON-RPC 2.0 over HTTP POST with `Content-Type: application/json`, sent to your team's forwarder endpoint:
+
+```
+https://api.candide.dev/forwarder/v3/<team-api-key>
+```
 
 ## Authentication
 
-Most methods are public. Only the activation call (`account_activateForwardingAddress`) requires authentication: send `Authorization: Bearer <account_api_key>`. Account API keys are issued by Candide on request.
+Access is self-serve through the [Candide Dashboard](https://dashboard.candide.dev). You need two credentials:
+
+| Credential | Where to get it | How to send it |
+|------------|-----------------|----------------|
+| Team API key | Dashboard → **API Keys** | In the request URL |
+| Bearer token | Dashboard → **Forwarder Policies** → your policy → **Bearer Token** | `Authorization: Bearer <token>` header, on `account_activateForwardingAddress` only |
+
+The bearer token belongs to a single forwarder policy. Addresses activated with it follow that policy's source networks, sponsorship setting, and limits. The token is shown once when generated; rotating it replaces the previous token immediately. Keep it on your server and never ship it in frontend code.
+
+Every other method only needs the team API key in the URL.
 
 ---
 
@@ -189,7 +202,7 @@ Response:
 Activates relayer monitoring for a forwarding address on specified source chains. Returns the address, active status, and TTL expiration timestamp.
 
 :::note Requires authentication
-Send `Authorization: Bearer <account_api_key>` with this request. Keys are issued by Candide. Each account can have up to 500 active forwarding addresses; refreshing an existing address does not count against the cap. Exceeding the cap returns error `-32013`.
+Send `Authorization: Bearer <token>` with this request, using the bearer token of a forwarder policy from the [Dashboard](https://dashboard.candide.dev). See [Authentication](#authentication). Active addresses are capped per account; refreshing an existing address does not count against the cap. Exceeding the cap returns error `-32013`.
 :::
 
 Key behaviors:
@@ -669,6 +682,12 @@ interface ForwardsResult {
 ---
 
 ## Changelog
+
+### 2026-10-06
+
+**Changed**
+
+- Access is now self-serve through the [Candide Dashboard](https://dashboard.candide.dev). Requests go to `https://api.candide.dev/forwarder/v3/<team-api-key>`, and `account_activateForwardingAddress` takes the bearer token of a forwarder policy instead of a Candide-issued account API key. See [Authentication](#authentication).
 
 ### 2026-07-13
 
