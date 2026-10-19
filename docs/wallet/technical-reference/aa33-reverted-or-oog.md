@@ -4,4 +4,4 @@ description: The paymaster signature was rejected or verifying the paymaster sig
 keywords: [AA33, error, entrypoint, erc-4337]
 ---
 
-The paymaster validation was rejected or ran out of gas. "OOG" = Out-Of-Gas. First check the paymaster's signature in paymasterAndData. If the signature is correct, the verificationGasLimit may be too low.
+The paymaster validation was rejected or ran out of gas. "OOG" = Out-Of-Gas. First check the paymaster's signature in paymasterAndData. If the signature is correct, the paymaster's gas limit may be too low: `paymasterVerificationGasLimit` on EntryPoint v0.7+, `verificationGasLimit` on v0.6.
