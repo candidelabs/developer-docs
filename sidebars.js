@@ -227,6 +227,16 @@ const sidebars = {
             },
             {
               type: "doc",
+              id: "wallet/technical-reference/aa26-over-verificationgaslimit",
+              label: "AA26"
+            },
+            {
+              type: "doc",
+              id: "wallet/technical-reference/aa27-outside-valid-block-range",
+              label: "AA27"
+            },
+            {
+              type: "doc",
               id: "wallet/technical-reference/aa30-paymaster-not-deployed",
               label: "AA30"
             },
@@ -252,6 +262,21 @@ const sidebars = {
             },
             {
               type: "doc",
+              id: "wallet/technical-reference/aa35-malformed-paymaster-data",
+              label: "AA35"
+            },
+            {
+              type: "doc",
+              id: "wallet/technical-reference/aa36-over-paymasterverificationgaslimit",
+              label: "AA36"
+            },
+            {
+              type: "doc",
+              id: "wallet/technical-reference/aa37-paymaster-block-range",
+              label: "AA37"
+            },
+            {
+              type: "doc",
               id: "wallet/technical-reference/aa40-over-verificationgaslimit",
               label: "AA40"
             },
@@ -269,6 +294,31 @@ const sidebars = {
               type: "doc",
               id: "wallet/technical-reference/aa51-prefund-below-actualgascost",
               label: "AA51"
+            },
+            {
+              type: "doc",
+              id: "wallet/technical-reference/aa93-invalid-paymasteranddata",
+              label: "AA93"
+            },
+            {
+              type: "doc",
+              id: "wallet/technical-reference/aa94-gas-values-overflow",
+              label: "AA94"
+            },
+            {
+              type: "doc",
+              id: "wallet/technical-reference/aa95-out-of-gas",
+              label: "AA95"
+            },
+            {
+              type: "doc",
+              id: "wallet/technical-reference/aa98-invalid-paymaster",
+              label: "AA98"
+            },
+            {
+              type: "doc",
+              id: "wallet/technical-reference/aa99-initcode-too-small",
+              label: "AA99"
             },
           ],
         },
