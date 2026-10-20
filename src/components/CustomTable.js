@@ -85,7 +85,7 @@ export function PaymasterSupportedToken({ items }) {
       )}
       renderCenterItem={(item) => (
         <a
-          href={`${item.blockExplorer}${item.address}`}
+          href={`${item.blockExplorer}${item.address}${item.blockExplorerQuery ?? ""}`}
           target="_blank"
           rel="noopener noreferrer"
         >

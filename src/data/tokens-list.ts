@@ -371,6 +371,16 @@ export const sepoliaList = [
     website: "https://tether.io/",
   },
 ];
+export const solanaDevnetList = [
+  {
+    token: "USDC (Devnet)",
+    logo: "/img/tokens/usdc-logo.svg",
+    address: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+    blockExplorer: "https://explorer.solana.com/address/",
+    blockExplorerQuery: "?cluster=devnet",
+    website: "https://faucet.circle.com/",
+  },
+];
 export const optimismSepoliaList = [
   {
     token: "Candide Test Token",
