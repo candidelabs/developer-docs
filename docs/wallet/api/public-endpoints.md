@@ -24,13 +24,20 @@ https://api.candide.dev/public/v3/
 https://api.candide.dev/public/v3/11155111
 ```
 
+**Solana:** use the network name instead of a chain ID. These serve the [Solana Paymaster API](/wallet/solana-paymaster/rpc-methods/).
+
+```
+https://api.candide.dev/public/v3/solana
+https://api.candide.dev/public/v3/solana-devnet
+```
+
 ## Supported Networks
 
 See the list of [supported networks](/wallet/api/supported-networks/).
 
 ## Supported Methods
 
-See the list of the [Bundler API](/wallet/bundler/rpc-methods/) and [Paymaster API](/wallet/paymaster/rpc-methods/).
+See the list of the [Bundler API](/wallet/bundler/rpc-methods/), [Paymaster API](/wallet/paymaster/rpc-methods/), and [Solana Paymaster API](/wallet/solana-paymaster/rpc-methods/).
 
 ## Rate Limit
 
