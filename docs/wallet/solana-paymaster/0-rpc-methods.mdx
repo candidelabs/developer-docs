@@ -36,6 +36,12 @@ https://api.candide.dev/api/v3/solana/YOUR_API_KEY
 
 You can also keep the key out of the URL by sending it in an `x-api-key` header against `https://api.candide.dev/api/v3/solana`.
 
+To try the API without an API key, use the [public endpoint](/wallet/api/public-endpoints/). It is rate limited per IP address and accepts the default fee token only:
+
+```
+https://api.candide.dev/public/v3/solana
+```
+
 ### Solana Devnet
 
 To test without spending real funds, use Solana Devnet. It has a public endpoint that needs no API key, and the fee is paid in [Circle's devnet USDC](https://faucet.circle.com/) (`4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`):
