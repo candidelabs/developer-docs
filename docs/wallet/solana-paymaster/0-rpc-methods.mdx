@@ -36,6 +36,16 @@ https://api.candide.dev/api/v3/solana/YOUR_API_KEY
 
 You can also keep the key out of the URL by sending it in an `x-api-key` header against `https://api.candide.dev/api/v3/solana`.
 
+### Solana Devnet
+
+To test without spending real funds, use Solana Devnet. It has a public endpoint that needs no API key, and the fee is paid in [Circle's devnet USDC](https://faucet.circle.com/) (`4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`):
+
+```
+https://api.candide.dev/public/v3/solana-devnet
+```
+
+With an API key, the devnet URL is `https://api.candide.dev/api/v3/solana-devnet/YOUR_API_KEY`. Point your Solana RPC at Devnet too (`https://api.devnet.solana.com`).
+
 To check connectivity and discover the fee payer address in one call:
 
 ```bash
@@ -77,8 +87,9 @@ Newer Kora versions describe a `getPaymentInstruction` method that builds the fe
 |-------|--------------|----------|---------|--------------|
 | USDT | `Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB` | 6 | Solana Mainnet | Default |
 | USDC | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` | 6 | Solana Mainnet | On request |
+| USDC (Devnet) | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | 6 | Solana Devnet | Default |
 
-USDT is enabled on every endpoint. USDC is enabled on request, and any other SPL token can be evaluated on demand: [contact us](https://www.candide.dev/contact) to request it for your API key. Query [`getSupportedTokens`](#getsupportedtokens) for the live list enabled on your endpoint.
+USDT is enabled on every mainnet endpoint, and devnet USDC on every devnet endpoint. Mainnet USDC is enabled on request, and any other SPL token can be evaluated on demand: [contact us](https://www.candide.dev/contact) to request it for your API key. Query [`getSupportedTokens`](#getsupportedtokens) for the live list enabled on your endpoint.
 
 ## Sponsorship Modes
 

@@ -24,6 +24,10 @@ The USDT fee is priced from the live SOL cost of the transaction. If the recipie
 Mainnet USDT (`Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB`) is the fee token enabled by default. USDC, other SPL tokens, and full gas sponsorship are available on request: [contact us](https://www.candide.dev/contact) to enable them for your API key. See the [Solana Paymaster API reference](/wallet/solana-paymaster/rpc-methods/#supported-tokens) for details.
 :::
 
+:::tip Test on Devnet first
+Solana Devnet is supported, with gas paid in devnet USDC (`4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`) from [Circle's faucet](https://faucet.circle.com/). Set `SOLANA_PAYMASTER_URL=https://api.candide.dev/public/v3/solana-devnet`, `SOLANA_NODE_URL=https://api.devnet.solana.com`, and use the devnet USDC mint in place of `usdtMint`. See [Solana Devnet](/wallet/solana-paymaster/rpc-methods/#solana-devnet) for details.
+:::
+
 ## Quickstart
 
 > You can also [fork the complete example](https://github.com/candidelabs/tether-wdk-candide/tree/main/solana-gasless/01-usdt-gas) and follow along.
