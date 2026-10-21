@@ -271,6 +271,13 @@ export const optimismList = [
     blockExplorer: "https://optimistic.etherscan.io/token/",
     website: "https://tether.io/",
   },
+  {
+    token: "USDT0",
+    logo: "/img/tokens/usdt0.png",
+    address: "0x01bFF41798a0BcF287b996046Ca68b395DbC1071",
+    blockExplorer: "https://optimistic.etherscan.io/token/",
+    website: "https://usdt0.to/",
+  },
 ];
 
 export const plasmaList = [
@@ -297,6 +304,13 @@ export const solanaList = [
     address: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
     blockExplorer: "https://explorer.solana.com/address/",
     website: "https://tether.io/",
+  },
+  {
+    token: "USDC",
+    logo: "/img/tokens/usdc-logo.svg",
+    address: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    blockExplorer: "https://explorer.solana.com/address/",
+    website: "https://www.circle.com/",
   },
 ];
 
