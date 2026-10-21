@@ -1,6 +1,6 @@
 ---
 title: Candide Solana Paymaster API Reference
-description: JSON-RPC API reference for Candide's Solana Paymaster, a hosted Kora endpoint for gasless Solana transactions. Sign transactions with a fee payer and pay network fees in USDT.
+description: JSON-RPC API reference for Candide's Solana Paymaster, a hosted Kora endpoint for gasless Solana transactions. Sign transactions with a fee payer and pay network fees in USDT or USDC.
 image: /img/posters/paymaster-meta.png
 keywords: [solana paymaster, kora, gasless solana, fee payer, pay gas in usdt, kora json-rpc]
 ---
@@ -26,7 +26,7 @@ import {
 
 # Solana Paymaster RPC Methods
 
-JSON-RPC API reference for Candide's **Solana Paymaster**, a hosted [Kora](https://solana.com/docs/tools/kora) endpoint. The paymaster acts as the transaction fee payer, so your users can transact from accounts that hold zero SOL and pay the network fee in USDT instead. Kora is the Solana Foundation's open fee-payer standard: any Kora client, such as [`@solana/kora`](https://www.npmjs.com/package/@solana/kora), works against this endpoint unchanged.
+JSON-RPC API reference for Candide's **Solana Paymaster**, a hosted [Kora](https://solana.com/docs/tools/kora) endpoint. The paymaster acts as the transaction fee payer, so your users can transact from accounts that hold zero SOL and pay the network fee in USDT or USDC instead. Kora is the Solana Foundation's open fee-payer standard: any Kora client, such as [`@solana/kora`](https://www.npmjs.com/package/@solana/kora), works against this endpoint unchanged.
 
 Visit the [dashboard](https://dashboard.candide.dev) to get an API key. The endpoint URL is:
 
@@ -35,6 +35,22 @@ https://api.candide.dev/api/v3/solana/YOUR_API_KEY
 ```
 
 You can also keep the key out of the URL by sending it in an `x-api-key` header against `https://api.candide.dev/api/v3/solana`.
+
+To try the API without an API key, use the [public endpoint](/wallet/api/public-endpoints/). It is rate limited per IP address and accepts the default fee tokens only:
+
+```
+https://api.candide.dev/public/v3/solana
+```
+
+### Solana Devnet
+
+To test without spending real funds, use Solana Devnet. It has a public endpoint that needs no API key, and the fee is paid in [Circle's devnet USDC](https://faucet.circle.com/) (`4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`):
+
+```
+https://api.candide.dev/public/v3/solana-devnet
+```
+
+With an API key, the devnet URL is `https://api.candide.dev/api/v3/solana-devnet/YOUR_API_KEY`. Point your Solana RPC at Devnet too (`https://api.devnet.solana.com`).
 
 To check connectivity and discover the fee payer address in one call:
 
@@ -76,9 +92,10 @@ Newer Kora versions describe a `getPaymentInstruction` method that builds the fe
 | Token | Mint Address | Decimals | Network | Availability |
 |-------|--------------|----------|---------|--------------|
 | USDT | `Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB` | 6 | Solana Mainnet | Default |
-| USDC | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` | 6 | Solana Mainnet | On request |
+| USDC | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` | 6 | Solana Mainnet | Default |
+| USDC (Devnet) | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | 6 | Solana Devnet | Default |
 
-USDT is enabled on every endpoint. USDC is enabled on request, and any other SPL token can be evaluated on demand: [contact us](https://www.candide.dev/contact) to request it for your API key. Query [`getSupportedTokens`](#getsupportedtokens) for the live list enabled on your endpoint.
+USDT and USDC are enabled on every mainnet endpoint, and devnet USDC on every devnet endpoint. Any other SPL token can be evaluated on demand: [contact us](https://www.candide.dev/contact) to request it for your API key. Query [`getSupportedTokens`](#getsupportedtokens) for the live list enabled on your endpoint.
 
 ## Sponsorship Modes
 
@@ -89,7 +106,7 @@ USDT is enabled on every endpoint. USDC is enabled on request, and any other SPL
 
 The endpoint validates every transaction against the policy in [`getConfig`](#getconfig). As of this writing, the rules that most often reject a transaction are:
 
-- **Only the tokens enabled for your endpoint are accepted.** USDT is enabled by default; [USDC and other tokens are enabled on request](#supported-tokens). A mint that is not enabled fails with `"Token ... is not supported"`, both as `fee_token` and as a transferred token.
+- **Only the tokens enabled for your endpoint are accepted.** USDT and USDC are enabled by default; [other tokens are enabled on request](#supported-tokens). A mint that is not enabled fails with `"Token ... is not supported"`, both as `fee_token` and as a transferred token.
 - **The fee payment must be included.** `signTransaction` and `signAndSendTransaction` reject transactions that do not pay at least the quoted fee to the payment address, with `"Insufficient token payment. Required ... lamports"`.
 - **Only five programs may be invoked**: System, SPL Token, Associated Token Account, Compute Budget, and Address Lookup Table. Token-2022 is not among them, so Token-2022 mints are rejected.
 - **The fee payer spends at most 9,000,000 lamports per transaction** (fees plus rent), transactions are capped at 10 signatures, and durable nonce transactions are not accepted.
@@ -627,6 +644,6 @@ Failures use standard JSON-RPC 2.0 error objects. The messages below were captur
 | Code | Example message | Cause |
 |------|-----------------|-------|
 | -32000 | `Invalid transaction: Insufficient token payment. Required 10553 lamports` | The transaction does not transfer at least the quoted fee to the payment address. The required amount is expressed in lamports; convert with `estimateTransactionFee` |
-| -32000 | `Invalid request: Token EPjFW...Dt1v is not supported` | `fee_token` or a transferred token is not enabled for your endpoint (here USDC on an endpoint with only the default USDT). See [Supported Tokens](#supported-tokens) |
+| -32000 | `Invalid request: Token EPjFW...Dt1v is not supported` | `fee_token` or a transferred token is not enabled for your endpoint (captured on an endpoint where USDC was not enabled). See [Supported Tokens](#supported-tokens) |
 | -32000 | `Invalid transaction: Failed to deserialize transaction: io error: unexpected end of file` | `transaction` is not a base64-encoded serialized Solana transaction |
 | -32600 | `Unsupported method - getPaymentInstruction not supported` | The method does not exist or is disabled on this endpoint |
