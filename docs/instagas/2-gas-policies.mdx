@@ -20,12 +20,10 @@ InstaGas provides customizable rules for gas policies. These rules are organized
 - **Private or Public**: Choose between public and private gas policies:
   - **Public Gas Policies**: Set up by dApps for wallet consumption without requiring a sponsorship policy ID.
   - **Private Gas Policies**: Set up by wallets, requiring a sponsorship policy ID. Used when no public gas policy matches.
-- **Signature Validity**: How long a paymaster signature from this policy stays valid. The default is 3 minutes, and the maximum is 2 days.
-    - The UserOperation must be included onchain within this window. After it, the EntryPoint rejects the paymaster signature with [`AA32`](/wallet/technical-reference/aa32-paymaster-expired-or-not-due) and the wallet has to request sponsorship again.
-    - All plans can choose 1, 3, 5, or 10 minutes. Paid plans (Launch or above) can also pick a longer preset, from 15 minutes to 2 days, or set any whole number of minutes up to 2 days.
-    - Pick a longer window when signing can be slow, such as multisig approvals, hardware wallets, passkey prompts, or UserOperations submitted later by a backend. Keep it short otherwise, since a signed sponsorship can be used until it expires.
-    - Teams that downgrade keep their current value but can only change it to one of the free options.
-    - This setting is available in the [Dashboard](https://dashboard.candide.dev) only. Policies created through the [Platform API](/platform/overview) use the 3-minute default.
+- **Signature Validity**: How long the paymaster signature stays valid. The UserOperation must be included onchain before it expires, or the EntryPoint rejects it with [`AA32`](/wallet/technical-reference/aa32-paymaster-expired-or-not-due).
+    - Example: "Sponsored UserOperations must land within 10 minutes of being signed."
+    - Defaults to 3 minutes. All plans can choose up to 10 minutes. Paid plans can go up to 2 days, for flows where signing takes longer, like multisig approvals.
+    - Set in the [Dashboard](https://dashboard.candide.dev) only. Policies created through the [Platform API](/platform/overview) use the default.
 
 <img src="/img/instagas/instagas-general-rules.png" width="1200px" />
 
