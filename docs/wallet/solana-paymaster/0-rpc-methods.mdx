@@ -106,7 +106,7 @@ USDT and USDC are enabled on every mainnet endpoint, and devnet USDC on every de
 
 The endpoint validates every transaction against the policy in [`getConfig`](#getconfig). As of this writing, the rules that most often reject a transaction are:
 
-- **Only the tokens enabled for your endpoint are accepted.** USDT and USDC are enabled by default; [other tokens are enabled on request](#supported-tokens). A mint that is not enabled fails with `"Token ... is not supported"`, both as `fee_token` and as a transferred token.
+- **Only the tokens enabled for your endpoint are accepted.** USDT and USDC are enabled by default on mainnet, and devnet USDC on Devnet; [other tokens are enabled on request](#supported-tokens). A mint that is not enabled fails with `"Token ... is not supported"`, both as `fee_token` and as a transferred token.
 - **The fee payment must be included.** `signTransaction` and `signAndSendTransaction` reject transactions that do not pay at least the quoted fee to the payment address, with `"Insufficient token payment. Required ... lamports"`.
 - **Only five programs may be invoked**: System, SPL Token, Associated Token Account, Compute Budget, and Address Lookup Table. Token-2022 is not among them, so Token-2022 mints are rejected.
 - **The fee payer spends at most 9,000,000 lamports per transaction** (fees plus rent), transactions are capped at 10 signatures, and durable nonce transactions are not accepted.
