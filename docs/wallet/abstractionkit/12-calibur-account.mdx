@@ -165,7 +165,7 @@ const smartAccount = new Calibur7702Account(eoaAddress, {
 
 Since AbstractionKit v1.0.0, `Calibur7702Account` delegates to Calibur v1.1.0 by default. Before that, the default was v1.0.0 (`0x000000009B1D0aF20D8C6d0A44e162d11F9b8f00`), and `CALIBUR_UNISWAP_V1_0_0_SINGLETON_ADDRESS` was replaced by `CALIBUR_UNISWAP_V1_1_0_SINGLETON_ADDRESS`.
 
-v1.1.0 keeps the EIP-712 domain (`"Calibur"`, `"1.0.0"`), every selector the SDK uses and the storage layout. Keys registered under v1.0.0 survive a re-delegation to v1.1.0.
+v1.1.0 keeps the EIP-712 domain (`"Calibur"`, `"1.0.0"`), every selector the SDK uses and the storage layout. Keys registered under v1.0.0 survive a re-delegation to v1.1.0. One behavior change: v1.1.0 rejects a nonzero `hook` that has no deployed code or no enabled callback flag in its address, so `update` calls (including the one in `createRegisterKeyMetaTransactions`) with such a hook revert with `InvalidHook` after migration.
 
 `delegateeAddress` is what the SDK delegates to in the `eip7702Auth` of a new UserOperation, and what `isDelegatedToThisAccount` and `createRevokeDelegationRawTransaction` check against. For an EOA that is still delegated to v1.0.0, either:
 
@@ -177,7 +177,7 @@ v1.1.0 keeps the EIP-712 domain (`"Calibur"`, `"1.0.0"`), every selector the SDK
   });
   ```
 
-- **Move to v1.1.0**: use the default class and include `eip7702Auth` in the next UserOperation to re-delegate the EOA. With the default class, `isDelegatedToThisAccount` returns `false` for an EOA delegated to v1.0.0.
+- **Move to v1.1.0**: use the default class and pass `eip7702Auth` to `createUserOperation` for the next UserOperation to re-delegate the EOA. `createUserOperation` fills the authorization with placeholder `r`/`s` values, so [sign the delegation authorization](/wallet/guides/getting-started-calibur/#step-5-sign-the-delegation-authorization) before sending it. With the default class, `isDelegatedToThisAccount` returns `false` for an EOA delegated to v1.0.0.
 
 ## Essential Methods
 
@@ -678,7 +678,7 @@ const userOperation = await smartAccount.createUserOperation(
 
 Static method. Packs key settings into a single uint256 value. Layout: `(isAdmin << 200) | (expiration << 160) | hook`.
 
-`expiration` is a unix timestamp in seconds. Since v0.4.1, `packKeySettings` throws a `RangeError` if `expiration` does not fit the contract's `uint40` field (for example, a millisecond timestamp from `Date.now()`) or if `hook` is not a valid 20-byte address.
+`expiration` is a unix timestamp in seconds. Since v0.4.1, `packKeySettings` throws a `RangeError` if `expiration` does not fit the contract's `uint40` field (for example, a millisecond timestamp from `Date.now()`) or if `hook` is outside the 160-bit address range. `hook` is parsed with `BigInt`, so a non-numeric string throws a `SyntaxError` instead.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">

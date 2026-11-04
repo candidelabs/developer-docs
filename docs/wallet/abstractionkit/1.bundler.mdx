@@ -262,7 +262,7 @@ const userOperationHash = await bundler.sendUserOperation(userOperation, entrypo
 
 ### getUserOperationByHash
 
-Returns a UserOperation by its hash returned from sendUserOperation, or `null` if the bundler does not know it. Numeric UserOperation fields (`nonce`, gas limits, and fees) and `blockNumber` are returned as `bigint`.
+Returns a UserOperation by its hash returned from sendUserOperation, or `null` if the bundler does not know it. Numeric UserOperation fields (`nonce`, gas limits, and fees) are returned as `bigint`. `blockNumber`, `blockHash` and `transactionHash` are `null` while the UserOperation is pending, and `blockNumber` is a `bigint` once it is included.
 
 ##### Usage
 

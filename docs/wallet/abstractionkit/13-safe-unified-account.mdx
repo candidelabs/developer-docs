@@ -106,6 +106,30 @@ A few differences to be aware of when migrating:
 
 - **New accounts get a different address.** A different Safe module and EntryPoint derive a different counterfactual address for the same owner, so `SafeMultiChainSigAccountV1` and `SafeAccountV0_3_0` never refer to the same undeployed account.
 - **Deployed accounts must be migrated first.** Attaching `SafeMultiChainSigAccountV1` to a Safe that was deployed through `SafeAccountV0_3_0` is not sufficient. Two pieces of Safe configuration have to change first: the v0.9 module must be enabled on the Safe, and the Safe's fallback handler must be updated to point at it. Until both land, the account cannot be used on EntryPoint v0.9 and UserOperations sent to it will fail. Build the batch with [`createMigrateToSafeMultiChainSigAccountMetaTransactions`](/wallet/abstractionkit/safe-account-v3#createmigratetosafemultichainsigaccountmetatransactions) and send it as a UserOperation from the v0.7 account itself; once it lands, attach the same address to `SafeMultiChainSigAccountV1`, or to `SafeMultiChainSigAccountV2` if the Safe runs the v1.5.0 singleton.
+- **Passkey owners keep their v0.2.0 signer.** Migration does not touch the owners, so a passkey owner of a v0.7 Safe is still the signer derived with the Safe Passkey module v0.2.0 defaults, while V1 and V2 default to v0.2.1. Pass the v0.2.0 values as `createUserOperation` overrides and build the signer with `accountClass: SafeAccountV0_3_0`, or the SDK derives an address that is not an owner:
+
+  ```ts
+  const legacyWebAuthn = {
+      webAuthnSharedSigner: SafeAccountV0_3_0.DEFAULT_WEB_AUTHN_SHARED_SIGNER,
+      webAuthnSignerFactory: SafeAccountV0_3_0.DEFAULT_WEB_AUTHN_SIGNER_FACTORY,
+      webAuthnSignerSingleton: SafeAccountV0_3_0.DEFAULT_WEB_AUTHN_SIGNER_SINGLETON,
+      webAuthnSignerProxyCreationCode: SafeAccountV0_3_0.DEFAULT_WEB_AUTHN_SIGNER_PROXY_CREATION_CODE,
+      eip7212WebAuthnPrecompileVerifier: SafeAccountV0_3_0.DEFAULT_WEB_AUTHN_PRECOMPILE,
+      eip7212WebAuthnContractVerifier: SafeAccountV0_3_0.DEFAULT_WEB_AUTHN_CONTRACT_VERIFIER,
+  };
+  const userOperation = await smartAccount.createUserOperation(transactions, nodeRpcUrl, bundlerUrl, {
+      expectedSigners: [publicKey],
+      ...legacyWebAuthn,
+  });
+  const signer = fromSafeWebauthn({
+      publicKey,
+      isInit: userOperation.factory != null, // the v0.9 nonce restarts at 0, so don't use it here
+      accountClass: SafeAccountV0_3_0,
+      getAssertion,
+  });
+  ```
+
+  See the [migration e2e test](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/test/integration/e2e/migrate-safe-v07-to-v09/migrate.test.js#L116).
 - **The UserOperation type is `UserOperationV9`.** It adds a nullable `eip7702Auth` field to the v0.7 shape; every other field, including the gas fields and the paymaster and factory fields, is unchanged.
 - **Signatures always use the multichain encoding.** `isMultiChainSignature` is set for you, including on single-chain UserOperations: the single-op path signs the leaf SafeOp hash directly rather than a Merkle root. This is handled inside AbstractionKit; you only need it when [formatting a signature yourself](#manual-eip-712-signing-for-a-single-useroperation).
 - **Your bundler and paymaster must serve EntryPoint v0.9.** Check that the v0.9 EntryPoint and the Safe multichain signature module are deployed on your target chains before predicting addresses for them.
@@ -114,7 +138,7 @@ A few differences to be aware of when migrating:
 
 ### initializeNewAccount
 
-Initializes a new Safe Unified Account from a list of owners. Called on `SafeMultiChainSigAccountV2`, it deploys with the Safe L2 v1.5.0 singleton and returns a `SafeMultiChainSigAccountV2` instance. Only needed on the first transaction when the account has not been deployed yet.
+Initializes a new Safe Unified Account from a list of owners. It computes the counterfactual account address and the factory data, but does not deploy anything: the account is deployed by its first UserOperation. Called on `SafeMultiChainSigAccountV2`, it uses the Safe L2 v1.5.0 singleton and returns a `SafeMultiChainSigAccountV2` instance. Only needed while the account has not been deployed yet.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
@@ -576,7 +600,7 @@ const userOpsToSign = [
         userOperation: userOp2,
         chainId: 11155420n,
         options: { safe4337ModuleAddress: "0x..." },
-        webAuthnSignatureOverrides: { isInit: userOp2.nonce === 0n },
+        webAuthnSignatureOverrides: { isInit: userOp2.factory != null },
     },
 ];
 
@@ -676,6 +700,21 @@ createAddOwnerWithThresholdMetaTransactions(
 ```
 
 `overrides.nodeRpcUrl` is required when adding a WebAuthn owner, so the SDK can check whether the new owner's verifier is already deployed.
+
+On `SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`, this inherited method still falls back to the base Safe Passkey module v0.2.0 defaults, not the classes' v0.2.1 defaults, so a passkey owner added without overrides is not the signer the class derives when signing. Pass the class's own defaults:
+
+```ts
+await smartAccount.createAddOwnerWithThresholdMetaTransactions(webauthnPublicKey, 2, {
+    nodeRpcUrl,
+    eip7212WebAuthnPrecompileVerifier: SafeAccount.DEFAULT_WEB_AUTHN_PRECOMPILE,
+    eip7212WebAuthnContractVerifier: SafeAccount.DEFAULT_WEB_AUTHN_CONTRACT_VERIFIER,
+    webAuthnSignerFactory: SafeAccount.DEFAULT_WEB_AUTHN_SIGNER_FACTORY,
+    webAuthnSignerSingleton: SafeAccount.DEFAULT_WEB_AUTHN_SIGNER_SINGLETON,
+    webAuthnSignerProxyCreationCode: SafeAccount.DEFAULT_WEB_AUTHN_SIGNER_PROXY_CREATION_CODE,
+});
+```
+
+Here `SafeAccount` is `SafeMultiChainSigAccountV1` (or `SafeMultiChainSigAccountV2`), whose statics hold the v0.2.1 values.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
