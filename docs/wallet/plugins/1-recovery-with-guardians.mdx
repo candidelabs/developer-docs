@@ -10,6 +10,8 @@ Social Recovery allows users to regain control of their accounts by replacing th
 
 The Candide Social Recovery Module accepts any Ethereum address as a guardian: family and friends' wallets, hardware wallets, institutions, or email/SMS cloud wallets.
 
+Social Recovery Module v0.2.0 fixes the findings of Certora's audit and is recommended for new integrations (`SocialRecoveryModuleV2` in abstractionkit). Accounts that enabled v0.1.0 keep using `SocialRecoveryModuleV1`. See [Choose a Module Version](/wallet/plugins/recovery-module-reference/#choose-a-module-version).
+
 ## How Recovery Works
 
 Recovery replaces a lost or compromised owner key with a new one, authorized by a quorum of trusted guardians.
@@ -29,7 +31,7 @@ Guardians can be any Ethereum address. They do not need to hold any funds, and t
 
 ### Grace Period
 
-The grace period is a time delay between execution and finalization. It gives the current owner a window to cancel unauthorized recovery attempts. If the owner still controls the account, they can call `cancelRecovery` at any point during this period.
+The grace period is a time delay between execution and finalization. It gives the current owner a window to cancel unauthorized recovery attempts. If the owner still controls the account, they can call `cancelRecovery` at any point during this period. On module v0.2.0, adding or revoking a guardian or changing the threshold also cancels a recovery in progress.
 
 ### Privacy
 
@@ -63,4 +65,4 @@ Start with [Enable Email / SMS Recovery](/wallet/plugins/add-candide-guardian/),
 - **Deployment addresses**: [Social Recovery Module](/wallet/technical-reference/deployments/#social-recovery-module)
 - **Recovery frontend (SafeCover)**: [recovery.candide.dev](https://recovery.candide.dev) ([source](https://github.com/candidelabs/safecover))
 - **Recovery Service API**: [Safe Recovery Services](/wallet/recovery/overview/)
-- **SDK Reference**: [SocialRecoveryModule](/wallet/plugins/recovery-module-reference/)
+- **SDK Reference**: [SocialRecoveryModuleV2 and SocialRecoveryModuleV1](/wallet/plugins/recovery-module-reference/)

@@ -188,8 +188,10 @@ const recoveryRequest = await custodialGuardianService.createAndExecuteRecoveryR
 Wait for the grace period to expire, then finalize the recovery:
 
 ```ts
-import { SocialRecoveryModuleGracePeriodSelector } from "abstractionkit";
-import { RecoveryByGuardian } from "safe-recovery-service-sdk";
+import {
+    RecoveryByGuardian,
+    SocialRecoveryModuleGracePeriodSelector, // module v0.1.0 addresses
+} from "safe-recovery-service-sdk";
 
 // Wait for grace period (3 minutes)
 await new Promise(resolve => setTimeout(resolve, 3 * 60 * 1000));

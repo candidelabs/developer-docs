@@ -1,6 +1,6 @@
 ---
-title: SocialRecoveryModule SDK Reference
-description: Complete API reference for the SocialRecoveryModule in abstractionkit, covering methods for enabling recovery, managing guardians, and executing recovery flows.
+title: Social Recovery Module SDK Reference
+description: Complete API reference for SocialRecoveryModuleV2 and SocialRecoveryModuleV1 in abstractionkit, covering methods for enabling recovery, managing guardians, and executing recovery flows.
 keywords: [guardian, recovery, social-recovery, abstractionkit, sdk-reference]
 ---
 
@@ -9,8 +9,10 @@ import TabItem from "@theme/TabItem";
 import { DataTable } from "/src/components/Table";
 import {
   createEnableModuleParams,
-  createConfirmRecoveryParams,
-  createMultiConfirmRecoveryParams,
+  createConfirmRecoveryParamsV1,
+  createConfirmRecoveryParamsV2,
+  createMultiConfirmRecoveryParamsV1,
+  createMultiConfirmRecoveryParamsV2,
   createExecuteRecoveryParams,
   createFinalizeRecoveryParams,
   createCancelRecoveryParams,
@@ -20,6 +22,7 @@ import {
   createChangeThresholdMetaTransactionParams,
   getRecoveryHashParams,
   getRecoveryRequestEip712DataParams,
+  getRecoveryRequestEip712DataReturnParams,
   getRecoveryRequestParams,
   getRecoveryApprovalsParams,
   hasGuardianApprovedParams,
@@ -28,13 +31,15 @@ import {
   thresholdParams,
   getGuardiansParams,
   nonceParams,
-  RecoveryRequestParams,
+  RecoveryRequestV1Params,
+  RecoveryRequestV2Params,
   RecoverySignaturePairParams,
-  sendEthCallRequestParams
 } from "../../../src/data/recoveryParams";
 import { metaTransactionType } from "../../../src/data/accountParamAndReturnData";
 
-# SocialRecoveryModule SDK Reference
+# Social Recovery Module SDK Reference
+
+abstractionkit ships one class per Social Recovery Module version. Use `SocialRecoveryModuleV2` (module v0.2.0) for new integrations, and `SocialRecoveryModuleV1` (module v0.1.0) for accounts that already enabled v0.1.0.
 
 ## Install
 
@@ -62,15 +67,57 @@ yarn add abstractionkit
 ## Import
 
 ```ts
-import { SocialRecoveryModule } from "abstractionkit";
+import { SocialRecoveryModuleV2 } from "abstractionkit";
+```
+
+## Choose a Module Version
+
+Social Recovery Module v0.2.0 fixes the findings of [Certora's audit](https://github.com/candidelabs/candide-contracts/releases/tag/recovery%2Fv0.2.0) and is a new deployment with new addresses. v0.1.0 stays deployed. Each version has its own class and grace period selector:
+
+| Module version | Class | Grace period selector | Recovery request type |
+|---|---|---|---|
+| v0.2.0 (recommended) | [`SocialRecoveryModuleV2`](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/modules/SocialRecoveryModule.ts#L559) | `SocialRecoveryModuleGracePeriodSelectorV2` | `RecoveryRequestV2` |
+| v0.1.0 | [`SocialRecoveryModuleV1`](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/modules/SocialRecoveryModule.ts#L691) | `SocialRecoveryModuleGracePeriodSelectorV1` | `RecoveryRequestV1` |
+
+:::warning Accounts on v0.1.0 must stay on V1
+Pick the class that matches the module your accounts enabled. If your users enabled the v0.1.0 module, use `SocialRecoveryModuleV1` and `SocialRecoveryModuleGracePeriodSelectorV1`. Pointed at a v0.2.0 address, an account that enabled v0.1.0 has no guardians, and its recovery calls fail.
+
+`SocialRecoveryModuleV1` and `SocialRecoveryModuleGracePeriodSelectorV1` are what `SocialRecoveryModule` and `SocialRecoveryModuleGracePeriodSelector` were before abstractionkit v1.0.0, with the same addresses.
+:::
+
+### V1 vs V2 Differences
+
+| | V1 (module v0.1.0) | V2 (module v0.2.0) |
+|---|---|---|
+| `createConfirmRecoveryMetaTransaction` | `(accountAddress, newOwners, newThreshold, execute)` | `(accountAddress, newOwners, newThreshold, nonce, execute)` |
+| `createMultiConfirmRecoveryMetaTransaction` | `(accountAddress, newOwners, newThreshold, signaturePairList, execute)` | `(accountAddress, newOwners, newThreshold, nonce, signaturePairList, execute)` |
+| Guardian signature EIP-712 domain version | `"0.0.1"` | `"0.2.0"`. Signatures made for v0.1.0 are not valid on v0.2.0. |
+| `getRecoveryRequest` returns | `RecoveryRequestV1` with `executeAfter` | `RecoveryRequestV2` with `nonce` and `executableAt` |
+| Adding or revoking a guardian, changing the threshold | Leaves a recovery in progress untouched | Cancels the recovery in progress and invalidates the guardian confirmations collected so far |
+| `cancelRecovery` | Reverts when no recovery is in progress | Also invalidates collected confirmations, and works when no recovery is in progress |
+| New owners | Validated at finalization | Also validated at confirmation and execution. For example, confirming a recovery that names a guardian as a new owner reverts. |
+| `hasGuardianApproved` | Can report an approval from an address that is no longer a guardian | Reports approvals from current guardians only |
+
+On V2, pass the recovery nonce the guardians signed to the confirm methods. Read it from `messageValue.nonce` returned by [`getRecoveryRequestEip712Data`](#getrecoveryrequesteip712data), or call [`nonce`](#nonce) for a single guardian confirming on-chain. The module reverts with `SM: invalid nonce` if the nonce changed before the transaction is included.
+
+### SocialRecoveryModuleBase
+
+[`SocialRecoveryModuleBase`](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/modules/SocialRecoveryModule.ts#L51) is the abstract class both versions extend. It holds every method the two versions share: guardian management, execute, finalize, cancel, the read helpers, and `getRecoveryRequestEip712Data`. Use it as a type for code that accepts either version. The confirm methods and `getRecoveryRequest` differ between versions, so they live on `SocialRecoveryModuleV1` and `SocialRecoveryModuleV2`.
+
+```ts
+import { SocialRecoveryModuleBase } from "abstractionkit";
+
+async function listGuardians(srm: SocialRecoveryModuleBase, nodeUrl: string, accountAddress: string) {
+  return srm.getGuardians(nodeUrl, accountAddress);
+}
 ```
 
 ## Initialize
 
-Initialize a SocialRecoveryModule instance. By default, the grace period for recovery is set to 3 days.
+Initialize a `SocialRecoveryModuleV2` instance. By default, the grace period for recovery is set to 3 days.
 
 ```ts
-const srm = new SocialRecoveryModule(); // 3 days
+const srm = new SocialRecoveryModuleV2(); // 3 days
 ```
 
 If you need a different grace period, you can override it by providing
@@ -78,10 +125,20 @@ a [different grace period address](/wallet/technical-reference/deployments/#soci
 during initialization.
 
 ```ts
-import { SocialRecoveryModule, SocialRecoveryModuleGracePeriodSelector } from "abstractionkit";
+import { SocialRecoveryModuleV2, SocialRecoveryModuleGracePeriodSelectorV2 } from "abstractionkit";
 
-const gracePeriod = SocialRecoveryModuleGracePeriodSelector.After7Days;
-const srm = new SocialRecovery(gracePeriod); // 7 days
+const gracePeriod = SocialRecoveryModuleGracePeriodSelectorV2.After7Days;
+const srm = new SocialRecoveryModuleV2(gracePeriod); // 7 days
+```
+
+`SocialRecoveryModuleGracePeriodSelectorV2` offers `After3Minutes`, `After3Days`, `After7Days`, and `After14Days`. The 3-minute deployment is on testnets only.
+
+For accounts that enabled module v0.1.0, use the V1 class with the V1 selector:
+
+```ts
+import { SocialRecoveryModuleV1, SocialRecoveryModuleGracePeriodSelectorV1 } from "abstractionkit";
+
+const srm = new SocialRecoveryModuleV1(SocialRecoveryModuleGracePeriodSelectorV1.After3Days);
 ```
 
 Then consume the module methods like the following:
@@ -137,7 +194,7 @@ Active the recovery plugin for the smart account
 
 ### createAddGuardianWithThresholdMetaTransaction
 
-Creates a MetaTransaction that lets the owner add a guardian for its account.
+Creates a MetaTransaction that lets the owner add a guardian for its account. On V2 this also cancels any recovery in progress and invalidates collected guardian confirmations.
 
 <Tabs>
   <TabItem value="Param type" label="Param Types">
@@ -280,15 +337,32 @@ Creates a MetaTransaction that lets the owner change the guardian threshold requ
 
 Creates a MetaTransaction that lets a single guardian confirm the execution of the recovery request.
 It can also trigger the start of the execution by passing true to 'execute' parameter.
-Once triggered, the recovery will started the recovery period delay, before it can be finalised.
+Once triggered, the recovery starts the grace period, before it can be finalized.
+
+On V2 it takes the account's current recovery `nonce` before `execute`. Get it with [`nonce`](#nonce).
+
+```ts
+// SocialRecoveryModuleV2
+const nonce = await srm.nonce(nodeUrl, accountAddress);
+const confirmTx = srm.createConfirmRecoveryMetaTransaction(
+    accountAddress,
+    [newOwnerAddress],
+    1, // new threshold
+    nonce,
+    true, // execute
+);
+```
 
 <Tabs>
-<TabItem value="Param type" label="Param Types">
-  <DataTable items={createConfirmRecoveryParams} />
-</TabItem>
-<TabItem value="Return type" label="Return Types">
+  <TabItem value="Param type V2" label="Param Types (V2)">
+    <DataTable items={createConfirmRecoveryParamsV2} />
+  </TabItem>
+  <TabItem value="Param type V1" label="Param Types (V1)">
+    <DataTable items={createConfirmRecoveryParamsV1} />
+  </TabItem>
+  <TabItem value="Return type" label="Return Types">
     <table>
-        <thead>
+      <thead>
     <tr>
         <th align="left">Param Name</th>
         <th align="left">Param Type</th>
@@ -296,35 +370,63 @@ Once triggered, the recovery will started the recovery period delay, before it c
 
     </tr>
   </thead>
-        <tbody>
+      <tbody>
         <tr>
-            <td>MetaTransaction</td>
-            <td align="left">
+          <td>MetaTransaction</td>
+          <td align="left">
             <p><span style={{ color: "#22c916" }}>MetaTransaction</span></p>
             <DataTable items={metaTransactionType} />
-            </td>
-            <td align="left">
-            MetaTransaction is the type of a transaction to construct a Safe operation
-            </td>
+          </td>
+          <td align="left">
+            MetaTransaction is the type of a transaction to construct a Safe operation.
+          </td>
         </tr>
-        </tbody>
-  </table>
-</TabItem>
+      </tbody>
+    </table>
+  </TabItem>
 </Tabs>
 
 ### createMultiConfirmRecoveryMetaTransaction
 
 Creates a MetaTransaction that lets multiple guardians confirm the execution of the recovery request.
 It can also trigger the start of the execution by passing true to 'execute' parameter.
-Once triggered, the recovery will start the recovery period delay, before it can be finalised.
+Once triggered, the recovery starts the grace period, before it can be finalized.
+Signature pairs are sorted by signer address for you.
+
+On V2 it takes the recovery `nonce` the guardians signed, before the signatures. Use `messageValue.nonce` from [`getRecoveryRequestEip712Data`](#getrecoveryrequesteip712data). A signature may be empty when its signer is the transaction sender, or when the signer is a Safe guardian that pre-approved the recovery hash (EIP-1271).
+
+```ts
+// SocialRecoveryModuleV2
+const { domain, types, messageValue } = await srm.getRecoveryRequestEip712Data(
+    nodeUrl,
+    chainId,
+    accountAddress,
+    [newOwnerAddress],
+    1n, // new threshold
+);
+
+// each guardian signs { domain, types, messageValue } and returns { signer, signature }
+
+const multiConfirmTx = srm.createMultiConfirmRecoveryMetaTransaction(
+    accountAddress,
+    [newOwnerAddress],
+    1, // new threshold
+    messageValue.nonce,
+    signaturePairList,
+    true, // execute
+);
+```
 
 <Tabs>
-  <TabItem value="Param type" label="Param Types">
-    <DataTable items={createMultiConfirmRecoveryParams} />
+  <TabItem value="Param type V2" label="Param Types (V2)">
+    <DataTable items={createMultiConfirmRecoveryParamsV2} />
+  </TabItem>
+  <TabItem value="Param type V1" label="Param Types (V1)">
+    <DataTable items={createMultiConfirmRecoveryParamsV1} />
   </TabItem>
   <TabItem value="Return type" label="Return Types">
     <table>
-        <thead>
+      <thead>
     <tr>
         <th align="left">Param Name</th>
         <th align="left">Param Type</th>
@@ -332,18 +434,18 @@ Once triggered, the recovery will start the recovery period delay, before it can
 
     </tr>
   </thead>
-        <tbody>
+      <tbody>
         <tr>
-            <td>MetaTransaction</td>
-            <td align="left">
+          <td>MetaTransaction</td>
+          <td align="left">
             <p><span style={{ color: "#22c916" }}>MetaTransaction</span></p>
             <DataTable items={metaTransactionType} />
-            </td>
-            <td align="left">
-                MetaTransaction is the type of a transaction to construct a Safe operation
-            </td>
+          </td>
+          <td align="left">
+            MetaTransaction is the type of a transaction to construct a Safe operation.
+          </td>
         </tr>
-        </tbody>
+      </tbody>
     </table>
   </TabItem>
 </Tabs>
@@ -422,6 +524,8 @@ Creates a MetaTransaction that finalizes an ongoing recovery request if the reco
 
 Creates a MetaTransaction that lets the account cancel an ongoing recovery request.
 
+On V2 it also invalidates the guardian confirmations collected for the current nonce, and can be sent when no recovery is in progress. On V1 it reverts when no recovery is in progress.
+
 <Tabs>
   <TabItem value="Param type" label="Param Types">
     <DataTable items={createCancelRecoveryParams} />
@@ -456,7 +560,7 @@ Creates a MetaTransaction that lets the account cancel an ongoing recovery reque
 
 ### hasGuardianApproved
 
-Retrieves specific guardian approval status for a particular recovery request at the current nonce.
+Retrieves specific guardian approval status for a particular recovery request at the current nonce. On V2, only current guardians are reported as having approved.
 
 <Tabs>
   <TabItem value="Param type" label="Param Types">
@@ -521,14 +625,19 @@ Get the active guardians for an account.
 
 ### getRecoveryRequest
 
-Retrieves the account's current ongoing recovery request.
+Retrieves the account's current ongoing recovery request. V2 returns a `RecoveryRequestV2`, which adds the request `nonce` and renames `executeAfter` to `executableAt`. V1 returns a `RecoveryRequestV1`.
 
 <Tabs>
   <TabItem value="Param type" label="Param Types">
     <DataTable items={getRecoveryRequestParams} />
   </TabItem>
-  <TabItem value="Return type" label="Return Types">
-    <DataTable items={RecoveryRequestParams} />
+  <TabItem value="Return type V2" label="Return Types (V2)">
+    <p>Promise&lt;RecoveryRequestV2&gt;</p>
+    <DataTable items={RecoveryRequestV2Params} />
+  </TabItem>
+  <TabItem value="Return type V1" label="Return Types (V1)">
+    <p>Promise&lt;RecoveryRequestV1&gt;</p>
+    <DataTable items={RecoveryRequestV1Params} />
   </TabItem>
 </Tabs>
 
@@ -547,7 +656,7 @@ Retrieves the guardian approval count for this particular recovery request at th
 
 ### nonce
 
-Get the module nonce for an account.
+Get the module's recovery nonce for an account. On V2, pass it to [`createConfirmRecoveryMetaTransaction`](#createconfirmrecoverymetatransaction).
 
 <Tabs>
   <TabItem value="Param type" label="Param Types">
@@ -573,7 +682,7 @@ Generates the recovery hash that should be signed by the guardian to authorize a
 
 ### getRecoveryRequestEip712Data
 
-Creates recovery request EIP-712 data for signing by guardians.
+Creates recovery request EIP-712 data for signing by guardians. It reads the current recovery nonce from the node unless `overrides.recoveryNonce` is set. The domain version matches the class: `"0.2.0"` for V2 and `"0.0.1"` for V1.
 
 <Tabs>
   <TabItem value="Param type" label="Param Types">
@@ -581,11 +690,23 @@ Creates recovery request EIP-712 data for signing by guardians.
   </TabItem>
   <TabItem value="Return type" label="Return Types">
     <p>Promise&lt;object&gt;</p>
-    <p>Object containing domain, types, and messageValue for EIP-712 signing.</p>
+    <DataTable items={getRecoveryRequestEip712DataReturnParams} />
   </TabItem>
 </Tabs>
 
 ## Types
+
+### RecoveryRequestV2
+
+Returned by `SocialRecoveryModuleV2.getRecoveryRequest`.
+
+<DataTable items={RecoveryRequestV2Params} />
+
+### RecoveryRequestV1
+
+Returned by `SocialRecoveryModuleV1.getRecoveryRequest`.
+
+<DataTable items={RecoveryRequestV1Params} />
 
 ### RecoverySignaturePair
 

@@ -601,6 +601,127 @@ export const tokenQuoteType = [
     description:
       "Maximum token cost charged for this UserOperation (token's smallest unit)",
   },
+  {
+    key: "paymaster",
+    type: "string",
+    description:
+      "Address the prepended ERC-20 approve was granted to. The SDK verifies it equals the paymaster set on the returned UserOperation",
+  },
+  {
+    key: "approveAmount",
+    type: "bigint",
+    description:
+      "Allowance granted to paymaster by the prepended approve, in the token's smallest unit (tokenCost with a safety multiplier applied)",
+  },
+];
+
+export const erc7677ContextType = [
+  {
+    key: "token",
+    type: "string?",
+    description:
+      "ERC-20 token address. Triggers the ERC-20 gas flow and prepends the token approval",
+  },
+  {
+    key: "sponsorshipPolicyId",
+    type: "string?",
+    description: "Sponsorship Policy ID if using a private gas policy (Candide)",
+  },
+  {
+    key: "exchangeRate",
+    type: "bigint | string?",
+    description:
+      "Token smallest-units per 1 ETH (10^18 wei). Required for the token flow when no provider is auto-detected. Fetched automatically for Candide and Pimlico",
+  },
+  {
+    key: "paymasterAddress",
+    type: "string?",
+    description:
+      "The paymaster you expect the token approval to be granted to. If the detected provider quotes a different paymaster, the flow throws PAYMASTER_ERROR. When no provider is detected, it supplies the paymaster address",
+  },
+  {
+    key: "[key: string]",
+    type: "unknown",
+    description:
+      "Any other provider-specific field. The whole context object, including the fields above, is forwarded to the paymaster RPC verbatim",
+  },
+];
+
+export const decodeTokenQuoteParam = [
+  {
+    key: "userOperation",
+    type: "UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9",
+    description: "The finished UserOperation, with its final paymaster data",
+  },
+  {
+    key: "nodeRpcUrl",
+    type: "string | Transport | JsonRpcNode",
+    description:
+      "Node RPC used to read the token from Candide's paymaster contract (one eth_call). Not used for Pimlico, whose paymaster data carries the token",
+  },
+  {
+    key: "overrides",
+    type: [
+      {
+        key: "paymasterAddresses",
+        type: "Record<string, { provider: \"candide\" | \"pimlico\"; hasTrustedBundlersFlag?: boolean }>?",
+        description:
+          "Additional paymaster deployments to accept, keyed by address, for custom deployments that keep a known layout",
+      },
+    ],
+    description: "Optional overrides",
+  },
+];
+
+export const decodedTokenQuoteType = [
+  {
+    key: "provider",
+    type: '"candide" | "pimlico"',
+    description: "Provider operating the paymaster",
+  },
+  {
+    key: "paymaster",
+    type: "string",
+    description: "Paymaster address set on the UserOperation, checksummed",
+  },
+  {
+    key: "token",
+    type: "string",
+    description: "ERC-20 token paying for gas, checksummed",
+  },
+  {
+    key: "exchangeRate",
+    type: "bigint",
+    description:
+      "Exchange rate the paymaster signed: token smallest-units per 1 ETH (10^18 wei), before any price markup",
+  },
+  {
+    key: "maxTokenCost",
+    type: "bigint",
+    description:
+      "The most the paymaster contract can charge for the UserOperation, in the token's smallest unit, including its post-operation overhead (and markup or constant fee when present). Usually a bit higher than TokenQuote.tokenCost",
+  },
+  {
+    key: "validUntil",
+    type: "number",
+    description:
+      "Unix timestamp (seconds) after which the paymaster data is rejected. 0 means no expiry",
+  },
+  {
+    key: "validAfter",
+    type: "number?",
+    description:
+      "Unix timestamp (seconds) before which the paymaster data is rejected. Pimlico only",
+  },
+];
+
+export const decodeTokenQuoteReturn = [
+  {
+    key: "decodedTokenQuote",
+    type: "Promise<DecodedTokenQuote | null>",
+    description:
+      "The decoded token payment, or null when the UserOperation has no paymaster or is sponsored (no token payment)",
+  },
 ];
 
 export const createSponsorPaymasterUserOperationParam = [

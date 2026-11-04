@@ -39,23 +39,25 @@ yarn add abstractionkit
 
 ### Initialize Recovery Module
 
-Initialize a SocialRecoveryModule instance. The default grace period for recovery is 3 days. 
+Initialize a `SocialRecoveryModuleV2` instance. The default grace period for recovery is 3 days.
 
 ```ts
-import { SocialRecoveryModule } from "abstractionkit";
+import { SocialRecoveryModuleV2 } from "abstractionkit";
 
-const srm = new SocialRecoveryModule(); // 3 days
+const srm = new SocialRecoveryModuleV2(); // 3 days
 ```
+
+Accounts that already enabled module v0.1.0 use `SocialRecoveryModuleV1` and `SocialRecoveryModuleGracePeriodSelectorV1` instead. See [Choose a Module Version](/wallet/plugins/recovery-module-reference/#choose-a-module-version).
 
 If you need a different grace period, you can override it by providing 
 a [different grace period address](/wallet/technical-reference/deployments/#social-recovery-module)
 during initialization.
 
 ```ts
-import { SocialRecoveryModule, SocialRecoveryModuleGracePeriodSelector } from "abstractionkit";
- 
-const gracePeriod = SocialRecoveryModuleGracePeriodSelector.After7Days;
-const srm = new SocialRecoveryModule(gracePeriod); // 7 days
+import { SocialRecoveryModuleV2, SocialRecoveryModuleGracePeriodSelectorV2 } from "abstractionkit";
+
+const gracePeriod = SocialRecoveryModuleGracePeriodSelectorV2.After7Days;
+const srm = new SocialRecoveryModuleV2(gracePeriod); // 7 days
 ```
 
 ### Setup Recovery Module with Guardian
@@ -122,7 +124,7 @@ import * as dotenv from 'dotenv'
 
 import {
   SafeMultiChainSigAccountV1 as SafeAccount,
-  SocialRecoveryModule,
+  SocialRecoveryModuleV2,
 } from "abstractionkit";
 
 async function main(): Promise<void> {
@@ -140,7 +142,7 @@ async function main(): Promise<void> {
   console.log("Smart Account Address:", smartAccount.accountAddress)
 
   // Initialize Social Recovery Module
-  const srm = new SocialRecoveryModule()
+  const srm = new SocialRecoveryModuleV2()
 
   // Step 1: Enable module and add guardian in one UserOperation
   console.log("Step 1: Enabling Social Recovery Module and adding guardian...")
@@ -258,8 +260,8 @@ Set up trusted individuals or devices as guardians:
 :::tip Security Recommendations
 - **Never use 1/1** for high-value accounts (single point of failure)
 - **2/3 is optimal** for most use cases (prevents single guardian compromise)
-- **Consider Candide Guardian** as one of multiple guardians for user-friendly recovery
-- **Keep guardian list updated** as relationships change
+- **Consider Candide Guardian** as one of multiple guardians for user-friendly recovery, see [Enable Email / SMS Recovery](/wallet/plugins/add-candide-guardian/)
+- **Keep guardian list updated** as relationships change. On module v0.2.0, any guardian or threshold change cancels a recovery in progress.
 :::
 
 ## What's Next

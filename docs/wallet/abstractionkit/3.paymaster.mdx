@@ -39,6 +39,11 @@ import {
   SupportedERC20TokensAndMetadataV6WithExchangeRateType,
   fetchTokenPaymasterExchangeRateParams,
   fetchTokenPaymasterExchangeRateReturn,
+  tokenQuoteType,
+  erc7677ContextType,
+  decodeTokenQuoteParam,
+  decodeTokenQuoteReturn,
+  decodedTokenQuoteType,
 } from "/src/data/paymaster";
 
 # Paymaster
@@ -132,7 +137,7 @@ const { userOperation: sponsoredUserOperation, sponsorMetadata } =
 </Tabs>
 
 #### Source code
-[createSponsorPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/CandidePaymaster.ts#L571)
+[createSponsorPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L598)
 
 ### fetchSupportedERC20TokensAndPaymasterMetadata
 
@@ -221,6 +226,8 @@ Some tokens like USDT do not allow changing a non-zero allowance directly. For k
 
 The `overrides` parameter also accepts an `entrypoint` field, which allows you to manually specify the EntryPoint address instead of relying on auto-detection from the UserOperation structure.
 
+The returned `tokenQuote` reports the paymaster the prepended `approve` was granted to (`paymaster`) and the allowance it set (`approveAmount`), so you can compare the spender against your configured paymaster without decoding `callData`. The method throws a `PAYMASTER_ERROR` if the final paymaster data is missing a paymaster or names a different one than the approval spender.
+
 #### Usage
 
 <Tabs>
@@ -259,6 +266,8 @@ userOperation = sponsoredUserOperation;
 </TabItem>
 <TabItem value="response type" label="Response Type">
     <DataTable items={createTokenPaymasterUserOperationReturn} />
+    TokenQuote
+    <DataTable items={tokenQuoteType} />
 </TabItem>
 </Tabs>
 
@@ -289,6 +298,8 @@ userOperation = sponsoredUserOperation;
     token: '0xFa5854FBf9964330d761961F46565AB7326e5a3b',
     exchangeRate: 1001219705870085130n,
     tokenCost: 3391931975665260n,
+    paymaster: '0x3fE285DcD76BCcE4Ac92d38A6F2F8E964041e020',
+    approveAmount: 6783863951330520n,
   },
   //highlight-end
 }
@@ -296,7 +307,7 @@ userOperation = sponsoredUserOperation;
 </details>
 
 #### Source code
-[createTokenPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/CandidePaymaster.ts#L612)
+[createTokenPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L639)
 
 ### calculateUserOperationErc20TokenMaxGasCost
 
@@ -343,7 +354,51 @@ const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
 </details>
 
 #### Source code
-[calculateUserOperationErc20TokenMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/CandidePaymaster.ts#L712)
+[calculateUserOperationErc20TokenMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L755)
+
+### decodeTokenQuote
+
+Reads the token payment a finished UserOperation commits to from the paymaster data the paymaster signed: the paymaster, token, exchange rate, validity window, and `maxTokenCost`, the most the user can be charged. This is useful for co-signers who did not build the UserOperation and never saw its `TokenQuote`, so they can check the charge before signing.
+
+`decodeTokenQuote` is a static method and needs no paymaster URL. It is available on both `CandidePaymaster` and `Erc7677Paymaster`, and works for any account, whichever client built the UserOperation. It supports Candide's token paymasters on EntryPoint v0.6 to v0.9 and Pimlico's on v0.6 to v0.8, identified by the paymaster address on the UserOperation.
+
+- Returns `null` when the UserOperation has no paymaster or is sponsored (no token payment).
+- Throws a `PAYMASTER_ERROR` if the paymaster is not a known deployment, and `BAD_DATA` if the paymaster data cannot be read.
+- Candide's paymaster data names the token by an on-chain slot, so the method makes one `eth_call` through `nodeRpcUrl` to read it. For Pimlico, `nodeRpcUrl` is not used.
+
+#### Usage
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { CandidePaymaster } from "abstractionkit";
+
+const nodeRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com";
+
+// userOperation received from the account owner who built it
+// highlight-start
+const quote = await CandidePaymaster.decodeTokenQuote(userOperation, nodeRpcUrl);
+// highlight-end
+
+if (quote !== null) {
+  console.log(`Pays up to ${quote.maxTokenCost} of ${quote.token} to ${quote.paymaster}`);
+}
+```
+
+</TabItem>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={decodeTokenQuoteParam} />
+</TabItem>
+<TabItem value="Return type" label="Return Type">
+  <DataTable items={decodeTokenQuoteReturn} />
+  DecodedTokenQuote
+  <DataTable items={decodedTokenQuoteType} />
+</TabItem>
+</Tabs>
+
+#### Source code
+[CandidePaymaster.decodeTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L122) | [Erc7677Paymaster.decodeTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/Erc7677Paymaster.ts#L340) | [DecodedTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/decodeTokenQuote.ts#L25)
 
 ## Advanced Methods
 
@@ -404,7 +459,7 @@ const paymasterResult = await paymaster.getPaymasterMetaData(SafeAccount.DEFAULT
 
 #### source code
 
-[getPaymasterMetaData](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/CandidePaymaster.ts#L334)
+[getPaymasterMetaData](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L354)
 
 ### getSupportedEntrypoints
 
@@ -443,7 +498,7 @@ const paymasterResult = await paymaster.getSupportedEntrypoints();
 </details>
 
 #### source code
-[getSupportedEntrypoints](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/CandidePaymaster.ts#L311)
+[getSupportedEntrypoints](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L331)
 
 ### isSupportedERC20Token
 
@@ -484,7 +539,7 @@ true
 </details>
 
 #### Source
-[isSupportedERC20Token](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/CandidePaymaster.ts#L351)
+[isSupportedERC20Token](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L371)
 
 ### getSupportedERC20TokenData
 
@@ -533,7 +588,7 @@ const erc20TokenData = await paymaster.getSupportedERC20TokenData(erc20TokenAddr
 </details>
 
 #### Source code
-[getSupportedERC20TokenData](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/CandidePaymaster.ts#L367)
+[getSupportedERC20TokenData](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L387)
 
 ### fetchTokenPaymasterExchangeRate
 
@@ -576,7 +631,7 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 </details>
 
 #### Source code
-[fetchTokenPaymasterExchangeRate](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/CandidePaymaster.ts#L750)
+[fetchTokenPaymasterExchangeRate](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L791)
 
 ### createPaymasterUserOperation
 
@@ -587,7 +642,7 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 :::
 
 #### Source code
-[createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/CandidePaymaster.ts#L530)
+[createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L557)
 
 ## Erc7677Paymaster
 
@@ -625,7 +680,9 @@ userOperation = sponsoredOp;
 
 #### ERC-20 token sponsorship
 
-Passing `{ token }` in the context triggers the ERC-20 gas flow automatically. For Candide and Pimlico the exchange rate is fetched for you; for unknown providers, supply `exchangeRate` in the context. `tokenQuote` surfaces the exchange rate and max token cost applied to the UserOperation so you can display the charge to the user without a second round trip.
+Passing `{ token }` in the context triggers the ERC-20 gas flow automatically. For Candide and Pimlico the exchange rate is fetched for you; for unknown providers, supply `exchangeRate` in the context. `tokenQuote` surfaces the exchange rate, max token cost, approval spender (`paymaster`), and `approveAmount` applied to the UserOperation so you can display the charge to the user without a second round trip.
+
+Pass `paymasterAddress` in the context to pin the paymaster you expect. If the detected provider quotes a different paymaster, the flow throws a `PAYMASTER_ERROR` before building any approval. The flow also throws a `PAYMASTER_ERROR` if the final `pm_getPaymasterData` response is missing a paymaster or names a different one than the approval spender.
 
 ```ts title="example.ts"
 const bundlerRpc = "https://api.candide.dev/public/v3/11155111";
@@ -650,5 +707,15 @@ const { userOperation: tokenOp2 } = await paymaster.createPaymasterUserOperation
 userOperation = tokenOp2;
 ```
 
+#### Context
+
+The context object is forwarded to the paymaster RPC verbatim as the fourth argument of `pm_getPaymasterStubData` and `pm_getPaymasterData`. Its shape is provider-specific, and providers ignore keys they don't recognize. Of the fields below, `token`, `exchangeRate`, and `paymasterAddress` are also read by `Erc7677Paymaster` to drive the ERC-20 gas flow.
+
+<DataTable items={erc7677ContextType} />
+
+#### Decode a token quote
+
+`Erc7677Paymaster.decodeTokenQuote(userOperation, nodeRpcUrl)` is the same static method as [`CandidePaymaster.decodeTokenQuote`](#decodetokenquote).
+
 #### Source code
-[Erc7677Paymaster](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/Erc7677Paymaster.ts#L204) | [createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/paymaster/Erc7677Paymaster.ts#L409)
+[Erc7677Paymaster](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/Erc7677Paymaster.ts#L222) | [createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/Erc7677Paymaster.ts#L465)

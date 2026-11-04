@@ -87,7 +87,7 @@ const userOpHash = createUserOperationHash(
 </Tabs>
 
 #### Source code
-[createUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L49)
+[createUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils.ts#L49)
 
 ### createPackedUserOperationV6
 
@@ -112,7 +112,7 @@ const packed = createPackedUserOperationV6(userOperationV6);
 </Tabs>
 
 #### Source code
-[createPackedUserOperationV6](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L310)
+[createPackedUserOperationV6](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils.ts#L310)
 
 ### createPackedUserOperationV7
 
@@ -137,7 +137,7 @@ const packed = createPackedUserOperationV7(userOperationV7);
 </Tabs>
 
 #### Source code
-[createPackedUserOperationV7](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L349)
+[createPackedUserOperationV7](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils.ts#L349)
 
 ### fetchAccountNonce
 
@@ -166,7 +166,7 @@ const nonce = await fetchAccountNonce(
 </Tabs>
 
 #### Source code
-[fetchAccountNonce](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L577)
+[fetchAccountNonce](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils.ts#L630)
 
 ### calculateUserOperationMaxGasCost
 
@@ -191,7 +191,7 @@ const maxCost = calculateUserOperationMaxGasCost(userOperation);
 </Tabs>
 
 #### Source code
-[calculateUserOperationMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L636)
+[calculateUserOperationMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils.ts#L689)
 
 ### JsonRpcNode
 
@@ -251,7 +251,7 @@ const code = await node.getCode("0xYourAccountAddress");
 - `request(args, options?)`
 
 #### Source code
-[JsonRpcNode](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/transport/JsonRpcNode.ts#L50)
+[JsonRpcNode](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/transport/JsonRpcNode.ts#L50)
 
 ### getBalanceOf
 
@@ -309,7 +309,7 @@ const word = await node.getStorageAt(
 
 #### Source code
 
-[getStorageAt](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/transport/JsonRpcNode.ts#L162)
+[getStorageAt](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/transport/JsonRpcNode.ts#L162)
 
 ## Simulation utils
 
@@ -344,7 +344,7 @@ const { simulation, simulationShareLink } =
 </Tabs>
 
 #### Source code
-[simulateUserOperationWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utilsTenderly.ts#L82)
+[simulateUserOperationWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utilsTenderly.ts#L148)
 
 ### simulateUserOperationCallDataWithTenderlyAndCreateShareLink
 
@@ -377,7 +377,7 @@ const { simulation, callDataSimulationShareLink } =
 </Tabs>
 
 #### Source code
-[simulateUserOperationCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utilsTenderly.ts#L377)
+[simulateUserOperationCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utilsTenderly.ts#L434)
 
 ### simulateSenderCallDataWithTenderlyAndCreateShareLink
 
@@ -411,7 +411,7 @@ const { simulation, callDataSimulationShareLink } =
 </Tabs>
 
 #### Source code
-[simulateSenderCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utilsTenderly.ts#L597)
+[simulateSenderCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utilsTenderly.ts#L665)
 
 ## Multicall utils
 
@@ -453,7 +453,7 @@ const callData = encodeMultiSendCallData([
 </Tabs>
 
 #### Source code
-[encodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/multisend.ts#L26)
+[encodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/multisend.ts#L29)
 
 ### decodeMultiSendCallData
 
@@ -478,7 +478,7 @@ const decoded = decodeMultiSendCallData(encodedCallData);
 </Tabs>
 
 #### Source code
-[decodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/multisend.ts#L36)
+[decodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/multisend.ts#L39)
 
 ## Generic Ethereum utils
 
@@ -520,7 +520,7 @@ const callData = createCallData(
 </Tabs>
 
 #### Source code
-[createCallData](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L466)
+[createCallData](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils.ts#L466)
 
 ### getFunctionSelector
 
@@ -546,7 +546,7 @@ const selector = getFunctionSelector("transfer(address,uint256)");
 </Tabs>
 
 #### Source code
-[getFunctionSelector](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L558)
+[getFunctionSelector](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils.ts#L608)
 
 ### sendJsonRpcRequest
 
@@ -575,7 +575,7 @@ const result = await sendJsonRpcRequest(
 </Tabs>
 
 #### Source code
-[sendJsonRpcRequest](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils.ts#L505)
+[sendJsonRpcRequest](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils.ts#L505)
 
 ### sendEthCallRequest
 
@@ -592,7 +592,7 @@ const result = await node.call({
 ```
 
 #### Source code
-[JsonRpcNode.call](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/transport/JsonRpcNode.ts#L189)
+[JsonRpcNode.call](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/transport/JsonRpcNode.ts#L189)
 
 ### sendEthGetCodeRequest
 
@@ -606,7 +606,7 @@ const code = await node.getCode("0xContractAddress");
 ```
 
 #### Source code
-[JsonRpcNode.getCode](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/transport/JsonRpcNode.ts#L137)
+[JsonRpcNode.getCode](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/transport/JsonRpcNode.ts#L137)
 
 ### getDelegatedAddress
 
@@ -656,7 +656,7 @@ if (revert.reverted) {
 
 #### Source code
 
-[decodeUserOperationRevertReason](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/userOperationRevert.ts#L45)
+[decodeUserOperationRevertReason](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/userOperationRevert.ts#L45)
 
 ### parseAaCode
 
@@ -691,7 +691,7 @@ try {
 
 #### Source code
 
-[parseAaCode](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/errors.ts#L146)
+[parseAaCode](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/errors.ts#L146)
 
 ## EIP-7702 Utilities
 
@@ -737,7 +737,7 @@ const authorization = await createAndSignEip7702DelegationAuthorization(
 </Tabs>
 
 #### Source code
-[createAndSignEip7702DelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils7702.ts#L142)
+[createAndSignEip7702DelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils7702.ts#L144)
 
 ### createRevokeDelegationAuthorization
 
@@ -768,7 +768,7 @@ const revokeAuth = createRevokeDelegationAuthorization(
 </Tabs>
 
 #### Source code
-[createRevokeDelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils7702.ts#L197)
+[createRevokeDelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils7702.ts#L199)
 
 ### createEip7702DelegationAuthorizationHash
 
@@ -797,7 +797,7 @@ const hash = createEip7702DelegationAuthorizationHash(
 </Tabs>
 
 #### Source code
-[createEip7702DelegationAuthorizationHash](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils7702.ts#L214)
+[createEip7702DelegationAuthorizationHash](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils7702.ts#L216)
 
 ### createAndSignEip7702RawTransaction
 
@@ -834,7 +834,7 @@ const rawTx = createAndSignEip7702RawTransaction(
 </Tabs>
 
 #### Source code
-[createAndSignEip7702RawTransaction](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils7702.ts#L259)
+[createAndSignEip7702RawTransaction](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils7702.ts#L261)
 
 ### createEip7702TransactionHash
 
@@ -870,4 +870,4 @@ const txHash = createEip7702TransactionHash(
 </Tabs>
 
 #### Source code
-[createEip7702TransactionHash](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/utils7702.ts#L323)
+[createEip7702TransactionHash](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils7702.ts#L325)

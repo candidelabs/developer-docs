@@ -47,13 +47,13 @@ Each account class exposes its own signing method and accepts a different subset
 
 | Account | Method | Compatible adapters |
 |---|---|---|
-| `SafeMultiChainSigAccountV1` (single UserOperation) | `signUserOperationWithSigners(userOperation, signers, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom |
-| `SafeAccountV0_2_0`, `SafeAccountV0_3_0`, `SafeAccountV1_5_0_M_0_3_0` | `signUserOperationWithSigners(userOperation, signers, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom |
-| `SafeMultiChainSigAccountV1` (multi-op Merkle path) | `signUserOperationsWithSigners(userOperationsToSign, signers)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom |
+| `SafeMultiChainSigAccountV1`, `SafeMultiChainSigAccountV2` (single UserOperation) | `signUserOperationWithSigners(userOperation, signers, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom |
+| `SafeAccountV0_2_0`, `SafeAccountV0_3_0` | `signUserOperationWithSigners(userOperation, signers, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom |
+| `SafeMultiChainSigAccountV1`, `SafeMultiChainSigAccountV2` (multi-op Merkle path) | `signUserOperationsWithSigners(userOperationsToSign, signers)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, `fromSafeWebauthn`, custom |
 | `Simple7702Account`, `Simple7702AccountV09` | `signUserOperationWithSigner(userOperation, signer, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, custom |
 | `Calibur7702Account` | `signUserOperationWithSigner(userOperation, signer, chainId)` | `fromViem`, `fromViemWalletClient`, `fromEthersWallet`, `fromPrivateKey`, custom |
 
-`SafeAccountV1_5_0_M_0_3_0` is the Safe v1.5.0 contracts variant with 4337 module 0.3.0: it extends `SafeAccountV0_3_0` (EntryPoint v0.7) but deploys with the Safe L2 v1.5.0 singleton instead of v1.4.1. See its [source](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/account/Safe/SafeAccountV1_5_0_M_0_3_0.ts#L28).
+`SafeMultiChainSigAccountV2` is the Safe Unified Account on the Safe L2 v1.5.0 singleton. It signs exactly like `SafeMultiChainSigAccountV1`. It replaces `SafeAccountV1_5_0_M_0_3_0` (Safe v1.5.0 on EntryPoint v0.7), which was removed in AbstractionKit v1.0.0. See [V1 or V2](/wallet/abstractionkit/safe-unified-account#v1-or-v2).
 
 For Safe accounts, pass one signer per owner required by the threshold. For multi-chain Safe signing, pass the UserOperations and chain IDs together:
 
@@ -67,7 +67,7 @@ const signatures = await safe.signUserOperationsWithSigners(
 );
 ```
 
-Under the hood, every signer implements `signHash`, `signTypedData`, or both, and each account picks the scheme it prefers. Since `v0.3.8`, `Simple7702Account`, `Simple7702AccountV09`, `Calibur7702Account`, and `SafeMultiChainSigAccountV1` all accept typed-data-only signers where the account supports EIP-712 signing. Capability mismatches throw offline with an actionable error before any wallet prompt is shown. `fromSafeWebauthn` is Safe-specific because it produces an EIP-1271 contract signature using Safe's WebAuthn verifier.
+Under the hood, every signer implements `signHash`, `signTypedData`, or both, and each account picks the scheme it prefers. Since `v0.3.8`, `Simple7702Account`, `Simple7702AccountV09`, `Calibur7702Account`, and `SafeMultiChainSigAccountV1` all accept typed-data-only signers where the account supports EIP-712 signing, and `SafeMultiChainSigAccountV2` (added in v1.0.0) inherits the same behavior. Capability mismatches throw offline with an actionable error before any wallet prompt is shown. `fromSafeWebauthn` is Safe-specific because it produces an EIP-1271 contract signature using Safe's WebAuthn verifier.
 
 ## Adapter recipes
 
@@ -203,6 +203,8 @@ userOperation.signature = await safe.signUserOperationWithSigners(
 );
 ```
 
+Pass the same class you passed to `initializeNewAccount` as `accountClass`: `SafeMultiChainSigAccountV1` or `SafeMultiChainSigAccountV2` (both use the Safe Passkey module v0.2.1 defaults), or `SafeAccountV0_2_0` / `SafeAccountV0_3_0` (v0.2.0 defaults). A mismatched class derives the wrong signer address and the signature fails on-chain with `GS026`.
+
 When creating the UserOperation, pass `expectedSigners: [{ x, y }]` so gas estimation uses the WebAuthn dummy signature size instead of the EOA dummy signature size.
 
 See the [Passkeys guide](/wallet/plugins/passkeys/#sign-with-fromsafewebauthn) and the [`passkeys/index.ts`](https://github.com/candidelabs/abstractionkit-examples/blob/main/passkeys/index.ts) example.
@@ -228,7 +230,7 @@ The discriminated union enforces at compile time that every signer implements at
 
 Both `signHash` and `signTypedData` may return either a signature directly or a `Promise` of one (`Hex | Promise<Hex>`). A local-key signer can return synchronously without wrapping the result in a `Promise`; async signers (HSMs, MPC, remote APIs) work unchanged.
 
-Canonical source: [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v0.4.0/src/signer/types.ts#L157).
+Canonical source: [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/signer/types.ts#L159).
 
 ## End-to-end examples
 

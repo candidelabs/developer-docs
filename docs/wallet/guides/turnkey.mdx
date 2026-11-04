@@ -73,15 +73,14 @@ NEW_ONWER_PUBLIC_ADDRESS=
 This step shows how to contrust the calldata for creating the userop to add a guardian. 
 
 ```ts
-import { SocialRecoveryModule } from "abstractionkit";
+import { SocialRecoveryModuleV2 } from "abstractionkit";
 
-const srm = new SocialRecoveryModule();
+const srm = new SocialRecoveryModuleV2();
 
 const enableModuleTx = srm.createEnableModuleMetaTransaction(
     smartAccount.accountAddress
 );
 const addGuardianTx = srm.createAddGuardianWithThresholdMetaTransaction(
-    smartAccount.accountAddress, 
     process.env.TURNKEY_PUBLIC_KEY, // Turnkey Guardian Address
     1n //threshold
 );
@@ -118,10 +117,14 @@ const guardianSigner = new TurnkeySigner({
   signWith: process.env.TURNKEY_WALLET_ADDRESS as string,  // For this demo, we manually generated the signer on turnkey dashboard
 });
 
-const initiateRecoveryMetaTx = createConfirmRecoveryMetaTransaction(
-    smartAccount.address, 
+// the account's current recovery nonce
+const nonce = await srm.nonce(process.env.JSON_RPC_NODE_PROVIDER, smartAccount.accountAddress);
+
+const initiateRecoveryMetaTx = srm.createConfirmRecoveryMetaTransaction(
+    smartAccount.accountAddress,
     [process.env.NEW_ONWER_PUBLIC_ADDRESS],
     1, // new threshold
+    nonce,
     true, // whether to auto-start execution of recovery
 )
 
@@ -162,10 +165,14 @@ const guardianSigner = createWalletClient({
   transport: http(process.env.JSON_RPC_NODE_PROVIDER as string),
 });
 
-const initiateRecoveryMetaTx = createConfirmRecoveryMetaTransaction(
-    smartAccount.address, 
+// the account's current recovery nonce
+const nonce = await srm.nonce(process.env.JSON_RPC_NODE_PROVIDER, smartAccount.accountAddress);
+
+const initiateRecoveryMetaTx = srm.createConfirmRecoveryMetaTransaction(
+    smartAccount.accountAddress,
     [process.env.NEW_ONWER_PUBLIC_ADDRESS],
     1, // new threshold
+    nonce,
     true, // whether to auto-start execution of recovery
 )
 
@@ -187,7 +194,7 @@ Wait for recovery period to pass before finilizing
 
 
 ```ts
-const finalizeRecoveryMetaTx = createFinalizeRecoveryMetaTransaction(smartAccount.accountAddress)
+const finalizeRecoveryMetaTx = srm.createFinalizeRecoveryMetaTransaction(smartAccount.accountAddress)
     
 // Anyone can call the finilize function after the grace period is over
 const sendTx2 = await guardianSigner.sendTransaction({
@@ -201,7 +208,7 @@ const sendTx2 = await guardianSigner.sendTransaction({
 <TabItem value="viem" label="viem">
 
 ```ts
-const finalizeRecoveryMetaTx = createFinalizeRecoveryMetaTransaction(smartAccount.accountAddress)
+const finalizeRecoveryMetaTx = srm.createFinalizeRecoveryMetaTransaction(smartAccount.accountAddress)
 
 // Anyone can call the finilize function after the grace period is over
 const sendTx2 = await guardianSigner.sendTransaction({

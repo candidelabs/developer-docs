@@ -194,10 +194,13 @@ console.log("Smart Account Address:", smartAccount.accountAddress);
 ```
 
 ### Enable The Module and Add the Guardian
-```ts 
-import { SocialRecoveryModule } from "abstractionkit";
 
-const srm = new SocialRecoveryModule();
+This guide uses `SocialRecoveryModuleV1` to match the [second guide](https://developer.litprotocol.com/integrations/aa/candide) on Lit's docs. New integrations should use `SocialRecoveryModuleV2`.
+
+```ts 
+import { SocialRecoveryModuleV1 } from "abstractionkit";
+
+const srm = new SocialRecoveryModuleV1();
 
 const enableModuleTx = srm.createEnableModuleMetaTransaction(
   smartAccount.accountAddress
@@ -207,7 +210,6 @@ const enableModuleTx = srm.createEnableModuleMetaTransaction(
 const guardianOwnerAddress = await guardianSigner.getAddress();
 const guardianSmartAccount = SafeAccount.initializeNewAccount([guardianOwnerAddress]);
 const addGuardianTx = srm.createAddGuardianWithThresholdMetaTransaction(
-  smartAccount.accountAddress,
   guardianSmartAccount.accountAddress,
   1n
 );

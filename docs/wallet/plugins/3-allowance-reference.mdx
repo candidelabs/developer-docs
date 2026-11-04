@@ -70,7 +70,7 @@ Creates a MetaTransaction that adds a delegate to the account. The delegate can 
 
 ### createOneTimeAllowanceMetaTransaction
 
-Creates a MetaTransaction that sets a one-time allowance for a delegate. The allowance does not reset after use. An optional start delay can be configured.
+Creates a MetaTransaction that sets a one-time allowance for a delegate. The allowance does not reset after use and is active as soon as the Safe executes the transaction. The module cannot delay activation of a one-time allowance.
 
 <Tabs>
 <TabItem value="Param type" label="Param Types">
@@ -83,7 +83,7 @@ Creates a MetaTransaction that sets a one-time allowance for a delegate. The all
 
 ### createRecurringAllowanceMetaTransaction
 
-Creates a MetaTransaction that sets a recurring allowance for a delegate. The allowance automatically resets after the specified validity period. An optional start delay can be configured.
+Creates a MetaTransaction that sets a recurring allowance for a delegate. The allowance automatically resets after the specified validity period and is spendable as soon as the Safe executes the transaction. The optional `inThePastPeriodStartBaseTimeStamp` (unix seconds, in the past) only aligns when each period resets. It does not delay activation.
 
 <Tabs>
 <TabItem value="Param type" label="Param Types">
