@@ -247,7 +247,7 @@ export const authorization7702HexType = [
   },
   {
     key: "nonce",
-    type: "bigint",
+    type: "string",
     description: "Authorization nonce in hexadecimal format",
   },
   {
