@@ -189,7 +189,8 @@ import { SafeMultiChainSigAccountV1, fromSafeWebauthn } from "abstractionkit";
 
 const signer = fromSafeWebauthn({
   publicKey: { x, y },
-  isInit: userOperation.factory != null, // true only on the deploying UserOperation
+  // true only on the deploying UserOperation. EntryPoint v0.6 (SafeAccountV0_2_0): userOperation.initCode !== "0x"
+  isInit: userOperation.factory != null,
   accountClass: SafeMultiChainSigAccountV1,
   getAssertion: async (challenge) => {
     return getWebauthnAssertion(challenge);
