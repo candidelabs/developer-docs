@@ -165,7 +165,10 @@ const smartAccount = new Calibur7702Account(eoaAddress, {
 
 Since AbstractionKit v1.0.0, `Calibur7702Account` delegates to Calibur v1.1.0 by default. Before that, the default was v1.0.0 (`0x000000009B1D0aF20D8C6d0A44e162d11F9b8f00`), and `CALIBUR_UNISWAP_V1_0_0_SINGLETON_ADDRESS` was replaced by `CALIBUR_UNISWAP_V1_1_0_SINGLETON_ADDRESS`.
 
-v1.1.0 keeps the EIP-712 domain (`"Calibur"`, `"1.0.0"`), every selector the SDK uses and the storage layout. Keys registered under v1.0.0 survive a re-delegation to v1.1.0. One behavior change: v1.1.0 rejects a nonzero `hook` that has no deployed code or no enabled callback flag in its address, so `update` calls (including the one in `createRegisterKeyMetaTransactions`) with such a hook revert with `InvalidHook` after migration.
+v1.1.0 keeps the EIP-712 domain (`"Calibur"`, `"1.0.0"`), every selector the SDK uses and the storage layout. Keys registered under v1.0.0 survive a re-delegation to v1.1.0. Two behavior changes:
+
+- v1.1.0 rejects a nonzero `hook` that has no deployed code or no enabled callback flag in its address, so `update` calls (including the one in `createRegisterKeyMetaTransactions`) with such a hook revert with `InvalidHook`.
+- Only admin keys can call the EntryPoint. A batch signed by a non-admin key that calls the EntryPoint (for example `depositTo` or `withdrawTo`) reverts with `OnlyAdminCanCallEntryPoint`. Sign those calls with the root key or an admin key.
 
 `delegateeAddress` is what the SDK delegates to in the `eip7702Auth` of a new UserOperation, and what `isDelegatedToThisAccount` and `createRevokeDelegationRawTransaction` check against. For an EOA that is still delegated to v1.0.0, either:
 
