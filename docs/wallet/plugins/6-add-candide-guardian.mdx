@@ -237,9 +237,9 @@ const candideGuardianAddress = verificationResponse.guardianAddress;
 Add Candide Guardian to your Safe account. See the complete flow of adding a guardian in the [How to Add a Guardian](/wallet/plugins/how-to-add-a-guardian) guide
 
 ```ts
-import { SocialRecoveryModule, SocialRecoveryModuleGracePeriodSelector } from "abstractionkit";
+import { SocialRecoveryModuleV1, SocialRecoveryModuleGracePeriodSelectorV1 } from "abstractionkit";
 
-const srm = new SocialRecoveryModule(SocialRecoveryModuleGracePeriodSelector.After3Minutes);
+const srm = new SocialRecoveryModuleV1(SocialRecoveryModuleGracePeriodSelectorV1.After3Minutes);
 
 // Create transactions to enable module
 const enableModuleTx = srm.createEnableModuleMetaTransaction(

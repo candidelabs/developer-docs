@@ -14,11 +14,6 @@ const createOneTimeAllowanceParams = [
     type: "bigint",
     description: "The amount of the token allowed for the delegate.",
   },
-  {
-    key: "startAfterInMinutes",
-    type: "bigint",
-    description: "The delay in minutes before the allowance can be used.",
-  },
 ];
 
 const createRecurringAllowanceParams = [
@@ -42,12 +37,13 @@ const createRecurringAllowanceParams = [
     key: "recurringAllowanceValidityPeriodInMinutes",
     type: "bigint",
     description:
-      "The time period (in minutes) after which the allowance resets.",
+      "The time period (in minutes) after which the allowance resets. Must be between 0 and 65535 (the contract's uint16), otherwise a RangeError is thrown.",
   },
   {
-    key: "startAfterInMinutes",
-    type: "bigint",
-    description: "The delay in minutes before the allowance can be used.",
+    key: "inThePastPeriodStartBaseTimeStamp",
+    type: "bigint?",
+    description:
+      "Optional unix timestamp in seconds that must be in the past. It only aligns the period boundaries (for example, any previous Saturday 10am to reset every Saturday 10am) and does not delay activation: the allowance is spendable as soon as the Safe executes the transaction. Converted to minutes internally. A millisecond timestamp throws a RangeError. Defaults to 0n, which starts the period accounting when the transaction executes for a new allowance, and keeps the current anchor when updating an existing one.",
   },
 ];
 
@@ -334,7 +330,7 @@ const getDelegatesParams = [
         key: "maxNumberOfResults",
         type: "bigint",
         description:
-          "The maximum number of results to return. If specified, overrides pagination.",
+          "The maximum number of results to return, between 0 and 255 (the module's page size is a uint8). If specified, disables automatic pagination. Omit it to fetch all delegates.",
       },
     ],
     description: "Optional parameters for pagination.",

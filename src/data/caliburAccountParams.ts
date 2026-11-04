@@ -53,7 +53,7 @@ export const caliburKeySettingsType = [
       {
         key: "expiration?",
         type: "number",
-        description: "Unix timestamp after which the key expires (0 = never)",
+        description: "Unix timestamp in seconds (not milliseconds) after which the key expires (0 = never). Must fit in uint40.",
       },
       {
         key: "isAdmin?",
@@ -77,7 +77,7 @@ export const caliburKeySettingsResultType = [
       {
         key: "expiration",
         type: "number",
-        description: "Unix timestamp after which the key expires (0 = never)",
+        description: "Unix timestamp in seconds (not milliseconds) after which the key expires (0 = never). Must fit in uint40.",
       },
       {
         key: "isAdmin",

@@ -6,7 +6,7 @@ const createEnableModuleParams = [
   },
 ];
 
-const createConfirmRecoveryParams = [
+const createConfirmRecoveryParamsV1 = [
   {
     key: "accountAddress",
     type: "string",
@@ -29,7 +29,7 @@ const createConfirmRecoveryParams = [
   },
 ];
 
-const createMultiConfirmRecoveryParams = [
+const createConfirmRecoveryParamsV2 = [
   {
     key: "accountAddress",
     type: "string",
@@ -44,6 +44,67 @@ const createMultiConfirmRecoveryParams = [
     key: "newThreshold",
     type: "number",
     description: "The new threshold for the safe.",
+  },
+  {
+    key: "nonce",
+    type: "bigint",
+    description: "The account's current recovery nonce (see nonce). The module reverts if it changed before the transaction is included.",
+  },
+  {
+    key: "execute",
+    type: "boolean",
+    description: "Whether to auto-start execution of recovery.",
+  },
+];
+
+const createMultiConfirmRecoveryParamsV1 = [
+  {
+    key: "accountAddress",
+    type: "string",
+    description: "The target account address.",
+  },
+  {
+    key: "newOwners",
+    type: "string[]",
+    description: "The new owners' addresses.",
+  },
+  {
+    key: "newThreshold",
+    type: "number",
+    description: "The new threshold for the safe.",
+  },
+  {
+    key: "signaturePairList",
+    type: "RecoverySignaturePair[]",
+    description: "The guardians signers and signatures pair list.",
+  },
+  {
+    key: "execute",
+    type: "boolean",
+    description: "Whether to auto-start execution of recovery.",
+  },
+];
+
+const createMultiConfirmRecoveryParamsV2 = [
+  {
+    key: "accountAddress",
+    type: "string",
+    description: "The target account address.",
+  },
+  {
+    key: "newOwners",
+    type: "string[]",
+    description: "The new owners' addresses.",
+  },
+  {
+    key: "newThreshold",
+    type: "number",
+    description: "The new threshold for the safe.",
+  },
+  {
+    key: "nonce",
+    type: "bigint",
+    description: "The recovery nonce the guardians signed (messageValue.nonce from getRecoveryRequestEip712Data). It must still be the account's current nonce when the transaction is included.",
   },
   {
     key: "signaturePairList",
@@ -101,7 +162,7 @@ const createAddGuardianWithThresholdParams = [
 const createRevokeGuardianWithThresholdParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The JSON-RPC API url for the target chain (to get the prevGuardian parameter).",
   },
   {
@@ -149,14 +210,14 @@ const createChangeThresholdMetaTransactionParams = [
     key: "threshold",
     type: "bigint",
     description:
-      "The new threshold that will be set after execution of revokation.",
+      "The new guardian threshold.",
   },
 ];
 
 const getRecoveryHashParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The JSON-RPC API url for the target chain.",
   },
   {
@@ -184,7 +245,7 @@ const getRecoveryHashParams = [
 const getRecoveryRequestEip712DataParams = [
   {
     key: "rpcNode",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "Node to fetch the recovery nonce.",
   },
   {
@@ -210,14 +271,14 @@ const getRecoveryRequestEip712DataParams = [
   {
     key: "overrides",
     type: "object",
-    description: "Optional overrides with recoveryNonce.",
+    description: "Optional overrides. recoveryNonce sets the recovery nonce instead of reading it from the node.",
   },
 ];
 
 const getRecoveryRequestParams = [
   {
-    key: "nodeUrl",
-    type: "string",
+    key: "nodeRpcUrl",
+    type: "string | Transport | JsonRpcNode",
     description: "The Node URL of the Ethereum RPC endpoint.",
   },
   {
@@ -229,8 +290,8 @@ const getRecoveryRequestParams = [
 
 const getRecoveryApprovalsParams = [
   {
-    key: "nodeUrl",
-    type: "string",
+    key: "nodeRpcUrl",
+    type: "string | Transport | JsonRpcNode",
     description: "The Node URL of the Ethereum RPC endpoint.",
   },
   {
@@ -252,8 +313,8 @@ const getRecoveryApprovalsParams = [
 
 const hasGuardianApprovedParams = [
   {
-    key: "nodeURL",
-    type: "string",
+    key: "nodeRpcUrl",
+    type: "string | Transport | JsonRpcNode",
     description: "The Node URL of the Ethereum RPC endpoint.",
   },
   {
@@ -281,7 +342,7 @@ const hasGuardianApprovedParams = [
 const isGuardianParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The Node URL of the Ethereum RPC endpoint.",
   },
   {
@@ -299,7 +360,7 @@ const isGuardianParams = [
 const guardiansCountParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The Node URL of the Ethereum RPC endpoint.",
   },
   {
@@ -311,8 +372,8 @@ const guardiansCountParams = [
 
 const thresholdParams = [
   {
-    key: "nodeURL",
-    type: "string",
+    key: "nodeRpcUrl",
+    type: "string | Transport | JsonRpcNode",
     description: "The Node URL of the Ethereum RPC endpoint.",
   },
   {
@@ -325,7 +386,7 @@ const thresholdParams = [
 const getGuardiansParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The Node URL of the Ethereum RPC endpoint.",
   },
   {
@@ -338,7 +399,7 @@ const getGuardiansParams = [
 const nonceParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The Node URL of the Ethereum RPC endpoint.",
   },
   {
@@ -348,7 +409,35 @@ const nonceParams = [
   },
 ];
 
-const RecoveryRequestParams = [
+const RecoveryRequestV2Params = [
+  {
+    key: "guardiansApprovalCount",
+    type: "bigint",
+    description: "The number of guardian approvals.",
+  },
+  {
+    key: "newThreshold",
+    type: "bigint",
+    description: "The new threshold for the safe.",
+  },
+  {
+    key: "nonce",
+    type: "bigint",
+    description: "The recovery nonce the request was approved under.",
+  },
+  {
+    key: "executableAt",
+    type: "bigint",
+    description: "Unix timestamp (seconds) from which the recovery can be finalized. 0 if no recovery is in progress.",
+  },
+  {
+    key: "newOwners",
+    type: "string[]",
+    description: "Array of new owners' addresses.",
+  },
+];
+
+const RecoveryRequestV1Params = [
   {
     key: "guardiansApprovalCount",
     type: "bigint",
@@ -362,12 +451,30 @@ const RecoveryRequestParams = [
   {
     key: "executeAfter",
     type: "bigint",
-    description: "Timestamp indicating when the execution can happen.",
+    description: "Unix timestamp (seconds) from which the recovery can be finalized. 0 if not yet executed.",
   },
   {
     key: "newOwners",
     type: "string[]",
     description: "Array of new owners' addresses.",
+  },
+];
+
+const getRecoveryRequestEip712DataReturnParams = [
+  {
+    key: "domain",
+    type: "RecoveryRequestTypedDataDomain",
+    description: "EIP-712 domain: name \"Social Recovery Module\", version (\"0.2.0\" for V2, \"0.0.1\" for V1), chainId, and the module address as verifyingContract.",
+  },
+  {
+    key: "types",
+    type: "Record<string, { name: string; type: string }[]>",
+    description: "EIP-712 type definitions for the ExecuteRecovery primary type.",
+  },
+  {
+    key: "messageValue",
+    type: "RecoveryRequestTypedMessageValue",
+    description: "The message to sign: wallet, newOwners, newThreshold, and nonce. On V2, pass messageValue.nonce to the confirm methods.",
   },
 ];
 
@@ -404,8 +511,10 @@ const sendEthCallRequestParams = [
 
 export {
   createEnableModuleParams,
-  createConfirmRecoveryParams,
-  createMultiConfirmRecoveryParams,
+  createConfirmRecoveryParamsV1,
+  createConfirmRecoveryParamsV2,
+  createMultiConfirmRecoveryParamsV1,
+  createMultiConfirmRecoveryParamsV2,
   createExecuteRecoveryParams,
   createFinalizeRecoveryParams,
   createCancelRecoveryParams,
@@ -415,6 +524,7 @@ export {
   createChangeThresholdMetaTransactionParams,
   getRecoveryHashParams,
   getRecoveryRequestEip712DataParams,
+  getRecoveryRequestEip712DataReturnParams,
   getRecoveryRequestParams,
   getRecoveryApprovalsParams,
   hasGuardianApprovedParams,
@@ -423,7 +533,8 @@ export {
   thresholdParams,
   getGuardiansParams,
   nonceParams,
-  RecoveryRequestParams,
+  RecoveryRequestV1Params,
+  RecoveryRequestV2Params,
   RecoverySignaturePairParams,
   sendEthCallRequestParams,
 };

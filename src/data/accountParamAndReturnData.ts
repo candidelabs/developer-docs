@@ -74,7 +74,7 @@ export const initCodeOverrides = [
     key: "safeAccountSingleton?",
     type: "SafeAccountSingleton",
     description:
-      'Safe contract singleton address. Default is "0x29fcB43b46531BcA003ddC8FCB67FFE91900C762".',
+      'Safe singleton address and init hash. Default is Safe L2 v1.4.1 ("0x29fcB43b46531BcA003ddC8FCB67FFE91900C762"), or Safe L2 v1.5.0 ("0xEdd160fEBBD92E350D4D398fb636302fccd67C7e") for SafeMultiChainSigAccountV2. Pass the exported Safe_L2_V1_4_1 or Safe_L2_V1_5_0 to pick one explicitly.',
   },
   {
     key: "safeAccountFactoryAddress?",
@@ -355,6 +355,15 @@ export const initializeNewAccountReturnV3 = [
     type: "SafeAccountV0_3_0",
     description:
       "An instance of the Safe V3 Account and the initialization parameters",
+  },
+];
+
+export const initializeNewAccountReturnMultiChainSig = [
+  {
+    key: "SafeAccount class",
+    type: "SafeMultiChainSigAccountV1 | SafeMultiChainSigAccountV2",
+    description:
+      "An instance of the class it was called on (V1 or V2), with the initialization parameters",
   },
 ];
 
@@ -1761,7 +1770,7 @@ export const createMigrateToV3Return = [
   },
 ];
 
-// Safe Unified Account (SafeMultiChainSigAccountV1) types
+// Safe Unified Account (SafeMultiChainSigAccountV1 / SafeMultiChainSigAccountV2) types
 
 export const userOperationToSignType = [
   {

@@ -65,8 +65,8 @@ export const createPackedUserOperationV7Return = [
 export const fetchAccountNonceParams = [
   {
     key: "rpcUrl",
-    type: "string",
-    description: "The JSON-RPC URL of an Ethereum node",
+    type: "string | Transport | JsonRpcNode",
+    description: "The JSON-RPC URL of an Ethereum node, or a Transport / JsonRpcNode instance",
   },
   {
     key: "entryPoint",
@@ -80,8 +80,8 @@ export const fetchAccountNonceParams = [
   },
   {
     key: "key",
-    type: "number",
-    description: "Nonce key for parallel nonce channels (default: 0). Using different keys allows multiple independent UserOperations to be submitted concurrently.",
+    type: "number | bigint",
+    description: "Nonce key for parallel nonce channels (default: 0). Using different keys allows multiple independent UserOperations to be submitted concurrently. The key is a uint192, so pass a bigint for keys above 2^53 - 1 (for example, keccak-derived keys).",
   },
 ];
 

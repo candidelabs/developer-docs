@@ -17,6 +17,8 @@ The Recovery Service requires access credentials. [Request access here](https://
 
 > To set up the recovery module, see [Enable Recovery Module and Add Guardians](/wallet/plugins/how-to-add-a-guardian/).
 
+The Recovery Service steps below use `SocialRecoveryModuleV1`. For an account on module v0.2.0, see [Recover Without the Recovery Service](#recover-without-the-recovery-service).
+
 ## Overview
 
 The recovery flow consists of four key steps:
@@ -84,10 +86,13 @@ Request access to the recovery service [here](https://app.formbricks.com/s/brdzl
 ```ts title="initialize-services.ts"
 import {
   SafeMultiChainSigAccountV1 as SafeAccount,
-  SocialRecoveryModule,
-  SocialRecoveryModuleGracePeriodSelector,
+  SocialRecoveryModuleV1,
+  SocialRecoveryModuleGracePeriodSelectorV1,
 } from "abstractionkit";
-import { RecoveryByGuardian } from "safe-recovery-service-sdk";
+import {
+  RecoveryByGuardian,
+  SocialRecoveryModuleGracePeriodSelector,
+} from "safe-recovery-service-sdk";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 const recoveryServiceURL = process.env.RECOVERY_SERVICE_URL as string;
@@ -102,7 +107,8 @@ const guardian2PrivateKey = process.env.GUARDIAN_2_PRIVATE_KEY as `0x${string}`;
 const guardian2Account = privateKeyToAccount(guardian2PrivateKey);
 
 // highlight-start
-const srm = new SocialRecoveryModule(SocialRecoveryModuleGracePeriodSelector.After3Minutes);
+// module v0.1.0, matching the safe-recovery-service-sdk selector below
+const srm = new SocialRecoveryModuleV1(SocialRecoveryModuleGracePeriodSelectorV1.After3Minutes);
 
 const recoveryService = new RecoveryByGuardian(
   recoveryServiceURL,
@@ -212,6 +218,57 @@ https://github.com/candidelabs/safe-recovery-service-sdk/blob/main/examples/03-r
 
 </details>
 
+## Recover Without the Recovery Service
+
+Anyone can submit the guardian confirmations and finalize the recovery on-chain, since these module methods are public. On module v0.2.0, confirmations name the recovery nonce the guardians signed, so read it from `messageValue.nonce` and pass it to `createMultiConfirmRecoveryMetaTransaction`.
+
+```ts title="recovery-without-service.ts"
+import {
+  SocialRecoveryModuleV2,
+  SocialRecoveryModuleGracePeriodSelectorV2,
+  EXECUTE_RECOVERY_PRIMARY_TYPE,
+} from "abstractionkit";
+import { TypedDataDomain } from "viem";
+
+const srm = new SocialRecoveryModuleV2(SocialRecoveryModuleGracePeriodSelectorV2.After3Minutes);
+
+const { domain, types, messageValue } = await srm.getRecoveryRequestEip712Data(
+    nodeUrl,
+    chainId,
+    smartAccountAddress,
+    [newOwnerAddress],
+    1n
+);
+
+const signaturePairList = await Promise.all(
+    [guardian1Account, guardian2Account].map(async (guardian) => ({
+        signer: guardian.address,
+        signature: await guardian.signTypedData({
+            primaryType: EXECUTE_RECOVERY_PRIMARY_TYPE,
+            domain: domain as TypedDataDomain,
+            types,
+            message: messageValue,
+        }),
+    }))
+);
+
+// Confirm and execute in one transaction, sent by any account with gas
+const multiConfirmTx = srm.createMultiConfirmRecoveryMetaTransaction(
+    smartAccountAddress,
+    [newOwnerAddress],
+    1,
+    messageValue.nonce,
+    signaturePairList,
+    true // execute: starts the grace period
+);
+
+// After the grace period (recoveryRequest.executableAt), anyone can finalize
+const recoveryRequest = await srm.getRecoveryRequest(nodeUrl, smartAccountAddress);
+const finalizeTx = srm.createFinalizeRecoveryMetaTransaction(smartAccountAddress);
+```
+
+Send `multiConfirmTx` and `finalizeTx` as regular transactions (`to`, `data`, `value`) from any funded account, or batch them in a UserOperation from a smart account. If the owner adds or revokes a guardian, changes the threshold, or cancels before the confirmations are included, the nonce changes and the guardians must sign again.
+
 ## What's Next
 
 - [Recovery Alerts Guide](/wallet/plugins/recovery-alerts-guide/): set up email and SMS notifications so account owners are alerted if a recovery is ever initiated
@@ -231,7 +288,7 @@ Candide Recovery Service provides an emoji-based communication system enabling g
 ### Signatures
 - **EIP-712**: All signatures use typed data for replay protection
 - **Domain Separation**: Signatures are chain-specific
-- **Nonce Protection**: Each recovery request includes a unique nonce
+- **Nonce Protection**: Each recovery request includes a unique nonce. On module v0.2.0, any guardian or threshold change and `cancelRecovery` move to a new nonce, which invalidates the signatures collected so far
 
 ### Grace Period
 - **Sufficient Duration**: Allow adequate time for legitimate owners to cancel unauthorized recovery attempts

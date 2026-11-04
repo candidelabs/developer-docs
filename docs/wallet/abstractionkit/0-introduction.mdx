@@ -26,7 +26,7 @@ Use Safe Accounts, construct callData, estimate and sponsor gas (fully or with E
 | Integration | Recommended class | EntryPoint | Notes |
 |---|---|---|---|
 | New Safe account, single-chain or multichain | `SafeMultiChainSigAccountV1` | v0.9 | Recommended for new projects. Same class works for normal single-chain Safe UserOperations and Safe Unified Account multichain signing. |
-| Safe v1.5.0 on EntryPoint v0.7 | `SafeAccountV1_5_0_M_0_3_0` | v0.7 | Safe v1.5.0 singleton with Safe 4337 module v0.3.0. Passkeys verify through the RIP-7951 P-256 precompile, with the Daimo verifier as fallback. |
+| New Safe account on Safe v1.5.0 | `SafeMultiChainSigAccountV2` | v0.9 | Same module, signing and passkey defaults as `SafeMultiChainSigAccountV1`, but new accounts deploy the Safe L2 v1.5.0 singleton, so their address differs. Either class attaches a deployed account. Replaces `SafeAccountV1_5_0_M_0_3_0` (Safe v1.5.0 on EntryPoint v0.7), removed in v1.0.0. |
 | Legacy Safe v0.7 compatibility | `SafeAccountV0_3_0` | v0.7 | Use when you need the older Safe 4337 module v0.3.0 on Safe v1.4.1. |
 | Legacy Safe v0.6 compatibility | `SafeAccountV0_2_0` | v0.6 | Use only for older Safe 4337 module v0.2.0 integrations or migration paths. |
 
@@ -47,13 +47,13 @@ Use Safe Accounts, construct callData, estimate and sponsor gas (fully or with E
 
 ## Why AbstractionKit
 
-Smart contract wallets are challenging to build. We learned this firsthand while developing [Candide Wallet](https://candidewallet.com), one of the first Smart Wallets. We wrote smart contracts, conducted audits, built a compliant Bundler, and designed paymaster gas features. Then we realized we had invested more resources in infrastructure than in our actual product—the consumer-facing application. The infrastructure we built wasn't just useful for us; it's what all developers need.
+Smart contract wallets are challenging to build. We learned this firsthand while developing [Candide Wallet](https://candidewallet.com), one of the first Smart Wallets. We wrote smart contracts, conducted audits, built a compliant Bundler, and designed paymaster gas features. Then we realized we had invested more resources in infrastructure than in our actual product: the consumer-facing application. The infrastructure we built wasn't just useful for us; it's what all developers need.
 We refocused our efforts to create AbstractionKit: an SDK that enables you to build smart account applications in days, not months.
 
 ### Peak Efficiency
 AbstractionKit is engineered for optimal performance by minimizing HTTPS requests to core infrastructure (Node, Bundler, Paymaster).
 We achieve this by using cryptographic techniques to calculate complex smart account signatures offline. Fewer HTTPS requests reduce your
-infrastructure costs while delivering a significantly faster user experience. Don't just take our word for it—verify the results yourself by comparing AbstractionKit's performance against other account abstraction libraries in the [AA-SDK-Benchmark](https://aa-sdk-benchmark.on-fleek.app/).
+infrastructure costs while delivering a significantly faster user experience. Don't just take our word for it. Verify the results yourself by comparing AbstractionKit's performance against other account abstraction libraries in the [AA-SDK-Benchmark](https://aa-sdk-benchmark.on-fleek.app/).
 
 ### Secure Smart Accounts
 AbstractionKit supports [Safe Accounts](/wallet/abstractionkit/safe-account/), the battle-tested smart accounts securing billions of dollars in assets across Ethereum and other EVM-compatible chains. We chose Safe for its unparalleled security track record, extensive audits, and widespread community trust, making it the industry standard for secure smart contract wallets.
@@ -62,7 +62,7 @@ For EIP-7702 EOA upgrades, AbstractionKit supports [Calibur Account](/wallet/abs
 
 ### Extensible
 
-Each core component—Bundler, Paymaster, and Account—is built as a separate, modular unit, allowing for tailored configurations and extensions.
+Each core component (Bundler, Paymaster, and Account) is built as a separate, modular unit, allowing for tailored configurations and extensions.
 Build custom smart account plugins, integrate social logins through third-party authentication services, or use alternative smart account implementations beyond Safe and Simple Accounts.
 
 ### Vendor-Agnostic
@@ -93,15 +93,15 @@ yarn add abstractionkit
 
 ## Current SDK version
 
-The docs track AbstractionKit v0.4.0. Source links throughout the reference pages point at the `v0.4.0` tag. To install the documented version explicitly:
+The docs track AbstractionKit v1.0.0. Source links throughout the reference pages point at the `v1.0.0` tag. To install the documented version explicitly:
 
 ```bash
-npm install abstractionkit@0.4.0
+npm install abstractionkit@1.0.0
 ```
 
 ## Resources
 
 - **Source code**: [github.com/candidelabs/abstractionkit](https://github.com/candidelabs/abstractionkit)
-- **Full changelog**: [github.com/candidelabs/abstractionkit/blob/main/CHANGELOG.md](https://github.com/candidelabs/abstractionkit/blob/main/CHANGELOG.md) — exhaustive list of every release, including breaking changes and migration snippets. Release highlights also appear in the [blog](/blog).
+- **Full changelog**: [github.com/candidelabs/abstractionkit/blob/main/CHANGELOG.md](https://github.com/candidelabs/abstractionkit/blob/main/CHANGELOG.md): exhaustive list of every release, including breaking changes and migration snippets. Release highlights also appear in the [blog](/blog).
 - **Examples**: [github.com/candidelabs/abstractionkit-examples](https://github.com/candidelabs/abstractionkit-examples)
 - **npm**: [npmjs.com/package/abstractionkit](https://www.npmjs.com/package/abstractionkit)

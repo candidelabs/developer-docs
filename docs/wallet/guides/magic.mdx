@@ -70,7 +70,7 @@ NEW_OWNER_PUBLIC_ADDRESS=
 ```ts
 import { 
     SafeMultiChainSigAccountV1 as SafeAccount,
-    SocialRecoveryModule,
+    SocialRecoveryModuleV2,
 } from "abstractionkit";
 import { Magic } from "magic-sdk";
 import { BrowserProvider } from 'ethers';
@@ -81,12 +81,11 @@ const guardianSigner = await provider.getSigner();
 
 const smartAccount = SafeAccount.initializeNewAccount([process.env.OWNER_PUBLIC_ADDRESS]);
     
-const srm = new SocialRecoveryModule();
+const srm = new SocialRecoveryModuleV2();
 const enableModuleTx = srm.createEnableModuleMetaTransaction(
     smartAccount.accountAddress
 );
 const addGuardianTx = srm.createAddGuardianWithThresholdMetaTransaction(
-    smartAccount.accountAddress, 
     guardianSigner.address, // Magic Guardian Address
     1n //threshold
 );
@@ -102,7 +101,10 @@ let userOperation = await smartAccount.createUserOperation(
 <TabItem value="viem" label="viem">
 
 ```ts 
-import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+import {
+    SafeMultiChainSigAccountV1 as SafeAccount,
+    SocialRecoveryModuleV2,
+} from "abstractionkit";
 import { Magic } from "magic-sdk";
 import { createWalletClient, custom } from "viem";
 
@@ -112,12 +114,11 @@ const guardianSigner = createWalletClient({
 });
 const guardianAddresses = await signer.getAddresses();
     
-const srm = new SocialRecoveryModule();
+const srm = new SocialRecoveryModuleV2();
 const enableModuleTx = srm.createEnableModuleMetaTransaction(
     smartAccount.accountAddress
 );
 const addGuardianTx = srm.createAddGuardianWithThresholdMetaTransaction(
-    smartAccount.accountAddress, 
     guardianAddresses[0], // Magic Guardian Address
     1n //threshold
 );
@@ -144,10 +145,14 @@ To use MagicSigner in your app's client, you must ensure the `window` object is 
 ```ts
 import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
-const initiateRecoveryMetaTx = createConfirmRecoveryMetaTransaction(
-    smartAccount.address, 
+// the account's current recovery nonce
+const nonce = await srm.nonce(process.env.JSON_RPC_NODE_PROVIDER, smartAccount.accountAddress);
+
+const initiateRecoveryMetaTx = srm.createConfirmRecoveryMetaTransaction(
+    smartAccount.accountAddress,
     [process.env.NEW_OWNER_PUBLIC_ADDRESS],
     1, // new threshold
+    nonce,
     true, // whether to auto-start execution of recovery
 );
 
@@ -168,10 +173,14 @@ const sendTx1 = guardianSigner.sendTransaction({
 import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 import { createWalletClient, http } from "viem";
 
-const initiateRecoveryMetaTx = createConfirmRecoveryMetaTransaction(
-    smartAccount.address, 
-    [process.env.NEW_ONWER_PUBLIC_ADDRESS],
+// the account's current recovery nonce
+const nonce = await srm.nonce(process.env.JSON_RPC_NODE_PROVIDER, smartAccount.accountAddress);
+
+const initiateRecoveryMetaTx = srm.createConfirmRecoveryMetaTransaction(
+    smartAccount.accountAddress,
+    [process.env.NEW_OWNER_PUBLIC_ADDRESS],
     1, // new threshold
+    nonce,
     true, // whether to auto-start execution of recovery
 )
 
@@ -191,7 +200,7 @@ Wait for recovery period to pass before finilizing
 <TabItem value="ethers" label="ethers">
 
 ```ts
-const finalizeRecoveryMetaTx = createFinalizeRecoveryMetaTransaction(smartAccount.accountAddress)
+const finalizeRecoveryMetaTx = srm.createFinalizeRecoveryMetaTransaction(smartAccount.accountAddress)
     
 // Anyone can call the finilize function after the grace period is over
 const sendTx2 = await guardianSigner.sendTransaction({
@@ -205,7 +214,7 @@ const sendTx2 = await guardianSigner.sendTransaction({
 <TabItem value="viem" label="viem">
 
 ```ts
-const finalizeRecoveryMetaTx = createFinalizeRecoveryMetaTransaction(smartAccount.accountAddress)
+const finalizeRecoveryMetaTx = srm.createFinalizeRecoveryMetaTransaction(smartAccount.accountAddress)
 
 // Anyone can call the finilize function after the grace period is over
 const sendTx2 = await guardianSigner.sendTransaction({
