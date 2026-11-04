@@ -189,7 +189,7 @@ import { SafeMultiChainSigAccountV1, fromSafeWebauthn } from "abstractionkit";
 
 const signer = fromSafeWebauthn({
   publicKey: { x, y },
-  isInit: userOperation.nonce === 0n,
+  isInit: userOperation.factory != null, // true only on the deploying UserOperation
   accountClass: SafeMultiChainSigAccountV1,
   getAssertion: async (challenge) => {
     return getWebauthnAssertion(challenge);
@@ -203,7 +203,7 @@ userOperation.signature = await safe.signUserOperationWithSigners(
 );
 ```
 
-Pass the same class you passed to `initializeNewAccount` as `accountClass`: `SafeMultiChainSigAccountV1` or `SafeMultiChainSigAccountV2` (both use the Safe Passkey module v0.2.1 defaults), or `SafeAccountV0_2_0` / `SafeAccountV0_3_0` (v0.2.0 defaults). A mismatched class derives the wrong signer address and the signature fails on-chain with `GS026`.
+Pass the same class you passed to `initializeNewAccount` as `accountClass`: `SafeMultiChainSigAccountV1` or `SafeMultiChainSigAccountV2` (both use the Safe Passkey module v0.2.1 defaults), or `SafeAccountV0_2_0` / `SafeAccountV0_3_0` (v0.2.0 defaults). A mismatched class derives the wrong signer address and the signature fails on-chain with `GS026`. If you overrode any WebAuthn value when creating the account (`webAuthnSharedSigner`, `webAuthnSignerFactory`, `webAuthnSignerSingleton`, `webAuthnSignerProxyCreationCode`, `eip7212WebAuthnPrecompileVerifier` or `eip7212WebAuthnContractVerifier`), pass the same values to `fromSafeWebauthn`: a mismatch fails the same way.
 
 When creating the UserOperation, pass `expectedSigners: [{ x, y }]` so gas estimation uses the WebAuthn dummy signature size instead of the EOA dummy signature size.
 

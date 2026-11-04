@@ -599,7 +599,7 @@ export const tokenQuoteType = [
     key: "tokenCost",
     type: "bigint",
     description:
-      "Maximum token cost charged for this UserOperation (token's smallest unit)",
+      "The UserOperation's maximum gas cost at exchangeRate, in the token's smallest unit. Leaves out the paymaster's post-operation overhead and markup, so the paymaster can charge more: use decodeTokenQuote for the maximum charge (maxTokenCost)",
   },
   {
     key: "paymaster",
@@ -699,7 +699,7 @@ export const decodedTokenQuoteType = [
     key: "maxTokenCost",
     type: "bigint",
     description:
-      "The most the paymaster contract can charge for the UserOperation, in the token's smallest unit, including its post-operation overhead (and markup or constant fee when present). Usually a bit higher than TokenQuote.tokenCost",
+      "The most the paymaster contract can charge for the UserOperation, in the token's smallest unit, including its post-operation overhead (and markup or constant fee when present). Usually a bit higher than TokenQuote.tokenCost. In Candide's on-chain markup mode, the markup is read from the paymaster contract at decode time, so maxTokenCost reflects the markup at that moment",
   },
   {
     key: "validUntil",

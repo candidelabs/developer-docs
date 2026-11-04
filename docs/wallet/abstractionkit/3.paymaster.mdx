@@ -358,13 +358,13 @@ const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
 
 ### decodeTokenQuote
 
-Reads the token payment a finished UserOperation commits to from the paymaster data the paymaster signed: the paymaster, token, exchange rate, validity window, and `maxTokenCost`, the most the user can be charged. This is useful for co-signers who did not build the UserOperation and never saw its `TokenQuote`, so they can check the charge before signing.
+Reads the token payment a finished UserOperation commits to from the paymaster data the paymaster signed: the paymaster, token, exchange rate, validity window, and `maxTokenCost`, the most the user can be charged. In Candide's on-chain markup mode, the markup is read from the paymaster contract when `decodeTokenQuote` runs, so `maxTokenCost` reflects the markup at that moment. This is useful for co-signers who did not build the UserOperation and never saw its `TokenQuote`, so they can check the charge before signing.
 
 `decodeTokenQuote` is a static method and needs no paymaster URL. It is available on both `CandidePaymaster` and `Erc7677Paymaster`, and works for any account, whichever client built the UserOperation. It supports Candide's token paymasters on EntryPoint v0.6 to v0.9 and Pimlico's on v0.6 to v0.8, identified by the paymaster address on the UserOperation.
 
 - Returns `null` when the UserOperation has no paymaster or is sponsored (no token payment).
 - Throws a `PAYMASTER_ERROR` if the paymaster is not a known deployment, and `BAD_DATA` if the paymaster data cannot be read.
-- Candide's paymaster data names the token by an on-chain slot, so the method makes one `eth_call` through `nodeRpcUrl` to read it. For Pimlico, `nodeRpcUrl` is not used.
+- Candide's paymaster data names the token by an on-chain slot, so the method makes one `eth_call` through `nodeRpcUrl` to read it. For Candide, `nodeRpcUrl` must be a node on the same chain as the UserOperation. For Pimlico, `nodeRpcUrl` is not used.
 
 #### Usage
 
@@ -680,7 +680,7 @@ userOperation = sponsoredOp;
 
 #### ERC-20 token sponsorship
 
-Passing `{ token }` in the context triggers the ERC-20 gas flow automatically. For Candide and Pimlico the exchange rate is fetched for you; for unknown providers, supply `exchangeRate` in the context. `tokenQuote` surfaces the exchange rate, max token cost, approval spender (`paymaster`), and `approveAmount` applied to the UserOperation so you can display the charge to the user without a second round trip.
+Passing `{ token }` in the context triggers the ERC-20 gas flow automatically. For Candide and Pimlico the exchange rate is fetched for you; for unknown providers, supply `exchangeRate` in the context. `tokenQuote` surfaces the exchange rate, token cost, approval spender (`paymaster`), and `approveAmount` applied to the UserOperation so you can display the charge to the user without a second round trip. `tokenCost` leaves out the paymaster's post-operation overhead and markup, so for the most the user can be charged use [`decodeTokenQuote`](#decodetokenquote).
 
 Pass `paymasterAddress` in the context to pin the paymaster you expect. If the detected provider quotes a different paymaster, the flow throws a `PAYMASTER_ERROR` before building any approval. The flow also throws a `PAYMASTER_ERROR` if the final `pm_getPaymasterData` response is missing a paymaster or names a different one than the approval spender.
 
@@ -709,7 +709,7 @@ userOperation = tokenOp2;
 
 #### Context
 
-The context object is forwarded to the paymaster RPC verbatim as the fourth argument of `pm_getPaymasterStubData` and `pm_getPaymasterData`. Its shape is provider-specific, and providers ignore keys they don't recognize. Of the fields below, `token`, `exchangeRate`, and `paymasterAddress` are also read by `Erc7677Paymaster` to drive the ERC-20 gas flow.
+The context object is forwarded to the paymaster RPC as the fourth argument of `pm_getPaymasterStubData` and `pm_getPaymasterData`, with any `bigint` values (including nested ones) converted to `0x`-hex strings. Its shape is provider-specific, and providers ignore keys they don't recognize. Of the fields below, `token`, `exchangeRate`, and `paymasterAddress` are also read by `Erc7677Paymaster` to drive the ERC-20 gas flow.
 
 <DataTable items={erc7677ContextType} />
 

@@ -216,7 +216,7 @@ import { Hex } from "ox";
 
 const signer = fromSafeWebauthn({
     publicKey: webauthPublicKey,
-    isInit: userOperation.nonce === 0n,
+    isInit: userOperation.factory != null, // true only on the deploying UserOperation
     accountClass: SafeAccount,
     getAssertion: async (challenge) => {
         const { metadata, signature } = await sign({
@@ -310,7 +310,7 @@ const signerSignaturePair: SignerSignaturePair = {
 
 userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
     [signerSignaturePair],
-    { isInit: userOperation.nonce == 0n },
+    { isInit: userOperation.factory != null },
 )
 ```
 
@@ -430,7 +430,7 @@ userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
     // highlight-start
     [webAuthnSignerSignaturePair, eoaSignerSignaturePair],
     // highlight-end
-    { isInit: userOperation.nonce == 0n }
+    { isInit: userOperation.factory != null }
 );
 ```
 
@@ -478,7 +478,7 @@ let userOperation = await smartAccount.createUserOperation(
 userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
     [webauthnSignerSignaturePair],
     {
-        isInit: userOperation.nonce == 0n,
+        isInit: userOperation.factory != null,
         // highlight-start
         eip7212WebAuthnPrecompileVerifier: DEFAULT_SECP256R1_PRECOMPILE_ADDRESS,
         // highlight-end
