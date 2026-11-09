@@ -84,7 +84,7 @@ const custodialGuardianService = new RecoveryByCustodialGuardian(serviceUrl, cha
 
 ## Step 2: Create Registration Statement
 
-Generate a SIWE (Sign-In with Ethereum) statement for guardian registration. Make sure the Safe account is already deployed. 
+Generate a SIWE (Sign-In with Ethereum) statement for guardian registration. This example assumes the Safe account is already deployed. To register before deployment, wrap the signature with ERC-6492 as described in the [API reference](/wallet/recovery/auth-api/#accounts-that-are-not-deployed-yet-erc-6492).
 
 <Tabs>
 <TabItem value="email" label="Email Registration">

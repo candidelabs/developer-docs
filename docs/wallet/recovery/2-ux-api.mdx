@@ -23,69 +23,147 @@ import {
     postRecoveriesFinalizeByIdResponse,
     postRecoveriesExecuteById,
     postRecoveriesExecuteByIdResponse,
+    getConfigNetworkConfig,
+    getConfigNetworkConfigResponse,
 } from "/src/data/safeRecoveryService";
 
 # Safe Recovery UX API
 
-Use the Recovery UX API to collect guardian signatures, submit recovery transactions, track requests, and manage email/SMS alerts for Safe accounts. It works with the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/).
+Use the Recovery UX API to collect guardian signatures, submit recovery transactions, track requests, and manage email/SMS alerts for Safe accounts. It works with the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/) v0.1.0 and v0.2.0.
 
 For email/SMS verification that produces a guardian signature, use the [Email/SMS Recovery API](/wallet/recovery/auth-api/). For an explanation of the full recovery process, see the [service overview](/wallet/recovery/overview/).
 
 ## Before You Start
 
 - Enable the Social Recovery Module and configure guardians and a recovery threshold on the Safe account.
-- [Request service access](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5) to obtain your service URL and Bearer token.
+- [Request service access](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5) to obtain your service URL and credential.
+- Read the network's modules from [`/v1/config/getNetworkConfig`](#network-configuration) and pass the module the Safe uses as `moduleAddress`. See [Recovery modules](#recovery-modules).
 - Use the [Recovery Flow Guide](/wallet/plugins/recovery-flow-guide/) for a TypeScript integration example.
 
 ## Authentication
 
-Include `Authorization: Bearer YOUR_BEARER_TOKEN` in every request. Replace `https://yourcompany.recovery.candide.dev` with your service URL.
+Replace `https://yourcompany.recovery.candide.dev` with your service URL. Every endpoint lives under the `/v1` prefix.
 
-Requests that create or approve a recovery also require a **guardian signature** over the recovery data. Alert subscription management requires an **owner-signed SIWE message**. These signatures authorize the account action; the Bearer token authenticates access to the API.
+The service is configured with one of two credentials, which you receive with your service URL:
+
+- **Bearer token:** include `Authorization: Bearer YOUR_BEARER_TOKEN` in every request. A missing header is answered with `401 Bearer token required`, a wrong token with `401 Invalid bearer token`, both with a `WWW-Authenticate: Bearer` header. The examples on this page use this form.
+- **API key:** the key is the first path segment of every URL, as in `https://yourcompany.recovery.candide.dev/YOUR_API_KEY/v1/recoveries/create`. Any other first segment, including a request that leaves the key out, is answered with `401 Invalid API key`.
+
+Requests that create or approve a recovery also require a **guardian signature** over the recovery hash. Alert subscription management requires an **owner-signed SIWE message**. These signatures authorize the account action; the credential authenticates access to the API.
 
 Examples use placeholder addresses, IDs, messages, and signatures. Replace them with values from your integration. Expressions such as `siwe(...)` and `sign(message)` describe values to generate in your application; they are not literal API inputs.
 
 ## Recovery Workflow
 
-1. **Create:** Submit a request with the first guardian's signature using `/recoveries/create`.
-2. **Approve:** Other guardians check the request's emoji sequence with the account owner through a trusted channel, then submit signatures using `/recoveries/sign`.
-3. **Execute:** Once the guardian threshold is met, call `/recoveries/execute` to submit the request on-chain and start the grace period.
-4. **Finalize:** After the grace period, call `/recoveries/finalize` to apply the new owners and signing threshold. The current owner can cancel the recovery during the grace period.
+1. **Pick the module:** Read the network's modules from `/v1/config/getNetworkConfig` and choose the one the Safe has guardians on.
+2. **Create:** Submit a request with the first guardian's signature using `/v1/recoveries/create`, passing that module as `moduleAddress`.
+3. **Approve:** Other guardians check the request's emoji sequence with the account owner through a trusted channel, then submit signatures using `/v1/recoveries/sign`.
+4. **Execute:** Once the guardian threshold is met, call `/v1/recoveries/execute` to submit the request on-chain and start the grace period.
+5. **Finalize:** After the grace period, call `/v1/recoveries/finalize` to apply the new owners and signing threshold. The current owner can cancel the recovery during the grace period.
 
 The service sponsors gas for execution and finalization when configured, but it does not submit them on its own: your application must call both endpoints. Guardians can submit signatures off-chain without holding funds. Use the lookup endpoints to monitor progress; a successful submission does not by itself mean ownership has changed. See [request states](/wallet/recovery/overview/#recovery-request-states).
 
 `newThreshold` is the signing threshold for the **new Safe owners** after recovery. The existing **guardian threshold** determines how many guardians must approve the recovery.
 
+## Recovery Modules
+
+A network can serve several Social Recovery Modules: the v0.1.0 and v0.2.0 versions, each deployed with 3-day, 7-day, and 14-day grace periods, plus 3-minute variants on testnets. A Safe can have more than one enabled while it moves its guardians from v0.1.0 to v0.2.0. A recovery hash, and every guardian signature over it, is valid on one module only because its EIP-712 domain holds the module address. Each recovery flow is therefore bound to one module.
+
+- **Starting a flow:** `/v1/recoveries/create` and [`/v1/auth/signature/request`](/wallet/recovery/auth-api/#request-to-recover-an-account) take an optional `moduleAddress`. It must be one of the network's modules listed by `/v1/config/getNetworkConfig`, otherwise the request fails with a 400. The module is saved on the request.
+- **Later steps:** `/v1/recoveries/sign`, `/v1/recoveries/execute`, `/v1/recoveries/finalize`, and `/v1/auth/signature/submit` use the module saved on the request and do not accept `moduleAddress`. Every request response carries its `moduleAddress` and `recoveryHash`.
+- **Reads:** `/v1/recoveries/fetchByAddress` and `/v1/recoveries/listByAddress` take an optional `moduleAddress` and return the requests made on that module only. Every module starts each account's recovery nonce at 0, so requests made on different modules can share a nonce.
+
+When `moduleAddress` is omitted, the network's default module is used: the `moduleAddress` returned by `/v1/config/getNetworkConfig`. Pass `moduleAddress` explicitly so the flow runs on the module the Safe has guardians on.
+
+Before a request is created, the service checks that the module is enabled on the Safe and holds guardians for it. When it does not, the error names the problem and asks for the `moduleAddress` of the module that holds the guardians. A `create` signature that is not valid for the default module but is valid for another configured module fails with an error naming that module.
+
+The proposed owners must be ones the module can set: at least one address, no duplicates, and none of the zero address, the sentinel address `0x0000000000000000000000000000000000000001`, the Safe itself, or one of its guardians on that module. The v0.1.0 contract accepts such proposals but can never finalize them, so the service rejects them for both versions.
+
+An empty signature (`0x`) is accepted on v0.2.0 modules only, where it is checked on-chain with EIP-1271 for a Safe guardian that approved the recovery hash. The v0.1.0 contract cannot execute it, so the service rejects it there.
+
 ## Endpoints
 
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
-| POST | `/recoveries/create` | Create a request with a guardian signature. |
-| POST | `/recoveries/sign` | Add another guardian's signature. |
-| POST | `/recoveries/execute` | Submit execution once the guardian threshold is met. |
-| POST | `/recoveries/finalize` | Submit finalization after the grace period. |
-| GET | `/recoveries/fetchById` | Fetch one request by its service ID. |
-| GET | `/recoveries/fetchByAddress` | Fetch requests for an account, chain, and recovery nonce. |
-| GET | `/recoveries/listByAddress` | List requests with filters, sorting, and pagination. |
-| POST | `/alerts/subscribe` | Create an inactive alert subscription and send a verification code. |
-| POST | `/alerts/activate` | Verify the code and activate the subscription. |
-| GET | `/alerts/subscriptions` | List active subscriptions for an account and owner. |
-| POST | `/alerts/unsubscribe` | Remove a subscription. |
+| GET | `/v1/config/getNetworkConfig` | Read a network's modules, sponsorship settings, and alert channels. |
+| POST | `/v1/recoveries/create` | Create a request with a guardian signature. |
+| POST | `/v1/recoveries/sign` | Add another guardian's signature. |
+| POST | `/v1/recoveries/execute` | Submit execution once the guardian threshold is met. |
+| POST | `/v1/recoveries/finalize` | Submit finalization after the grace period. |
+| GET | `/v1/recoveries/fetchById` | Fetch one request by its service ID. |
+| GET | `/v1/recoveries/fetchByAddress` | Fetch requests for an account, chain, and recovery nonce. |
+| GET | `/v1/recoveries/listByAddress` | List requests with filters, sorting, and pagination. |
+| POST | `/v1/alerts/subscribe` | Create an inactive alert subscription and send a verification code. |
+| POST | `/v1/alerts/activate` | Verify the code and activate the subscription. |
+| GET | `/v1/alerts/subscriptions` | List active subscriptions for an account and owner. |
+| POST | `/v1/alerts/unsubscribe` | Remove a subscription. |
+
+## Network Configuration
+
+### Get Network Configuration
+
+Read what the service offers on a network: the Social Recovery Modules it serves, whether it sponsors execution and finalization, and which alert channels it has. Call it once per network to choose the `moduleAddress` for a recovery flow.
+
+#### `GET /v1/config/getNetworkConfig`
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```bash
+curl -G "https://yourcompany.recovery.candide.dev/v1/config/getNetworkConfig" \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+  --data-urlencode "chainId=11155111"
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "name": "sepolia",
+  "chainId": 11155111,
+  "moduleAddress": "0x38275826E1933303E508433dD5f289315Da2541c",
+  "modules": [
+    { "address": "0x38275826E1933303E508433dD5f289315Da2541c", "version": "0.1.0", "recoveryPeriod": 259200 },
+    { "address": "0x00480F5ecC008995469fA7e12c70Ef3DC9FEe7fD", "version": "0.2.0", "recoveryPeriod": 259200 },
+    { "address": "0xEaC444E2F28469E641215F129874Aff8294cAfE0", "version": "0.2.0", "recoveryPeriod": 604800 },
+    { "address": "0x4d92D03a47468d9FC62495d85E3F205b4616FC5c", "version": "0.2.0", "recoveryPeriod": 1209600 }
+  ],
+  "sponsorships": {
+    "execution": { "enabled": true, "rateLimit": { "maxPerAccount": 5, "period": 2592000 } },
+    "finalization": { "enabled": true, "rateLimit": { "maxPerAccount": 5, "period": 2592000 } }
+  },
+  "alertChannels": ["email", "sms"]
+}
+```
+
+</TabItem>
+<TabItem value="request" label="Query Parameters">
+    <DataTable items={getConfigNetworkConfig} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={getConfigNetworkConfigResponse} />
+</TabItem>
+</Tabs>
+
+`moduleAddress` is the default module used by requests that omit `moduleAddress`; it is absent on a network without a default. The module addresses are the same on every network. See the [deployment addresses](/wallet/technical-reference/deployments/#social-recovery-module) for which modules exist on each network.
 
 ## Recoveries
 
 ### Create Recovery Request
 
-Create a request proposing new owners and their signing threshold. The `signer` must be a guardian of the Safe account, and `signature` must approve the recovery data. The service stores this first signature with the request.
+Create a request proposing new owners and their signing threshold on the module named by `moduleAddress`. The `signer` must be a guardian of the Safe account on that module, and `signature` must be the guardian's signature over the module's recovery hash at the account's current nonce. The service stores this first signature with the request.
 
-#### `POST /recoveries/create`
+An account can create one request every 5 minutes per chain; a second attempt within that window is answered with a 429.
+
+#### `POST /v1/recoveries/create`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
 curl -X POST \
-  https://yourcompany.recovery.candide.dev/recoveries/create \
+  https://yourcompany.recovery.candide.dev/v1/recoveries/create \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -93,6 +171,7 @@ curl -X POST \
         "newOwners": ["0x41153290c995c8c4410d50f95D87ee86A1B07eeC", "0xB97A1C3993A551f0Febf030539630ACb77E6832D"],
         "newThreshold": 2,
         "chainId": 1,
+        "moduleAddress": "0x00480F5ecC008995469fA7e12c70Ef3DC9FEe7fD",
         "signer": "0x795B9cD1E5419C54B07768d4AD09809407dfAF5b",
         "signature": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
       }'
@@ -113,6 +192,8 @@ curl -X POST \
   ],
   "newThreshold": 2,
   "nonce": "0x1",
+  "moduleAddress": "0x00480f5ecc008995469fa7e12c70ef3dc9fee7fd",
+  "recoveryHash": "0x6b1e4d9a2c7f8e0b3d5a9c1f4e7b2d8a0c3f6e9b1d4a7c0e3f5b8d2a6c9e1f4b",
   "signatures": [
     [
       "0x795B9cD1E5419C54B07768d4AD09809407dfAF5b",
@@ -145,16 +226,16 @@ curl -X POST \
 
 ### Collect a guardian signature
 
-Add a guardian signature to an existing recovery request. The signature must approve the same recovery data as the request.
+Add a guardian signature to an existing recovery request. The signature must be over the request's `recoveryHash`, which the request's module computed; a signature made for another module is rejected as invalid. Submitting a signer that already signed is accepted and changes nothing.
 
-#### `POST /recoveries/sign`
+#### `POST /v1/recoveries/sign`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
 curl -X POST \
-  https://yourcompany.recovery.candide.dev/recoveries/sign \
+  https://yourcompany.recovery.candide.dev/v1/recoveries/sign \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -186,14 +267,16 @@ curl -X POST \
 
 Submit the execution transaction for a request that has met the guardian threshold. Execution starts the grace period; it does not change ownership.
 
-#### `POST /recoveries/execute`
+The service checks that execution sponsorship is enabled on the network, that the request's nonce is still the account's current nonce on its module, and that enough signatures were collected, then moves the request to `EXECUTION-IN-PROGRESS` and submits the transaction. If the transaction fails, the request returns to `PENDING` and can be submitted again. A second call while a submission is in progress is answered with `403 Execution already pending`; a call for a request that is already executed returns success without a new transaction.
+
+#### `POST /v1/recoveries/execute`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
 curl -X POST \
-  https://yourcompany.recovery.candide.dev/recoveries/execute \
+  https://yourcompany.recovery.candide.dev/v1/recoveries/execute \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -223,14 +306,16 @@ curl -X POST \
 
 Submit the finalization transaction after the grace period has ended. Once finalized on-chain, the new owners and signing threshold take effect.
 
-#### `POST /recoveries/finalize`
+The service reads the pending recovery on the request's module: with none it answers 404, and before the grace period ends it answers `403 Recovery request is not yet ready for finalization`. A request executed outside the service can still be finalized through it. If the transaction fails, the request returns to `EXECUTED` and can be submitted again.
+
+#### `POST /v1/recoveries/finalize`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
 curl -X POST \
-  https://yourcompany.recovery.candide.dev/recoveries/finalize \
+  https://yourcompany.recovery.candide.dev/v1/recoveries/finalize \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -257,18 +342,19 @@ curl -X POST \
 
 ### Fetch recovery by address
 
-Fetch all discoverable requests matching a Safe account, chain, and recovery module nonce. The response is an array, which can be empty. Supply `nonce` as a hexadecimal string.
+Fetch all discoverable requests matching a Safe account, chain, module, and recovery nonce. The response is an array, which can be empty. Supply `nonce` as a hexadecimal string; it is the account's nonce on the module named by `moduleAddress`.
 
-#### `GET /recoveries/fetchByAddress`
+#### `GET /v1/recoveries/fetchByAddress`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
-curl -G "https://yourcompany.recovery.candide.dev/recoveries/fetchByAddress" \
+curl -G "https://yourcompany.recovery.candide.dev/v1/recoveries/fetchByAddress" \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   --data-urlencode "account=0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba" \
   --data-urlencode "chainId=1" \
+  --data-urlencode "moduleAddress=0x00480F5ecC008995469fA7e12c70Ef3DC9FEe7fD" \
   --data-urlencode "nonce=0x1"
 ```
 
@@ -287,6 +373,8 @@ curl -G "https://yourcompany.recovery.candide.dev/recoveries/fetchByAddress" \
     ],
     "newThreshold": 2,
     "nonce": "0x1",
+    "moduleAddress": "0x00480f5ecc008995469fa7e12c70ef3dc9fee7fd",
+    "recoveryHash": "0x6b1e4d9a2c7f8e0b3d5a9c1f4e7b2d8a0c3f6e9b1d4a7c0e3f5b8d2a6c9e1f4b",
     "signatures": [
       [
         "0x795B9cD1E5419C54B07768d4AD09809407dfAF5b",
@@ -317,6 +405,8 @@ curl -G "https://yourcompany.recovery.candide.dev/recoveries/fetchByAddress" \
     ],
     "newThreshold": 2,
     "nonce": "0x1",
+    "moduleAddress": "0x00480f5ecc008995469fa7e12c70ef3dc9fee7fd",
+    "recoveryHash": "0x6b1e4d9a2c7f8e0b3d5a9c1f4e7b2d8a0c3f6e9b1d4a7c0e3f5b8d2a6c9e1f4b",
     "signatures": [
       [
         "0x795B9cD1E5419C54B07768d4AD09809407dfAF5b",
@@ -350,18 +440,19 @@ curl -G "https://yourcompany.recovery.candide.dev/recoveries/fetchByAddress" \
 
 ### List all recoveries by address
 
-Lists all recovery requests for a Safe account with advanced filtering, pagination, and ordering. The `executed` and `finalized` filters are cross-checked with indexed on-chain data for accuracy.
+Lists the recovery requests made for a Safe account on one module, with filtering, pagination, and ordering. The `executed` and `finalized` filters are cross-checked with the on-chain events indexed for that module.
 
-#### `GET /recoveries/listByAddress`
+#### `GET /v1/recoveries/listByAddress`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
-curl -G "https://yourcompany.recovery.candide.dev/recoveries/listByAddress" \
+curl -G "https://yourcompany.recovery.candide.dev/v1/recoveries/listByAddress" \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   --data-urlencode "account=0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba" \
   --data-urlencode "chainId=1" \
+  --data-urlencode "moduleAddress=0x00480F5ecC008995469fA7e12c70Ef3DC9FEe7fD" \
   --data-urlencode "limit=20" \
   --data-urlencode "offset=0"
 ```
@@ -381,6 +472,8 @@ curl -G "https://yourcompany.recovery.candide.dev/recoveries/listByAddress" \
     ],
     "newThreshold": 2,
     "nonce": "0x1",
+    "moduleAddress": "0x00480f5ecc008995469fa7e12c70ef3dc9fee7fd",
+    "recoveryHash": "0x6b1e4d9a2c7f8e0b3d5a9c1f4e7b2d8a0c3f6e9b1d4a7c0e3f5b8d2a6c9e1f4b",
     "signatures": [
       [
         "0x795B9cD1E5419C54B07768d4AD09809407dfAF5b",
@@ -417,21 +510,21 @@ For queries without the `executed` and `finalized` filters, stop when fewer than
 </Tabs>
 
 :::tip When to use fetchByAddress vs listByAddress
-- **`/recoveries/fetchByAddress`**: Use when you know the exact nonce. Ideal for checking a specific pending request or looking up the current recovery state.
-- **`/recoveries/listByAddress`**: Use when you need to query multiple requests with filtering, pagination, or sorting. Better for dashboard UIs showing recovery history.
+- **`/v1/recoveries/fetchByAddress`**: Use when you know the exact nonce. Ideal for checking a specific pending request or looking up the current recovery state.
+- **`/v1/recoveries/listByAddress`**: Use when you need to query multiple requests with filtering, pagination, or sorting. Better for dashboard UIs showing recovery history.
 :::
 
 ### Fetch recovery by ID
 
-Fetch one request using the `id` returned when it was created.
+Fetch one request using the `id` returned when it was created. The response includes the request's `moduleAddress` and `recoveryHash`, so guardians can sign the right hash for `/v1/recoveries/sign`.
 
-#### `GET /recoveries/fetchById`
+#### `GET /v1/recoveries/fetchById`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
-curl -G "https://yourcompany.recovery.candide.dev/recoveries/fetchById" \
+curl -G "https://yourcompany.recovery.candide.dev/v1/recoveries/fetchById" \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   --data-urlencode "id=123456789"
 ```
@@ -451,6 +544,8 @@ curl -G "https://yourcompany.recovery.candide.dev/recoveries/fetchById" \
   ],
   "newThreshold": 2,
   "nonce": "0x1",
+  "moduleAddress": "0x00480f5ecc008995469fa7e12c70ef3dc9fee7fd",
+  "recoveryHash": "0x6b1e4d9a2c7f8e0b3d5a9c1f4e7b2d8a0c3f6e9b1d4a7c0e3f5b8d2a6c9e1f4b",
   "signatures": [
     [
       "0x795B9cD1E5419C54B07768d4AD09809407dfAF5b",
@@ -484,22 +579,26 @@ curl -G "https://yourcompany.recovery.candide.dev/recoveries/fetchById" \
 
 Alert subscriptions are separate from email/SMS recovery registrations. Subscribing to alerts does not add a guardian or enable email/SMS recovery.
 
-Create a subscription, then activate it with the code sent to the selected channel. Subscriptions monitor the Safe account across supported chains with alerts enabled. The `chainId` identifies the network used to verify the signing owner; subscription creation also checks that this owner belongs to the Safe on that chain.
+Create a subscription, then activate it with the code sent to the selected channel. Subscriptions monitor the Safe account across supported chains with alerts enabled. The `chainId` identifies the network used to verify the signing owner. Every alert endpoint checks that `owner` is a current owner of the Safe on that chain, and a subscription belongs to the account, with `owner` recording who created it.
+
+A current owner manages its own subscriptions and those whose creator is no longer an owner, for example after a recovery or an owner swap, but not those of another current owner.
 
 The `owner` signs the SIWE message for subscription creation, lookup, and removal. See [SIWE signing](/wallet/recovery/auth-api/#how-to-sign-messages-siwe-eip-4361) and the [Recovery Alerts Guide](/wallet/plugins/recovery-alerts-guide/).
 
+A Safe that is not deployed yet can subscribe: wrap the owner's signature with ERC-6492 and the Safe's deployment data, as described in [Accounts that are not deployed yet](/wallet/recovery/auth-api/#accounts-that-are-not-deployed-yet-erc-6492). Without the wrapper, a request for an undeployed account fails with a 400.
+
 ### Create an Alert Subscription {#alerts-subscribe-to-recovery-requests}
 
-#### `POST /alerts/subscribe`
+#### `POST /v1/alerts/subscribe`
 
-Create an inactive subscription and send a verification code to the target email address or phone number. Save the returned `subscriptionId` and activate it using `/alerts/activate`.
+Create an inactive subscription and send a verification code to the target email address or phone number. Save the returned `subscriptionId` and activate it using `/v1/alerts/activate`.
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
 curl -X POST \
-  https://yourcompany.recovery.candide.dev/alerts/subscribe \
+  https://yourcompany.recovery.candide.dev/v1/alerts/subscribe \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -542,7 +641,7 @@ See [SIWE signing](/wallet/recovery/auth-api/#how-to-sign-messages-siwe-eip-4361
 
 ### Activate an Alert Subscription {#alerts-activate-subscription-to-recovery-requests}
 
-#### `POST /alerts/activate`
+#### `POST /v1/alerts/activate`
 
 Submit the verification code sent during subscription creation. Alerts begin after activation.
 
@@ -551,7 +650,7 @@ Submit the verification code sent during subscription creation. Alerts begin aft
 
 ```bash
 curl -X POST \
-  https://yourcompany.recovery.candide.dev/alerts/activate \
+  https://yourcompany.recovery.candide.dev/v1/alerts/activate \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -576,15 +675,15 @@ curl -X POST \
 
 ### List Active Alert Subscriptions {#alerts-get-active-subscription}
 
-Fetch active subscriptions for the specified Safe account and signing owner.
+Fetch the active subscriptions of the Safe account that the signing owner can manage: its own, and those created by addresses that are no longer owners. Each entry carries the `owner` that created it.
 
-#### `GET /alerts/subscriptions`
+#### `GET /v1/alerts/subscriptions`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
-curl -G "https://yourcompany.recovery.candide.dev/alerts/subscriptions" \
+curl -G "https://yourcompany.recovery.candide.dev/v1/alerts/subscriptions" \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
    --data-urlencode "account=0x..." \
    --data-urlencode "owner=0x..." \
@@ -601,6 +700,7 @@ curl -G "https://yourcompany.recovery.candide.dev/alerts/subscriptions" \
   "subscriptions": [
     {
       "id": "unique-subscription-id",
+      "owner": "0x...",
       "channel": "email",
       "target": "user@example.com"
     }
@@ -611,7 +711,7 @@ curl -G "https://yourcompany.recovery.candide.dev/alerts/subscriptions" \
 </Tabs>
 
 -   `account`: The Safe account being monitored.
--   `owner`: The owner whose subscriptions to retrieve and who signs the SIWE message.
+-   `owner`: A current owner of the Safe, who signs the SIWE message.
 -   `chainId`: The supported chain used to verify the owner and signature. Subscriptions cover all supported chains with alerts enabled.
 -   `signature`: The signature from `owner` over the complete SIWE message.
 -   `message`: The complete SIWE message containing this exact statement:
@@ -624,16 +724,16 @@ See [SIWE signing](/wallet/recovery/auth-api/#how-to-sign-messages-siwe-eip-4361
 
 ### Remove an Alert Subscription {#alerts-unsubscribe}
 
-Remove the subscription identified by `subscriptionId`. Include the owner's SIWE message and signature.
+Remove the subscription identified by `subscriptionId`. Include the SIWE message and signature of a current owner of the subscribed account. Removing a subscription created by another current owner is answered with `403 This subscription belongs to another owner of the account`.
 
-#### `POST /alerts/unsubscribe`
+#### `POST /v1/alerts/unsubscribe`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
 curl -X POST \
-  https://yourcompany.recovery.candide.dev/alerts/unsubscribe \
+  https://yourcompany.recovery.candide.dev/v1/alerts/unsubscribe \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -685,17 +785,19 @@ Use the HTTP status to determine whether a request succeeded. Service errors con
 | Code | Description |
 |------|-------------|
 | 200 | Success |
-| 400 | Bad Request - Invalid parameters, missing required fields, or an invalid guardian signature |
-| 401 | Unauthorized - Invalid or missing Bearer token |
-| 403 | Forbidden - SIWE signature verification failed, challenge invalid or expired, sponsorship not enabled for the network, or the request is not ready to execute (wrong nonce or insufficient signatures) |
-| 404 | Not Found - Resource not found |
+| 400 | Bad Request - Invalid parameters, missing required fields, an invalid guardian signature, a `moduleAddress` the network does not serve, a module not enabled on the Safe or without guardians for it, or new owners the module cannot set |
+| 401 | Unauthorized - Invalid or missing Bearer token or API key |
+| 403 | Forbidden - SIWE signature verification failed, challenge invalid or expired, sponsorship not enabled for the network, the request is not ready to execute (wrong nonce or insufficient signatures) or finalize, a submission for it is already pending, or the owner cannot manage the subscription |
+| 404 | Not Found - Resource not found, or no pending recovery on-chain to finalize |
 | 409 | Conflict - The alert subscription already exists |
-| 429 | Too Many Requests - Rate limit exceeded |
+| 429 | Too Many Requests - IP rate limit exceeded, a second request created for the account within 5 minutes, or the network's sponsorship limit reached for the account |
+| 503 | Service Unavailable - The request is not bound to a module yet; retry shortly. Only seen in the seconds after a service restart |
 | 500 | Internal Server Error - Something went wrong on the server |
 
 ### Troubleshooting
 
-- **Invalid signature:** Check the signing address, chain ID, and exact message or recovery data. SIWE messages must use the statement for the requested action.
+- **Invalid signature:** Check the signing address, chain ID, and exact message or recovery data. A guardian signature must be over the recovery hash of the request's module; an error that names another module means the signature was made for that one, so pass it as `moduleAddress`. SIWE messages must use the statement for the requested action.
+- **Module not enabled or no guardians:** The Safe keeps its guardians on the module they were added to. Pass the `moduleAddress` of that module, as listed by `/v1/config/getNetworkConfig`.
 - **Invalid or expired code:** Verify that the code matches the challenge ID. If it has expired, create a new alert subscription and verify its new code.
 - **Missing resource:** Use the ID returned by the corresponding creation endpoint.
 - **Rate limit:** Wait before retrying the request.
