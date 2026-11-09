@@ -32,12 +32,22 @@ const recoveryRequestSchema = [
     {
         key: "nonce",
         type: "string",
-        description: "Recovery module nonce serialized as a hexadecimal string in JSON responses",
+        description: "Recovery module nonce serialized as a hexadecimal string in JSON responses. Every module starts each account's nonce at 0",
+    },
+    {
+        key: "moduleAddress",
+        type: "string",
+        description: "The Social Recovery Module the request was made on. Guardian signatures, execution, and finalization all use this module",
+    },
+    {
+        key: "recoveryHash",
+        type: "string",
+        description: "The recovery hash guardians sign, computed by the request's module at the request's nonce",
     },
     {
         key: "signatures",
         type: "json",
-        description: "The signatures for the recovery request",
+        description: "The collected guardian signatures as [signer, signature] pairs, sorted by signer address",
     },
     {
         key: "executeData",
@@ -101,18 +111,22 @@ export const postRecoveriesCreate = [
     {
         key: "newOwners",
         type: "string[]",
-        description: "The new owners to the Safe account. Must be a valid Ethereum addresses",
-
+        description: "The new owners of the Safe account. Valid Ethereum addresses, at least one, no duplicates. The zero address, the sentinel address 0x...0001, the Safe itself, and the Safe's guardians on the module are rejected",
     },
     {
         key: "newThreshold",
         type: "number",
-        description: "The signing threshold for the new Safe owners after recovery; not the guardian approval threshold",
+        description: "The signing threshold for the new Safe owners after recovery; not the guardian approval threshold. Between 1 and the number of new owners",
     },
     {
         key: "chainId",
         type: "number",
         description: "The chainId of the network where the Safe account resides",
+    },
+    {
+        key: "moduleAddress",
+        type: "string",
+        description: "(Optional) The Social Recovery Module to run the recovery on, one of the modules returned by /v1/config/getNetworkConfig. When omitted, the network's default module is used (the moduleAddress returned by /v1/config/getNetworkConfig)",
     },
     {
         key: "signer",
@@ -122,7 +136,7 @@ export const postRecoveriesCreate = [
     {
         key: "signature",
         type: "string",
-        description: "A signature from the guardian for a message containing the address of the safe, new owners of the Safe, chainId, module address, and a nonce",
+        description: "The guardian's signature over the module's recovery hash for the account, new owners, new threshold, and the account's current nonce on that module. An empty signature (0x) is accepted on v0.2.0 modules only, for a Safe guardian that approved the hash with EIP-1271",
     },
 ];
 
@@ -140,9 +154,14 @@ export const getRecoveriesFetchByAddress = [
         description: "The chainId of the network where the Safe account resides",
     },
     {
+        key: "moduleAddress",
+        type: "string",
+        description: "(Optional) Return the requests made on this Social Recovery Module only. When omitted, the network's default module is used (the moduleAddress returned by /v1/config/getNetworkConfig)",
+    },
+    {
         key: "nonce",
         type: "string",
-        description: "Recovery module contract nonce as a hexadecimal string, such as 0x1",
+        description: "The account's recovery nonce on that module as a hexadecimal string, such as 0x1",
     },
 ];
 
@@ -178,7 +197,7 @@ export const postRecoveriesSign = [
     {
         key: "signature",
         type: "string",
-        description: "The signature for the message hash of the guardian confirmation of recovery",
+        description: "The guardian's signature over the request's recoveryHash. An empty signature (0x) is accepted on v0.2.0 modules only",
     },
 ];
 
@@ -233,6 +252,11 @@ export const getRecoveriesListByAddress = [
         description: "The chainId of the network where the Safe account resides",
     },
     {
+        key: "moduleAddress",
+        type: "string",
+        description: "(Optional) Return the requests made on this Social Recovery Module only. When omitted, the network's default module is used (the moduleAddress returned by /v1/config/getNetworkConfig)",
+    },
+    {
         key: "status",
         type: "string",
         description: "(Optional) Filter by status: PENDING, EXECUTED, FINALIZED, EXECUTION-IN-PROGRESS, FINALIZATION-IN-PROGRESS",
@@ -284,6 +308,76 @@ export const getRecoveriesListByAddressResponse = [
         key: "RecoveryRequest[]",
         type: recoveryRequestSchema,
         description: "A list of Recovery Requests matching the filters, as a plain array",
+    },
+];
+
+// Config API Data Types
+
+export const getConfigNetworkConfig = [
+    {
+        key: "chainId",
+        type: "number",
+        description: "The chainId of a network the service supports",
+    },
+];
+
+export const getConfigNetworkConfigResponse = [
+    {
+        key: "name",
+        type: "string",
+        description: "The network name in the service configuration",
+    },
+    {
+        key: "chainId",
+        type: "number",
+        description: "The requested chainId",
+    },
+    {
+        key: "moduleAddress",
+        type: "string",
+        description: "The default Social Recovery Module, used by requests that omit moduleAddress. Absent when the network has no default; such a network requires moduleAddress",
+    },
+    {
+        key: "modules",
+        type: [
+            {
+                key: "address",
+                type: "string",
+                description: "The module address, accepted as moduleAddress",
+            },
+            {
+                key: "version",
+                type: "string",
+                description: "The Social Recovery Module version: 0.1.0 or 0.2.0",
+            },
+            {
+                key: "recoveryPeriod",
+                type: "number",
+                description: "The module's grace period in seconds",
+            },
+        ],
+        description: "Every Social Recovery Module the service serves on this network",
+    },
+    {
+        key: "sponsorships",
+        type: [
+            {
+                key: "execution",
+                type: "json",
+                description: "{ enabled, rateLimit? }: whether the service sponsors /v1/recoveries/execute, and its per-account limit",
+            },
+            {
+                key: "finalization",
+                type: "json",
+                description: "{ enabled, rateLimit? }: whether the service sponsors /v1/recoveries/finalize, and its per-account limit",
+            },
+        ],
+        description: "Gas sponsorship settings for this network",
+    },
+    {
+        key: "alertChannels",
+        type: "string[]",
+        description: "The alert channels configured on this network, such as email and sms. Absent when the network has none",
     },
 ];
 
@@ -433,6 +527,11 @@ export const postAuthSignatureRequest = [
         key: "chainId",
         type: "number",
         description: "Chain ID for the recovery request",
+    },
+    {
+        key: "moduleAddress",
+        type: "string",
+        description: "(Optional) The Social Recovery Module the guardian signs for, one of the modules returned by /v1/config/getNetworkConfig. The service's guardian must be a guardian on it. When omitted, the network's default module is used (the moduleAddress returned by /v1/config/getNetworkConfig)",
     },
 ];
 

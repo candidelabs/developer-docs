@@ -8,6 +8,8 @@ Candide's Safe Recovery Service helps wallets recover Safe accounts when users l
 
 The module enforces recovery rules on-chain. The service coordinates the process: collecting guardian signatures, submitting transactions, and notifying account owners.
 
+The service supports Social Recovery Module v0.1.0 and v0.2.0 side by side. Each recovery flow is bound to one module, chosen with `moduleAddress` when the flow starts, and the service indexes and alerts on both versions. See [Recovery modules](/wallet/recovery/ux-api/#recovery-modules).
+
 ## Who is this for
 
 Wallet developers integrating the Social Recovery Module who want to automate recovery or offer email/SMS as a recovery method.
@@ -34,7 +36,7 @@ When enabled in the service configuration, the service submits and pays for two 
 1. **Execution:** Submit the approved recovery request once the guardian signature threshold is met. This starts the grace period.
 2. **Finalization:** Complete the ownership change after the grace period ends.
 
-Your application triggers each step by calling `/recoveries/execute` and `/recoveries/finalize`. The service does not submit them on its own. The gas sponsorship relayer covers the transaction costs, so guardians do not need to hold funds.
+Your application triggers each step by calling `/v1/recoveries/execute` and `/v1/recoveries/finalize`. The service does not submit them on its own. The gas sponsorship relayer covers the transaction costs, so guardians do not need to hold funds.
 
 ### Social Engineering Protection
 
@@ -42,7 +44,9 @@ Each recovery request has an emoji sequence that guardians can check with the ac
 
 ### Alerts and Notifications
 
-Account owners can subscribe to email or SMS alerts for on-chain recovery activity. The service monitors Social Recovery Module events, so it detects executions, finalizations, and cancellations whether they were submitted through the service or directly on-chain. Alerts are not sent when a request is created off-chain; the first alert is sent once the request is executed on-chain.
+Account owners can subscribe to email or SMS alerts for on-chain recovery activity. The service monitors Social Recovery Module events on every module it serves, so it detects guardian changes, executions, finalizations, and cancellations whether they were submitted through the service or directly on-chain. Alerts are not sent when a request is created off-chain; the first alert is sent once the request is executed on-chain.
+
+Owners can subscribe before the Safe is deployed by wrapping their signature with ERC-6492. See [Accounts that are not deployed yet](/wallet/recovery/auth-api/#accounts-that-are-not-deployed-yet-erc-6492).
 
 See the [Recovery UX API reference](/wallet/recovery/ux-api/) for endpoints and request formats.
 
@@ -50,8 +54,8 @@ See the [Recovery UX API reference](/wallet/recovery/ux-api/) for endpoints and 
 
 Use this API to add a service-managed guardian that signs recovery requests after the user verifies their email address or phone number.
 
-1. **Set up recovery:** While the user still has access to the account, register their email address or phone number, verify it with a one-time code, and add the returned guardian address to the Social Recovery Module.
-2. **Authorize a recovery:** When the user needs to recover the account, verify a new one-time code to obtain the service-managed guardian's signature for the recovery request.
+1. **Set up recovery:** While the user still has access to the account, register their email address or phone number, verify it with a one-time code, and add the returned guardian address to the Social Recovery Module. Registration works before the Safe is deployed, with an ERC-6492 signature.
+2. **Authorize a recovery:** When the user needs to recover the account, verify a new one-time code to obtain the service-managed guardian's signature for the recovery request on the module the guardian was added to.
 
 Email/SMS can be the sole recovery method or one guardian in a larger setup with trusted contacts or hardware wallets. The account's guardian threshold still determines how many approvals are needed.
 
@@ -63,11 +67,11 @@ See the [Email/SMS Recovery API reference](/wallet/recovery/auth-api/) for regis
 
 Once guardians are configured, a successful recovery follows these steps:
 
-1. **Create a request.** A guardian submits a signed recovery request specifying the proposed new owners and their signing threshold. The service stores the request off-chain.
+1. **Create a request.** A guardian submits a signed recovery request specifying the module, the proposed new owners, and their signing threshold. The service stores the request off-chain.
 2. **Collect approvals.** Guardians verify the request and submit signatures until the guardian threshold is met.
-3. **Execute the request.** Your application submits the approved request on-chain through `/recoveries/execute`, starting the module's grace period. Subscribed account owners are alerted at this point.
+3. **Execute the request.** Your application submits the approved request on-chain through `/v1/recoveries/execute`, starting the module's grace period. Subscribed account owners are alerted at this point.
 4. **Wait through the grace period.** The current owner can cancel an unauthorized recovery if they still control the account.
-5. **Finalize recovery.** After the grace period, your application calls `/recoveries/finalize`. Finalization replaces the account's owners and applies the new signing threshold.
+5. **Finalize recovery.** After the grace period, your application calls `/v1/recoveries/finalize`. Finalization replaces the account's owners and applies the new signing threshold.
 
 ```mermaid
 flowchart TD
@@ -91,6 +95,8 @@ The API's `status` field tracks progress through a successful recovery:
 | `EXECUTED` | The request has been executed on-chain. The grace period must end before finalization. Ownership has not changed. |
 | `FINALIZATION-IN-PROGRESS` | The grace period has ended and the finalization transaction is being processed. |
 | `FINALIZED` | Recovery is complete. The new owners and signing threshold are in effect. |
+
+A failed execution transaction returns the request to `PENDING`, and a failed finalization returns it to `EXECUTED`, so both calls can be repeated.
 
 ## Get Started
 

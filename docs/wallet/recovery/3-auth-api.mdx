@@ -31,15 +31,15 @@ The signature counts as one guardian approval under the account's recovery thres
 
 ## Before You Start
 
-- Deploy the Safe account and enable the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/).
-- [Request service access](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5) to obtain your service URL and Bearer token.
+- Enable the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/) on the Safe account. Registration also works before the Safe is deployed, with an [ERC-6492 signature](#accounts-that-are-not-deployed-yet-erc-6492); requesting a recovery signature needs the Safe deployed with the module enabled and the service's guardian added.
+- [Request service access](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5) to obtain your service URL and credential.
 - Register the recovery method while the user still controls the account. Registrations are specific to an account and chain.
 
 For a TypeScript walkthrough, see [Enable Email/SMS Recovery](/wallet/plugins/add-candide-guardian/) and the [Email/SMS Recovery Flow](/wallet/plugins/recover-account-candide-guardian/).
 
 ## Authentication
 
-Include `Authorization: Bearer YOUR_BEARER_TOKEN` in every request. Replace `https://yourcompany.recovery.candide.dev` with your service URL.
+Replace `https://yourcompany.recovery.candide.dev` with your service URL. Every endpoint lives under the `/v1` prefix. The service is configured with either a Bearer token, sent as `Authorization: Bearer YOUR_BEARER_TOKEN` in every request, or an API key that is the first path segment of every URL. The examples use the Bearer token form; see [Authentication](/wallet/recovery/ux-api/#authentication) in the UX API reference for both.
 
 Registration, registration lookup, and deletion also require a **SIWE message signed by the Safe account**. During recovery, the user verifies codes sent to registered channels to authorize the service-managed guardian's signature. See [SIWE signing](#how-to-sign-messages-siwe-eip-4361).
 
@@ -49,14 +49,14 @@ Examples use placeholder addresses, IDs, messages, and signatures. Replace them 
 
 **Set up recovery while the user has account access:**
 
-1. Call `/auth/register` with a Safe-signed SIWE message to send a verification code.
-2. Submit the code to `/auth/submit` to receive a `registrationId` and `guardianAddress`.
+1. Call `/v1/auth/register` with a Safe-signed SIWE message to send a verification code.
+2. Submit the code to `/v1/auth/submit` to receive a `registrationId` and `guardianAddress`.
 3. Add that guardian address to the account's Social Recovery Module on-chain. Registration alone does not add the guardian.
 
 **Recover the account after access is lost:**
 
-1. Call `/auth/signature/request` with the proposed new owners and their signing threshold.
-2. Submit verification codes to `/auth/signature/submit` until the response includes `signer` and `signature`.
+1. Call `/v1/auth/signature/request` with the proposed new owners, their signing threshold, and the `moduleAddress` of the Social Recovery Module the guardian was added to. See [Recovery modules](/wallet/recovery/ux-api/#recovery-modules).
+2. Submit verification codes to `/v1/auth/signature/submit` until the response includes `signer` and `signature`.
 3. Use that signature to [create a recovery request](/wallet/recovery/ux-api/#create-recovery-request), or [add it to an existing request](/wallet/recovery/ux-api/#collect-a-guardian-signature) with the same recovery data. Collect any other required guardian approvals, execute recovery, and finalize after the grace period.
 
 There are three separate thresholds:
@@ -71,27 +71,27 @@ There are three separate thresholds:
 
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
-| POST | `/auth/register` | Request registration and send a verification code. |
-| POST | `/auth/submit` | Verify the code and return the guardian address. |
-| GET | `/auth/registrations` | List the account's registered methods on a chain. |
-| POST | `/auth/delete` | Delete a registered method. |
-| POST | `/auth/signature/request` | Request verification codes for a proposed recovery. |
-| POST | `/auth/signature/submit` | Verify a code and return a guardian signature once enough verifications are collected. |
+| POST | `/v1/auth/register` | Request registration and send a verification code. |
+| POST | `/v1/auth/submit` | Verify the code and return the guardian address. |
+| GET | `/v1/auth/registrations` | List the account's registered methods on a chain. |
+| POST | `/v1/auth/delete` | Delete a registered method. |
+| POST | `/v1/auth/signature/request` | Request verification codes for a proposed recovery. |
+| POST | `/v1/auth/signature/submit` | Verify a code and return a guardian signature once enough verifications are collected. |
 
 ## Register and Manage Recovery Methods {#auth-registration}
 
 ### Register an Email Address or Phone Number {#email--sms}
 
-Send a verification code to the selected email address or phone number. Save the returned `challengeId` for `/auth/submit`.
+Send a verification code to the selected email address or phone number. Save the returned `challengeId` for `/v1/auth/submit`.
 
-#### `POST /auth/register`
+#### `POST /v1/auth/register`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
 curl -X POST \
-  https://yourcompany.recovery.candide.dev/auth/register \
+  https://yourcompany.recovery.candide.dev/v1/auth/register \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -123,10 +123,10 @@ curl -X POST \
 </Tabs>
 
 -   `account`: The smart account address requesting registration.
--   `chainId`: The chain where the Safe is deployed. Register separately for each chain.
+-   `chainId`: The chain where the Safe is or will be deployed. Register separately for each chain.
 -   `channel`: Either `"email"` or `"sms"` (defines the authentication type).
 -   `target`: The email or phone number for authentication.
--   `signature`: A signature valid for the Safe account over the complete SIWE message.
+-   `signature`: A signature valid for the Safe account over the complete SIWE message. For a Safe that is not deployed yet, wrap it as described in [Accounts that are not deployed yet](#accounts-that-are-not-deployed-yet-erc-6492).
 -   `message`: The complete SIWE message containing this exact statement:
 
 ```
@@ -139,14 +139,14 @@ See [SIWE signing](#how-to-sign-messages-siwe-eip-4361) for the exact statement 
 
 Submit the code to confirm ownership of the email address or phone number. The response returns the guardian address to add to the Social Recovery Module on-chain.
 
-#### `POST /auth/submit`
+#### `POST /v1/auth/submit`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
 curl -X POST \
-  https://yourcompany.recovery.candide.dev/auth/submit \
+  https://yourcompany.recovery.candide.dev/v1/auth/submit \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -176,13 +176,13 @@ curl -X POST \
 
 List the registered recovery methods for the specified Safe account and chain. The response contains an empty array if no methods are registered.
 
-#### `GET /auth/registrations`
+#### `GET /v1/auth/registrations`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
-curl -G "https://yourcompany.recovery.candide.dev/auth/registrations" \
+curl -G "https://yourcompany.recovery.candide.dev/v1/auth/registrations" \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
    --data-urlencode "account=0x..." \
    --data-urlencode "chainId=1" \
@@ -219,14 +219,14 @@ See [SIWE signing](#how-to-sign-messages-siwe-eip-4361) for the exact statement 
 
 Delete the registration identified by `registrationId`, using a SIWE message signed by the Safe account. This removes the service registration; it does not revoke the guardian on-chain.
 
-#### `POST /auth/delete`
+#### `POST /v1/auth/delete`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
 curl -X POST \
-  https://yourcompany.recovery.candide.dev/auth/delete \
+  https://yourcompany.recovery.candide.dev/v1/auth/delete \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -259,23 +259,26 @@ See [SIWE signing](#how-to-sign-messages-siwe-eip-4361) for the exact statement 
 
 ### Request Recovery Verification {#request-to-recover-an-account}
 
-Propose new Safe owners and their signing threshold. The service sends verification codes to registered channels and returns a `requestId`, the required number of verifications, and the available challenges.
+Propose new Safe owners and their signing threshold on the module named by `moduleAddress`. The service checks that the module is enabled on the Safe, that its guardian is one of the Safe's guardians on it, and that the module can set the proposed owners (see [Recovery modules](/wallet/recovery/ux-api/#recovery-modules)). It then sends verification codes to the registered channels and returns a `requestId`, the required number of verifications, and the available challenges. The request is bound to that module: the signature returned later is over that module's recovery hash at the account's current nonce on it.
 
-#### `POST /auth/signature/request`
+`requiredVerifications` is a majority of the account's registered methods: one for one or two methods, two for three or four, and so on.
+
+#### `POST /v1/auth/signature/request`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
 curl -X POST \
-  https://yourcompany.recovery.candide.dev/auth/signature/request \
+  https://yourcompany.recovery.candide.dev/v1/auth/signature/request \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
     "account":"0x...",
     "newOwners": ["0x...", "0x..."],
     "newThreshold": 2,
-    "chainId": 1
+    "chainId": 1,
+    "moduleAddress": "0x00480F5ecC008995469fA7e12c70Ef3DC9FEe7fD"
   }'
 ```
 
@@ -306,16 +309,16 @@ curl -X POST \
 
 ### Verify a Code and Collect the Signature {#confirm-recovery-with-otp-challenge}
 
-Submit a code with its `challengeId` and the shared `requestId`. Each successful submission verifies one challenge. The response includes `signer` and `signature` only after `requiredVerifications` is met.
+Submit a code with its `challengeId` and the shared `requestId`. Each successful submission verifies one challenge. The response includes `signer` and `signature` only after `requiredVerifications` is met. The signature is made for the module saved on the request, so pass the same `moduleAddress` when you create the recovery request with it.
 
-#### `POST /auth/signature/submit`
+#### `POST /v1/auth/signature/submit`
 
 <Tabs>
 <TabItem value="example-request" label="Example Request">
 
 ```bash
 curl -X POST \
-  https://yourcompany.recovery.candide.dev/auth/signature/submit \
+  https://yourcompany.recovery.candide.dev/v1/auth/signature/submit \
   -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -362,8 +365,8 @@ SIWE (Sign-In with Ethereum) messages authorize registration and alert-managemen
 
 | Endpoints | SIWE address and signature |
 |-----------|----------------------------|
-| `/auth/register`, `/auth/registrations`, `/auth/delete` | Use the **Safe account address** as the SIWE address. Produce a Safe-compatible signature that satisfies the account's owner threshold. |
-| `/alerts/subscribe`, `/alerts/subscriptions`, `/alerts/unsubscribe` | Use the **`owner` address** as the SIWE address. Sign with that owner. Subscription creation checks that this address is an owner of the Safe. |
+| `/v1/auth/register`, `/v1/auth/registrations`, `/v1/auth/delete` | Use the **Safe account address** as the SIWE address. Produce a Safe-compatible signature that satisfies the account's owner threshold. |
+| `/v1/alerts/subscribe`, `/v1/alerts/subscriptions`, `/v1/alerts/unsubscribe` | Use the **`owner` address** as the SIWE address. Sign with that owner. Subscription creation checks that this address is an owner of the Safe. |
 
 For Safe accounts, follow the [registration signing example](/wallet/plugins/add-candide-guardian/#step-3-sign-and-submit-registration), which uses the Safe message-signing helpers and formats the owner signatures for verification. For alert subscriptions, follow the [Recovery Alerts Guide](/wallet/plugins/recovery-alerts-guide/).
 
@@ -387,6 +390,53 @@ Use the registration ID for `{{id}}`, the email address or phone number for `{{t
 
 The statement alone is not the full SIWE message. The chain ID must match the request, or the registration's chain for deletion. Generate a fresh message when retrying an expired authorization.
 
+### Accounts That Are Not Deployed Yet (ERC-6492)
+
+A Safe can register recovery methods and subscribe to alerts before it is deployed. Wrap the `signature` with [ERC-6492](https://eips.ethereum.org/EIPS/eip-6492): ABI-encode `(address factory, bytes factoryCalldata, bytes signature)` and append the 32-byte magic suffix `0x6492649264926492649264926492649264926492649264926492649264926492`. `factory` and `factoryCalldata` are the call that deploys the Safe, which for a Safe is `SafeProxyFactory.createProxyWithNonce`. No other request field changes.
+
+The service runs the deployment in a simulated call, never on-chain, and checks the signature against the Safe in the state that call leaves:
+
+| Endpoints | What the wrapper carries |
+|-----------|--------------------------|
+| `/v1/auth/register`, `/v1/auth/registrations`, `/v1/auth/delete` | Standard ERC-6492. The SIWE address is the Safe and the inner signature is the Safe signature a deployed Safe would give, so the Safe's owner threshold applies. |
+| `/v1/alerts/subscribe`, `/v1/alerts/subscriptions`, `/v1/alerts/unsubscribe` | The SIWE address is an owner and the inner signature is that owner's signature, as for a deployed Safe. The deployment data describes the **account**, not the signer. The service reads the simulated Safe's owners and requires the signer to be one of them. |
+
+The recovery endpoints do not accept wrapped signatures. The module checks guardian signatures on-chain, so `/v1/recoveries/*`, `/v1/auth/signature/request`, and `/v1/auth/signature/submit` need the Safe deployed with the module enabled and the service's guardian added. A registration made before deployment can be used once that is done.
+
+Rules:
+
+- A signature without the suffix is checked as before.
+- Once the account has code, the deployment data is ignored and the inner signature is checked against the deployed account, so a client may keep sending wrapped signatures after deployment.
+- Only the Safe's own deployment data can put code at its address. Deployment data for another account fails the request.
+- The inner signature is never unwrapped again, so an owner that is itself an undeployed contract is not supported.
+- Networks without a Multicall3 deployment reject wrapped signatures of undeployed accounts with a 400.
+
+Building the wrapper with AbstractionKit and ethers v5:
+
+```ts
+const [factory, factoryCalldata] = SafeAccount.createFactoryAddressAndData(owners, { threshold });
+// auth: `signature` is the Safe signature over the SIWE message, built as in the registration guide
+// alerts: `signature` is the owner's signMessage(siweMessage.prepareMessage())
+const wrapped = ethers.utils.hexConcat([
+  ethers.utils.defaultAbiCoder.encode(["address", "bytes", "bytes"], [factory, factoryCalldata, signature]),
+  "0x6492649264926492649264926492649264926492649264926492649264926492",
+]);
+```
+
+`/v1/auth/registrations` and `/v1/alerts/subscriptions` take `signature` in the query string. A wrapped signature for a two-owner Safe is about 2 KB of hex, well under the usual URL limits, but a Safe with a very large initializer may not fit.
+
+Errors specific to wrapped signatures:
+
+| Status | Message | When |
+|--------|---------|------|
+| 400 | `SIWE Message: malformed ERC-6492 signature` | The signature ends with the magic suffix but does not decode. |
+| 400 | `ERC-6492 signatures are not supported on this network (<chainId>): Multicall3 is not deployed at <address>` | The account is not deployed and the network has no Multicall3. |
+| 400 | `SIWE Message: the ERC-6492 deployment data does not deploy <account> on chain <chainId>` | Auth endpoints: the factory call reverts or leaves no code at the account. |
+| 403 | `SIWE Message: invalid signature, ...` | Auth endpoints: the simulated Safe rejects the signature, for example fewer owner signatures than its threshold. Alert endpoints: the inner signature is not the SIWE address's. |
+| 400 | `Unable to fetch owners for account '<account>' on chain <chainId>: the account is not deployed. Wrap the signature ...` | Alert endpoints: the account has no code and the signature is not wrapped. |
+| 400 | `Unable to fetch owners for account '<account>' on chain <chainId>: the ERC-6492 deployment data does not deploy it` | Alert endpoints: the factory call reverts, or the account gives no owners after it. |
+| 403 | `Owner must be a valid owner for the account provided` | Alert endpoints: the SIWE address is not an owner of the account. |
+
 ## Error Handling
 
 Use the HTTP status to determine whether a request succeeded. Service errors contain top-level `code` and `message` fields. For example:
@@ -403,8 +453,8 @@ Use the HTTP status to determine whether a request succeeded. Service errors con
 | Code | Description |
 |------|-------------|
 | 200 | Success |
-| 400 | Bad Request - Invalid parameters or missing required fields |
-| 401 | Unauthorized - Invalid or missing Bearer token |
+| 400 | Bad Request - Invalid parameters or missing required fields, email/SMS recovery not enabled on the network, no registration for the account on the chain, the service's guardian not added on the module, a `moduleAddress` the network does not serve, or new owners the module cannot set |
+| 401 | Unauthorized - Invalid or missing Bearer token or API key |
 | 403 | Forbidden - Signature verification failed, challenge invalid or expired, or action not permitted |
 | 404 | Not Found - Resource not found |
 | 409 | Conflict - The recovery method is already registered |
