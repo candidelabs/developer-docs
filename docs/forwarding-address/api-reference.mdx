@@ -597,6 +597,103 @@ There is no JSON-RPC method for deploy or withdraw. Both actions are performed o
 
 ---
 
+## Deployment Parameters
+
+Two read-only methods return the parameters a forwarding address is derived from. Use them to verify an address client side, or to deploy and recover it on-chain without depending on the API.
+
+### `forwarding_getDeployParams`
+
+Returns the deployment parameters shared by every forwarding address. Takes no parameters.
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_getDeployParams",
+  "params": []
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "factory": "0x8e1C8d8C2e538ACc52202aD50a98a3FB0427156A",
+    "singleton": "0x9fd12e8972F23b7842cF2e137746F1f8103BA2e7",
+    "allowedRelayer": "0x050e166f557bDfAB0077992b042fAA37ADEe3cae",
+    "proxyCreationCode": "0x608060405234610116576101cd80380380..."
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `factory` | Factory contract that deploys forwarding addresses |
+| `singleton` | Implementation contract the forwarding address proxies point to |
+| `allowedRelayer` | Relayer address authorized to forward deposits |
+| `proxyCreationCode` | Creation code of the proxy, used to compute the address with CREATE2 |
+
+---
+
+### `forwarding_getDeployParamsByAddress`
+
+Returns the deployment parameters of one forwarding address, including the values it was generated with.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `address` | `address` | Yes | A forwarding address previously returned by [`forwarding_getAddress`](#forwarding_getaddress) |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "forwarding_getDeployParamsByAddress",
+  "params": [{ "address": "0xDEF456..." }]
+}
+```
+
+The result contains the four fields of [`forwarding_getDeployParams`](#forwarding_getdeployparams) plus `recipient`, `custodialWithdrawer`, `destinationChainId`, and `salt`. An address the service does not know returns error `-32005`.
+
+---
+
+## Errors
+
+Errors use the standard JSON-RPC 2.0 error object:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": { "code": -32001, "message": "route not found" }
+}
+```
+
+| Code | Meaning |
+|------|---------|
+| `-32001` | Route not found: the source chain, destination chain, and token combination is not supported |
+| `-32002` | Quote unavailable: the bridge could not quote the route right now. Retry later |
+| `-32003` | Amount too small to forward |
+| `-32004` | Amount exceeds the maximum deposit limit of the route |
+| `-32005` | Address not found |
+| `-32011` | Unauthorized: the bearer token is missing, malformed, or wrong |
+| `-32012` | The account is disabled |
+| `-32013` | The account would exceed its cap of active forwarding addresses |
+| `-32020` | Maintenance: methods that write are temporarily paused. Read methods keep working |
+| `-32600` | Unsupported method |
+| `-32602` | Invalid parameters, for example a missing field, or an invalid API key in the URL |
+| `-32603` | Internal error |
+
+---
+
 ## TypeScript Types
 
 These types match the API response shapes and can serve as a reference for building your integration.
@@ -705,6 +802,21 @@ interface ForwardsResult {
 ---
 
 ## Changelog
+
+### 2026-11-11
+
+**Added**
+
+- [`forwarding_getForwardsByRecipient`](#forwarding_getforwardsbyrecipient) is paginated: new optional `pageSize` and `cursor` parameters, and a `nextCursor` field in the response.
+- New `"unknown"` value for a `Forward`'s `status`, returned when the status could not be checked. Retry instead of treating it as a failure.
+- New `sourceAddresses` field on the [`Forward` object](#the-forward-object).
+- New optional `proxyAddress` parameter on [`forwarding_estimateOutput`](#forwarding_estimateoutput), to quote against the policy of an active forwarding address.
+- [`forwarding_getActivation`](#forwarding_getactivation) returns `recipient`, `custodialWithdrawer`, and `destinationChainId` for addresses that have been activated.
+- Documented [`forwarding_getDeployParams`](#forwarding_getdeployparams), [`forwarding_getDeployParamsByAddress`](#forwarding_getdeployparamsbyaddress), and the [error codes](#errors).
+
+**Changed**
+
+- `sourceChainId` is now optional on [`forwarding_getForwardsByTx`](#forwarding_getforwardsbytx).
 
 ### 2026-10-06
 
