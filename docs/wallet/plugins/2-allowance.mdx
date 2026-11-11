@@ -26,7 +26,7 @@ Before starting, make sure you have:
 
 - **Node.js 18+** and npm or yarn
 - **Basic TypeScript knowledge**
-- **A funded Safe Account** with ERC-20 tokens on your target chain
+- **A Safe Account that holds the ERC-20 token** you want to delegate on your target chain. It does not need ETH for gas: the example below sponsors gas with a paymaster
 - **Familiarity with Safe Smart Accounts** and UserOperations. See the [Getting Started guide](/wallet/guides/getting-started) if you're new
 
 :::warning Delegate Trust
@@ -150,14 +150,26 @@ See the full parameter details in the [SDK Reference](/wallet/plugins/allowance-
 
 ### Step 5: Create and Submit the UserOperation
 
-Batch all three MetaTransactions into a single UserOperation using [createUserOperation](/wallet/abstractionkit/safe-account-v3/#createuseroperation), then sign and submit.
+Batch all three MetaTransactions into a single UserOperation using [createUserOperation](/wallet/abstractionkit/safe-account-v3/#createuseroperation), sponsor its gas, then sign and submit.
 
 ```ts
-const userOp = await sourceSafeAccount.createUserOperation(
+import { Erc7677Paymaster } from "abstractionkit";
+
+let userOp = await sourceSafeAccount.createUserOperation(
   [enableModuleMetaTx, addDelegateMetaTx, setAllowanceMetaTx],
   nodeUrl,
   bundlerUrl,
 );
+
+// Sponsor gas, so the account does not need ETH
+// On Sepolia: PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
+const paymaster = new Erc7677Paymaster(process.env.PAYMASTER_URL as string);
+const { userOperation: sponsoredUserOp } = await paymaster.createPaymasterUserOperation(
+  sourceSafeAccount,
+  userOp,
+  bundlerUrl,
+);
+userOp = sponsoredUserOp;
 
 // Sign the UserOperation
 userOp.signature = sourceSafeAccount.signUserOperation(

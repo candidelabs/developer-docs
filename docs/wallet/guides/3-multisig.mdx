@@ -41,8 +41,8 @@ console.log("Multisig Account Address:", smartAccount.accountAddress);
 
 > Learn more: [`initializeNewAccount`](/wallet/abstractionkit/safe-unified-account/#initializenewaccount)
 
-:::tip Fund Your Account
-Make sure to fund your multisig account with ETH before sending transactions, or use a [paymaster for gas sponsorship](/wallet/guides/send-gasless-tx/).
+:::tip Gas Fees
+The examples below sponsor gas with a [paymaster](/wallet/guides/send-gasless-tx/), so the multisig account does not need ETH. Without a paymaster, fund the account with ETH before sending transactions.
 :::
 
 </TabItem>
@@ -53,6 +53,8 @@ Make sure to fund your multisig account with ETH before sending transactions, or
 CHAIN_ID=11155111
 BUNDLER_URL=https://api.candide.dev/public/v3/11155111
 JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
+PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
+SPONSORSHIP_POLICY_ID= # optional
 
 # Multisig owners
 PUBLIC_ADDRESS1=
@@ -64,6 +66,30 @@ PRIVATE_KEY2=
 
 </TabItem>
 </Tabs>
+
+### Sponsor Gas
+
+Request paymaster data before signing, so the owners sign the final UserOperation:
+
+```ts title="Gas sponsorship"
+import { Erc7677Paymaster } from "abstractionkit";
+
+const paymasterUrl = process.env.PAYMASTER_URL as string;
+const paymaster = new Erc7677Paymaster(paymasterUrl);
+const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
+const context = sponsorshipPolicyId
+  ? { sponsorshipPolicyId, policyId: sponsorshipPolicyId }
+  : {};
+
+const { userOperation: paymasterUserOperation } = await paymaster.createPaymasterUserOperation(
+    smartAccount,
+    userOperation,
+    bundlerUrl,
+    context
+);
+
+userOperation = paymasterUserOperation;
+```
 
 ### Sign with Multiple Keys
 
@@ -133,6 +159,7 @@ import * as dotenv from 'dotenv'
 import {
     SafeMultiChainSigAccountV1 as SafeAccount,
     MetaTransaction,
+    Erc7677Paymaster,
     getFunctionSelector,
     createCallData,
 } from "abstractionkit";
@@ -143,6 +170,8 @@ async function main(): Promise<void> {
     const chainId = BigInt(process.env.CHAIN_ID as string)
     const bundlerUrl = process.env.BUNDLER_URL as string
     const jsonRpcNodeProvider = process.env.JSON_RPC_NODE_PROVIDER as string
+    const paymasterUrl = process.env.PAYMASTER_URL as string
+    const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID
     const ownerPublicAddress1 = process.env.PUBLIC_ADDRESS1 as string
     const ownerPrivateKey1 = process.env.PRIVATE_KEY1 as string
     const ownerPublicAddress2 = process.env.PUBLIC_ADDRESS2 as string
@@ -185,7 +214,21 @@ async function main(): Promise<void> {
         bundlerUrl
     )
 
-    console.log("📋 UserOperation created, awaiting multisig signatures...")
+    // Get paymaster data to sponsor the transaction
+    const paymaster = new Erc7677Paymaster(paymasterUrl)
+    const context = sponsorshipPolicyId
+        ? { sponsorshipPolicyId, policyId: sponsorshipPolicyId }
+        : {}
+
+    const { userOperation: paymasterUserOperation } = await paymaster.createPaymasterUserOperation(
+        smartAccount,
+        userOperation,
+        bundlerUrl,
+        context
+    )
+    userOperation = paymasterUserOperation
+
+    console.log("📋 UserOperation created and sponsored, awaiting multisig signatures...")
 
     // Sign with both private keys (2/2 multisig)
     userOperation.signature = smartAccount.signUserOperation(
@@ -232,6 +275,8 @@ main().catch(console.error)
 CHAIN_ID=11155111
 BUNDLER_URL=https://api.candide.dev/public/v3/11155111
 JSON_RPC_NODE_PROVIDER=https://ethereum-sepolia-rpc.publicnode.com
+PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
+SPONSORSHIP_POLICY_ID= # optional
 
 # Multisig owners
 PUBLIC_ADDRESS1=your_first_public_address
@@ -256,9 +301,9 @@ After creating a multisig account, you can dynamically add, remove, or swap owne
 ```ts title="Add a new owner"
 import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
-// Add a new owner with threshold of 3 (now 3/3 multisig)
+// Add a new owner and keep the threshold at 2 (now 2/3 multisig)
 const newOwnerAddress = "0x..."; // New owner's address
-const newThreshold = 3;
+const newThreshold = 2;
 
 // Returns an array of meta-transactions
 const addOwnerTxs = await smartAccount.createAddOwnerWithThresholdMetaTransactions(
@@ -289,7 +334,7 @@ userOperation.signature = smartAccount.signUserOperation(
 
 ```ts title="Remove an owner"
 const ownerToRemove = "0x..."; // Owner address to remove
-const newThreshold = 1; // New threshold after removal
+const newThreshold = 2; // New threshold after removal
 
 const removeOwnerTx = await smartAccount.createRemoveOwnerMetaTransaction(
     jsonRpcNodeProvider,
@@ -307,7 +352,7 @@ let userOperation = await smartAccount.createUserOperation(
 // Sign with required owners (current threshold)
 userOperation.signature = smartAccount.signUserOperation(
     userOperation,
-    [privateKey1, privateKey2], // All current owners must sign
+    [privateKey1, privateKey2], // As many owners as the current threshold
     chainId
 );
 ```

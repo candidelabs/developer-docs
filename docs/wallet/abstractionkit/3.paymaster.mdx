@@ -268,31 +268,34 @@ userOperation = sponsoredUserOperation;
 ```ts
 {
   userOperation: {
-    sender: '0xb8741a449d50ed0dcfe395287f85be152884c8d9',
-    nonce: 10n,
-    initCode: '0x',
+    sender: '0x9371252D5001d2aF35b1E69Fd33e268b4357D424',
+    nonce: 1n,
     callData: '0x541d63c8...095ea7b3...',
     //highlight-start
-    callGasLimit: 116807n,
-    verificationGasLimit: 75441n,
-    preVerificationGas: 50444n,
+    callGasLimit: 191545n,
+    verificationGasLimit: 135864n,
+    preVerificationGas: 150767n,
     //highlight-end
-    maxFeePerGas: 66195658616n,
-    maxPriorityFeePerGas: 120000n,
+    maxFeePerGas: 82n,
+    maxPriorityFeePerGas: 60n,
+    signature: '0x00ffffffffffffffffffffffff47003599ffa7e9...',
+    factory: null,
+    factoryData: null,
     //highlight-start
-    paymasterAndData: '0x3fE285DcD76BCcE4Ac92d38A6F2F8E964041e020...',
+    paymaster: '0xca944fb73fa5191969014ded9bb075381d59c7de',
+    paymasterVerificationGasLimit: 70000n,
+    paymasterPostOpGasLimit: 75000n,
+    paymasterData: '0x0000000000006af4e929...',
     //highlight-end
-    signature: '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+    eip7702Auth: null
   },
-  //highlight-start
   tokenQuote: {
     token: '0xFa5854FBf9964330d761961F46565AB7326e5a3b',
-    exchangeRate: 1001219705870085130n,
-    tokenCost: 3391931975665260n,
-    paymaster: '0x3fE285DcD76BCcE4Ac92d38A6F2F8E964041e020',
-    approveAmount: 6783863951330520n,
-  },
-  //highlight-end
+    exchangeRate: 1000000000000000000n,
+    tokenCost: 51100432n,
+    paymaster: '0xca944fb73fa5191969014ded9bb075381d59c7de',
+    approveAmount: 102200864n
+  }
 }
 ```
 </details>

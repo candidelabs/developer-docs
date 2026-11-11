@@ -339,6 +339,9 @@ curl --request POST \
         "parameters": []
       }
     ],
+    "alerts": {
+      "lowBalanceThreshold": null
+    },
     "billing": {
       "currency": "ETH",
       "balance": "0x0",
@@ -434,6 +437,7 @@ The operators accepted depend on the ABI type of the targeted argument. An opera
 | `accountRules` | object | `rate`, `ratePeriod`, `totalMax`, and `maxPerOp` |
 | `accessRules` | object | Account, origin, and IP access-rule states |
 | `transactions` | transaction[] | Ordered allowed transactions |
+| `alerts` | object | `lowBalanceThreshold`: the balance, as a hexadecimal wei string, below which a low-balance alert is sent, or `null` when no alert is set. Alerts are configured in the Dashboard |
 | `billing` | object | Policy funding information |
 
 Each returned access rule contains `allowAll` and `entries`. Each entry contains `value` and `label`; the label defaults to a dash.
