@@ -1,12 +1,12 @@
 ---
 title: Pay Gas in USDT on Solana
-description: Send Solana transactions from accounts with zero SOL and pay the network fee in USDT using Candide's Solana Paymaster and Tether's WDK
-keywords: [solana, kora, gasless, usdt, spl, fee-payer, wdk]
+description: Send Solana transactions from accounts with zero SOL and pay the network fee in USDT or USDC using Candide's Solana Paymaster and Tether's WDK
+keywords: [solana, kora, gasless, usdt, usdc, spl, fee-payer, wdk]
 ---
 
 # Pay Gas in USDT on Solana
 
-Send SPL token transfers from Solana accounts that hold **zero SOL**. Candide's **Solana Paymaster**, a hosted [Kora](https://solana.com/docs/tools/kora) endpoint, signs as the transaction fee payer and collects the fee in USDT inside the same transaction.
+Send SPL token transfers from Solana accounts that hold **zero SOL**. Candide's **Solana Paymaster**, a hosted [Kora](https://solana.com/docs/tools/kora) endpoint, signs as the transaction fee payer and collects the fee in a stablecoin inside the same transaction. This guide pays in USDT; USDC works the same way.
 
 This guide uses [`@tetherto/wdk-wallet-solana-gasless`](https://github.com/tetherto/wdk-wallet-solana-gasless), part of Tether's [Wallet Development Kit](https://docs.wallet.tether.io), which wraps the whole flow behind a simple `transfer()` call.
 
@@ -22,6 +22,10 @@ The USDT fee is priced from the live SOL cost of the transaction. If the recipie
 
 :::info Supported fee tokens
 On Solana Mainnet, USDT (`Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB`) and USDC (`EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`) are the fee tokens enabled by default. Other SPL tokens and full gas sponsorship on mainnet are available on request: [contact us](https://www.candide.dev/contact) to enable them for your API key. See the [Solana Paymaster API reference](/wallet/solana-paymaster/rpc-methods/#supported-tokens) for details.
+:::
+
+:::tip Pay gas in USDC
+To pay the fee in USDC instead, use the USDC mint (`EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`) in place of `usdtMint`. Nothing else changes: USDC also has 6 decimals, so the fee math in this guide stays the same.
 :::
 
 :::tip Test on Devnet first
@@ -74,7 +78,7 @@ const wallet = new WalletManagerSolanaGasless(seedPhrase, {
     provider: nodeUrl,
     paymasterUrl,
     paymasterAddress,
-    paymasterToken: { address: usdtMint },
+    paymasterToken: { address: usdtMint }, // the fee token: USDT here, or the USDC mint
     transferMaxFee: 1_000000n, // abort if the quoted fee exceeds 1 USDT
 })
 

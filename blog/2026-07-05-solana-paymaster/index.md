@@ -45,7 +45,9 @@ await account.transfer({ token: USDT_MINT, recipient, amount: 100000n })
 
 ## Where this is going
 
-Mainnet USDT is the only fee token today. Sponsored transactions, where you cover fees for your users the way InstaGas does on EVM chains, are next.
+Mainnet USDT is the only fee token at launch. Sponsored transactions, where you cover fees for your users the way InstaGas does on EVM chains, are next.
+
+*Update: USDC is now a default fee token on mainnet alongside USDT. See the [supported tokens](/wallet/solana-paymaster/rpc-methods/#supported-tokens).*
 
 If you're building a stablecoin product on Solana, try it and tell us what breaks.
 

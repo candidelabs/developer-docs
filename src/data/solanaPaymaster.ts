@@ -27,7 +27,7 @@ export const estimateTransactionFeeReturn = [
     key: "fee_in_token",
     type: "number",
     description:
-      "The same fee denominated in base units of fee_token (USDT has 6 decimals). This is the amount the transaction must transfer to payment_address",
+      "The same fee denominated in base units of fee_token (USDT and USDC both have 6 decimals). This is the amount the transaction must transfer to payment_address",
   },
   {
     key: "signer_pubkey",
@@ -78,7 +78,7 @@ export const transferTransactionParams = [
     key: "amount",
     type: "number",
     description:
-      "Transfer amount in base units of the token (USDT has 6 decimals)",
+      "Transfer amount in base units of the token (USDT and USDC both have 6 decimals)",
   },
   {
     key: "token",
