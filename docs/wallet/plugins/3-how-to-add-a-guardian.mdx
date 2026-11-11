@@ -126,7 +126,21 @@ import {
   SafeMultiChainSigAccountV1 as SafeAccount,
   SocialRecoveryModuleV2,
   Erc7677Paymaster,
+  fetchAccountNonce,
 } from "abstractionkit";
+
+// Public RPC nodes can lag a few seconds behind the bundler.
+// Wait until the node sees the account nonce move past the UserOperation just mined.
+async function waitForNode(
+  nodeUrl: string,
+  entrypointAddress: string,
+  accountAddress: string,
+  minedNonce: bigint,
+): Promise<void> {
+  while ((await fetchAccountNonce(nodeUrl, entrypointAddress, accountAddress)) <= minedNonce) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+}
 
 async function main(): Promise<void> {
   // Load environment variables
@@ -189,6 +203,14 @@ async function main(): Promise<void> {
     console.log("Failed to setup recovery")
     return
   }
+
+  // Wait for the node to catch up before reading state
+  await waitForNode(
+    jsonRpcNodeProvider,
+    smartAccount.entrypointAddress,
+    smartAccount.accountAddress,
+    userOperation.nonce
+  )
 
   // Step 2: Verify Guardian
   console.log("Step 2: Verifying guardian...")

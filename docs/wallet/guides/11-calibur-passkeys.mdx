@@ -68,6 +68,18 @@ import {
   extractSignature,
 } from "./webauthn-utils";
 
+// Public RPC nodes can lag a few seconds behind the bundler.
+// Wait until the node sees the account nonce move past the UserOperation just mined.
+async function waitForNode(
+  account: { getNonce(nodeUrl: string): Promise<bigint> },
+  nodeUrl: string,
+  minedNonce: bigint,
+): Promise<void> {
+  while ((await account.getNonce(nodeUrl)) <= minedNonce) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+}
+
 async function main(): Promise<void> {
   dotenv.config(); // load the .env file
 
@@ -93,6 +105,8 @@ async function main(): Promise<void> {
 
 main();
 ```
+
+Public RPC nodes can lag a few seconds behind the bundler, so the script calls `waitForNode` after a UserOperation is included, before it reads state or builds the next UserOperation.
 
 ## Step 2: Create a WebAuthn credential
 
@@ -210,6 +224,7 @@ if (registerReceipt == null || !registerReceipt.success) {
   return;
 }
 console.log("Passkey registered! Tx:", registerReceipt.receipt.transactionHash);
+await waitForNode(smartAccount, nodeUrl, registerOp.nonce);
 
 // Verify the key is registered on-chain.
 const isRegistered = await smartAccount.isKeyRegistered(nodeUrl, keyHash);

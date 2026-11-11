@@ -542,6 +542,13 @@ components:
           description: "Allowed target transactions, in order."
           items:
             $ref: "#/components/schemas/Transaction"
+        alerts:
+          type: object
+          description: "Alert settings. Configured in the Dashboard."
+          properties:
+            lowBalanceThreshold:
+              type: ["string", "null"]
+              description: "Balance, as a hexadecimal wei string, below which a low-balance alert is sent. Null when no alert is set."
         billing:
           $ref: "#/components/schemas/Billing"
 

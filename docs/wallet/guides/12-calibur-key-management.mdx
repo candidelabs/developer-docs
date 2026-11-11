@@ -55,6 +55,18 @@ import {
     ZeroAddress,
 } from "abstractionkit";
 
+// Public RPC nodes can lag a few seconds behind the bundler.
+// Wait until the node sees the account nonce move past the UserOperation just mined.
+async function waitForNode(
+    account: { getNonce(nodeUrl: string): Promise<bigint> },
+    nodeUrl: string,
+    minedNonce: bigint,
+): Promise<void> {
+    while ((await account.getNonce(nodeUrl)) <= minedNonce) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+}
+
 async function main(): Promise<void> {
     dotenv.config(); // load the .env file
 
@@ -82,6 +94,8 @@ async function main(): Promise<void> {
 
 main();
 ```
+
+Public RPC nodes can lag a few seconds behind the bundler, so the script calls `waitForNode` after each UserOperation is included, before it reads state or builds the next UserOperation.
 
 4. List all registered keys and their settings:
 
@@ -209,6 +223,7 @@ if (registerReceipt?.success) {
     console.log("Registration failed:", registerReceipt);
     process.exit(1);
 }
+await waitForNode(smartAccount, nodeUrl, registerOp.nonce);
 
 // Verify the key is now registered on-chain.
 const isRegistered = await smartAccount.isKeyRegistered(nodeUrl, newKeyHash);
@@ -273,6 +288,7 @@ const secondaryResponse = await smartAccount.sendUserOperation(secondaryOp, bund
 const secondaryReceipt = await secondaryResponse.included();
 
 if (secondaryReceipt?.success) {
+    await waitForNode(smartAccount, nodeUrl, secondaryOp.nonce);
     console.log("Transaction confirmed! Tx:", secondaryReceipt.receipt.transactionHash);
 } else {
     console.log("Transaction failed:", secondaryReceipt);
@@ -330,6 +346,7 @@ const updateResponse = await smartAccount.sendUserOperation(updateOp, bundlerUrl
 const updateReceipt = await updateResponse.included();
 
 if (updateReceipt?.success) {
+    await waitForNode(smartAccount, nodeUrl, updateOp.nonce);
     const updatedSettings = await smartAccount.getKeySettings(nodeUrl, newKeyHash);
     console.log(
         "Expiration updated to:",
@@ -386,6 +403,7 @@ const revokeResponse = await smartAccount.sendUserOperation(revokeOp, bundlerUrl
 const revokeReceipt = await revokeResponse.included();
 
 if (revokeReceipt?.success) {
+    await waitForNode(smartAccount, nodeUrl, revokeOp.nonce);
     const stillRegistered = await smartAccount.isKeyRegistered(nodeUrl, newKeyHash);
     console.log("Key still registered:", stillRegistered); // false
     console.log("Tx:", revokeReceipt.receipt.transactionHash);
