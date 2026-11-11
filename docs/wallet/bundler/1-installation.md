@@ -18,45 +18,46 @@ The quickest way to get started is to use the docker image.
 
 - Install [docker](https://docs.docker.com/engine/install)
 - Find the latest Voltaire [releases](https://github.com/candidelabs/voltaire/releases)
-- Run the following command to start a geth node and deploy the EntryPoint contract:
+- Run the following command to start the bundler:
 
 ```bash
-docker run --net=host --rm -d ghcr.io/candidelabs/voltaire/voltaire-bundler:$VOLTAIRE_VERSION --entrypoint $ENTRYPOINT --bundler_secret $BUNDLER_SECRET --rpc_url $RPC_URL --ethereum_node_url $ETHEREUM_NODE_URL --chain_id $CHAIN_ID --verbose
+docker run --net=host --rm -d ghcr.io/candidelabs/voltaire/voltaire-bundler:$VOLTAIRE_VERSION --bundler_secret $BUNDLER_SECRET --rpc_url $RPC_URL --ethereum_node_url $ETHEREUM_NODE_URL --chain_id $CHAIN_ID --verbose
 ```
 
-This command will pull the latest docker image and will then start the bundler to listen for UserOperations. Once running, you can then send User Operation to the following if you used the default `$RPC_URL`: `0.0.0.0:3000/rpc`
+This command will pull the latest docker image and will then start the bundler to listen for UserOperations. Once running, you can then send User Operation to `$RPC_URL:3000/rpc`. The supported EntryPoint versions (v0.6, v0.7, v0.8 and v0.9) are built in, so there is no EntryPoint flag to pass.
 
 | flags            |Comment                                     
 | -----------------| -------------------------------------------
-|`--entrypoint`    | Address of the entrypoint contract 
 |`--bundler_secret`| Private key of the bundler. Use any EOA's to be the secret and make sure it's funded with some ETH
 |`--keystore_file_path`| Bundler Keystore file path. Defaults to first file in keystore folder (optional)
 |`--keystore_file_password`| Bundler Keystore file password. Defaults to no password (optional)                
-|`--rpc_url`       | URL of the rpc endpoint you will be hosting. Use `0.0.0.0` as default
+|`--rpc_url`       | Host the RPC server binds to. Defaults to `127.0.0.1`; use `0.0.0.0` to accept external connections (optional)
 |`--rpc_port`      | RPC serve port number. Defaults to 3000 (optional)
 | `--ethereum_node_url`| Pass the node url of your own instance if you are running a full node [locally](#local-full-node), or a link to a full node endpoint from an [RPC provider](#rpc-provider) - defaults to http://0.0.0.0:8545
-|`--chain_id`      | Chain ID of the network the bundler will operate in
+|`--chain_id`      | Chain ID of the network the bundler will operate in. Defaults to 1337
 |`--verbose`       | To get verbose logs (optional)
-|`--debug`         | Expose _debug rpc namespace for testing (optional)
+|`--debug`         | Expose _debug rpc namespace for testing. Disables auto bundling: trigger bundles manually with `debug_bundler_sendBundleNow` (optional)
 | `--unsafe`       | In order to implement the full spec storage access rules and opcode banning, it must run against a go-ethereum or erigon node, which supports `debug_traceCall` with javascript "tracer". Specifically, `hardhat node`, `ganache`, infura and alchemy nodes do NOT support this API. You can still run the bundler with such nodes, but with `--unsafe` so it would skip these security checks (optional)
-|`--legacy_mode`   | for netwroks that doesn't support EIP-1559 (optional)
-|`--bundle_interval`| Set the bundle interval in seconds for the auto bundle mode - set to zero for manual mode (optional)
-|`--whitelist_entity_storage_access`| list of entities to whitelist for storage access rules (optional)
+|`--legacy_mode`   | for networks that don't support EIP-1559 (optional)
+|`--bundle_interval`| Set the bundle interval in seconds for the auto bundle mode. Must be strictly positive, defaults to 2. Use `--debug` for manual mode (optional)
+|`--disable_v6`    | Disable support for EntryPoint v0.6 (optional)
+|`--reputation_whitelist`| Entities that will not be banned or throttled (optional)
 |`--metrics`       | enable metrics collection using prometheus and grafana (optional)
 |`--version`       | show program's version number and exit (optional)
+| `--disable_p2p` | P2P is disabled by default. Pass `--disable_p2p false` to join the shared mempool (optional)
 | `--p2p_boot_nodes_enr` | To connect the unified shared mempool. Find all ENRs [in this repo](https://github.com/sherifahmed990/shared_bundler_mempool_4337/). (optional)
 | `--eip7702` | To enable EIP-7702 support. (optional)
 
 To know about all flags:
 
 ```bash
-docker run --rm -it ghcr.io/candidelabs/voltaire/voltaire-bundler:$VERSION -h
+docker run --rm -it ghcr.io/candidelabs/voltaire/voltaire-bundler:$VOLTAIRE_VERSION -h
 ```
 ### RPC Provider
 If you want to run voltaire locally and have a paid plan with an RPC provider for a full node that supports debug_traceCall with javascript "tracer", you can simple replace `$ETHEREUM_NODE_URL` with the link to the rpc endpoint. If it doesn't support a javascript tracer, you can run with the `--unsafe` flag for testing purposes. This mode is not meant to be used in production. 
 
 ### Local Full Node
-If you are running your own full node, simply pass your own node url in `--ethereum_node_url`. If you want to run your own node, which comes with superpowers, follow the instruction below to run GETH [using docker](#start-geth). You can also run a different client implentation.
+If you are running your own full node, simply pass your own node url in `--ethereum_node_url`. If you want to run your own node, which comes with superpowers, see the [go-ethereum docs](https://geth.ethereum.org/docs/getting-started). You can also run a different client implentation.
 
 Voltaire works well with [go-ethereum](https://geth.ethereum.org/) and [erigon](https://github.com/ledgerwatch/erigon/). Contact us if you would like to see Voltaire tested with a different client.
 
@@ -76,46 +77,27 @@ poetry install
 #### Make sure you are using the right python version
 
 ```
-poetry env use python3.11
+poetry env use python3.13
 ```
 
-### Install Docker
+### Install Foundry
 
-Follow the installation guide to install [docker on ubunutu](https://docs.docker.com/engine/install/ubuntu/)
-
-#### Post docker installation
-
-Follow the instruction for docker's [post linux instalation](https://docs.docker.com/engine/install/linux-postinstall/)  
-
-### Start GETH
-```bash
-docker run --rm -ti --name geth -p 8545:8545 ethereum/client-go:v1.10.26 \
-  --miner.gaslimit 12000000 \
-  --http --http.api personal,eth,net,web3,debug \
-  --http.vhosts '*,localhost,host.docker.internal' --http.addr "0.0.0.0" \
-  --ignore-legacy-receipts --allow-insecure-unlock --rpc.allow-unprotected-txs \
-  --dev \
-  --verbosity 4 \
-  --nodiscover --maxpeers 0 --mine --miner.threads 1 \
-  --networkid 1337
-```
-
-#### In another terminal, deploy the EntryPoint and fund the signer
-
-```bash
-geth --exec 'loadScript("test/deploy.js")' attach http://0.0.0.0:8545
-```
-
-#### Set the ENTRYPOINT environment variable
-
-```bash
-source test/init-params 
-```
+The local setup script uses `anvil` and `cast`. Follow the [Foundry installation guide](https://book.getfoundry.sh/getting-started/installation).
 
 ### Run the bundler
-#### In a new terminal
+
+From the root of the Voltaire repository:
+
+```bash
+./scripts/local-dev-setup.sh
 ```
-poetry run python3 main.py --entrypoint $ENTRYPOINT --bundler_secret $BUNDLER_SECRET --chain_id $CHAIN_ID --verbos
+
+The script starts a local anvil node (chain ID 1337), deploys the EntryPoint v0.6, v0.7, v0.8 and v0.9 contracts, funds the bundler signer, and launches the bundler. Once running, the bundler RPC is available at `http://127.0.0.1:3000/rpc` and the anvil node at `http://127.0.0.1:8545`.
+
+To run the bundler yourself against a node that already has the EntryPoint contracts deployed:
+
+```bash
+poetry run python3 -m voltaire_bundler --bundler_secret $BUNDLER_SECRET --chain_id $CHAIN_ID --ethereum_node_url $ETHEREUM_NODE_URL --verbose --unsafe
 ```
 
 #### Test the bundler by cloning `eth-infinitism/bundler-spec-tests`

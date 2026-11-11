@@ -38,7 +38,7 @@ console.log("Account address (sender): " + smartAccount.accountAddress);
 ## Create UserOperation
 Calling `createUserOperation` on `Simple7702Account` will:
 
-1. Compute the r and s values for the `eip7702Auth`. These values are part of the signature authorization tuple needed to upgrade the EOA.
+1. Prepare the `eip7702Auth` authorization tuple needed to upgrade the EOA, with placeholder `r` and `s` values that you replace when you sign it in the next step.
 This is only used once, during the upgrade transaction of the EOA.
 2. Determine the nonce and fetch the gas prices from the provided node RPC.
 3. Estimate gas limits from the provided bundler.

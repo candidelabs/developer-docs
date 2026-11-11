@@ -31,7 +31,8 @@ Here's the [complete code](https://github.com/candidelabs/abstractionkit-example
 1. Install dependencies:
 
 ```bash
-npm i abstractionkit dotenv
+npm i typescript tsx --save-dev
+npm i abstractionkit dotenv ethers viem cbor
 ```
 
 2. Configure environment variables. Create a `.env` file:
@@ -44,10 +45,15 @@ PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
 PRIVATE_KEY=your_eoa_private_key_here
 ```
 
-3. Create your script file with the imports and initialization:
+3. Copy [webauthn-utils.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/calibur-account/webauthn-utils.ts) from the examples repository next to your script. It provides `WebAuthnCredentials`, a simulated WebAuthn authenticator, and the `extractPublicKey` and `extractSignature` helpers. They are not part of AbstractionKit.
+
+This guide runs in Node with that simulated authenticator. In a browser, call the native `navigator.credentials.create()` and `navigator.credentials.get()` instead.
+
+4. Create your script file with the imports and initialization. The rest of the code in this guide goes inside `main()`, with any new `import` lines added at the top of the file:
 
 ```ts title="index.ts"
 import * as crypto from "crypto";
+import * as dotenv from "dotenv";
 import { Wallet } from "ethers";
 import { toBytes, toHex } from "viem";
 import {
@@ -56,41 +62,59 @@ import {
   createAndSignEip7702DelegationAuthorization,
   WebAuthnSignatureData,
 } from "abstractionkit";
+import {
+  WebAuthnCredentials,
+  extractPublicKey,
+  extractSignature,
+} from "./webauthn-utils";
 
-const chainId = BigInt(process.env.CHAIN_ID as string);
-const bundlerUrl = process.env.BUNDLER_URL as string;
-const paymasterUrl = process.env.PAYMASTER_URL as string;
-const nodeUrl = process.env.JSON_RPC_NODE_PROVIDER as string;
-const privateKey = process.env.PRIVATE_KEY as string;
+async function main(): Promise<void> {
+  dotenv.config(); // load the .env file
 
-const eoaWallet = new Wallet(privateKey);
-const eoaAddress = eoaWallet.address;
+  const chainId = BigInt(process.env.CHAIN_ID as string);
+  const bundlerUrl = process.env.BUNDLER_URL as string;
+  const paymasterUrl = process.env.PAYMASTER_URL as string;
+  const nodeUrl = process.env.JSON_RPC_NODE_PROVIDER as string;
+  const privateKey = process.env.PRIVATE_KEY as string;
 
-const smartAccount = new Calibur7702Account(eoaAddress);
-const paymaster = new CandidePaymaster(paymasterUrl);
+  const eoaWallet = new Wallet(privateKey);
+  const eoaAddress = eoaWallet.address;
 
-// Check if the EOA is already delegated to Calibur.
-// isDelegatedToThisAccount() returns true only if delegated to this account's delegateeAddress.
-const alreadyDelegated = await smartAccount.isDelegatedToThisAccount(nodeUrl);
-console.log("Already delegated:", alreadyDelegated);
+  const smartAccount = new Calibur7702Account(eoaAddress);
+  const paymaster = new CandidePaymaster(paymasterUrl);
+
+  // Check if the EOA is already delegated to Calibur.
+  // isDelegatedToThisAccount() returns true only if delegated to this account's delegateeAddress.
+  const alreadyDelegated = await smartAccount.isDelegatedToThisAccount(nodeUrl);
+  console.log("Already delegated:", alreadyDelegated);
+
+  // The code from the following steps goes here, inside main()...
+}
+
+main();
 ```
 
 ## Step 2: Create a WebAuthn credential
 
-Create a passkey credential. In a real browser application, this call triggers a biometric prompt (Face ID, fingerprint, or security key). The example below uses the browser's native `navigator.credentials` API shape.
+Create a passkey credential. In a real browser application, this call triggers a biometric prompt (Face ID, fingerprint, or security key). The simulated authenticator exposes the same `create` and `get` calls as the browser's native `navigator.credentials` API.
 
 ```ts title="index.ts"
-// In a browser, navigator.credentials is available globally.
-// Call navigator.credentials.create() with your relying party details.
+// Simulated WebAuthn authenticator for Node.
+// In a browser, remove this line and use the global navigator.credentials.
+const navigator = { credentials: new WebAuthnCredentials() };
+
+// In a browser, use window.location.hostname as the relying party ID.
+const rpId = "localhost";
+
 const credential = await navigator.credentials.create({
   publicKey: {
-    rp: { name: "My Wallet", id: window.location.hostname },
+    rp: { name: "My Wallet", id: rpId },
     user: {
-      id: crypto.getRandomValues(new Uint8Array(32)),
+      id: crypto.randomBytes(32),
       name: "user@example.com",
       displayName: "My Account",
     },
-    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    challenge: crypto.randomBytes(32),
     pubKeyCredParams: [{ type: "public-key", alg: -7 }],
   },
 });
@@ -104,6 +128,8 @@ console.log("  y:", toHex(y));
 ```
 
 The `extractPublicKey` function parses the CBOR-encoded attestation response and returns the `x` and `y` coordinates of the P-256 public key. These coordinates are what gets registered on-chain.
+
+`extractSignature` (used in Step 6) parses the DER-encoded assertion signature and normalizes `s` to its low-s form, which Calibur's on-chain verifier requires.
 
 ## Step 3: Build key registration transactions
 
@@ -147,7 +173,8 @@ let registerOp = await smartAccount.createUserOperation(
 );
 
 // Sign the delegation authorization if this is the first UserOperation.
-if (!alreadyDelegated) {
+// eip7702Auth is null when the EOA is already delegated.
+if (registerOp.eip7702Auth) {
   registerOp.eip7702Auth = createAndSignEip7702DelegationAuthorization(
     BigInt(registerOp.eip7702Auth.chainId),
     registerOp.eip7702Auth.address,
@@ -178,7 +205,7 @@ console.log(
 const registerResponse = await smartAccount.sendUserOperation(registerOp, bundlerUrl);
 const registerReceipt = await registerResponse.included();
 
-if (!registerReceipt.success) {
+if (registerReceipt == null || !registerReceipt.success) {
   console.log("Registration failed:", registerReceipt);
   return;
 }
@@ -200,9 +227,19 @@ console.log("Key settings:", {
 <summary>Result example</summary>
 
 ```terminal
-Passkey registered! Tx: 0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a
+Already delegated: true
+Passkey public key:
+  x: 0xba68ee184c6dbf92af46e01451c5aa5f05954d8864b381bf48642bacec2628c0
+  y: 0x9645bbd4c8c463e56debe3c2285aa6f2bd9645e1e8ffcd726610bd76ec3ec00d
+Key hash: 0xc78a0d04a640ede182b5977386d56a0ec9a2c7cf554ec1fab56eff2daaa09d3e
+Registering passkey...
+Passkey registered! Tx: 0xc7ba17beaf7cf213516a9c9e03a1475c78dde3c413a477eaa19bd116395403f6
 Key registered on-chain: true
-Key settings: { isAdmin: false, expiration: '2027-03-28T00:00:00.000Z', hook: '0x0000000000000000000000000000000000000000' }
+Key settings: {
+  isAdmin: false,
+  expiration: '2027-11-11T21:53:43.000Z',
+  hook: '0x0000000000000000000000000000000000000000'
+}
 ```
 
 </details>
@@ -260,7 +297,7 @@ const userOpHash = smartAccount.getUserOperationHash(userOperation, chainId);
 const assertion = await navigator.credentials.get({
   publicKey: {
     challenge: toBytes(userOpHash as `0x${string}`),
-    rpId: window.location.hostname,
+    rpId,
     allowCredentials: [{
       type: "public-key",
       id: new Uint8Array(credential.rawId),
@@ -302,7 +339,7 @@ const response = await smartAccount.sendUserOperation(userOperation, bundlerUrl)
 console.log("UserOp hash:", response.userOperationHash);
 
 const receipt = await response.included();
-if (receipt.success) {
+if (receipt?.success) {
   console.log("NFT minted with passkey signature!");
   console.log("Transaction:", receipt.receipt.transactionHash);
 } else {
@@ -310,14 +347,20 @@ if (receipt.success) {
 }
 ```
 
+Run the script:
+
+```cli title="Terminal"
+npx tsx index.ts
+```
+
 <details>
 <summary>Result example</summary>
 
 ```terminal
 Sending passkey-signed UserOperation...
-UserOp hash: 0x89a5111d40c4ca45977a28419a08ca33e496a88e973bc995ec6a5a28da564cb5
+UserOp hash: 0x4a42d8a5b62625c3939d9635beaa5c8f78c598618c154cbcbb7be44414f947ed
 NFT minted with passkey signature!
-Transaction: 0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a
+Transaction: 0x3273b70d952f352a5ae5d32819407224c1b70d9562bcce3abc29643a4df23281
 ```
 
 </details>

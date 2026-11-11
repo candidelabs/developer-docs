@@ -65,6 +65,7 @@ PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
 
 # Recovery Service URL
 # Get access here: https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5
+# If your credential is an API key, append it to the URL: https://<your-service-url>/<YOUR_API_KEY>
 RECOVERY_SERVICE_URL=
 
 # Safe Owner
@@ -105,6 +106,8 @@ const safeAccountAddress = smartAccount.accountAddress;
 const alertsService = new Alerts(recoveryServiceURL, chainId);
 // highlight-end
 ```
+
+The service reads the Safe's owners on-chain, so the Safe account must already be deployed on this network. To subscribe before deployment, wrap the owner signature with ERC-6492 as described in the [API reference](/wallet/recovery/auth-api/#accounts-that-are-not-deployed-yet-erc-6492).
 
 ### Step 2: Create SIWE Messages
 
@@ -287,29 +290,33 @@ if (emailUnsubscribeSuccess) {
 To stop all recovery alerts:
 
 ```ts
-// Generate SIWE message for unsubscribing
-const unsubscribeSiweMessage = alertsService.unsubscribeSiweStatementToSign(
+// Each request needs its own SIWE message: a message cannot be reused
+const emailUnsubscribeSiweMessage = alertsService.unsubscribeSiweStatementToSign(
   ownerAccount.address
 );
-
-// Sign the SIWE message
-const unsubscribeSignature = await ownerAccount.signMessage({
-  message: unsubscribeSiweMessage
+const emailUnsubscribeSignature = await ownerAccount.signMessage({
+  message: emailUnsubscribeSiweMessage
 });
 
-// Unsubscribe from all channels
 const emailUnsubscribeSuccess = await alertsService.unsubscribe(
   "email-subscription-id",
   ownerAccount.address,
-  unsubscribeSiweMessage,
-  unsubscribeSignature
+  emailUnsubscribeSiweMessage,
+  emailUnsubscribeSignature
 );
+
+const smsUnsubscribeSiweMessage = alertsService.unsubscribeSiweStatementToSign(
+  ownerAccount.address
+);
+const smsUnsubscribeSignature = await ownerAccount.signMessage({
+  message: smsUnsubscribeSiweMessage
+});
 
 const smsUnsubscribeSuccess = await alertsService.unsubscribe(
   "sms-subscription-id",
   ownerAccount.address,
-  unsubscribeSiweMessage,
-  unsubscribeSignature
+  smsUnsubscribeSiweMessage,
+  smsUnsubscribeSignature
 );
 
 if (emailUnsubscribeSuccess && smsUnsubscribeSuccess) {

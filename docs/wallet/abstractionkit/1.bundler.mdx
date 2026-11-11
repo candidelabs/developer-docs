@@ -100,7 +100,7 @@ const getChainId = await bundler.chainId();
 <summary>Example Response</summary>
 
 ```ts
-0xaa36a7
+'0xaa36a7'
 ```
 
 </details>
@@ -139,6 +139,8 @@ const entrypointAddresses = await bundler.supportedEntryPoints();
 
 ```ts
 [
+  '0x433709009B8330FDa32311DF1C2AFA402eD8D009',
+  '0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108',
   '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
   '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
 ]
@@ -153,6 +155,8 @@ const entrypointAddresses = await bundler.supportedEntryPoints();
 ### estimateUserOperationGas
 
 Generates and returns an estimate of how much gas is necessary to allow the user operation to complete, given a UserOperations.
+
+The bundler simulates the UserOperation as given. If the sender cannot pay the prefund (an unfunded account, non-zero gas prices, and no paymaster), the call fails with `AA21 didn't pay prefund`. The account classes' own `estimateUserOperationGas` zeroes the gas prices for the simulation, so it does not hit this.
 
 #### Usage
 See a full example in [getting-started guide](/wallet/guides/getting-started/)
@@ -195,9 +199,9 @@ const estimation = await bundler.estimateUserOperationGas(userOperation, entryPo
 
 ```ts
 {
-  callGasLimit: 58588n,
-  preVerificationGas: 45628n,
-  verificationGasLimit: 94374n
+  callGasLimit: 430366n,
+  preVerificationGas: 149156n,
+  verificationGasLimit: 1726325n
 }
 ```
 
@@ -274,7 +278,7 @@ import { Bundler } from "abstractionkit";
 
 const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
 const bundler: Bundler = new Bundler(bundlerRPC);
-const userOperationHash = "0xb348b32bc9b9e90620839c3926db401558806b03b2a46dc6de21d3a4ed8412fb";
+const userOperationHash = "0xbd2cf2185876fbc6eccfdcb9e7a6d606f1032fd0f38b3a3c7ddf7d59d605f0e4";
 
 // highlight-start
 const userOperation = await bundler.getUserOperationByHash(userOperationHash);
@@ -302,22 +306,26 @@ const userOperation = await bundler.getUserOperationByHash(userOperationHash);
 ```ts
 {
   userOperation: {
-    sender: '0xbA1Cd2470F46778c9748ce676c00Ba48D6f0b89d',
-    nonce: 2n,
-    initCode: '0x',
-    callData: '0xf34308ef0000000000000000000000001a02592a3484c2077d2e5d24482497f85e1980c6000000000000000000000000000000000000000000000000000000000000000500000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-    callGasLimit: 42472n,
-    verificationGasLimit: 98907n,
-    preVerificationGas: 52060n,
-    maxFeePerGas: 1000000030n,
-    maxPriorityFeePerGas: 1000000000n,
-    paymasterAndData: '0x3fe285dcd76bcce4ac92d38a6f2f8e964041e020000000000000000000000000000000000000000003000064cfa9640000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000064c82c6734b770b84cdf835ba3d1df6237178138c98ec5bef635cf8f3f2ac1fa3c0528a98b33c5ec5d5ab559f79ed3cac4ebb6b57de127840b433557938e46151b',
-    signature: '0x8a45a5eadb9f2f4b552ec20fa63424dbecca28a7a6f43f065298574861869071446b622ccc17c2eab539115afceb314f859a1cc7e9289935c4fddce833cda3ca1c'
+    sender: '0x4604A50478f900DBBB6dc5b3f2fd4D498bc8939D',
+    nonce: 0n,
+    callData: '0x541d63c800000000000000000000000038869bf66a61cf6bdb996a6ae40d5853fd43b526...',
+    callGasLimit: 473402n,
+    verificationGasLimit: 1898957n,
+    preVerificationGas: 156613n,
+    maxFeePerGas: 81n,
+    maxPriorityFeePerGas: 60n,
+    signature: '0x000000000000000000000000212d51e75ca2e4746871f513d66c894a30eba632eac111d11fe85222dce69e1e45171d57cb6227a08f11d72df2ab5b43a5d4aa88cd968e7cac6f4071ab1418e31b',
+    factory: '0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67',
+    factoryData: '0x1688f0b900000000000000000000000029fcb43b46531bca003ddc8fcb67ffe91900c762...',
+    paymaster: '0x8b1f6cb5d062aa2Ce8d581942bbb960420d875BA',
+    paymasterVerificationGasLimit: 70000n,
+    paymasterPostOpGasLimit: 75000n,
+    paymasterData: '0x020000006af4e2d3b8a968ac2badf864ae5455aa2c9c46e9ba110b3214e06bbfdbb31c67d7b68d766ef58bb72181301b09dc17b080c23e7f8a3ec784d2ecc73dcf00e9bf57e021cd1c'
   },
-  entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
-  blockNumber: 9472404n,
-  blockHash: '0xd7d5471af5fdf2359031a5b0b7ac4c664b62aaaa0e4a65c248ef0fe78b7eeb9f',
-  transactionHash: '0xc8262db778457c24d8faa043879de973d6c8699ddb518b3864004d99093ce6e4'
+  entryPoint: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+  blockNumber: 12114483n,
+  blockHash: '0x634d29185efba9d6ef6f98a6c547a50b71c021c3a78c389828970ca772181478',
+  transactionHash: '0x3a69747ddf810c6f908036782319b75e24bd535bb4b9f880feecdedd301a075b'
 }
 ```
 </details>
@@ -328,7 +336,7 @@ const userOperation = await bundler.getUserOperationByHash(userOperationHash);
 
 ### getUserOperationReceipt
 
-Returns the receipt of a UserOperation by its hash returned from `sendUserOperation`
+Returns the receipt of a UserOperation by its hash returned from `sendUserOperation`, or `null` if the UserOperation is not yet included on-chain.
 
 #### Usage
 
@@ -340,7 +348,7 @@ import { Bundler } from "abstractionkit";
 
 const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
 const bundler: Bundler = new Bundler(bundlerRPC);
-const userOperationHash = "0xb348b32bc9b9e90620839c3926db401558806b03b2a46dc6de21d3a4ed8412fb";
+const userOperationHash = "0xbd2cf2185876fbc6eccfdcb9e7a6d606f1032fd0f38b3a3c7ddf7d59d605f0e4";
 
 // highlight-start
 const userOperationReceipt = await bundler.getUserOperationReceipt(
@@ -364,40 +372,44 @@ const userOperationReceipt = await bundler.getUserOperationReceipt(
 
 ```ts
 {
-  userOpHash: '0xb348b32bc9b9e90620839c3926db401558806b03b2a46dc6de21d3a4ed8412fb',
-  entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
-  sender: '0xba1cd2470f46778c9748ce676c00ba48d6f0b89d',
-  nonce: 2n,
-  paymaster: '0x3fe285dcd76bcce4ac92d38a6f2f8e964041e020',
-  actualGasCost: 130079001821106n,
-  actualGasUsed: 130079n,
+  userOpHash: '0xbd2cf2185876fbc6eccfdcb9e7a6d606f1032fd0f38b3a3c7ddf7d59d605f0e4',
+  entryPoint: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+  sender: '0x4604a50478f900dbbb6dc5b3f2fd4d498bc8939d',
+  nonce: 0n,
+  paymaster: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
+  actualGasCost: 161556241n,
+  actualGasUsed: 2098133n,
   success: true,
   logs: [
     {
-      address: '0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789',
+      address: '0x0000000071727de22e5e9d8baf0edac6f37da032',
       topics: [
         '0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f',
-        '0xb348b32bc9b9e90620839c3926db401558806b03b2a46dc6de21d3a4ed8412fb',
-        '0x000000000000000000000000ba1cd2470f46778c9748ce676c00ba48d6f0b89d',
-        '0x0000000000000000000000003fe285dcd76bcce4ac92d38a6f2f8e964041e020'
+        '0xbd2cf2185876fbc6eccfdcb9e7a6d606f1032fd0f38b3a3c7ddf7d59d605f0e4',
+        '0x0000000000000000000000004604a50478f900dbbb6dc5b3f2fd4d498bc8939d',
+        '0x0000000000000000000000008b1f6cb5d062aa2ce8d581942bbb960420d875ba'
       ],
-      data: '0x000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000764e60b23fb2000000000000000000000000000000000000000000000000000000000001fc1f',
-      blockNumber: '0x908994',
-      transactionHash: '0xc8262db778457c24d8faa043879de973d6c8699ddb518b3864004d99093ce6e4',
-      // ...
+      data: '0x0000000000000000000000000000000000000000000000000000000000000000...',
+      blockHash: '0x634d29185efba9d6ef6f98a6c547a50b71c021c3a78c389828970ca772181478',
+      blockNumber: '0xb8da33',
+      blockTimestamp: '0x6af4e230',
+      transactionHash: '0x3a69747ddf810c6f908036782319b75e24bd535bb4b9f880feecdedd301a075b',
+      transactionIndex: '0xb',
+      logIndex: '0x17',
+      removed: false
     }
   ],
   receipt: {
-    blockHash: '0xd7d5471af5fdf2359031a5b0b7ac4c664b62aaaa0e4a65c248ef0fe78b7eeb9f',
-    blockNumber: 9472404n,
+    blockHash: '0x634d29185efba9d6ef6f98a6c547a50b71c021c3a78c389828970ca772181478',
+    blockNumber: 12114483n,
     from: '0x3cfdc212769c890907bce93d3d8c2c53de6a7a89',
-    cumulativeGasUsed: 6256651n,
-    gasUsed: 127081n,
+    cumulativeGasUsed: 7840335n,
+    gasUsed: 1974796n,
     logs: [ /* every log in the bundle transaction, same shape as above */ ],
-    logsBloom: '0x00000000000000000000000000000108...',
-    transactionHash: '0xc8262db778457c24d8faa043879de973d6c8699ddb518b3864004d99093ce6e4',
-    transactionIndex: 47n,
-    effectiveGasPrice: 105n
+    logsBloom: '0x00000400001810000000000100000000...',
+    transactionHash: '0x3a69747ddf810c6f908036782319b75e24bd535bb4b9f880feecdedd301a075b',
+    transactionIndex: 11n,
+    effectiveGasPrice: 171n
   }
 }
 ```

@@ -36,17 +36,8 @@ export const sponsorData7677 = [
   {
     key: "name",
     type: "string",
-    description: "Name of Sponsor who is sponsoring the Gas Policy",
-  },
-  {
-    key: "description",
-    type: "string",
-    description: "A short description of the sponsor",
-  },
-  {
-    key: "url",
-    type: "string",
-    description: "Website of the Sponsor",
+    description:
+      "Name of Sponsor who is sponsoring the Gas Policy",
   },
   {
     key: "icon",
@@ -109,27 +100,10 @@ export const pm_getPaymasterStubDataReturnParamsV06 = [
       "Paymaster address and data required to pass paymaster contract validation",
   },
   {
-    key: "preVerificationGas",
-    type: "string",
-    description:
-      "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata",
-  },
-  {
-    key: "maxFeePerGas",
-    type: "string",
-    description: "Maximum fee per gas (similar to EIP-1559 max_fee_per_gas)",
-  },
-  {
-    key: "maxPriorityFeePerGas",
-    type: "string",
-    description:
-      "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)",
-  },
-  {
     key: "isFinal",
     type: "boolean",
     description:
-      "Indicates that the caller does not need to call pm_getPaymasterData",
+      "Always false: call pm_getPaymasterData to get the final paymaster data",
   },
   ...sponsorDataType7677,
 ];
@@ -140,23 +114,6 @@ export const pm_getPaymasterDataReturnParamsV06 = [
     type: "string",
     description:
       "Paymaster address and data required to pass paymaster contract validation",
-  },
-  {
-    key: "preVerificationGas",
-    type: "string",
-    description:
-      "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata",
-  },
-  {
-    key: "maxFeePerGas",
-    type: "string",
-    description: "Maximum fee per gas (similar to EIP-1559 max_fee_per_gas)",
-  },
-  {
-    key: "maxPriorityFeePerGas",
-    type: "string",
-    description:
-      "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)",
   },
   ...sponsorDataType7677,
 ];
@@ -232,8 +189,8 @@ export const tokensParametersV3 = [
   },
   {
     key: "decimals",
-    type: "number",
-    description: "Decimals of token",
+    type: "string",
+    description: "Decimals of token, hex-encoded (for example 0x12 for 18)",
   },
   {
     key: "exchangeRate",
@@ -323,6 +280,7 @@ export const pm_sponsorUserOperationReturnParamsV06 = [
     description:
       "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas). Optional Return",
   },
+  ...sponsorMetaDataType,
 ];
 
 // Entrypoint Version 0.7
@@ -382,7 +340,6 @@ export const paymasterMetadataReturnParametersV07 = [
     description:
       "Dummy values to use for estimating user operation gas before sponsorship",
   },
-  ...sponsorMetaDataType,
 ];
 
 export const getPaymasterMetaDataParam = [
@@ -413,7 +370,7 @@ export const pm_sponsorUserOperationReturnParamsV07 = [
     key: "paymasterVerificationGasLimit",
     type: "string",
     description:
-      "The amount of gas to allocate for the paymaster post-operation code",
+      "The amount of gas to allocate for the paymaster validation code",
   },
   {
     key: "paymasterPostOpGasLimit",
@@ -428,27 +385,27 @@ export const pm_sponsorUserOperationReturnParamsV07 = [
   },
   {
     key: "callGasLimit",
-    type: "string",
+    type: "string?",
     description: "The amount of gas to allocate the main execution call",
   },
   {
     key: "verificationGasLimit",
-    type: "string",
+    type: "string?",
     description: "The amount of gas to allocate for the verification step",
   },
   {
     key: "preVerificationGas",
-    type: "string",
+    type: "string?",
     description: "Extra gas to pay the bunder",
   },
   {
     key: "maxFeePerGas",
-    type: "string",
+    type: "string?",
     description: "Maximum fee per gas (similar to EIP-1559 max_fee_per_gas)",
   },
   {
     key: "maxPriorityFeePerGas",
-    type: "string",
+    type: "string?",
     description:
       "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)",
   },
@@ -460,13 +417,13 @@ export const pm_getPaymasterStubDataReturnV07 = [
     key: "paymaster",
     type: "string",
     description:
-      "Address of paymaster contract, (or empty, if account pays for itself)",
+      "Address of paymaster contract",
   },
   {
     key: "paymasterVerificationGasLimit",
     type: "string",
     description:
-      "The amount of gas to allocate for the paymaster post-operation code",
+      "The amount of gas to allocate for the paymaster validation code",
   },
   {
     key: "paymasterPostOpGasLimit",
@@ -477,33 +434,14 @@ export const pm_getPaymasterStubDataReturnV07 = [
   {
     key: "paymasterData",
     type: "string",
-    description: "Data for paymaster (only if paymaster exists)",
-  },
-  {
-    key: "callGasLimit",
-    type: "string",
-    description: "The amount of gas to allocate the main execution call",
-  },
-  {
-    key: "verificationGasLimit",
-    type: "string",
-    description: "The amount of gas to allocate for the verification step",
-  },
-  {
-    key: "preVerificationGas",
-    type: "string",
-    description: "Extra gas to pay the bunder",
-  },
-  {
-    key: "maxFeePerGas",
-    type: "string",
-    description: "Maximum fee per gas (similar to EIP-1559 max_fee_per_gas)",
-  },
-  {
-    key: "maxPriorityFeePerGas",
-    type: "string",
     description:
-      "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)",
+      "Data for paymaster",
+  },
+  {
+    key: "isFinal",
+    type: "boolean",
+    description:
+      "Always false: call pm_getPaymasterData to get the final paymaster data",
   },
   ...sponsorDataType7677,
 ];
@@ -513,13 +451,13 @@ export const pm_getPaymasterDataReturnV07 = [
     key: "paymaster",
     type: "string",
     description:
-      "Address of paymaster contract, (or empty, if account pays for itself)",
+      "Address of paymaster contract",
   },
   {
     key: "paymasterVerificationGasLimit",
     type: "string",
     description:
-      "The amount of gas to allocate for the paymaster post-operation code",
+      "The amount of gas to allocate for the paymaster validation code",
   },
   {
     key: "paymasterPostOpGasLimit",
@@ -530,34 +468,10 @@ export const pm_getPaymasterDataReturnV07 = [
   {
     key: "paymasterData",
     type: "string",
-    description: "Data for paymaster (only if paymaster exists)",
-  },
-  {
-    key: "callGasLimit",
-    type: "string",
-    description: "The amount of gas to allocate the main execution call",
-  },
-  {
-    key: "verificationGasLimit",
-    type: "string",
-    description: "The amount of gas to allocate for the verification step",
-  },
-  {
-    key: "preVerificationGas",
-    type: "string",
-    description: "Extra gas to pay the bunder",
-  },
-  {
-    key: "maxFeePerGas",
-    type: "string",
-    description: "Maximum fee per gas (similar to EIP-1559 max_fee_per_gas)",
-  },
-  {
-    key: "maxPriorityFeePerGas",
-    type: "string",
     description:
-      "Maximum priority fee per gas (similar to EIP-1559 max_priority_fee_per_gas)",
+      "Data for paymaster",
   },
+  ...sponsorDataType7677,
 ];
 
 // SDK
@@ -738,8 +652,8 @@ export const createSponsorPaymasterUserOperationParam = [
   },
   {
     key: "bundlerRpc",
-    type: "string",
-    description: "Bundler URL to estimate the gas",
+    type: "string | Transport | Bundler",
+    description: "Bundler URL (or Transport / Bundler instance) to estimate the gas",
   },
   {
     key: "sponsorshipPolicyId",
@@ -845,8 +759,8 @@ export const createTokenPaymasterUserOperationParam = [
   },
   {
     key: "bundlerRpc",
-    type: "string",
-    description: "The Bundler RPC to estimate the gas",
+    type: "string | Transport | Bundler",
+    description: "The Bundler RPC (URL, Transport or Bundler instance) to estimate the gas",
   },
   {
     key: "context",
@@ -1025,6 +939,12 @@ export const supportedERC20TokensAndMetadataV6Type = [
 
 export const calculateUserOperationErc20TokenMaxGasCostParam = [
   {
+    key: "smartAccount",
+    type: "SmartAccountWithEntrypoint",
+    description:
+      "The smart account instance. Used to resolve the EntryPoint address.",
+  },
+  {
     key: "userOperation",
     type: "UserOperationV6 | UserOperationV7 | UserOperationV8 | UserOperationV9",
     description: "UserOperation to calculate cost for. Supports EntryPoint v0.6, v0.7, v0.8, and v0.9",
@@ -1033,6 +953,12 @@ export const calculateUserOperationErc20TokenMaxGasCostParam = [
     key: "erc20TokenAddress",
     type: "string",
     description: "ERC-20 Token Address",
+  },
+  {
+    key: "overrides",
+    type: "{ entrypoint?: string | null }?",
+    description:
+      "Optional. Set the EntryPoint address instead of resolving it from the smart account.",
   },
 ];
 
@@ -1053,8 +979,8 @@ export const createPaymasterUserOperationParam = [
   },
   {
     key: "bundlerRpc",
-    type: "string",
-    description: "Bundler URL to estimate the gas",
+    type: "string | Transport | Bundler",
+    description: "Bundler URL (or Transport / Bundler instance) to estimate the gas",
   },
   {
     key: "context?",
@@ -1113,7 +1039,7 @@ export const isSupportedERC20TokenParam = [
 export const isSupportedERC20TokenReturn = [
   {
     key: "isSupported",
-    type: "boolean",
+    type: "Promise<boolean>",
     description: "Returns true if the erc20 token is supported",
   },
 ];
@@ -1143,7 +1069,7 @@ export const fetchTokenPaymasterExchangeRateParams = [
 export const fetchTokenPaymasterExchangeRateReturn = [
   {
     key: "exchangeRate",
-    type: "bigInt",
+    type: "Promise<bigint>",
     description: "Returns the exchange rate to the native token",
   },
 ];
@@ -1160,7 +1086,7 @@ export const fetchSupportedERC20TokensAndPaymasterMetadataParam = [
 export const fetchSupportedERC20TokensAndPaymasterMetadataReturn = [
   {
     key: "SupportedERC20TokensAndMetadataWithExchangeRate",
-    type: "Promise<SupportedERC20TokensAndMetadataV7WithExchangeRate | SupportedERC20TokensAndMetadataV6WithExchangeRate>",
+    type: "Promise<SupportedERC20TokensAndMetadataWithExchangeRate>",
     description:
       "A promise with the list of supported erc20 tokens and their exchange rate",
   },

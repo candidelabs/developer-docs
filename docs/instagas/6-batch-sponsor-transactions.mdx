@@ -112,7 +112,7 @@ console.log(capabilities);
       "supported": true
     },
     "atomic": {
-      "supported": true
+      "status": "supported"
     }
   },
   "10": {
@@ -120,9 +120,9 @@ console.log(capabilities);
       "supported": true
     },
     "atomic": {
-      "supported": true
+      "status": "supported"
     }
-  },
+  }
 }
 ```
 
@@ -138,18 +138,18 @@ Your app should fallback to sending normal transactions if the wallet doesn't su
 
 InstaGas is a no-code solution for dApps, provided that the wallet natively uses Candide's [Paymaster API](/wallet/paymaster/rpc-methods/).
 However, this integration is not a barrier for apps wishing to sponsor gas fees for wallets that do not natively support Candide.
-In this step, we demonstrate how to use [ERC-7677](https://eips.ethereum.org/EIPS/eip-5792), which is an extension to ERC-5792 that standardizes the communication of gas sponsorship
+In this step, we demonstrate how to use [ERC-7677](https://eips.ethereum.org/EIPS/eip-7677), which is an extension to ERC-5792 that standardizes the communication of gas sponsorship
 between the app and the wallet.
 
 1. Create an App on [dashboard.candide.dev/api-keys](https://dashboard.candide.dev/api-keys)
-2. Copy the paymaster URL link with the API key and fill in the `candidePaymasterUrl`
+2. Copy the paymaster URL link with the API key and fill in the `paymasterUrl`
 3. [Setup a Gas Policy](/instagas/overview/#how-it-works) and customise it with [your rules](/instagas/gas-policies/)
 
 
 ```ts
 import { useSendCalls } from 'wagmi'
 import { useChainId, useSendTransaction } from 'wagmi';
-import { toHex, zeroAddress } from 'viem';
+import { parseGwei, zeroAddress, type Address, type Hex } from 'viem';
 
 const { sendCalls, data: id } = useSendCalls(); // to send batch & sponsored tx
 const { sendTransaction } = useSendTransaction(); // to send standard tx
@@ -161,7 +161,7 @@ const sponsorshipPolicyId = process.env.SPONSORSHIP_POLICY_ID;
 const tx = {
   to: zeroAddress as Address,
   value: parseGwei('0'),
-  data: zeroAddress as Hex,
+  data: '0x' as Hex,
 };
 
 const handleSendTx = () => {
@@ -173,12 +173,12 @@ const handleSendTx = () => {
       return;
     }
 
-    const atomicStatus = capabilities[chainId].atomic?.status;
+    const atomicStatus = capabilities[chainId]?.atomic?.status;
     const isAtomicSupported = atomicStatus === "supported" || atomicStatus === "ready";
 
     if (isAtomicSupported) {
       sendCalls({
-        calls: [TEST_TX, TEST_TX],
+        calls: [tx, tx],
         // and sponsor the tx, optionally with a sponsorshipPolicyId
         capabilities: {
           paymasterService: {
@@ -195,7 +195,6 @@ const handleSendTx = () => {
       sendTransaction(tx);
     }
   } catch (err) {
-    sendError(`Error sending transaction:'${err}`)
     console.log('Error sending transaction:', err);
   }
 };
@@ -296,7 +295,7 @@ Requests that the wallet deliver a group of function calls on-chain from the use
 #### Return
 
 ```json
-{ "result": { transactionHash } }
+{ "result": { id } }
 ```
 
 <Tabs>
@@ -305,29 +304,28 @@ Requests that the wallet deliver a group of function calls on-chain from the use
 ```json
 [
   {
-    "version": "1.0",
+    "version": "2.0.0",
     "from": "0x0000000000000000000000000000000000000000",
     "chainId": "0x01",
     "atomicRequired": true,
     "calls": [
       {
         "to": "0x0000000000000000000000000000000000000000",
-        "value": "0x",
+        "value": "0x0",
         "data": "0x"
       },
       {
         "to": "0x0000000000000000000000000000000000000000",
-        "value": "0x",
+        "value": "0x0",
         "data": "0x"
       }
     ],
     "capabilities": {
       "paymasterService": {
-          "url": "https://...",
-          "optional": true,
-          "context": {
-            "sponsorshipPolicyId": "123"
-          }
+        "url": "https://...",
+        "optional": true,
+        "context": {
+          "sponsorshipPolicyId": "123"
         }
       }
     }
@@ -342,7 +340,9 @@ Requests that the wallet deliver a group of function calls on-chain from the use
 {
   "jsonrpc": "2.0",
   "id": 0,
-  "result": "0xe67asds.."
+  "result": {
+    "id": "0x00000000000000000000000000000000000000000000000000000000000000000e670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331"
+  }
 }
 ```
 
@@ -351,29 +351,25 @@ Requests that the wallet deliver a group of function calls on-chain from the use
 
 ### wallet_getCallsStatus
 
-Returns the status of a bundle that was sent via `wallet_sendCalls`. The identifier of the bundle is the value returned from the `wallet_sendCalls` RPC.
+Returns the status of a bundle that was sent via `wallet_sendCalls`. The identifier of the bundle is the `id` returned from the `wallet_sendCalls` RPC.
 
 #### Invocation
 
 ```json
-{ "method": "wallet_getCallsStatus", "params": [transactionHash] }
+{ "method": "wallet_getCallsStatus", "params": [id] }
 ```
 
 #### Return
 
 ```json
-{ "result": { calls } }
+{ "result": { version, id, chainId, status, atomic, receipts } }
 ```
 
 <Tabs>
 <TabItem value="request" label="Example Request">
 
 ```json
-{
-  "jsonrpc": "2.0",
-  "id": 0,
-  "result": "0xe67asds.."
-}
+["0x00000000000000000000000000000000000000000000000000000000000000000e670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331"]
 ```
 
 </TabItem>
@@ -381,7 +377,7 @@ Returns the status of a bundle that was sent via `wallet_sendCalls`. The identif
 
 ```json
 {
-  "version": "1.0",
+  "version": "2.0.0",
   "chainId": "0x01",
   "id": "0x00000000000000000000000000000000000000000000000000000000000000000e670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331",
   "status": 200,
@@ -419,24 +415,20 @@ to a block explorer for a given transaction hash.
 #### Invocation
 
 ```json
-{ "method": "wallet_showCallsStatus", "params": [transactionHash] }
+{ "method": "wallet_showCallsStatus", "params": [id] }
 ```
 
 #### Return
 
 ```json
-{ "result": call }
+{ "result": null }
 ```
 
 <Tabs>
 <TabItem value="request" label="Example Request">
 
 ```json
-{
-  "jsonrpc": "2.0",
-  "id": 0,
-  "result": "0xe67asds.."
-}
+["0x00000000000000000000000000000000000000000000000000000000000000000e670ec64341771606e55d6b4ca35a1a6b75ee3d5145a99d05921026d1527331"]
 ```
 
 </TabItem>
@@ -444,15 +436,9 @@ to a block explorer for a given transaction hash.
 
 ```json
 {
-  status: "CONFIRMED"
-  receipt: {
-    logs: [..]
-    success: true
-    blockHash: "0x84b9f48e922c6b500fa07a1e94144cb1452f2466199fc726e807d31bae6b4e52"
-    blockNumber: "0x7dbc3c"
-    gasUsed: "0x25c8e"
-    transactionHash: "0xcb8c43372800586bffc7521e0ca09f8828a87d4f0003f36ea68f9cbcf3e229f9"
-  }
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": null
 }
 ```
 

@@ -1,5 +1,6 @@
 // Calibur7702Account Types and Parameters
-import { userOperationParamV08, authorization7702HexType } from "./userOperation";
+import { userOperationParamV08 } from "./userOperation";
+import { eip7702AuthOverrideType } from "./simple7702AccountParams";
 import { sendUseroperationResponseType } from "../requestRpcData";
 
 // ─── Type Definitions ───────────────────────────────────────────────────────
@@ -211,29 +212,29 @@ export const caliburCreateUserOperationOverrides = [
   {
     key: "callGasLimitPercentageMultiplier?",
     type: "number",
-    description: "Percentage multiplier applied to estimated callGasLimit",
+    description: "Percentage added on top of the estimated callGasLimit (for example, 20 adds 20%)",
   },
   {
     key: "verificationGasLimitPercentageMultiplier?",
     type: "number",
-    description: "Percentage multiplier applied to estimated verificationGasLimit",
+    description: "Percentage added on top of the estimated verificationGasLimit (for example, 20 adds 20%)",
   },
   {
     key: "preVerificationGasPercentageMultiplier?",
     type: "number",
-    description: "Percentage multiplier applied to estimated preVerificationGas",
+    description: "Percentage added on top of the estimated preVerificationGas (for example, 20 adds 20%)",
   },
   {
     key: "maxFeePerGasPercentageMultiplier?",
     type: "number",
     description:
-      "Percentage multiplier applied to fetched maxFeePerGas",
+      "Percentage added on top of the fetched maxFeePerGas (for example, 20 adds 20%)",
   },
   {
     key: "maxPriorityFeePerGasPercentageMultiplier?",
     type: "number",
     description:
-      "Percentage multiplier applied to fetched maxPriorityFeePerGas",
+      "Percentage added on top of the fetched maxPriorityFeePerGas (for example, 20 adds 20%)",
   },
   {
     key: "state_override_set?",
@@ -269,7 +270,7 @@ export const caliburCreateUserOperationOverrides = [
   },
   {
     key: "eip7702Auth?",
-    type: authorization7702HexType,
+    type: eip7702AuthOverrideType,
     description:
       "EIP-7702 authorization fields. Required for the first UserOperation to delegate the EOA to the Calibur singleton.",
   },
@@ -292,12 +293,12 @@ export const createUserOperationParam = [
   },
   {
     key: "providerRpc?",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "JSON-RPC provider URL for nonce and gas price queries",
   },
   {
     key: "bundlerRpc?",
-    type: "string",
+    type: "string | Transport | Bundler",
     description: "Bundler RPC URL for gas estimation",
   },
   {
@@ -358,7 +359,7 @@ export const signUserOperationWithSignerParam = [
     key: "signer",
     type: "ExternalSigner",
     description:
-      "A capability-oriented signer: { address, signHash?, signTypedData? }. Use one of the built-in adapters (fromPrivateKey, fromViem, fromEthersWallet, fromViemWalletClient) or implement the interface yourself to integrate hardware wallets, HSMs, MPC, or WebAuthn. Calibur requires a signer that implements signHash.",
+      "A capability-oriented signer: { address, signHash?, signTypedData? }. Use one of the built-in adapters (fromPrivateKey, fromViem, fromEthersWallet, fromViemWalletClient) or implement the interface yourself to integrate hardware wallets, HSMs, MPC, or WebAuthn. Calibur accepts a signer that implements either signTypedData or signHash.",
   },
   {
     key: "chainId",
@@ -416,7 +417,7 @@ export const sendUserOperationParam = [
   },
   {
     key: "bundlerRpc",
-    type: "string",
+    type: "string | Transport | Bundler",
     description: "Bundler RPC endpoint to send the user operation to",
   },
 ];
@@ -520,7 +521,7 @@ export const createRegisterKeyMetaTransactionsParam = [
     key: "settings?",
     type: caliburKeySettingsType,
     description:
-      "Optional key settings. isAdmin is always forced to false for safety.",
+      "Optional key settings. The key is registered as non-admin. Throws if isAdmin is true.",
   },
 ];
 
@@ -614,7 +615,7 @@ export const unpackKeySettingsReturn = [
 export const isKeyRegisteredParam = [
   {
     key: "providerRpc",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "JSON-RPC endpoint for blockchain queries",
   },
   {
@@ -636,7 +637,7 @@ export const isKeyRegisteredReturn = [
 export const getKeySettingsParam = [
   {
     key: "providerRpc",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "JSON-RPC endpoint for blockchain queries",
   },
   {
@@ -658,7 +659,7 @@ export const getKeySettingsReturn = [
 export const getKeyParam = [
   {
     key: "providerRpc",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "JSON-RPC endpoint for blockchain queries",
   },
   {
@@ -680,8 +681,14 @@ export const getKeyReturn = [
 export const getKeysParam = [
   {
     key: "providerRpc",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "JSON-RPC endpoint for blockchain queries",
+  },
+  {
+    key: "overrides?",
+    type: "{ blockNumber?: bigint }",
+    description:
+      "Optional block number to query at. If omitted, the current block number is fetched once and used for all reads.",
   },
 ];
 
@@ -697,7 +704,7 @@ export const getKeysReturn = [
 export const isDelegatedToThisAccountParam = [
   {
     key: "providerRpc",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "JSON-RPC endpoint for blockchain queries",
   },
 ];
@@ -715,7 +722,7 @@ export const isDelegatedToThisAccountReturn = [
 export const getNonceParam = [
   {
     key: "providerRpc",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "JSON-RPC endpoint for blockchain queries",
   },
   {

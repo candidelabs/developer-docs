@@ -38,8 +38,8 @@ From a Bundler's perspective, the UserOperation flow works as follows:
 1. Wallet clients send individual `UserOperations` to Bundlers
 2. Bundlers maintain pending UserOps in memory and propagate them to other mempool nodes
 3. Bundlers broadcast peer-to-peer messages for each incoming UserOp
-4. For efficiency, the P2P protocol supports batching multiple UserOps in a single message—primarily for syncing new bundlers joining the network
-5. When creating a bundle, each bundler can freely choose the size and order—from empty to the entire mempool (within transaction and block gas limits). This is where flashbots-style APIs for searchers integrate
+4. For efficiency, the P2P protocol supports batching multiple UserOps in a single message, primarily for syncing new bundlers joining the network
+5. When creating a bundle, each bundler can freely choose the size and order: from empty to the entire mempool (within transaction and block gas limits). This is where flashbots-style APIs for searchers integrate
 6. Larger bundles reduce overhead: the fixed 21,000 gas cost, EntryPoint contract overhead, and variable costs through "warm" address reuse across operations
 
 ## Voltaire

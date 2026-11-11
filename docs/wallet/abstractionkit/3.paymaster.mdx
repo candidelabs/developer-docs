@@ -19,11 +19,9 @@ import {
   paymasterMetadataV6Type,
   paymasterMetadataReturnParametersV06,
   candidePaymasterContext,
-  tokensParamatersV2,
   getSupportedEntrypointsReturn,
   createSponsorPaymasterUserOperationParam,
   createSponsorPaymasterUserOperationReturn,
-  PrependTokenPaymasterApproveAccount,
   createTokenPaymasterUserOperationParam,
   createTokenPaymasterUserOperationReturn,
   calculateUserOperationErc20TokenMaxGasCostParam,
@@ -177,38 +175,31 @@ const supportedERC20Tokens = await paymaster.fetchSupportedERC20TokensAndPaymast
 {
   tokens: [
     {
-      name: 'USD Coin',
-      symbol: 'USDC',
-      address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-      decimals: 6,
-      exchangeRate: 123n
-    },
-    {
-      name: 'Tether USDT',
-      symbol: 'USDT',
-      address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9',
-      decimals: 6,
-      exchangeRate: 123n
-    },
-    {
-      name: 'Dai Stablecoin',
-      symbol: 'DAI',
-      address: '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1',
+      name: 'Candide Test Token',
+      symbol: 'CTT',
+      address: '0xFa5854FBf9964330d761961F46565AB7326e5a3b',
       decimals: 18,
-      exchangeRate: 123n
+      exchangeRate: 1000000000000000000n
+    },
+    {
+      name: 'Tether',
+      symbol: 'USDT',
+      address: '0xd077a400968890eacc75cdc901f0356c943e4fdb',
+      decimals: 6,
+      exchangeRate: 2075579999n
     }
   ],
   paymasterMetadata: {
     name: 'CANDIDE Paymaster',
     description: 'CANDIDE Paymaster a fast, secure and feature-rich 4337 Paymaster',
     icons: [],
-    address: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
+    address: '0xca944fb73fa5191969014ded9bb075381d59c7de',
     sponsoredEventTopic: '0xa050a122b4c0e369e3385eb6b7cccd8019638b2764de67bec0af99130ddf8471',
     dummyPaymasterAndData: {
-      paymaster: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
-      paymasterVerificationGasLimit: '0xffff',
-      paymasterPostOpGasLimit: '0xffff',
-      paymasterData: '0x00010000000000ffff000000000000000000000000000000000000000000000000000000000000ffff010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101011c'
+      paymaster: '0xca944fb73fa5191969014ded9bb075381d59c7de',
+      paymasterVerificationGasLimit: 70000n,
+      paymasterPostOpGasLimit: 75000n,
+      paymasterData: '0x0001000000000000ffff000000000000000000000000000000000000000000000000000000000000ffff010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101011c'
     }
   }
 }
@@ -330,6 +321,7 @@ const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
 
 // highlight-start
 const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
+  smartAccount,
   userOperation,
   erc20TokenAddress,
 );
@@ -349,7 +341,7 @@ const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
 <summary>Example Response</summary>
 
 ```ts
-3391931975665260
+35424864n
 ```
 </details>
 
@@ -444,13 +436,13 @@ const paymasterResult = await paymaster.getPaymasterMetaData(SafeAccount.DEFAULT
   name: 'CANDIDE Paymaster',
   description: 'CANDIDE Paymaster a fast, secure and feature-rich 4337 Paymaster',
   icons: [],
-  address: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
+  address: '0xca944fb73fa5191969014ded9bb075381d59c7de',
   sponsoredEventTopic: '0xa050a122b4c0e369e3385eb6b7cccd8019638b2764de67bec0af99130ddf8471',
   dummyPaymasterAndData: {
-    paymaster: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
-    paymasterVerificationGasLimit: '0xffff',
-    paymasterPostOpGasLimit: '0xffff',
-    paymasterData: '0x00010000000000ffff000000000000000000000000000000000000000000000000000000000000ffff010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101011c'
+    paymaster: '0xca944fb73fa5191969014ded9bb075381d59c7de',
+    paymasterVerificationGasLimit: 70000n,
+    paymasterPostOpGasLimit: 75000n,
+    paymasterData: '0x0001000000000000ffff000000000000000000000000000000000000000000000000000000000000ffff010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101011c'
   }
 }
 ```
@@ -490,8 +482,10 @@ const paymasterResult = await paymaster.getSupportedEntrypoints();
 
 ```ts
 [
-  '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
-  '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
+  '0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789',
+  '0x0000000071727de22e5e9d8baf0edac6f37da032',
+  '0x4337084d9e255ff0702461cf8895ce9e3b5ff108',
+  '0x433709009b8330fda32311df1c2afa402ed8d009'
 ]
 ```
 
@@ -579,9 +573,7 @@ const erc20TokenData = await paymaster.getSupportedERC20TokenData(erc20TokenAddr
   name: 'Candide Test Token',
   symbol: 'CTT',
   address: '0xFa5854FBf9964330d761961F46565AB7326e5a3b',
-  decimals: 18,
-  fee: 0n,
-  exchangeRate: 1001219705870085130n
+  decimals: 18
 }
 ```
 
@@ -625,7 +617,7 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 <summary>Example Response</summary>
 
 ```ts
-1001219705870085130n
+1000000000000000000n
 ```
 
 </details>
@@ -686,23 +678,25 @@ Pass `paymasterAddress` in the context to pin the paymaster you expect. If the d
 
 ```ts title="example.ts"
 const bundlerRpc = "https://api.candide.dev/public/v3/11155111";
-const usdcAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"; // USDC on sepolia
+const tokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b"; // Candide Test Token (CTT) on Sepolia, supported by the Candide paymaster
 
 // Candide or Pimlico (auto-detected): exchange rate fetched from the RPC
 const { userOperation: tokenOp, tokenQuote } = await paymaster.createPaymasterUserOperation(
   smartAccount,
   userOperation,
   bundlerRpc,
-  { token: usdcAddress },
+  { token: tokenAddress },
 );
 userOperation = tokenOp;
 
-// Unknown provider: supply exchangeRate (scaled by 1e18)
+// Unknown provider: supply exchangeRate, the token smallest-units per 1 ETH
+// (USDC with 6 decimals at $3000/ETH: 3000 * 10^6)
+const usdcAddress = "0x..."; // a token your paymaster provider supports
 const { userOperation: tokenOp2 } = await paymaster.createPaymasterUserOperation(
   smartAccount,
   userOperation,
   bundlerRpc,
-  { token: usdcAddress, exchangeRate: "1000000000000000000" },
+  { token: usdcAddress, exchangeRate: "3000000000" },
 );
 userOperation = tokenOp2;
 ```

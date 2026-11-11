@@ -26,7 +26,7 @@ Configure the following Tenderly settings to use their services:
 
 ```env
 TENDERLY_ACCOUNT_SLUG=
-TENDERLY_PROJECT_SlUG=
+TENDERLY_PROJECT_SLUG=
 TENDERLY_ACCESS_KEY=
 ```
 
@@ -37,7 +37,7 @@ TENDERLY_ACCESS_KEY=
 import { simulateUserOperationWithTenderlyAndCreateShareLink } from "abstractionkit";
 
 const tenderlyAccountSlug = process.env.TENDERLY_ACCOUNT_SLUG as string
-const tenderlyProjectSlug = process.env.TENDERLY_PROJECT_SlUG as string
+const tenderlyProjectSlug = process.env.TENDERLY_PROJECT_SLUG as string
 const tenderlyAccessKey = process.env.TENDERLY_ACCESS_KEY as string
 
 const userOpSimulationLink = await simulateUserOperationWithTenderlyAndCreateShareLink(
@@ -45,17 +45,17 @@ const userOpSimulationLink = await simulateUserOperationWithTenderlyAndCreateSha
     tenderlyProjectSlug,
     tenderlyAccessKey,
     chainId,
-    entrypointAddress,
+    entrypointAddress, // smartAccount.entrypointAddress
     userOperation
 );
 
-console.log("userop simulation link: ", userOpSimulationLink);
+console.log("userop simulation link: ", userOpSimulationLink.simulationShareLink);
 ```
 
 ## Simulate Safe CallData 
 
 ```ts
-import { SafeMultiChainSigAccountV1 as SafeAccount} from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount, MetaTransaction } from "abstractionkit";
 
 const smartAccount = SafeAccount.initializeNewAccount(
     [ownerPublicAddress],

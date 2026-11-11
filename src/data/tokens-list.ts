@@ -234,13 +234,6 @@ export const gnosisList = [
     blockExplorer: "https://gnosisscan.io/token/",
     website: "https://www.circle.com/",
   },
-  {
-    token: "USDT (Bridged)",
-    logo: "/img/tokens/usdt-logo.svg",
-    address: "0x4ECaBa5870353805a9F068101A40E0f32ed605C6",
-    blockExplorer: "https://gnosisscan.io/token/",
-    website: "https://tether.io/",
-  },
 ];
 export const optimismList = [
   {

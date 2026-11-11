@@ -75,13 +75,13 @@ export const userOperationParamV07 = [
   },
   {
     key: "factory",
-    type: "string",
-    description: "account factory, only for new accounts",
+    type: "string | null",
+    description: "account factory, only for new accounts (null if the account already exists)",
   },
   {
     key: "factoryData",
-    type: "string",
-    description: "data for account factory (only if account factory exists)",
+    type: "string | null",
+    description: "data for account factory (null if the account already exists)",
   },
   {
     key: "callData",
@@ -102,7 +102,7 @@ export const userOperationParamV07 = [
   {
     key: "preVerificationGas",
     type: "bigint",
-    description: "Extra gas to pay the bunder",
+    description: "Extra gas to pay the bundler",
   },
   {
     key: "maxFeePerGas",
@@ -117,9 +117,9 @@ export const userOperationParamV07 = [
   },
   {
     key: "paymaster",
-    type: "string",
+    type: "string | null",
     description:
-      "Address of paymaster contract, (or empty, if account pays for itself)",
+      "Address of paymaster contract (null if account pays for itself)",
   },
   {
     key: "paymasterVerificationGasLimit",
@@ -135,8 +135,8 @@ export const userOperationParamV07 = [
   },
   {
     key: "paymasterData",
-    type: "string",
-    description: "Data for paymaster (only if paymaster exists)",
+    type: "string | null",
+    description: "Data for paymaster (null if no paymaster)",
   },
   {
     key: "signature",
@@ -385,27 +385,27 @@ export const stateOverrideSetType = [
     key: "[address: string]",
     type: [
       {
-        key: "balance",
+        key: "balance?",
         type: "bigint",
         description: "Override the balance of the address",
       },
       {
-        key: "nonce",
+        key: "nonce?",
         type: "bigint",
         description: "Override the nonce of the address",
       },
       {
-        key: "code",
+        key: "code?",
         type: "string",
         description: "Override the code of the address",
       },
       {
-        key: "state",
+        key: "state?",
         type: "Dictionary<string>",
         description: "Override the storage slots of the address",
       },
       {
-        key: "stateDiff",
+        key: "stateDiff?",
         type: "Dictionary<string>",
         description:
           "Apply state differences to the storage slots of the address",
@@ -429,7 +429,7 @@ export const GasOptionType = [
   {
     key: "Fast",
     type: "1.5",
-    description: "Medium Gas with a 50% increase",
+    description: "Fast Gas with a 50% increase",
   },
 ];
 

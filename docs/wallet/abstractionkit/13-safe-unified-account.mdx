@@ -8,13 +8,14 @@ import TabItem from "@theme/TabItem";
 import { DataTable } from "/src/components/Table";
 import {
   metaTransactionType,
-  ecdsaSignatureType,
-  webauthnSignatureDataType,
+  ecdsaPublicAddressType,
+  webAuthnPublicKeyType,
   initializeNewAccountParam,
   initializeNewAccountReturnMultiChainSig,
   signUserOperationsParam,
   signUserOperationsReturn,
   userOperationToSignType,
+  userOperationToSignWithOverridesType,
   getMultiChainEip712HashParam,
   getMultiChainEip712HashReturn,
   getMultiChainEip712DataParam,
@@ -156,9 +157,9 @@ console.log("Account address (sender): " + smartAccount.accountAddress);
 
 <TabItem value="Param type" label="Param Types">
   <DataTable items={initializeNewAccountParam} />
-  <DataTable items={ecdsaSignatureType} />
+  <DataTable items={ecdsaPublicAddressType} />
    WebauthnPublicKey
-  <DataTable items={webauthnSignatureDataType} />
+  <DataTable items={webAuthnPublicKeyType} />
 </TabItem>
 
 <TabItem value="Return Type" label="Return Type">
@@ -226,14 +227,14 @@ const userOperation = await smartAccount.createUserOperation(
       <tr>
         <td>Provider RPC</td>
         <td align="left">
-          string
+          string | Transport | JsonRpcNode
         </td>
         <td>The node URL. It is used to fetch the current nonce and fetch gas prices</td>
       </tr>
       <tr>
         <td>Bundler URL</td>
         <td align="left">
-          string
+          string | Transport | Bundler
         </td>
         <td>The Bundler URL. It is used to fetch the gas limits</td>
       </tr>
@@ -416,7 +417,7 @@ Since `v0.3.8`, this path accepts typed-data-only signers such as `fromViemWalle
 ```ts
 signUserOperationsWithSigners(
   userOperationsToSign: UserOperationToSign[],
-  signers: ExternalSigner[],
+  signers: ExternalSigner<MultiOpSignContext<UserOperationV9>>[],
 ): Promise<string[]>
 ```
 
@@ -467,10 +468,10 @@ userOp2.signature = signatures[1];
       <tr>
         <td>signers</td>
         <td align="left">
-          ExternalSigner[]
+          {`ExternalSigner<MultiOpSignContext<UserOperationV9>>[]`}
         </td>
         <td align="left">
-          One signer per owner required by the threshold, in any order. The built-in adapters `fromPrivateKey`, `fromViem`, `fromEthersWallet`, and `fromViemWalletClient` all work here.
+          One signer per owner required by the threshold, in any order. The built-in adapters `fromPrivateKey`, `fromViem`, `fromEthersWallet`, and `fromViemWalletClient` all work here. A custom signer must be typed for the multi-op context, as described on the External Signers page.
         </td>
       </tr>
     </tbody>
@@ -622,8 +623,8 @@ userOp2.signature = signatures[1];
 <TabItem value="Param type" label="Param Types">
   <DataTable items={formatSignaturesToUseroperationsSignaturesParam} />
 
-  UserOperationToSign
-  <DataTable items={userOperationToSignType} />
+  UserOperationToSignWithOverrides
+  <DataTable items={userOperationToSignWithOverridesType} />
 </TabItem>
 
 <TabItem value="Return Type" label="Return Type">
@@ -645,6 +646,7 @@ import {
     EIP712_SAFE_OPERATION_PRIMARY_TYPE,
     SafeMultiChainSigAccountV1 as SafeAccount,
 } from "abstractionkit";
+import type { TypedDataDefinition } from "viem";
 
 const eip712Data = SafeAccount.getUserOperationEip712Data(
     userOperation,
@@ -656,7 +658,7 @@ const signature = await walletClient.signTypedData({
     types: eip712Data.types,
     primaryType: EIP712_SAFE_OPERATION_PRIMARY_TYPE,
     message: eip712Data.messageValue,
-});
+} as unknown as TypedDataDefinition);
 
 userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
     [{ signer: ownerAddress, signature }],
@@ -689,7 +691,7 @@ createAddOwnerWithThresholdMetaTransactions(
   newOwner: Signer,
   threshold: number,
   overrides?: {
-    nodeRpcUrl?: string;
+    nodeRpcUrl?: string | Transport | JsonRpcNode;
     eip7212WebAuthnPrecompileVerifier?: string;
     eip7212WebAuthnContractVerifier?: string;
     webAuthnSignerFactory?: string;

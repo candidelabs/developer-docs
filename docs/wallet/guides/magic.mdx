@@ -32,14 +32,14 @@ Below are some relevant links that provide additional information and resources 
 <TabItem value="ethers" label="ethers">
 
 ```bash
-npm i abstractionkit && magic-sdk
+npm i abstractionkit magic-sdk ethers
 ```
 
 </TabItem>
 <TabItem value="viem" label="viem">
 
 ```bash
-npm i abstractionkit && magic-sdk && viem
+npm i abstractionkit magic-sdk viem
 ```
 
 </TabItem>
@@ -112,8 +112,10 @@ const magic = new Magic(process.env.PUBLISHABLE_API_KEY);
 const guardianSigner = createWalletClient({
   transport: custom(magic.rpcProvider),
 });
-const guardianAddresses = await signer.getAddresses();
-    
+const guardianAddresses = await guardianSigner.getAddresses();
+
+const smartAccount = SafeAccount.initializeNewAccount([process.env.OWNER_PUBLIC_ADDRESS]);
+
 const srm = new SocialRecoveryModuleV2();
 const enableModuleTx = srm.createEnableModuleMetaTransaction(
     smartAccount.accountAddress
@@ -159,7 +161,7 @@ const initiateRecoveryMetaTx = srm.createConfirmRecoveryMetaTransaction(
 // make sure to fund the guardian address on magic
 // otherwise, you can make the guardian a smart account from the start 
 // so you are able to sponsor the gas!
-const sendTx1 = guardianSigner.sendTransaction({
+const sendTx1 = await guardianSigner.sendTransaction({
     to: initiateRecoveryMetaTx.to,
     data: initiateRecoveryMetaTx.data,
     value: 0,
@@ -186,6 +188,8 @@ const initiateRecoveryMetaTx = srm.createConfirmRecoveryMetaTransaction(
 
 // make sure to fund the guardian address on magic
 const sendTx1 = await guardianSigner.sendTransaction({
+    account: guardianAddresses[0],
+    chain: null,
     to: initiateRecoveryMetaTx.to,
     data: initiateRecoveryMetaTx.data,
 });
@@ -218,6 +222,8 @@ const finalizeRecoveryMetaTx = srm.createFinalizeRecoveryMetaTransaction(smartAc
 
 // Anyone can call the finilize function after the grace period is over
 const sendTx2 = await guardianSigner.sendTransaction({
+    account: guardianAddresses[0],
+    chain: null,
     to: finalizeRecoveryMetaTx.to,
     data: finalizeRecoveryMetaTx.data,
 })

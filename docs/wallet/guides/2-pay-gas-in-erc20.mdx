@@ -182,7 +182,9 @@ async function main(): Promise<void> {
     console.log("UserOperation receipt received.")
     console.log(userOperationReceiptResult)
     
-    if (userOperationReceiptResult.success) {
+    if (userOperationReceiptResult == null) {
+        console.log("Receipt not found (timeout)")
+    } else if (userOperationReceiptResult.success) {
         console.log("Transaction successful! Hash:", userOperationReceiptResult.receipt.transactionHash)
         console.log(`Gas paid with token ${tokenAddress}`);
     } else {

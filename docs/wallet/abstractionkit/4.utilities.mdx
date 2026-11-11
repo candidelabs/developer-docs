@@ -10,10 +10,6 @@ import { DataTable } from "/src/components/Table";
 import {
   createUserOperationHashParams,
   createUserOperationHashReturn,
-  createPackedUserOperationV6Params,
-  createPackedUserOperationV6Return,
-  createPackedUserOperationV7Params,
-  createPackedUserOperationV7Return,
   fetchAccountNonceParams,
   fetchAccountNonceReturn,
   calculateUserOperationMaxGasCostParams,
@@ -24,11 +20,6 @@ import {
   simulateUserOperationCallDataWithTenderlyReturn,
   simulateSenderCallDataWithTenderlyParams,
   simulateSenderCallDataWithTenderlyReturn,
-  encodeMultiSendCallDataParams,
-  encodeMultiSendCallDataReturn,
-  metaTransactionType,
-  decodeMultiSendCallDataParams,
-  decodeMultiSendCallDataReturn,
   createCallDataParams,
   createCallDataReturn,
   getFunctionSelectorParams,
@@ -38,8 +29,6 @@ import {
   createAndSignEip7702DelegationAuthorizationParams,
   createAndSignEip7702DelegationAuthorizationReturn,
   authorization7702HexReturnType,
-  createRevokeDelegationAuthorizationParams,
-  createRevokeDelegationAuthorizationReturn,
   createEip7702DelegationAuthorizationHashParams,
   createEip7702DelegationAuthorizationHashReturn,
   createAndSignEip7702RawTransactionParams,
@@ -88,56 +77,6 @@ const userOpHash = createUserOperationHash(
 
 #### Source code
 [createUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils.ts#L49)
-
-### createPackedUserOperationV6
-
-Encodes a UserOperationV6 into its packed ABI representation, suitable for hashing or on-chain verification.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { createPackedUserOperationV6 } from "abstractionkit";
-
-const packed = createPackedUserOperationV6(userOperationV6);
-```
-
-</TabItem>
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={createPackedUserOperationV6Params} />
-</TabItem>
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createPackedUserOperationV6Return} />
-</TabItem>
-</Tabs>
-
-#### Source code
-[createPackedUserOperationV6](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils.ts#L310)
-
-### createPackedUserOperationV7
-
-Encodes a UserOperationV7 into its packed ABI representation, suitable for hashing or on-chain verification.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { createPackedUserOperationV7 } from "abstractionkit";
-
-const packed = createPackedUserOperationV7(userOperationV7);
-```
-
-</TabItem>
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={createPackedUserOperationV7Params} />
-</TabItem>
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createPackedUserOperationV7Return} />
-</TabItem>
-</Tabs>
-
-#### Source code
-[createPackedUserOperationV7](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils.ts#L349)
 
 ### fetchAccountNonce
 
@@ -241,6 +180,7 @@ const code = await node.getCode("0xYourAccountAddress");
 - `chainId()`
 - `blockNumber()`
 - `getCode(address)`
+- `getStorageAt(address, slot)`
 - `call(transaction)`
 - `getTransactionCount(address)`
 - `getFeeData(gasOption?)`
@@ -255,7 +195,7 @@ const code = await node.getCode("0xYourAccountAddress");
 
 ### getBalanceOf
 
-Deprecated in `v0.3.8`. Use `JsonRpcNode#getEntryPointDeposit` instead.
+Removed in `v0.3.8`. Use `JsonRpcNode#getEntryPointDeposit` instead.
 
 ```ts title="migration.ts"
 import { JsonRpcNode } from "abstractionkit";
@@ -269,7 +209,7 @@ const balance = await node.getEntryPointDeposit(
 
 ### getDepositInfo
 
-Deprecated in `v0.3.8`. Use `JsonRpcNode#getEntryPointDepositInfo` instead.
+Removed in `v0.3.8`. Use `JsonRpcNode#getEntryPointDepositInfo` instead.
 
 ```ts title="migration.ts"
 import { JsonRpcNode } from "abstractionkit";
@@ -413,78 +353,11 @@ const { simulation, callDataSimulationShareLink } =
 #### Source code
 [simulateSenderCallDataWithTenderlyAndCreateShareLink](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utilsTenderly.ts#L665)
 
-## Multicall utils
-
-### encodeMultiSendCallData
-
-Encodes an array of MetaTransactions into a single callData payload for the MultiSend contract.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { encodeMultiSendCallData } from "abstractionkit";
-
-const callData = encodeMultiSendCallData([
-  {
-    to: "0xTokenAddress",
-    value: 0n,
-    data: "0xTransferCallData",
-    operation: 0,
-  },
-  {
-    to: "0xAnotherContract",
-    value: 0n,
-    data: "0xAnotherCallData",
-    operation: 0,
-  },
-]);
-```
-
-</TabItem>
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={encodeMultiSendCallDataParams} />
-  MetaTransaction
-  <DataTable items={metaTransactionType} />
-</TabItem>
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={encodeMultiSendCallDataReturn} />
-</TabItem>
-</Tabs>
-
-#### Source code
-[encodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/multisend.ts#L29)
-
-### decodeMultiSendCallData
-
-Decodes encoded MultiSend callData back into a readable representation.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { decodeMultiSendCallData } from "abstractionkit";
-
-const decoded = decodeMultiSendCallData(encodedCallData);
-```
-
-</TabItem>
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={decodeMultiSendCallDataParams} />
-</TabItem>
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={decodeMultiSendCallDataReturn} />
-</TabItem>
-</Tabs>
-
-#### Source code
-[decodeMultiSendCallData](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/multisend.ts#L39)
-
 ## Generic Ethereum utils
 
 ### fetchGasPrice
 
-Deprecated in `v0.3.8`. Use `JsonRpcNode#getFeeData` instead.
+Removed in `v0.3.8`. Use `JsonRpcNode#getFeeData` instead.
 
 ```ts title="migration.ts"
 import { GasOption, JsonRpcNode } from "abstractionkit";
@@ -610,7 +483,7 @@ const code = await node.getCode("0xContractAddress");
 
 ### getDelegatedAddress
 
-Deprecated in `v0.3.8`. Use `JsonRpcNode#getDelegatedAddress` instead.
+Removed in `v0.3.8`. Use `JsonRpcNode#getDelegatedAddress` instead.
 
 ```ts title="migration.ts"
 import { JsonRpcNode } from "abstractionkit";
@@ -638,10 +511,13 @@ Reads the EntryPoint's `UserOperationRevertReason` log directly from a mined rec
 import { decodeUserOperationRevertReason } from "abstractionkit";
 
 const receipt = await response.included();
-const revert = decodeUserOperationRevertReason(receipt);
 
-if (revert.reverted) {
-  console.log(revert.errorMessage ?? revert.panicCode ?? "out of gas");
+if (receipt !== null) {
+  const revert = decodeUserOperationRevertReason(receipt);
+
+  if (revert.reverted) {
+    console.log(revert.errorMessage ?? revert.panicCode ?? "out of gas");
+  }
 }
 ```
 
@@ -666,17 +542,19 @@ Parses an EntryPoint `AAxx` revert code (e.g. `AA21`) out of an error message, s
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-import { parseAaCode } from "abstractionkit";
+import { AbstractionKitError, parseAaCode } from "abstractionkit";
 
 try {
   await smartAccount.sendUserOperation(userOperation, bundlerUrl);
 } catch (error) {
   // Read the code straight off the error...
-  if (error.aaCode === "AA21") {
+  if (error instanceof AbstractionKitError && error.aaCode === "AA21") {
     // account did not pay the prefund
   }
   // ...or parse it from any message string
-  const code = parseAaCode(error.message);
+  if (error instanceof Error) {
+    const code = parseAaCode(error.message);
+  }
 }
 ```
 
@@ -704,6 +582,7 @@ Creates and signs an EIP-7702 delegation authorization, allowing an EOA to deleg
 
 ```ts title="example.ts"
 import { createAndSignEip7702DelegationAuthorization } from "abstractionkit";
+import { Signature, Wallet } from "ethers";
 
 // With a private key (synchronous)
 const authorization = createAndSignEip7702DelegationAuthorization(
@@ -713,14 +592,15 @@ const authorization = createAndSignEip7702DelegationAuthorization(
   "0xYourPrivateKey"
 );
 
-// With an async signer callback
-const authorization = await createAndSignEip7702DelegationAuthorization(
+// With an async signer callback (ethers v6 shown)
+const wallet = new Wallet("0xYourPrivateKey");
+const authorizationFromSigner = await createAndSignEip7702DelegationAuthorization(
   11155111n,
   "0xDelegateeContractAddress",
   0n,
   async (hash) => {
-    // Sign the hash using your preferred method
-    return await wallet.signMessage(hash);
+    // Sign the raw hash: no EIP-191 message prefix, so do not use signMessage
+    return Signature.from(wallet.signingKey.sign(hash)).serialized;
   }
 );
 ```
@@ -738,37 +618,6 @@ const authorization = await createAndSignEip7702DelegationAuthorization(
 
 #### Source code
 [createAndSignEip7702DelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils7702.ts#L144)
-
-### createRevokeDelegationAuthorization
-
-Creates a signed authorization that revokes an existing EIP-7702 delegation by setting the delegatee address to the zero address, restoring the EOA to a normal account.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { createRevokeDelegationAuthorization } from "abstractionkit";
-
-const revokeAuth = createRevokeDelegationAuthorization(
-  11155111n,
-  0n,
-  "0xYourPrivateKey"
-);
-```
-
-</TabItem>
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={createRevokeDelegationAuthorizationParams} />
-</TabItem>
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createRevokeDelegationAuthorizationReturn} />
-  Authorization7702Hex
-  <DataTable items={authorization7702HexReturnType} />
-</TabItem>
-</Tabs>
-
-#### Source code
-[createRevokeDelegationAuthorization](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/utils7702.ts#L199)
 
 ### createEip7702DelegationAuthorizationHash
 

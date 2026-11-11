@@ -1,5 +1,7 @@
 // Type definitions for the Solana Paymaster (hosted Kora) JSON-RPC reference.
-// All shapes verified against the live endpoint on 2026-07-08.
+// Read-only method shapes (getPayerSigner, getSupportedTokens, getBlockhash, getConfig,
+// estimateTransactionFee) verified against the live endpoint on 2026-11-11.
+// signTransaction and signAndSendTransaction: 2026-07-08.
 
 export const estimateTransactionFeeParams = [
   {
@@ -70,55 +72,6 @@ export const getSupportedTokensReturn = [
     key: "tokens",
     type: "string[]",
     description: "Mint addresses of the SPL tokens accepted for fee payment",
-  },
-];
-
-export const transferTransactionParams = [
-  {
-    key: "amount",
-    type: "number",
-    description:
-      "Transfer amount in base units of the token (USDT and USDC both have 6 decimals)",
-  },
-  {
-    key: "token",
-    type: "string",
-    description: "Mint address of the SPL token to transfer",
-  },
-  {
-    key: "source",
-    type: "string",
-    description: "Wallet address of the sender (owner address, not the token account)",
-  },
-  {
-    key: "destination",
-    type: "string",
-    description:
-      "Wallet address of the recipient (owner address, not the token account)",
-  },
-];
-
-export const transferTransactionReturn = [
-  {
-    key: "transaction",
-    type: "string",
-    description:
-      "Base64-encoded unsigned transaction with the paymaster set as fee payer. It does not include the fee payment instruction",
-  },
-  {
-    key: "message",
-    type: "string",
-    description: "Base64-encoded transaction message",
-  },
-  {
-    key: "blockhash",
-    type: "string",
-    description: "The recent blockhash the transaction was built with",
-  },
-  {
-    key: "signer_pubkey",
-    type: "string",
-    description: "The paymaster's fee payer address",
   },
 ];
 
@@ -216,7 +169,7 @@ export const getConfigValidationConfig = [
     key: "fee_payer_policy",
     type: "object",
     description:
-      "Per-instruction permissions for what the fee payer key itself may be used for, per program (system, spl_token, token_2022)",
+      "Per-instruction permissions for what the fee payer key itself may be used for, per program (system, spl_token, token_2022, alt, bpf_loader_upgradeable, loader_v4)",
   },
   {
     key: "price",
@@ -228,12 +181,32 @@ export const getConfigValidationConfig = [
     key: "token_2022",
     type: "object",
     description:
-      "Token-2022 mint and account extensions that are blocked",
+      "Token-2022 mint and account extensions that are blocked, and the transfer hook policy",
   },
   {
     key: "allow_durable_transactions",
     type: "boolean",
     description: "Whether durable nonce transactions are accepted",
+  },
+  {
+    key: "max_price_staleness_slots",
+    type: "number",
+    description: "Maximum age, in slots, of the price used for a fee quote. 0 means no limit is enforced",
+  },
+  {
+    key: "require_one_of_programs",
+    type: "string[]",
+    description: "If not empty, a transaction must invoke at least one of these programs",
+  },
+  {
+    key: "cross_cluster_check",
+    type: "boolean",
+    description: "Whether the paymaster checks that a transaction was not built for another cluster",
+  },
+  {
+    key: "cross_cluster_endpoints",
+    type: "string[]",
+    description: "RPC endpoints of the clusters used by the cross-cluster check",
   },
 ];
 

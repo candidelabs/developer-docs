@@ -193,6 +193,9 @@ Since AbstractionKit `v0.3.5`, `Simple7702Account` accepts signers that implemen
 ```ts title="example.ts"
 import { fromViemWalletClient } from "abstractionkit";
 import { createWalletClient, custom } from "viem";
+import { sepolia } from "viem/chains";
+
+const chain = sepolia;
 
 const walletClient = createWalletClient({
   account: delegatorPublicAddress,
@@ -361,7 +364,7 @@ Prepends a token approval transaction to existing call data for use with token p
 ```ts title="example.ts"
 const callDataWithApproval = Simple7702Account.prependTokenPaymasterApproveToCallDataStatic(
   "0x...", // existing call data
-  "0xa0b86a33e6b3e96bb24b8e4b28e80e0fb3a4f4b6", // USDC token address
+  "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC token address (Ethereum mainnet)
   "0x...", // paymaster address
   1000000n // approve amount (1 USDC)
 );
@@ -389,7 +392,7 @@ Instance method to prepend token approval to call data for paymaster usage.
 ```ts title="example.ts"
 const callDataWithApproval = smartAccount.prependTokenPaymasterApproveToCallData(
   "0x...", // existing call data
-  "0xa0b86a33e6b3e96bb24b8e4b28e80e0fb3a4f4b6", // USDC token address
+  "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC token address (Ethereum mainnet)
   "0x...", // paymaster address
   1000000n // approve amount
 );
@@ -562,8 +565,8 @@ const userOperation = await smartAccount.createUserOperation(
   {
     eip7702Auth: { chainId: 11155111n },
     // Use higher gas prices
-    maxFeePerGasPercentageMultiplier: 120, // 20% higher than current network conditions
-    maxPriorityFeePerGasPercentageMultiplier: 150, // 50% higher than current network conditions
+    maxFeePerGasPercentageMultiplier: 20, // 20% higher than current network conditions
+    maxPriorityFeePerGasPercentageMultiplier: 50, // 50% higher than current network conditions
   }
 );
 ```
@@ -600,24 +603,30 @@ const userOperation = await smartAccount.createUserOperation(
 ### Error Recovery
 
 ```typescript
+import { AbstractionKitError } from "abstractionkit";
+
 async function robustTransactionExecution() {
   try {
     const response = await smartAccount.sendUserOperation(userOperation, bundlerRpc);
     const receipt = await response.included();
 
-    if (!receipt.success) {
-      console.error("Transaction failed:", receipt.logs);
+    if (!receipt?.success) {
+      console.error("Transaction failed:", receipt?.logs);
       // Handle transaction failure
     }
 
     return receipt;
   } catch (error) {
-    if (error.code === -32500) {
-      // Transaction rejected by entrypoint simulation
-      console.error("Simulation failed, check transaction data");
-    } else if (error.code === -32501) {
-      // Paymaster rejection
-      console.error("Paymaster rejected transaction");
+    // Bundler failures are thrown as AbstractionKitError with code "BUNDLER_ERROR".
+    // The JSON-RPC error number is available in errno.
+    if (error instanceof AbstractionKitError) {
+      if (error.errno === -32500) {
+        // Transaction rejected by entrypoint simulation
+        console.error("Simulation failed, check transaction data");
+      } else if (error.errno === -32501) {
+        // Paymaster rejection
+        console.error("Paymaster rejected transaction");
+      }
     }
     throw error;
   }

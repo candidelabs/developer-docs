@@ -64,7 +64,7 @@ export const createPackedUserOperationV7Return = [
 
 export const fetchAccountNonceParams = [
   {
-    key: "rpcUrl",
+    key: "rpc",
     type: "string | Transport | JsonRpcNode",
     description: "The JSON-RPC URL of an Ethereum node, or a Transport / JsonRpcNode instance",
   },
@@ -407,9 +407,9 @@ export const metaTransactionType = [
     description: "Call data for the transaction",
   },
   {
-    key: "operation",
+    key: "operation?",
     type: "Operation",
-    description: "Operation type: 0 for Call, 1 for DelegateCall",
+    description: "Operation type: 0 for Call, 1 for DelegateCall. Defaults to Call",
   },
 ];
 
@@ -514,9 +514,9 @@ export const getFunctionSelectorReturn = [
 
 export const sendJsonRpcRequestParams = [
   {
-    key: "rpcUrl",
-    type: "string",
-    description: "The JSON-RPC endpoint URL",
+    key: "rpc",
+    type: "string | Transport | JsonRpcNode",
+    description: "The JSON-RPC endpoint URL, or a Transport / JsonRpcNode instance",
   },
   {
     key: "method",
@@ -531,12 +531,12 @@ export const sendJsonRpcRequestParams = [
   {
     key: "headers",
     type: 'Record<string, string>',
-    description: 'HTTP headers for the request (default: {"Content-Type": "application/json"})',
+    description: 'HTTP headers for the request (default: {"Content-Type": "application/json"}). Only used when rpc is a URL string.',
   },
   {
     key: "paramsKeyName",
     type: "string",
-    description: 'Key name for the params field in the JSON-RPC body (default: "params"). Useful for non-standard JSON-RPC endpoints.',
+    description: 'Key name for the params field in the JSON-RPC body (default: "params"). Useful for non-standard JSON-RPC endpoints. Only used when rpc is a URL string.',
   },
 ];
 
@@ -902,7 +902,7 @@ export const getStorageAtReturn = [
 export const decodeUserOperationRevertReasonParams = [
   {
     key: "receipt",
-    type: "UserOperationReceiptResult",
+    type: "NonNullable<UserOperationReceiptResult>",
     description:
       "A mined UserOperation receipt. The function reads the EntryPoint's UserOperationRevertReason log from it directly, with no extra RPC call.",
   },

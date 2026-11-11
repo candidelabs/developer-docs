@@ -73,7 +73,7 @@ Active forwarding addresses are capped per account; refreshing an existing addre
 
 ## Tracking Deposit Status
 
-Poll [`forwarding_getForwardsByRecipient`](./api-reference.mdx#forwarding_getforwardsbyrecipient) with the `recipient` and `destinationChainId` to see forwards as they're picked up and delivered. Each entry is a self-describing [`Forward`](./api-reference.mdx#the-forward-object) with a normalized `status` of `pending`, `delivered`, or `failed` — you don't need to branch on which bridge (Across, LayerZero, CCTP, or same-chain) handled the deposit.
+Poll [`forwarding_getForwardsByRecipient`](./api-reference.mdx#forwarding_getforwardsbyrecipient) with the `recipient` and `destinationChainId` to see forwards as they're picked up and delivered. Each entry is a self-describing [`Forward`](./api-reference.mdx#the-forward-object) with a normalized `status` of `pending`, `delivered`, or `failed`, so you don't need to branch on which bridge (Across, LayerZero, CCTP, or same-chain) handled the deposit. A status of `unknown` means the check could not be completed right now: retry instead of treating it as a failure. Results are paginated: pass the response's `nextCursor` as `cursor` to fetch older forwards.
 
 If you already have the source transaction hash (e.g. from watching the user's wallet), [`forwarding_getForwardsByTx`](./api-reference.mdx#forwarding_getforwardsbytx) returns every forward that transaction produced without a recipient filter. Once you have a `forwardId` from either method, poll [`forwarding_getForwardById`](./api-reference.mdx#forwarding_getforwardbyid) instead of refetching the full list.
 

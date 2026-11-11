@@ -35,6 +35,13 @@ https://api.candide.dev/public/v3/solana-devnet
 
 See the list of [supported networks](/wallet/api/supported-networks/).
 
+Public endpoints are available on these networks:
+
+- **Mainnets:** Ethereum (1), Optimism (10), BnB Smart Chain (56), Gnosis (100), Polygon PoS (137), Worldchain (480), Base (8453), Plasma (9745), Arbitrum One (42161), Celo (42220), Avalanche C-Chain (43114)
+- **Testnets:** Sepolia (11155111), Optimism Sepolia (11155420), Arbitrum Sepolia (421614), Base Sepolia (84532), Polygon Amoy (80002)
+
+Other supported networks need an API key. A request for a network without a public endpoint returns `Unauthorized - public endpoint doesn't support this network`.
+
 ## Supported Methods
 
 See the list of the [Bundler API](/wallet/bundler/rpc-methods/), [Paymaster API](/wallet/paymaster/rpc-methods/), and [Solana Paymaster API](/wallet/solana-paymaster/rpc-methods/).

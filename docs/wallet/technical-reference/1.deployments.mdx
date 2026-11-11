@@ -47,7 +47,7 @@ EIP-7702 delegation targets used by `Calibur7702Account`.
 
 v1.1.0 is not deployed on Celo, Tempo or Polygon Amoy. On Tempo and Polygon Amoy, pass the v1.0.0 address as `delegateeAddress`.
 
-v1.0.0 is deployed on every supported network except Celo.
+v1.0.0 is not deployed on Celo or Somnia.
 
 ## Candide Paymasters
 | Contract              | Address                                    |
@@ -102,7 +102,7 @@ Addresses vary based on the recovery grace period. v0.2.0 is a new deployment th
 | 14 Days               | 0x4d92D03a47468d9FC62495d85E3F205b4616FC5c | 0x9BacD92F4687Db306D7ded5d4513a51EA05df25b |
 | 3 Minutes (testing only) | 0x4dF6081A82E07A7cD99aEf91C72d12a5138e468B | 0x949d01d424bE050D09C16025dd007CB59b3A8c66 |
 
-The v0.1.0 3, 7 and 14 day modules are not deployed on Tempo or Polygon Amoy. The v0.1.0 3 minute module is available on Ethereum Sepolia, Base Sepolia, Optimism Sepolia and Arbitrum Sepolia. The v0.2.0 3, 7 and 14 day modules are not deployed on Celo, Tempo or Polygon Amoy. The v0.2.0 3 minute module is available on Ethereum Sepolia, Base Sepolia, Optimism Sepolia and Arbitrum Sepolia.
+The v0.1.0 3, 7 and 14 day modules are not deployed on Somnia or Tempo. On Polygon Amoy, only the v0.1.0 3 day module is deployed. The v0.1.0 3 minute module is available on Ethereum Sepolia, Base Sepolia, Optimism Sepolia and Arbitrum Sepolia. The v0.2.0 3, 7 and 14 day modules are not deployed on Celo or Tempo. On Polygon Amoy, only the v0.2.0 3 day module is deployed. The v0.2.0 3 minute module is available on Ethereum Sepolia, Base Sepolia, Optimism Sepolia and Arbitrum Sepolia.
 
 For smart contract code, formal verification, and audits, refer to [candide-contracts](https://github.com/candidelabs/candide-contracts).
 
@@ -119,8 +119,9 @@ For smart contract code, formal verification, and audits, refer to [candide-cont
 `SafeAccountV0_2_0` and `SafeAccountV0_3_0` use v0.2.0. `SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2` use v0.2.1.
 
 Not deployed on:
-- v0.2.1 `SafeWebAuthnSignerSingleton` and `SafeWebAuthnSignerFactory`: World Chain
-- v0.2.0 `SafeWebAuthnSharedSigner`, `SafeWebAuthnSignerSingleton`, `SafeWebAuthnSignerFactory` and `FCLP256Verifier`: HyperEVM
+- v0.2.1 `SafeWebAuthnSignerSingleton` and `SafeWebAuthnSignerFactory`: Somnia, World Chain
+- v0.2.0 `SafeWebAuthnSharedSigner`, `SafeWebAuthnSignerSingleton`, `SafeWebAuthnSignerFactory` and `FCLP256Verifier`: HyperEVM, Somnia
+- `DaimoP256Verifier`: Somnia
 
 For Safe Passkeys code and audits, refer to [safe-4337-module](https://github.com/safe-global/safe-modules/tree/main/modules/passkey#deploy)
 
@@ -131,6 +132,8 @@ For Safe Passkeys code and audits, refer to [safe-4337-module](https://github.co
 | v1.0.0 | 0x691f59471Bfd2B7d639DCF74671a2d648ED1E331 |
 | v0.1.1 (deprecated) | 0xAA46724893dedD72658219405185Fb0Fc91e091C |
 
-v1.0.0 is not deployed on BSC, HyperEVM, Tempo, World Chain, Optimism Sepolia, Arbitrum Sepolia or Polygon Amoy.
+v1.0.0 is not deployed on BSC, HyperEVM, Somnia, Tempo, World Chain, Optimism Sepolia, Arbitrum Sepolia or Polygon Amoy.
+
+v0.1.1 is not deployed on Avalanche, Celo, Somnia, World Chain, Optimism Sepolia or Polygon Amoy.
 
 v1.0.0 replaces v0.1.1 with security fixes. See the [Allowance Module v1.0.0 Migration Guide](../plugins/4-allowance-migration.mdx).

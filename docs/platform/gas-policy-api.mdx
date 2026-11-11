@@ -73,8 +73,8 @@ Possible scopes are `gas-policies:read` and `gas-policies:write`. This endpoint 
 
 | Query parameter | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `chainId` | integer | — | Return policies for one chain ID |
-| `enabled` | boolean | — | Return only enabled or disabled policies |
+| `chainId` | integer | None | Return policies for one chain ID |
+| `enabled` | boolean | None | Return only enabled or disabled policies |
 | `page` | non-negative integer | `0` | Zero-based page index |
 | `pageSize` | integer | `25` | One of `10`, `25`, `50`, or `100` |
 
@@ -152,7 +152,9 @@ curl --request POST \
   }'
 ```
 
-Returns `201` with a complete [policy detail](#policy-detail). A plan limit on mainnet policies returns `403`; invalid field values return `422`.
+Omitted settings use these defaults: `general.enabled` is `true`, `general.private` is `true`, `general.startDate` is the start of the current day, `general.endDate` is one year later, `accountRules.rate` is `-1` (no rate limit), `accountRules.totalMax` and `accountRules.maxPerOp` are `0xde0b6b3a7640000` (1 native token), every access rule allows all values, and the transaction list is empty. Send `"general": {"enabled": false}` to create a policy that does not sponsor yet.
+
+Returns `201` with a complete [policy detail](#policy-detail). A chain that is not available to the team returns `400`; a plan limit on mainnet policies returns `403`; invalid field values return `422`.
 
 ### Get a gas policy
 
@@ -255,7 +257,7 @@ Transaction entries are ordered. Each input must contain `to`, `abi`, `selector`
 
 `PUT /v1/gas-policies/{policyId}/transactions`
 
-Replaces the complete ordered transaction list. Pass an empty array to set the list to empty.
+Replaces the complete ordered transaction list. Pass an empty array to set the list to empty. A policy with an empty transaction list does not restrict which calls it sponsors.
 
 ```bash
 curl --request PUT \
@@ -388,8 +390,10 @@ All fields are optional and merge over the current account rules.
 `accounts`, `origins`, and `ips` each accept an array of strings or `{"value": string, "label": string}` objects. A label is optional. An empty array means allow all.
 
 - Account values are account addresses.
-- Origin values are HTTPS origins.
+- Origin values are HTTPS origins. A single leading subdomain wildcard is accepted, for example `https://*.example.com`.
 - IP values are IPv4 addresses.
+
+Values are stored and returned in lowercase.
 
 ### Transaction input
 
@@ -406,7 +410,15 @@ Each transaction parameter has:
 | :--- | :--- | :--- |
 | `index` | string | Argument index. Use semicolons to descend into tuples, for example `"0;3"` |
 | `operator` | string | `$eq`, `$gt`, `$gte`, `$lt`, `$lte`, or `$startsWith` |
-| `value` | string | Value to compare against. Encode `uint` and `bytes` values as `0x`-prefixed hexadecimal strings; use `"true"` or `"false"` for booleans |
+| `value` | string | Value to compare against. Encode `uint` and `bytes` values as `0x`-prefixed hexadecimal strings; use `"true"` or `"false"` for booleans; for an `address`, use an address or the literal `"${userop.sender}"` |
+
+The operators accepted depend on the ABI type of the targeted argument. An operator that does not fit the argument type returns `422`.
+
+| Argument type | Operators |
+| :--- | :--- |
+| `uint` (any size) | `$eq`, `$gt`, `$gte`, `$lt`, `$lte` |
+| `string`, `bytes` | `$eq`, `$startsWith` |
+| `address`, `bool` | `$eq` |
 
 ## Response models
 
@@ -462,6 +474,7 @@ Every error response uses this envelope:
 | `403` | `forbidden` | Missing scope or team plan policy limit |
 | `404` | `not_found` | Unknown, deleted, or cross-team policy or transaction |
 | `422` | `validation_error` | One or more request fields failed validation |
+| `429` | `rate_limited` | Too many requests, or too many failed authentication attempts, from the same IP address |
 | `500` | `internal_error` | Unexpected server error |
 
 Documented messages include:
@@ -483,4 +496,6 @@ Documented messages include:
 - `Transaction {transactionId} not found on this policy.`
 - `The requested endpoint does not exist.`
 - `Request validation failed.`
+- `Rate limit exceeded. Try again in a minute.`
+- `Too many failed authentication attempts. Try again later.`
 - `An unexpected error occurred.`

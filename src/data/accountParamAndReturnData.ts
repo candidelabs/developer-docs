@@ -22,6 +22,13 @@ export const ecdsaSignatureType = [
     description: "ECDSA signature represented as a string",
   },
 ];
+export const ecdsaPublicAddressType = [
+  {
+    key: "ECDSAPublicAddress",
+    type: "string",
+    description: "Public address of an ECDSA (EOA) owner",
+  },
+];
 export const webauthnSignatureDataType = [
   {
     key: "authenticatorData",
@@ -86,7 +93,7 @@ export const initCodeOverrides = [
     key: "multisendContractAddress?",
     type: "string",
     description:
-      'Address of the Safe 4337 multisend contract. Default is "0xa581c4A4DB7175302464fF3C06380BC3270b4037".',
+      'Address of the Safe MultiSend contract. Default is "0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526".',
   },
   {
     key: "webAuthnSharedSigner?",
@@ -205,7 +212,7 @@ export const createInitializerCallDataParamV2 = [
     key: "threshold",
     type: "number",
     description:
-      "Pass the owner(s) address(es) of the account. It can be a single owner account, a multi-sig, or a WebAuthn",
+      "Signature threshold: how many owner signatures are required",
   },
   {
     key: "overrides?",
@@ -224,7 +231,7 @@ export const createInitializerCallDataParamV2 = [
         key: "multisendContractAddress?",
         type: "string",
         description:
-          'Address of the Safe 4337 multisend contract. Default is "0xa581c4A4DB7175302464fF3C06380BC3270b4037".',
+          'Address of the Safe MultiSend contract. Default is "0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526".',
       },
       {
         key: "webAuthnSharedSigner?",
@@ -473,17 +480,17 @@ export const metaTransactionType = [
       },
       {
         key: "value",
-        type: "BigNumberish",
+        type: "bigint",
         description:
           "Value transfered if making a native token transfer. (usually 0n for contract interaction with non-native tokens like erc-20 tokens)",
       },
       {
         key: "data",
-        type: "BytesLike",
+        type: "string",
         description: "The call data for the transaction",
       },
       {
-        key: "operation",
+        key: "operation?",
         type: "Operation: enum",
         description:
           "Default to 0 for a Call. 1 for a Delegate Call. (Optional)",
@@ -601,7 +608,7 @@ export const createCallDataReturn = [
 
 export const signerSignaturePair = [
   {
-    key: "Signer",
+    key: "signer",
     type: "ECDSAPublicAddress | WebauthnPublicKey",
     description:
       "Signer type which can be either an ECDSA public address or a Webauthn public key",
@@ -612,9 +619,9 @@ export const signerSignaturePair = [
     description: "signature",
   },
   {
-    key: "isContractSignature",
+    key: "isContractSignature?",
     type: "boolean",
-    description: "isContractSignature",
+    description: "Whether this is a contract signature (EIP-1271)",
   },
 ];
 
@@ -629,7 +636,7 @@ export const signerTypePairType = [
 export const createBaseUserOperationOverrides = [
   {
     key: "nonce",
-    type: "string",
+    type: "bigint",
     description: "Anti-replay parameter (see “Semi-abstracted Nonce Support” )",
   },
   {
@@ -727,6 +734,11 @@ export const createBaseUserOperationOverrides = [
     description: "Specify the WebAuthn signer singleton",
   },
   {
+    key: "webAuthnSignerProxyCreationCode",
+    type: "string",
+    description: "Specify the WebAuthn signer proxy creation code",
+  },
+  {
     key: "eip7212WebAuthnPrecompileVerifier",
     type: "string",
     description: "Specify the EIP-7212 WebAuthn precompile verifier",
@@ -814,7 +826,7 @@ export const signUserOperationParamV06 = [
     description: "target chain id",
   },
   {
-    key: "overrides?",
+    key: "options?",
     type: [
       {
         key: "validAfter?",
@@ -826,8 +838,14 @@ export const signUserOperationParamV06 = [
         type: "bigint",
         description: "Timestamp the signature will be valid until",
       },
+      {
+        key: "safe4337ModuleAddress?",
+        type: "string",
+        description:
+          "Override the Safe 4337 module address used when constructing the signature. Defaults to the module of the account instance.",
+      },
     ],
-    description: "overrides for the default values",
+    description: "SafeSignatureOptions: per-call signing options",
   },
 ];
 
@@ -848,7 +866,7 @@ export const signUserOperationParamV07 = [
     description: "target chain id",
   },
   {
-    key: "overrides?",
+    key: "options?",
     type: [
       {
         key: "validAfter?",
@@ -860,8 +878,14 @@ export const signUserOperationParamV07 = [
         type: "bigint",
         description: "Timestamp the signature will be valid until",
       },
+      {
+        key: "safe4337ModuleAddress?",
+        type: "string",
+        description:
+          "Override the Safe 4337 module address used when constructing the signature. Defaults to the module of the account instance.",
+      },
     ],
-    description: "overrides for the default values",
+    description: "SafeSignatureOptions: per-call signing options",
   },
 ];
 
@@ -882,7 +906,7 @@ export const sendUserOperationParamV7 = [
   },
   {
     key: "bundlerRpc",
-    type: "string",
+    type: "string | Transport | Bundler",
     description: "bundler rpc to send userOperation",
   },
 ];
@@ -895,7 +919,7 @@ export const sendUserOperationParamV06 = [
   },
   {
     key: "bundlerRpc",
-    type: "string",
+    type: "string | Transport | Bundler",
     description: "bundler rpc to send userOperation",
   },
 ];
@@ -919,9 +943,9 @@ export const sendUserOperationReturn = [
   },
   {
     key: "included()",
-    type: "Promise<UserOperationReceiptResult | BundlerJsonRpcError>",
+    type: "Promise<UserOperationReceiptResult>",
     description:
-      "Waits for the user operation to be included onchain and returns the user operation receipt on success, or the bundler error on failture",
+      "Waits for the user operation to be included onchain and returns the user operation receipt. Takes optional timeoutInSeconds (default 180) and requestIntervalInSeconds (default 2), and throws an AbstractionKitError with code TIMEOUT if the receipt is not found in time",
   },
 ];
 
@@ -933,7 +957,7 @@ export const estimateUserOperationGasParamV6 = [
   },
   {
     key: "bundlerRpc",
-    type: "string",
+    type: "string | Transport | Bundler",
     description: "bundler rpc to send userOperation",
   },
   {
@@ -942,10 +966,10 @@ export const estimateUserOperationGasParamV6 = [
       {
         key: "stateOverrideSet?",
         type: stateOverrideSetType,
-        description: "Timestamp the signature will be valid after",
+        description: "Pass state overrides for gas estimation",
       },
       {
-        key: "dummySignerSignaturePairs[]?",
+        key: "dummySignerSignaturePairs?",
         type: signerTypePairType,
         description: "Provide dummy signatures for the operation",
       },
@@ -998,7 +1022,7 @@ export const estimateUserOperationGasParamV7 = [
   },
   {
     key: "bundlerRpc",
-    type: "string",
+    type: "string | Transport | Bundler",
     description: "bundler rpc to send userOperation",
   },
   {
@@ -1059,12 +1083,12 @@ export const safeModuleExecutorFunctionSelectorType = [
   {
     key: "executeUserOpWithErrorString",
     type: "0x541d63c8",
-    description: "The MetaTransaction to create calldata for",
+    description: "Executor that bubbles up the revert reason of the inner call (default)",
   },
   {
     key: "executeUserOp",
     type: "0x7bb37428",
-    description: "The MetaTransaction to create calldata for",
+    description: "Executor that reverts without returning the inner revert reason",
   },
 ];
 
@@ -1075,24 +1099,42 @@ export const createAccountCallDataSingleTransactionParam = [
     description: "The MetaTransaction to create calldata for",
   },
   {
-    key: "safeModuleExecutorFunctionSelector",
-    type: safeModuleExecutorFunctionSelectorType,
-    description:
-      "Safe has two executor functions executeUserOpWithErrorString and executeUserOp",
+    key: "overrides?",
+    type: [
+      {
+        key: "safeModuleExecutorFunctionSelector?",
+        type: safeModuleExecutorFunctionSelectorType,
+        description:
+          "Safe has two executor functions executeUserOpWithErrorString and executeUserOp. Defaults to executeUserOpWithErrorString",
+      },
+    ],
+    description: "Overrides for the default values",
   },
 ];
 
 export const createAccountCallDataBatchTransactionsParam = [
   {
-    key: "metaTransaction[]",
+    key: "metaTransactions[]",
     type: metaTransactionType,
-    description: "The MetaTransaction to create calldata for",
+    description: "The MetaTransactions to create calldata for",
   },
   {
-    key: "safeModuleExecutorFunctionSelector",
-    type: safeModuleExecutorFunctionSelectorType,
-    description:
-      "Safe has two executor functions executeUserOpWithErrorString and executeUserOp",
+    key: "overrides?",
+    type: [
+      {
+        key: "safeModuleExecutorFunctionSelector?",
+        type: safeModuleExecutorFunctionSelectorType,
+        description:
+          "Safe has two executor functions executeUserOpWithErrorString and executeUserOp. Defaults to executeUserOpWithErrorString",
+      },
+      {
+        key: "multisendContractAddress?",
+        type: "string",
+        description:
+          'Address of the Safe MultiSend contract. Default is "0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526".',
+      },
+    ],
+    description: "Overrides for the default values",
   },
 ];
 
@@ -1100,12 +1142,12 @@ export const formatEip712SignaturesToUseroperationSignatureParam = [
   {
     key: "signersAddresses",
     type: "string[]",
-    description: "Provide dummy signatures for the operation",
+    description: "Public addresses of the signers, in the same order as signatures",
   },
   {
     key: "signatures",
     type: "string[]",
-    description: "Provide dummy signatures for the operation",
+    description: "EIP-712 signatures, one per signer address",
   },
   {
     key: "overrides?",
@@ -1151,7 +1193,7 @@ export const isDeployedParams = [
   },
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The JSON-RPC API URL for the target chain.",
   },
 ];
@@ -1168,7 +1210,7 @@ export const isDeployedReturn = [
 export const isModuleEnabledParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The JSON-RPC API url for the target chain.",
   },
   {
@@ -1181,7 +1223,7 @@ export const isModuleEnabledParams = [
 export const isModuleEnabledReturn = [
   {
     key: "isEnabled",
-    type: "boolean",
+    type: "Promise<boolean>",
     description: "Indicates whether the specified module is enabled.",
   },
 ];
@@ -1189,7 +1231,7 @@ export const isModuleEnabledReturn = [
 export const createSwapOwnerMetaTransactionsParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description:
       "The JSON-RPC API URL for the target chain to fetch the previous owner.",
   },
@@ -1233,6 +1275,11 @@ export const createSwapOwnerMetaTransactionsParams = [
         type: "string",
         description: "Address for the WebAuthn signer singleton.",
       },
+      {
+        key: "webAuthnSignerProxyCreationCode",
+        type: "string",
+        description: "Creation code of the WebAuthn signer proxy.",
+      },
     ],
   },
 ];
@@ -1268,7 +1315,7 @@ export const createSwapOwnerMetaTransactionsReturn = [
 export const createRemoveOwnerMetaTransactionParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description:
       "The JSON-RPC API URL for the target chain to fetch the previous owner.",
   },
@@ -1314,6 +1361,11 @@ export const createRemoveOwnerMetaTransactionParams = [
         type: "string",
         description: "Address for the WebAuthn signer singleton.",
       },
+      {
+        key: "webAuthnSignerProxyCreationCode",
+        type: "string",
+        description: "Creation code of the WebAuthn signer proxy.",
+      },
     ],
   },
 ];
@@ -1348,7 +1400,7 @@ export const createRemoveOwnerMetaTransactionReturn = [
 export const createDisableModuleMetaTransactionParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description:
       "The JSON-RPC API URL for the target chain to fetch the previous module address.",
   },
@@ -1432,7 +1484,7 @@ export const createAddOwnerWithThresholdMetaTransactionsParams = [
     type: [
       {
         key: "nodeRpcUrl",
-        type: "string?",
+        type: "(string | Transport | JsonRpcNode)?",
         description:
           "The JSON-RPC API url for the target chain, to check if the new webauthn owner is deployed or not",
       },
@@ -1455,6 +1507,11 @@ export const createAddOwnerWithThresholdMetaTransactionsParams = [
         key: "webAuthnSignerSingleton",
         type: "string?",
         description: "Address for the WebAuthn signer singleton.",
+      },
+      {
+        key: "webAuthnSignerProxyCreationCode",
+        type: "string?",
+        description: "Creation code of the WebAuthn signer proxy.",
       },
     ],
   },
@@ -1503,18 +1560,18 @@ export const webAuthnPublicKeyType = [
 export const verifyWebAuthnSignatureForMessageHashParam = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The JSON-RPC API url for the target chain.",
   },
   {
-    key: "webAuthnPublicKey",
+    key: "signer",
     type: webAuthnPublicKeyType,
     description: "The x and y coordinates of the webAuthn public key",
   },
   {
-    key: "message",
+    key: "messageHash",
     type: "string",
-    description: "The hashed message to verify",
+    description: "The 0x-prefixed 32-byte hash of the message to verify",
   },
   {
     key: "signature",
@@ -1648,7 +1705,24 @@ export const safeUserOperationTypedMessageValueType = [
     type: "string",
     description: "the userop sender address of the safe account",
   },
-  ...userOperationReturnParamsV06.filter((item) => item.key !== "sender"),
+  ...userOperationReturnParamsV06.filter(
+    (item) => item.key !== "sender" && item.key !== "signature"
+  ),
+  {
+    key: "validAfter",
+    type: "bigint",
+    description: "Timestamp the signature will be valid after",
+  },
+  {
+    key: "validUntil",
+    type: "bigint",
+    description: "Timestamp the signature will be valid until",
+  },
+  {
+    key: "entryPoint",
+    type: "string",
+    description: "EntryPoint contract address",
+  },
 ];
 
 export const getUserOperationEip712DataReturn = [
@@ -1714,7 +1788,7 @@ export const constructorV2Return = [
 export const createMigrateToV3Param = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The JSON-RPC API URL for the target chain.",
   },
   {
@@ -1731,6 +1805,12 @@ export const createMigrateToV3Param = [
         description: "Override the Safe v0.7 module address to enable.",
       },
       {
+        key: "prevModuleAddress?",
+        type: "string",
+        description:
+          "Override the linked-list predecessor of the module being disabled. Defaults to an on-chain lookup.",
+      },
+      {
         key: "pageSize?",
         type: "bigint",
         description: "Page size for the module pagination query.",
@@ -1740,8 +1820,14 @@ export const createMigrateToV3Param = [
         type: "string",
         description: "Starting address for the module pagination query.",
       },
+      {
+        key: "skipPreflight?",
+        type: "boolean",
+        description:
+          "Skip the on-chain check that verifies the account is a Safe (>= 1.4.1) running the old module before building the batch. Defaults to false.",
+      },
     ],
-    description: "Optional overrides for contract addresses and pagination.",
+    description: "Optional overrides for contract addresses, pagination, and the preflight check.",
   },
 ];
 
@@ -1793,9 +1879,14 @@ export const userOperationToSignType = [
     type: "bigint",
     description: "Timestamp the signature will be valid until",
   },
+];
+
+// UserOperationToSignWithOverrides: only accepted by formatSignaturesToUseroperationsSignatures
+export const userOperationToSignWithOverridesType = [
+  ...userOperationToSignType,
   {
     key: "options?",
-    type: "MultiChainSigningOptions",
+    type: "SafeSignatureOptions",
     description:
       "Per-operation signing options such as the Safe 4337 module address. In v0.3.5 this replaced the generic overrides field for non-WebAuthn options.",
   },
@@ -1837,8 +1928,19 @@ export const getMultiChainEip712HashParam = [
   },
   {
     key: "overrides?",
-    type: "object",
-    description: "Optional overrides for the Safe 4337 module address",
+    type: [
+      {
+        key: "safe4337ModuleAddress?",
+        type: "string",
+        description: "Override the Safe 4337 module address. Defaults to the Safe 4337 multi-chain signature module.",
+      },
+      {
+        key: "entrypointAddress?",
+        type: "string",
+        description: "Override the EntryPoint address. Defaults to EntryPoint v0.9.",
+      },
+    ],
+    description: "Optional overrides for module and entrypoint addresses",
   },
 ];
 
@@ -1858,7 +1960,18 @@ export const getMultiChainEip712DataParam = [
   },
   {
     key: "overrides?",
-    type: "object",
+    type: [
+      {
+        key: "safe4337ModuleAddress?",
+        type: "string",
+        description: "Override the Safe 4337 module address. Defaults to the Safe 4337 multi-chain signature module.",
+      },
+      {
+        key: "entrypointAddress?",
+        type: "string",
+        description: "Override the EntryPoint address. Defaults to EntryPoint v0.9.",
+      },
+    ],
     description: "Optional overrides for module and entrypoint addresses",
   },
 ];
@@ -2039,6 +2152,36 @@ export const estimateUserOperationGasParamMultiChainSig = [
         type: "Signer[]",
         description:
           "The signers whose signatures will be produced at sign time. Used to build dummy signatures when dummySignerSignaturePairs is not provided.",
+      },
+      {
+        key: "webAuthnSharedSigner?",
+        type: "string",
+        description: "Specify the WebAuthn shared signer. Defaults to the Safe Passkey module v0.2.1 value.",
+      },
+      {
+        key: "webAuthnSignerFactory?",
+        type: "string",
+        description: "Specify the WebAuthn signer factory. Defaults to the Safe Passkey module v0.2.1 value.",
+      },
+      {
+        key: "webAuthnSignerSingleton?",
+        type: "string",
+        description: "Specify the WebAuthn signer singleton. Defaults to the Safe Passkey module v0.2.1 value.",
+      },
+      {
+        key: "webAuthnSignerProxyCreationCode?",
+        type: "string",
+        description: "Specify the WebAuthn signer proxy creation code. Defaults to the Safe Passkey module v0.2.1 value.",
+      },
+      {
+        key: "eip7212WebAuthnPrecompileVerifier?",
+        type: "string",
+        description: "Specify the WebAuthn precompile verifier. Defaults to the RIP-7951 precompile.",
+      },
+      {
+        key: "eip7212WebAuthnContractVerifier?",
+        type: "string",
+        description: "Specify the WebAuthn contract verifier. Defaults to the Daimo P256 verifier.",
       },
     ],
     description: "Optional overrides for the estimation, such as bundler state overrides and the dummy signatures used while estimating.",

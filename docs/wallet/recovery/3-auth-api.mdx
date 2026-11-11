@@ -261,7 +261,7 @@ See [SIWE signing](#how-to-sign-messages-siwe-eip-4361) for the exact statement 
 
 Propose new Safe owners and their signing threshold on the module named by `moduleAddress`. The service checks that the module is enabled on the Safe, that its guardian is one of the Safe's guardians on it, and that the module can set the proposed owners (see [Recovery modules](/wallet/recovery/ux-api/#recovery-modules)). It then sends verification codes to the registered channels and returns a `requestId`, the required number of verifications, and the available challenges. The request is bound to that module: the signature returned later is over that module's recovery hash at the account's current nonce on it.
 
-`requiredVerifications` is a majority of the account's registered methods: one for one or two methods, two for three or four, and so on.
+`requiredVerifications` is a majority of the account's registered methods: one for one method, two for two or three, three for four or five, and so on.
 
 #### `POST /v1/auth/signature/request`
 
@@ -293,7 +293,7 @@ curl -X POST \
     {
       "challengeId": "unique-challenge-id",
       "channel": "email",
-      "target": "us**@exa****.com"
+      "target": "u**r@e******.com"
     }
   ]
 }
@@ -388,7 +388,9 @@ Use the registration ID for `{{id}}`, the email address or phone number for `{{t
 2. Prepare the message with a SIWE library or the [Recovery Service SDK](/wallet/plugins/recovery-service-sdk-reference/).
 3. Sign that complete message using the appropriate signing account and submit both values unchanged.
 
-The statement alone is not the full SIWE message. The chain ID must match the request, or the registration's chain for deletion. Generate a fresh message when retrying an expired authorization.
+The statement alone is not the full SIWE message. The chain ID must match the request, or the registration's chain for deletion.
+
+A message is accepted for 5 minutes after its `issuedAt`. To allow more time, for example while the owners of a multisig Safe sign, set an `expirationTime`: the message is then accepted until that time, at most 24 hours after `issuedAt`. Each message can be used once: sending a message whose signature was already accepted fails with a 400, so generate a new message with a new nonce for every request, and when retrying an expired authorization.
 
 ### Accounts That Are Not Deployed Yet (ERC-6492)
 

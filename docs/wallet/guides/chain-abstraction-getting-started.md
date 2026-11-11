@@ -48,13 +48,13 @@ You can [fork the complete code](https://github.com/candidelabs/abstractionkit-e
 ```bash
 mkdir chain-abstraction-demo
 cd chain-abstraction-demo
-npx tsc --init
+npm init -y
 ```
 
 #### Install Dependencies
 
 ```bash
-npm install typescript ts-node --save-dev
+npm install typescript tsx --save-dev
 npm install abstractionkit dotenv viem
 ```
 
@@ -131,7 +131,7 @@ main().catch(console.error)
 #### Test Your Setup
 
 ```bash
-npx ts-node index.ts
+npx tsx index.ts
 ```
 
 **Expected output:**
@@ -308,7 +308,9 @@ async function sendAndMonitor(
     const response = await account.sendUserOperation(userOperation, bundlerUrl)
     console.log(`  [${name}] Submitted. Waiting...`)
     const receipt = await response.included()
-    if (receipt.success) {
+    if (receipt == null) {
+        console.log(`  [${name}] Receipt not found (timeout)`)
+    } else if (receipt.success) {
         console.log(`  [${name}] Success! Tx: ${receipt.receipt.transactionHash}`)
     } else {
         console.log(`  [${name}] Execution failed`)
@@ -319,7 +321,7 @@ async function sendAndMonitor(
 #### Run the Complete Example
 
 ```bash
-npx ts-node index.ts
+npx tsx index.ts
 ```
 
 **Expected output:**
@@ -327,7 +329,6 @@ npx ts-node index.ts
 Owner: 0x...
 Safe Account Address: 0x...
 New owner to add: 0x...
-
 [1/4] Creating UserOperations for both chains...
 [2/4] Requesting paymaster sponsorship (commit phase)...
 [3/4] Signing for BOTH chains with ONE signature...
@@ -337,6 +338,8 @@ New owner to add: 0x...
   [Chain 2] Submitted. Waiting...
   [Chain 1] Success! Tx: 0x...
   [Chain 2] Success! Tx: 0x...
+
+Verifying owners on both chains...
 
 Owners on Chain 1: ['0x...', '0x...']
 Owners on Chain 2: ['0x...', '0x...']

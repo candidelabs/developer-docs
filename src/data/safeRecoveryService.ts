@@ -420,7 +420,7 @@ export const postAuthRegisterResponse = [
     {
         key: "challengeId",
         type: "string",
-        description: "Unique challenge ID for the registration, used in /auth/submit",
+        description: "Unique challenge ID for the registration, used in /v1/auth/submit",
     },
 ];
 
@@ -428,7 +428,7 @@ export const postAuthSubmit = [
     {
         key: "challengeId",
         type: "string",
-        description: "The unique challenge ID received from /auth/register",
+        description: "The unique challenge ID received from /v1/auth/register",
     },
     {
         key: "challenge",
@@ -557,7 +557,7 @@ export const postAuthSignatureSubmit = [
     {
         key: "requestId",
         type: "string",
-        description: "The unique ID from /auth/signature/request",
+        description: "The unique ID from /v1/auth/signature/request",
     },
     {
         key: "challengeId",

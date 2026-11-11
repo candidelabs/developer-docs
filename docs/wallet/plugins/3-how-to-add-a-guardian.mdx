@@ -70,7 +70,7 @@ Set up the Social Recovery Module on a Safe account with a designated guardian i
 ```ts title="Enable Social Recovery Module and add a guardian"
 import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
-const smartAccount = SafeAccount.initializeNewAccount([process.env.OWNER_PUBLIC_KEY]);
+const smartAccount = SafeAccount.initializeNewAccount([process.env.OWNER_PUBLIC_KEY as string]);
 
 // MetaTransaction to enable recovery module
 const enableModuleTx = srm.createEnableModuleMetaTransaction(
@@ -111,7 +111,7 @@ OWNER_PUBLIC_KEY=0x..
 
 ## Complete Runnable Example
 
-Below is a complete example that demonstrates enabling the recovery module and adding multiple guardians:
+Below is a complete example that deploys a Safe, enables the recovery module, and adds a guardian in one sponsored UserOperation, then reads the configuration back. It loads the `.env` file with `dotenv` (`npm i dotenv`).
 
 <details>
 <summary>Full Working Example</summary>
@@ -125,6 +125,7 @@ import * as dotenv from 'dotenv'
 import {
   SafeMultiChainSigAccountV1 as SafeAccount,
   SocialRecoveryModuleV2,
+  Erc7677Paymaster,
 } from "abstractionkit";
 
 async function main(): Promise<void> {
@@ -132,6 +133,7 @@ async function main(): Promise<void> {
   dotenv.config()
   const chainId = BigInt(process.env.CHAIN_ID as string)
   const bundlerUrl = process.env.BUNDLER_URL as string
+  const paymasterUrl = process.env.PAYMASTER_URL as string
   const jsonRpcNodeProvider = process.env.NODE_URL as string
   const ownerPublicAddress = process.env.PUBLIC_ADDRESS as string
   const ownerPrivateKey = process.env.PRIVATE_KEY as string
@@ -163,6 +165,15 @@ async function main(): Promise<void> {
     bundlerUrl
   )
 
+  // Sponsor gas, so the new account does not need ETH
+  const paymaster = new Erc7677Paymaster(paymasterUrl)
+  const { userOperation: sponsoredUserOperation } = await paymaster.createPaymasterUserOperation(
+    smartAccount,
+    userOperation,
+    bundlerUrl
+  )
+  userOperation = sponsoredUserOperation
+
   userOperation.signature = smartAccount.signUserOperation(
     userOperation,
     [ownerPrivateKey],
@@ -172,7 +183,7 @@ async function main(): Promise<void> {
   let response = await smartAccount.sendUserOperation(userOperation, bundlerUrl)
   let result = await response.included()
   
-  if (result.success) {
+  if (result?.success) {
     console.log("Recovery module enabled and guardian added successfully!")
   } else {
     console.log("Failed to setup recovery")
@@ -224,6 +235,7 @@ main().catch(console.error)
 ```bash
 CHAIN_ID=11155111
 BUNDLER_URL=https://api.candide.dev/public/v3/11155111
+PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
 NODE_URL=https://ethereum-sepolia-rpc.publicnode.com
 
 # Your Smart Account credentials
