@@ -15,8 +15,6 @@ import {
   getBlockhashReturn,
   getPayerSignerReturn,
   getSupportedTokensReturn,
-  transferTransactionParams,
-  transferTransactionReturn,
   signTransactionParams,
   signTransactionReturn,
   signAndSendTransactionParams,
@@ -76,7 +74,7 @@ These differ from Candide's [EVM Paymaster API](/wallet/paymaster/rpc-methods/),
 A gasless transaction goes through the API like this:
 
 1. Call [`getPayerSigner`](#getpayersigner) and set `signer_address` as the transaction's fee payer.
-2. Build the transaction, or have the paymaster build a token transfer for you with [`transferTransaction`](#transfertransaction).
+2. Build the transaction.
 3. Call [`estimateTransactionFee`](#estimatetransactionfee) to get the fee in the fee token (`fee_in_token`).
 4. Add an SPL transfer of `fee_in_token` base units from the user to `payment_address` as the last instruction. Adding it changes the transaction, so re-estimate and adjust until the quoted fee stops changing (it converges in one step).
 5. Have the user sign, then call [`signAndSendTransaction`](#signandsendtransaction) to co-sign and broadcast, or [`signTransaction`](#signtransaction) if you want to broadcast yourself.
@@ -108,8 +106,8 @@ The endpoint validates every transaction against the policy in [`getConfig`](#ge
 
 - **Only the tokens enabled for your endpoint are accepted.** USDT and USDC are enabled by default on mainnet, and devnet USDC on Devnet; [other tokens are enabled on request](#supported-tokens). A mint that is not enabled fails with `"Token ... is not supported"`, both as `fee_token` and as a transferred token.
 - **The fee payment must be included.** `signTransaction` and `signAndSendTransaction` reject transactions that do not pay at least the quoted fee to the payment address, with `"Insufficient token payment. Required ... lamports"`.
-- **Only five programs may be invoked**: System, SPL Token, Associated Token Account, Compute Budget, and Address Lookup Table. Token-2022 is not among them, so Token-2022 mints are rejected.
-- **The fee payer spends at most 9,000,000 lamports per transaction** (fees plus rent), transactions are capped at 10 signatures, and durable nonce transactions are not accepted.
+- **Only allow-listed programs may be invoked.** The list is in `allowed_programs` of [`getConfig`](#getconfig) and includes System, SPL Token, Associated Token Account, Compute Budget, and Address Lookup Table. Token-2022 is not among them, so Token-2022 mints are rejected.
+- **The fee payer spends at most 25,000,000 lamports per transaction on mainnet** (fees plus rent; 9,000,000 on Devnet), transactions are capped at 10 signatures, and durable nonce transactions are not accepted.
 
 ## Methods
 
@@ -197,7 +195,10 @@ Returns the mint addresses of the SPL tokens accepted for fee payment.
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "tokens": ["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"]
+    "tokens": [
+      "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+      "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    ]
   }
 }
 ```
@@ -240,7 +241,7 @@ Prices a transaction. Returns the total fee in lamports and in the requested fee
   "id": 1,
   "method": "estimateTransactionFee",
   "params": {
-    "transaction": "AmkNdD6EK2jjAaPzHhOfmyTqxYGGM0cemhhypHFRe8Wy...",
+    "transaction": "AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA...",
     "fee_token": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
   }
 }
@@ -255,14 +256,14 @@ Prices a transaction. Returns the total fee in lamports and in the requested fee
   "id": 1,
   "result": {
     "fee_in_lamports": 10553,
-    "fee_in_token": 818,
+    "fee_in_token": 895,
     "signer_pubkey": "CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz",
     "payment_address": "CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz"
   }
 }
 ```
 
-`fee_in_token` is in base units of `fee_token`: 818 is 0.000818 USDT when `fee_token` is USDT, or 0.000818 USDC when it is USDC.
+`fee_in_token` is in base units of `fee_token`: 895 is 0.000895 USDT when `fee_token` is USDT. The same transaction priced with USDC as `fee_token` returned 894 (0.000894 USDC).
 
 </TabItem>
 <TabItem value="request type" label="Request Types">
@@ -270,75 +271,6 @@ Prices a transaction. Returns the total fee in lamports and in the requested fee
 </TabItem>
 <TabItem value="response type" label="Response Type">
   <DataTable items={estimateTransactionFeeReturn} />
-</TabItem>
-</Tabs>
-
-### transferTransaction
-
-Builds an unsigned SPL token transfer with the paymaster set as fee payer. Use it when you do not want to construct the transaction yourself. The returned transaction does **not** include the fee payment: estimate it, append the payment transfer, and re-sign before submitting.
-
-`source` and `destination` are wallet (owner) addresses; the paymaster resolves the associated token accounts. If the destination's token account does not exist, the transaction includes its creation and the rent shows up in the fee quote.
-
-#### Invocation
-
-```json
-{ "method": "transferTransaction", "params": { amount: number, token: string, source: string, destination: string } }
-```
-
-#### Return
-
-```json
-{
-  "result": {
-    transaction: string,
-    message: string,
-    blockhash: string,
-    signer_pubkey: string
-  }
-}
-```
-
-<Tabs>
-<TabItem value="request" label="Example Request">
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "method": "transferTransaction",
-  "params": {
-    "amount": 100000,
-    "token": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
-    "source": "A3scQhn4rbkybHyCd1C5rcAQ3ZKHTLwsCrXw7fTSo2zN",
-    "destination": "A3scQhn4rbkybHyCd1C5rcAQ3ZKHTLwsCrXw7fTSo2zN"
-  }
-}
-```
-
-`amount` is in base units: 100000 is 0.1 USDT or 0.1 USDC.
-
-</TabItem>
-<TabItem value="response" label="Example Response">
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "result": {
-    "transaction": "AmkNdD6EK2jjAaPzHhOfmyTqxYGGM0cemhhypHFRe8Wy...",
-    "message": "AgECBbHnR3w2nftr0eljJIxb7sUoC7kqYxLzxCJsijx6...",
-    "blockhash": "FFkAKnzBcUvKv3erAh3KoGsSMv4zmJSip6e1fduDWb3B",
-    "signer_pubkey": "CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz"
-  }
-}
-```
-
-</TabItem>
-<TabItem value="request type" label="Request Types">
-  <DataTable items={transferTransactionParams} />
-</TabItem>
-<TabItem value="response type" label="Response Type">
-  <DataTable items={transferTransactionReturn} />
 </TabItem>
 </Tabs>
 
@@ -548,24 +480,33 @@ Returns the paymaster's full configuration: fee payer addresses, the validation 
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "fee_payers": ["CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz"],
+    "fee_payers": [
+      "CyTi1U4TQt8MddAt54cez6rTJKZWvfjXNLvd3dVeveBz"
+    ],
     "validation_config": {
-      "max_allowed_lamports": 9000000,
+      "max_allowed_lamports": 25000000,
       "max_signatures": 10,
       "allowed_programs": [
         "11111111111111111111111111111111",
         "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
         "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
         "ComputeBudget111111111111111111111111111111",
-        "AddressLookupTab1e1111111111111111111111111"
+        "AddressLookupTab1e1111111111111111111111111",
+        "..."
       ],
-      "allowed_tokens": ["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"],
-      "allowed_spl_paid_tokens": ["Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"],
+      "allowed_tokens": [
+        "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      ],
+      "allowed_spl_paid_tokens": [
+        "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+      ],
       "disallowed_accounts": [],
       "price_source": "Jupiter",
       "fee_payer_policy": {
         "system": {
-          "allow_transfer": false,
+          "allow_transfer": true,
           "allow_assign": false,
           "allow_create_account": true,
           "allow_allocate": false,
@@ -588,7 +529,9 @@ Returns the paymaster's full configuration: fee payer addresses, the validation 
           "allow_initialize_account": false,
           "allow_initialize_multisig": false,
           "allow_freeze_account": false,
-          "allow_thaw_account": false
+          "allow_thaw_account": false,
+          "allow_withdraw_excess_lamports": false,
+          "allow_unwrap_lamports": false
         },
         "token_2022": {
           "allow_transfer": false,
@@ -601,16 +544,62 @@ Returns the paymaster's full configuration: fee payer addresses, the validation 
           "allow_initialize_mint": false,
           "allow_initialize_account": false,
           "allow_initialize_multisig": false,
+          "allow_initialize_extension_authority": false,
+          "allow_update_extension_authority": false,
           "allow_freeze_account": false,
-          "allow_thaw_account": false
+          "allow_thaw_account": false,
+          "allow_withdraw_excess_lamports": false,
+          "allow_unwrap_lamports": false
+        },
+        "alt": {
+          "allow_create": false,
+          "allow_extend": false,
+          "allow_freeze": false,
+          "allow_deactivate": false,
+          "allow_close": false
+        },
+        "bpf_loader_upgradeable": {
+          "allow_initialize_buffer": false,
+          "allow_write": false,
+          "allow_deploy_with_max_data_len": false,
+          "allow_upgrade": false,
+          "allow_set_authority": false,
+          "allow_set_authority_checked": false,
+          "allow_close": false,
+          "allow_extend_program": false,
+          "allow_extend_program_checked": false,
+          "allow_migrate": false
+        },
+        "loader_v4": {
+          "allow_write": false,
+          "allow_copy": false,
+          "allow_set_program_length": false,
+          "allow_deploy": false,
+          "allow_retract": false,
+          "allow_transfer_authority": false,
+          "allow_finalize": false
         }
       },
-      "price": { "type": "margin", "margin": 0.05 },
-      "token_2022": {
-        "blocked_mint_extensions": ["permanent_delegate"],
-        "blocked_account_extensions": []
+      "price": {
+        "type": "margin",
+        "margin": 0.05
       },
-      "allow_durable_transactions": false
+      "token_2022": {
+        "blocked_mint_extensions": [
+          "permanent_delegate"
+        ],
+        "blocked_account_extensions": [],
+        "transfer_hook_policy": "deny_all"
+      },
+      "allow_durable_transactions": false,
+      "max_price_staleness_slots": 0,
+      "require_one_of_programs": [],
+      "cross_cluster_check": false,
+      "cross_cluster_endpoints": [
+        "https://api.mainnet-beta.solana.com",
+        "https://api.devnet.solana.com",
+        "https://api.testnet.solana.com"
+      ]
     },
     "enabled_methods": {
       "liveness": true,
@@ -619,9 +608,13 @@ Returns the paymaster's full configuration: fee payer addresses, the validation 
       "get_payer_signer": true,
       "sign_transaction": true,
       "sign_and_send_transaction": true,
-      "transfer_transaction": true,
+      "transfer_transaction": false,
       "get_blockhash": true,
-      "get_config": true
+      "get_config": true,
+      "get_version": true,
+      "estimate_bundle_fee": false,
+      "sign_and_send_bundle": false,
+      "sign_bundle": false
     }
   }
 }
@@ -638,12 +631,12 @@ Returns the paymaster's full configuration: fee payer addresses, the validation 
 Failures use standard JSON-RPC 2.0 error objects. The messages below were captured from the live endpoint:
 
 ```json
-{ "jsonrpc": "2.0", "id": 1, "error": { "code": -32000, "message": "..." } }
+{ "jsonrpc": "2.0", "id": 1, "error": { "code": -32000, "message": "...", "data": { "error_type": "InvalidTransaction" } } }
 ```
 
 | Code | Example message | Cause |
 |------|-----------------|-------|
 | -32000 | `Invalid transaction: Insufficient token payment. Required 10553 lamports` | The transaction does not transfer at least the quoted fee to the payment address. The required amount is expressed in lamports; convert with `estimateTransactionFee` |
-| -32000 | `Invalid request: Token <mint> is not supported` | `fee_token` or a transferred token is not enabled for your endpoint. See [Supported Tokens](#supported-tokens) |
+| -32004 | `Invalid request: Token <mint> is not supported` | `fee_token` or a transferred token is not enabled for your endpoint. See [Supported Tokens](#supported-tokens) |
 | -32000 | `Invalid transaction: Failed to deserialize transaction: io error: unexpected end of file` | `transaction` is not a base64-encoded serialized Solana transaction |
 | -32600 | `Unsupported method - getPaymentInstruction not supported` | The method does not exist or is disabled on this endpoint |

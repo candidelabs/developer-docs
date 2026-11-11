@@ -1,5 +1,5 @@
 // Simple7702Account Types and Parameters
-import { userOperationParamV08, authorization7702HexType, userOperationReceiptResultType } from "./userOperation";
+import { userOperationParamV08, userOperationReceiptResultType } from "./userOperation";
 import { sendUseroperationResponseType, bundlerJsonRpcErrorType } from "../requestRpcData";
 
 export const simpleMetaTransactionType = [
@@ -26,15 +26,50 @@ export const simpleMetaTransactionType = [
   },
 ];
 
+// Shape of the `eip7702Auth` override accepted by createUserOperation.
+// Only chainId is required; the SDK fills the rest (r and s are placeholders until signed).
+export const eip7702AuthOverrideType = [
+  {
+    key: "chainId",
+    type: "bigint",
+    description: "Chain ID where the authorization is valid",
+  },
+  {
+    key: "address?",
+    type: "string",
+    description: "Address to delegate the EOA to. Defaults to the account's delegateeAddress",
+  },
+  {
+    key: "nonce?",
+    type: "bigint",
+    description: "Authorization nonce. Defaults to the EOA's transaction count fetched from the node",
+  },
+  {
+    key: "yParity?",
+    type: "string",
+    description: "Y parity of the authorization signature as a hex string ('0x0' or '0x1'). Defaults to '0x0'",
+  },
+  {
+    key: "r?",
+    type: "string",
+    description: "R component of the authorization signature. Defaults to a placeholder value",
+  },
+  {
+    key: "s?",
+    type: "string",
+    description: "S component of the authorization signature. Defaults to a placeholder value",
+  },
+];
+
 export const createUserOperationOverridesV8 = [
   {
     key: "eip7702Auth?",
-    type: authorization7702HexType,
+    type: eip7702AuthOverrideType,
     description: "EIP-7702 authorization parameters for EOA delegation",
   },
   {
     key: "nonce?",
-    type: "string",
+    type: "bigint",
     description: "Anti-replay parameter (see Semi-abstracted Nonce Support)",
   },
   {
@@ -70,27 +105,27 @@ export const createUserOperationOverridesV8 = [
   {
     key: "callGasLimitPercentageMultiplier?",
     type: "number",
-    description: "Set the callGasLimitPercentageMultiplier instead of estimating gas using the bundler",
+    description: "Percentage added on top of the estimated callGasLimit (for example, 20 adds 20%)",
   },
   {
     key: "verificationGasLimitPercentageMultiplier?",
     type: "number",
-    description: "Set the verificationGasLimitPercentageMultiplier instead of estimating gas using the bundler",
+    description: "Percentage added on top of the estimated verificationGasLimit (for example, 20 adds 20%)",
   },
   {
     key: "preVerificationGasPercentageMultiplier?",
     type: "number",
-    description: "Set the preVerificationGasPercentageMultiplier instead of estimating gas using the bundler",
+    description: "Percentage added on top of the estimated preVerificationGas (for example, 20 adds 20%)",
   },
   {
     key: "maxFeePerGasPercentageMultiplier?",
     type: "number",
-    description: "Set the maxFeePerGasPercentageMultiplier instead of querying the current gas price from the RPC node",
+    description: "Percentage added on top of the fetched maxFeePerGas (for example, 20 adds 20%)",
   },
   {
     key: "maxPriorityFeePerGasPercentageMultiplier?",
     type: "number",
-    description: "Set the maxPriorityFeePerGasPercentageMultiplier instead of querying the current gas price from the RPC node",
+    description: "Percentage added on top of the fetched maxPriorityFeePerGas (for example, 20 adds 20%)",
   },
   {
     key: "state_override_set?",
@@ -108,11 +143,27 @@ export const createUserOperationOverridesV8 = [
     description:
       "When true, skip the bundler's eth_estimateUserOperationGas call. Gas limits fall back to any overrides or 0n. The returned UserOperation is always populated with a dummy signature so it stays valid for downstream paymaster sponsorship calls.",
   },
+  {
+    key: "gasLevel?",
+    type: "GasOption",
+    description: "Gas price level preference",
+  },
+  {
+    key: "polygonGasStation?",
+    type: "PolygonChain",
+    description: "Polygon chain identifier for fetching gas prices from Polygon Gas Station",
+  },
+  {
+    key: "parallelPaymasterInitValues?",
+    type: "{ paymaster: string; paymasterVerificationGasLimit: bigint; paymasterPostOpGasLimit: bigint; paymasterData: string }",
+    description:
+      "Paymaster fields to include during gas estimation for parallel paymaster signing. Only works with EntryPoint v0.9 (Simple7702AccountV09)",
+  },
 ];
 
 export const estimateUserOperationGasOverridesV8 = [
   {
-    key: "state_override_set?",
+    key: "stateOverrideSet?",
     type: "StateOverrideSet",
     description: "State override set for simulation",
   },
@@ -206,12 +257,12 @@ export const createUserOperationParam = [
   },
   {
     key: "providerRpc?",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "Optional JSON-RPC provider URL for blockchain queries",
   },
   {
     key: "bundlerRpc?",
-    type: "string",
+    type: "string | Transport | Bundler",
     description: "Optional bundler RPC URL for gas estimation",
   },
   {
@@ -237,7 +288,7 @@ export const estimateUserOperationGasParam = [
   },
   {
     key: "bundlerRpc",
-    type: "string",
+    type: "string | Transport | Bundler",
     description: "Bundler RPC URL for gas estimation",
   },
   {
@@ -289,7 +340,7 @@ export const sendUserOperationParam = [
   },
   {
     key: "bundlerRpc",
-    type: "string",
+    type: "string | Transport | Bundler",
     description: "Bundler RPC URL to send the user operation to",
   },
 ];
@@ -337,7 +388,7 @@ export const prependTokenPaymasterApproveToCallDataReturn = [
 export const isDelegatedToThisAccountParam = [
   {
     key: "providerRpc",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "Ethereum JSON-RPC node URL",
   },
 ];
@@ -391,7 +442,7 @@ export const createRevokeDelegationTransactionParam = [
   },
   {
     key: "providerRpc",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "JSON-RPC endpoint for nonce, gas price, and chain ID queries",
   },
   {

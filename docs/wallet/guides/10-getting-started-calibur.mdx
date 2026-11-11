@@ -24,14 +24,14 @@ Here's the [complete code](https://github.com/candidelabs/abstractionkit-example
 ```bash
 mkdir candide-calibur-quickstart
 cd candide-calibur-quickstart
-npx tsc --init
+npm init -y
 ```
 
 2. Install dependencies
 
 ```bash
-npm i typescript --save-dev
-npm i abstractionkit dotenv
+npm i typescript tsx --save-dev
+npm i abstractionkit dotenv ethers
 ```
 
 3. Configure Environment Variables
@@ -49,7 +49,10 @@ PRIVATE_KEY=your_eoa_private_key_here
 4. Create an empty file and a function to run your script
 
 ```ts title="index.ts"
+import * as dotenv from "dotenv";
+
 async function main(): Promise<void> {
+  dotenv.config(); // load the .env file
   // Rest of the code will go here...
 }
 
@@ -90,13 +93,13 @@ const paymaster = new CandidePaymaster(paymasterUrl);
 Run the code to verify the account address:
 
 ```cli title="Terminal"
-npx ts-node index.ts
+npx tsx index.ts
 ```
 
 Example output:
 
 ```terminal
-Smart account address: 0x32afdcfa1e3bfe70d03ecb55b5c8045c26515c9d
+Smart account address: 0x4195B6826415eBEb7A29334c815e2151ccB348A1
 ```
 
 ## Step 3: Build Transactions
@@ -152,7 +155,8 @@ Sign the `eip7702Auth` tuple to authorize the Calibur singleton at your EOA addr
 import { createAndSignEip7702DelegationAuthorization } from "abstractionkit";
 
 // Option A: Pass private key string directly
-if (!alreadyDelegated) {
+// eip7702Auth is null when the EOA is already delegated.
+if (userOperation.eip7702Auth) {
     userOperation.eip7702Auth = createAndSignEip7702DelegationAuthorization(
         BigInt(userOperation.eip7702Auth.chainId),
         userOperation.eip7702Auth.address,
@@ -164,7 +168,7 @@ if (!alreadyDelegated) {
 // Option B: Use a viem signer callback (private key never leaves the client)
 // import { privateKeyToAccount } from "viem/accounts";
 // const viemAccount = privateKeyToAccount(privateKey as `0x${string}`);
-// if (!alreadyDelegated) {
+// if (userOperation.eip7702Auth) {
 //     userOperation.eip7702Auth = await createAndSignEip7702DelegationAuthorization(
 //         BigInt(userOperation.eip7702Auth.chainId),
 //         userOperation.eip7702Auth.address,
@@ -219,7 +223,7 @@ console.log("UserOp hash:", response.userOperationHash);
 
 const receipt = await response.included();
 
-if (receipt.success) {
+if (receipt?.success) {
     if (!alreadyDelegated) {
         console.log("EOA upgraded to Calibur smart account!");
     }
@@ -235,18 +239,20 @@ if (receipt.success) {
 Run the script:
 
 ```cli title="Terminal"
-npx ts-node index.ts
+npx tsx index.ts
 ```
 
 Example output:
 
 ```terminal
+Smart account address: 0x4195B6826415eBEb7A29334c815e2151ccB348A1
+This UserOperation may cost up to: 82067744 wei
 Sending sponsored UserOperation...
-UserOp hash: 0x89a5111d40c4ca45977a28419a08ca33e496a88e973bc995ec6a5a28da564cb5
+UserOp hash: 0xe3db1b0a0d423c644299aef7d2d571733826882e4c623e37a2eb9c3f60b2791a
 EOA upgraded to Calibur smart account!
 Minted 2 NFTs in a single batched UserOperation!
 Gas was sponsored by CandidePaymaster.
-Transaction: 0x763dc353dee853da059b9e8c4b9997cccd4597b4cfcfc5fc3133dcffc778d93a
+Transaction: 0x30d6fd9fe746649b89b05b1c02138d93de93e7d8979daf0e4a5ff1f9bb0a6396
 ```
 
 You can look up the hash on explorers that support user operations like [Blockscout](https://www.blockscout.com/).

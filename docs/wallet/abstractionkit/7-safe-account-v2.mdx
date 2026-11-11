@@ -18,8 +18,8 @@ import {
   createInitCodeReturnV2,
   createAccountAddressParam,
   createAccountAddressReturn,
-  ecdsaSignatureType,
-  webauthnSignatureDataType,
+  ecdsaPublicAddressType,
+  webAuthnPublicKeyType,
   initializeNewAccountParam,
   initializeNewAccountReturnV2,
   isDeployedParams,
@@ -146,9 +146,9 @@ console.log("Account address (sender): " + smartAccount.accountAddress);
 
 <TabItem value="Param type" label="Param Types">
   <DataTable items={initializeNewAccountParam} />
-  <DataTable items={ecdsaSignatureType} />
+  <DataTable items={ecdsaPublicAddressType} />
    WebauthnPublicKey
-  <DataTable items={webauthnSignatureDataType} />
+  <DataTable items={webAuthnPublicKeyType} />
 </TabItem>
 
 <TabItem value="Return Type" label="Return Type">
@@ -161,7 +161,7 @@ console.log("Account address (sender): " + smartAccount.accountAddress);
 <summary>Example Response</summary>
 
 ```terminal
-Account address(sender) : 0x1a02592A3484c2077d2E5D24482497F85e1980C6
+Account address (sender): 0xb8741a449D50ed0Dcfe395287F85BE152884c8d9
 ```
 
 </details>
@@ -185,7 +185,7 @@ This only checks for non-empty bytecode at `accountAddress`. It does not verify 
 import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit";
 
 const accountAddress = "0x1a02592A3484c2077d2E5D24482497F85e1980C6";
-const nodeRpcUrl = "https://rpc2.sepolia.org";
+const nodeRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com";
 
 const account = (await SafeAccount.isDeployed(accountAddress, nodeRpcUrl))
     ? new SafeAccount(accountAddress)
@@ -222,7 +222,7 @@ This example mints the same NFT twice in a single UserOperation.
 ```ts title="example.ts"
 import { MetaTransaction } from "abstractionkit";
 
-const jsonRpcNodeProvider = "https://rpc2.sepolia.org";
+const jsonRpcNodeProvider = "https://ethereum-sepolia-rpc.publicnode.com";
 const bundlerUrl = "https://api.candide.dev/public/v3/11155111";
 
 const transaction: MetaTransaction = {
@@ -267,14 +267,14 @@ console.log(userOperation);
       <tr>
         <td>Provider RPC</td>
         <td align="left">
-          string
+          string | Transport | JsonRpcNode
         </td>
         <td>The node URL. It is used to fetch the current nonce and fetch gas prices</td>
       </tr>
       <tr>
         <td>Bundler URL</td>
         <td align="left">
-          string
+          string | Transport | Bundler
         </td>
         <td>The Bundler URL. It is used to fetch the gas limits</td>
       </tr>
@@ -306,16 +306,12 @@ console.log(userOperation);
       <tr>
         <td>UserOperation</td>
         <td align="left">
-          <div>{`Promise<UserOperation | JsonRpcError | BundlerJsonRpcError>`}</div>
+          <div>{`Promise<UserOperationV6>`}</div>
           <div>UserOperation object</div>
           <DataTable items={userOperationReturnParamsV06} />
-          <div>JsonRpcError object</div>
-          <DataTable items={jsonRpcErrorType} />
-          <div>BundlerJsonRpcError object</div>
-          <DataTable items={bundlerJsonRpcErrorType} />
         </td>
         <td align="left">
-          Returns a UserOperation on success, or the RPC/bundler error on failure.
+          Resolves to the UserOperation to be signed. A node or bundler RPC failure throws an AbstractionKitError.
         </td>
       </tr>
     </tbody>
@@ -328,17 +324,17 @@ console.log(userOperation);
 
 ```terminal
 {
-  sender: '0x44e3cb9acd92ab055d3251994352bb8fe0e20879',
-  nonce: 1n,
-  initCode: '0x',
-  callData: '0x541d63c800000000000000000000000038869bf66a61cf6bdb996a6ae40d5853fd43b52600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000001048d80ff0a000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000b200d9de104e3386d9a45a61bce269c43e48b534e4e7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041249c58b00d9de104e3386d9a45a61bce269c43e48b534e4e7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000041249c58b000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-  callGasLimit: 95085n,
-  verificationGasLimit: 62187n,
-  preVerificationGas: 46156n,
-  maxFeePerGas: 1625933544n,
-  maxPriorityFeePerGas: 1200000000n,
-  paymasterAndData: '0x',
-  signature: '0x00000000000000000000000041c6297bd9573e8d979a272db4f6576a98f639a7e6874055a627769401dc46d01143551ccaa473364ace4340ec395c546dccb725e1eac2639ecef443d229f0071b'
+  sender: '0x1e4Cd9D1DBf1D4DF6A79E1D11f5ff45Cc7F0458b',
+  nonce: 0n,
+  callData: '0x541d63c800000000000000000000000038869bf66a61cf6bdb996a6ae40d5853fd43b526...',
+  callGasLimit: 429347n,
+  verificationGasLimit: 1502311n,
+  preVerificationGas: 149456n,
+  maxFeePerGas: 81n,
+  maxPriorityFeePerGas: 60n,
+  signature: '0xffffffffffffffffffffffff47003599ffa7e9198f321afa774e34a12a959844efd6363b...',
+  initCode: '0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec671688f0b9000000000000000000000000...',
+  paymasterAndData: '0x'
 }
 ```
 </details>
@@ -441,8 +437,6 @@ console.log("receipt: ", receipt);
 
 <TabItem value="Return Type" label="Return Type">
   <DataTable items={sendUserOperationReturn} />
-  BundlerJsonRpcError
-  <DataTable items={bundlerJsonRpcErrorType} />
   UserOperationReceiptResult
   <DataTable items={userOperationReceiptResultType} />
 </TabItem>
@@ -452,35 +446,60 @@ console.log("receipt: ", receipt);
 <summary>Example Response</summary>
 
 ```terminal
-sendUserOperationResponse: {
-  userOperationHash: '0x61b3e2c57ad7ad1ae788f0ac84c79b28aab8aeaf872be173cadc72ab8b3d4418',
-  bundler: { rpcUrl: 'https://api.candide.dev/public/v3/11155111' },
+sendUserOperationResponse:  SendUseroperationResponse {
+  userOperationHash: '0xc0c5d09796fde50035d4670d340028aa686052daabdbf9eae72d22abbb78274e',
+  bundler: Bundler {
+    transport: HttpTransport {
+      nextId: 2,
+      url: 'https://api.candide.dev/public/v3/11155111',
+      options: {}
+    },
+    outbound: { request: [Function: request] }
+  },
   entrypointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
 }
-
 UserOperation sent. Waiting to be included...
-
-receipt: {
-  userOpHash: '0x61b3e2c57ad7ad1ae788f0ac84c79b28aab8aeaf872be173cadc72ab8b3d4418',
+receipt:  {
+  userOpHash: '0xc0c5d09796fde50035d4670d340028aa686052daabdbf9eae72d22abbb78274e',
   entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
-  sender: '0x44e3cb9acd92ab055d3251994352bb8fe0e20879',
-  nonce: '0x2',
-  paymaster: '0x0000000000000000000000000000000000000000',
-  actualGasCost: 261844423573004,
-  actualGasUsed: 185893,
+  sender: '0x1e4cd9d1dbf1d4df6a79e1d11f5ff45cc7f0458b',
+  nonce: 0n,
+  paymaster: '0x36f4aa64673568782461bf03c75462f8ef0a1b76',
+  actualGasCost: 158415920n,
+  actualGasUsed: 2084420n,
   success: true,
-  logs: '[{"address":"0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789","blockHash":"0xba4e1221571d457b4a01db81be6c3ca8e1dcf0117c2c383425e8379853345a69","blockNumber":"0x4e4d65","data":"0x000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000ee2567da7e0c000000000000000000000000000000000000000000000000000000000002d625","logIndex":"0x140","removed":false,"topics":["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f","0x61b3e2c57ad7ad1ae788f0ac84c79b28aab8aeaf872be173cadc72ab8b3d4418","0x00000000000000000000000044e3cb9acd92ab055d3251994352bb8fe0e20879","0x0000000000000000000000000000000000000000000000000000000000000000"],"transactionHash":"0x00289aec83e4f8a109e2026e9e7f9a122bcf66116b1fc9c48099d668eec49f25","transactionIndex":"0xc5"}]',
+  logs: [
+    {
+      address: '0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789',
+      topics: [Array],
+      data: '0x000000000000000000000000000000000000000000000000000000000000000000000000...',
+      blockHash: '0x60389cd79dc3a8d9a2ee61fe05fb678298a2548e64944712fb84707da1a8adc5',
+      blockNumber: '0xb8da30',
+      blockTimestamp: '0x6af4e20c',
+      transactionHash: '0x83a863dafe0eeb4710a72f27b2918e44bc6fda8de079687a999a3d6ec29a14eb',
+      transactionIndex: '0x34',
+      logIndex: '0x8c',
+      removed: false
+    }
+  ],
   receipt: {
-    blockHash: '0xba4e1221571d457b4a01db81be6c3ca8e1dcf0117c2c383425e8379853345a69',
-    blockNumber: '0x4e4d65',
+    blockHash: '0x60389cd79dc3a8d9a2ee61fe05fb678298a2548e64944712fb84707da1a8adc5',
+    blockNumber: 12114480n,
     from: '0x3cfdc212769c890907bce93d3d8c2c53de6a7a89',
-    cumulativeGasUsed: '0x1c3ffde',
-    gasUsed: '0x2dbfd',
-    logs: '[{"address":"0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789","blockHash":"0xba4e1221571d457b4a01db81be6c3ca8e1dcf0117c2c383425e8379853345a69","blockNumber":"0x4e4d65","data":"0x00000000000000000000000000000000000000000000000000013cd7ed43f8b8","logIndex":"0x13a","removed":false,"topics":["0x2da466a7b24304f47e87fa2e1e5a81b9831ce54fec19055ce277ca2f39ba42c4","0x00000000000000000000000044e3cb9acd92ab055d3251994352bb8fe0e20879"],"transactionHash":"0x00289aec83e4f8a109e2026e9e7f9a122bcf66116b1fc9c48099d668eec49f25","transactionIndex":"0xc5"},{"address":"0x44e3cb9acd92ab055d3251994352bb8fe0e20879","blockHash":"0xba4e1221571d457b4a01db81be6c3ca8e1dcf0117c2c383425e8379853345a69","blockNumber":"0x4e4d65","data":"0x","logIndex":"0x13b","removed":false,"topics":["0x6895c13664aa4f67288b25d7a21d7aaa34916e355fb9b6fae0a139a9085becb8","0x000000000000000000000000d556564bacf6feac2e26ff70695f8250cea8c29e"],"transactionHash":"0x00289aec83e4f8a109e2026e9e7f9a122bcf66116b1fc9c48099d668eec49f25","transactionIndex":"0xc5"},{"address":"0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789","blockHash":"0xba4e1221571d457b4a01db81be6c3ca8e1dcf0117c2c383425e8379853345a69","blockNumber":"0x4e4d65","data":"0x","logIndex":"0x13c","removed":false,"topics":["0xbb47ee3e183a558b1a2ff0874b079f3fc5478b7454eacf2bfc5af2ff5878f972"],"transactionHash":"0x00289aec83e4f8a109e2026e9e7f9a122bcf66116b1fc9c48099d668eec49f25","transactionIndex":"0xc5"},{"address":"0xd9de104e3386d9a45a61bce269c43e48b534e4e7","blockHash":"0xba4e1221571d457b4a01db81be6c3ca8e1dcf0117c2c383425e8379853345a69","blockNumber":"0x4e4d65","data":"0x","logIndex":"0x13d","removed":false,"topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0x0000000000000000000000000000000000000000000000000000000000000000","0x00000000000000000000000044e3cb9acd92ab055d3251994352bb8fe0e20879","0x0000000000000000000000000000000000000000000000000000000000000023"],"transactionHash":"0x00289aec83e4f8a109e2026e9e7f9a122bcf66116b1fc9c48099d668eec49f25","transactionIndex":"0xc5"},{"address":"0xd9de104e3386d9a45a61bce269c43e48b534e4e7","blockHash":"0xba4e1221571d457b4a01db81be6c3ca8e1dcf0117c2c383425e8379853345a69","blockNumber":"0x4e4d65","data":"0x","logIndex":"0x13e","removed":false,"topics":["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef","0x0000000000000000000000000000000000000000000000000000000000000000","0x00000000000000000000000044e3cb9acd92ab055d3251994352bb8fe0e20879","0x0000000000000000000000000000000000000000000000000000000000000024"],"transactionHash":"0x00289aec83e4f8a109e2026e9e7f9a122bcf66116b1fc9c48099d668eec49f25","transactionIndex":"0xc5"},{"address":"0x44e3cb9acd92ab055d3251994352bb8fe0e20879","blockHash":"0xba4e1221571d457b4a01db81be6c3ca8e1dcf0117c2c383425e8379853345a69","blockNumber":"0x4e4d65","data":"0x","logIndex":"0x13f","removed":false,"topics":["0x6895c13664aa4f67288b25d7a21d7aaa34916e355fb9b6fae0a139a9085becb8","0x000000000000000000000000d556564bacf6feac2e26ff70695f8250cea8c29e"],"transactionHash":"0x00289aec83e4f8a109e2026e9e7f9a122bcf66116b1fc9c48099d668eec49f25","transactionIndex":"0xc5"},{"address":"0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789","blockHash":"0xba4e1221571d457b4a01db81be6c3ca8e1dcf0117c2c383425e8379853345a69","blockNumber":"0x4e4d65","data":"0x000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000ee2567da7e0c000000000000000000000000000000000000000000000000000000000002d625","logIndex":"0x140","removed":false,"topics":["0x49628fd1471006c1482da88028e9ce4dbb080b815c9b0344d39e5a8e6ec1419f","0x61b3e2c57ad7ad1ae788f0ac84c79b28aab8aeaf872be173cadc72ab8b3d4418","0x00000000000000000000000044e3cb9acd92ab055d3251994352bb8fe0e20879","0x0000000000000000000000000000000000000000000000000000000000000000"],"transactionHash":"0x00289aec83e4f8a109e2026e9e7f9a122bcf66116b1fc9c48099d668eec49f25","transactionIndex":"0xc5"}]',
-    logsBloom: '0x000000000000100000000000000000000000000000000000000000000000000000080000000000000022080100000000001000000000008000000200000020000000000000020000000000080000000008100000000000000000000000002000020000000a0800000000000000000800000000000000000000000014000200000000000000000000000000000008000040000000000200000000000000000000000000000002000000400000400000000200000000000000000002200008000000000002000000000001000008000000000000000000080800000000000020000040000000000000000000000000000200000000000000000100000000000000',
-    transactionHash: '0x00289aec83e4f8a109e2026e9e7f9a122bcf66116b1fc9c48099d668eec49f25',
-    transactionIndex: '0xc5',
-    effectiveGasPrice: '0xc6e9e20'
+    cumulativeGasUsed: 67961754n,
+    gasUsed: 1978180n,
+    logs: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object]
+    ],
+    logsBloom: '0x000004000000900100000000000000008000001000000000000000000000000000090000...',
+    transactionHash: '0x83a863dafe0eeb4710a72f27b2918e44bc6fda8de079687a999a3d6ec29a14eb',
+    transactionIndex: 52n,
+    effectiveGasPrice: 105n
   }
 }
 ```
@@ -506,7 +525,7 @@ In this example, we initiate a single owner account.
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-import { SafeAccount } from "abstractionkit";
+import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit";
 
 const ownerPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
 const safeAddress = SafeAccount.createAccountAddress(
@@ -520,9 +539,9 @@ console.log("Account address (sender): " + safeAddress);
 
 <TabItem value="param type" label="Param Types">
   <DataTable items={createAccountAddressParam} />
-  <DataTable items={ecdsaSignatureType} />
+  <DataTable items={ecdsaPublicAddressType} />
    WebauthnPublicKey
-  <DataTable items={webauthnSignatureDataType} />
+  <DataTable items={webAuthnPublicKeyType} />
 </TabItem>
 
 <TabItem value="Return Type" label="Return Type">
@@ -535,7 +554,7 @@ console.log("Account address (sender): " + safeAddress);
 <summary>Example Response</summary>
 
 ```terminal
-Account address(sender) : 0x1a02592A3484c2077d2E5D24482497F85e1980C6
+Account address (sender): 0xb8741a449D50ed0Dcfe395287F85BE152884c8d9
 ```
 
 </details>
@@ -556,11 +575,14 @@ In this example, we initiate a single owner account.
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-import { SafeAccount } from "abstractionkit";
+import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit";
 
 const owner1PublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
 const owner2PublicAddress = "0x4991A5360e5da9BAF62fF644d89F46268e5159eA";
-const initCode = SafeAccount.createInitCode([ownerPublicAddress, owner2PublicAddress], 2);
+const initCode = SafeAccount.createInitCode(
+    [owner1PublicAddress, owner2PublicAddress],
+    { threshold: 2 },
+);
 
 console.log("initCode: ", initCode);
 ```
@@ -569,9 +591,9 @@ console.log("initCode: ", initCode);
 
 <TabItem value="Param type" label="Param Types">
   <DataTable items={createInitCodeParamV2} />
-  <DataTable items={ecdsaSignatureType} />
+  <DataTable items={ecdsaPublicAddressType} />
   WebauthnPublicKey
-  <DataTable items={webauthnSignatureDataType} />
+  <DataTable items={webAuthnPublicKeyType} />
 </TabItem>
 
 <TabItem value="Return Type" label="Return Type">
@@ -620,9 +642,9 @@ console.log("initCode: ", initCode);
 
 <TabItem value="Param type" label="Param Types">
     <DataTable items={createAccountAddressAndInitCodeParamV2} />
-    <DataTable items={ecdsaSignatureType} />
+    <DataTable items={ecdsaPublicAddressType} />
     WebauthnPublicKey
-    <DataTable items={webauthnSignatureDataType} />
+    <DataTable items={webAuthnPublicKeyType} />
 </TabItem>
 
 <TabItem value="Return Type" label="Return Type">
@@ -635,7 +657,7 @@ console.log("initCode: ", initCode);
 <summary>Example Response</summary>
 
 ```terminal
-Account address(sender) : 0x1a02592A3484c2077d2E5D24482497F85e1980C6
+Account address (sender): 0xb8741a449D50ed0Dcfe395287F85BE152884c8d9
 initCode: 0x...
 ```
 
@@ -655,7 +677,7 @@ Creates the initializer calldata
   <TabItem value="example" label="Example">
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit";
 
 const initializeCallData = SafeAccount.createInitializerCallData(
   [ownerPublicAddress], // owners
@@ -667,9 +689,9 @@ console.log("initializeCallData: " + initializeCallData);
   </TabItem>
   <TabItem value="param type" label="Param Types">
     <DataTable items={createInitializerCallDataParamV2}/>
-    <DataTable items={ecdsaSignatureType} />
+    <DataTable items={ecdsaPublicAddressType} />
     WebauthnPublicKey
-    <DataTable items={webauthnSignatureDataType} />
+    <DataTable items={webAuthnPublicKeyType} />
   </TabItem>
   <TabItem value="return type" label="Return Types">
     <DataTable items={createInitializerCallDataReturnV2}/>
@@ -680,7 +702,7 @@ console.log("initializeCallData: " + initializeCallData);
 <summary>Example Response</summary>
 
 ```terminal
-initializeCallData: 0xb63e800d000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000010000000000000000000000002dd68b007b46fbe91b9a7c3eda5a7a1063cb5b47000000000000000000000000000000000000000000000000000000000000014000000000000000000000000075cf11467937ce3f2f357ce24ffc3dbf8fd5c2260000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d3100000000000000000000000000000000000000000000000000000000000000648d0dc49f0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000075cf11467937ce3f2f357ce24ffc3dbf8fd5c22600000000000000000000000000000000000000000000000000000000
+initializeCallData: 0xb63e800d000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000010000000000000000000000008ecd4ec46d4d2a6b64fe960b3d64e8b94b2234eb0000000000000000000000000000000000000000000000000000000000000140000000000000000000000000a581c4a4db7175302464ff3c06380bc3270b40370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d3100000000000000000000000000000000000000000000000000000000000000648d0dc49f00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000a581c4a4db7175302464ff3c06380bc3270b403700000000000000000000000000000000000000000000000000000000
 ```
 
 </details>
@@ -706,9 +728,9 @@ const ownerPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
 const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
 
 // highlight-start
-const callData = smartAccount.createAccountCallDataSingleTransaction({
+const callData = SafeAccount.createAccountCallDataSingleTransaction({
   to: "0x1a02592A3484c2077d2E5D24482497F85e1980C6",
-  value: 1,
+  value: 1n,
   data: "0x",
 });
 // highlight-end
@@ -732,7 +754,7 @@ console.log("callData: " + callData);
 <summary>Example Response</summary>
 
 ```terminal
-callData : 0xf34308ef000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+callData: 0x541d63c80000000000000000000000001a02592a3484c2077d2e5d24482497f85e1980c60000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 ```
 
 </details>
@@ -766,12 +788,12 @@ const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
 // highlight-start
 const tx1: MetaTransaction = {
   to: "0x1a02592A3484c2077d2E5D24482497F85e1980C6",
-  value: 1,
+  value: 1n,
   data: "0x",
 };
 const tx2: MetaTransaction = {
   to: "0x3fe285dcd76bcce4ac92d38a6f2f8e964041e020",
-  value: 1,
+  value: 1n,
   data: "0x",
 };
 
@@ -797,7 +819,7 @@ console.log("callData: " + callData);
 <summary>Example Response</summary>
 
 ```terminal
-callData : 0xf34308ef000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+callData: 0x541d63c800000000000000000000000038869bf66a61cf6bdb996a6ae40d5853fd43b52600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000001048d80ff0a000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000aa001a02592a3484c2077d2e5d24482497f85e1980c600000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000003fe285dcd76bcce4ac92d38a6f2f8e964041e020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 ```
 
 </details>
@@ -827,10 +849,10 @@ const ownerPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
 const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress])
 
 // Use createUserOperation() to help you construct the userOp below
-let userOperation: UserOperationV6 = smartAccount.createUserOperation(..);
+let userOperation: UserOperationV6 = await smartAccount.createUserOperation(..);
 
 //highlight-start
-const [preVerificationGas, verificationGasLimit, callGasLimit] = await estimateUserOperationGas(userOperation, bundlerRPC);
+const [preVerificationGas, verificationGasLimit, callGasLimit] = await smartAccount.estimateUserOperationGas(userOperation, bundlerRPC);
 //highlight-end
 ```
 
@@ -840,9 +862,9 @@ const [preVerificationGas, verificationGasLimit, callGasLimit] = await estimateU
     <DataTable items={estimateUserOperationGasParamV6} />
     UserOperationV6
     <DataTable items ={userOperationReturnParamsV06} />
-    <DataTable items={ecdsaSignatureType} />
+    <DataTable items={ecdsaPublicAddressType} />
     WebauthnPublicKey
-    <DataTable items={webauthnSignatureDataType} />
+    <DataTable items={webAuthnPublicKeyType} />
   </TabItem>
 
 <TabItem value="response type" label="Response Type">
@@ -872,7 +894,7 @@ const [preVerificationGas, verificationGasLimit, callGasLimit] = await estimateU
 <summary>Example Response</summary>
 
 ```ts
-[ 46840n, 64545n, 102761n ]
+[ 149456n, 1502311n, 429347n ]
 ```
 </details>
 
@@ -894,7 +916,7 @@ import {
   UserOperationV6
 } from "abstractionkit";
 
-const userOperation: UserOperationV6 = smartAccount.createUserOperation(..)
+const userOperation: UserOperationV6 = await smartAccount.createUserOperation(..)
 
 // highlight-start
 const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(userOperation, chainId);
@@ -949,7 +971,7 @@ userOperation.signature = formatedSig;
 
 ```ts
 import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit";
-import { privateKeyToAccount } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 
 const ownerPrivateKey = process.env.PRIVATE_KEY as string;
 const signer = privateKeyToAccount(process.env.PRIVATE_KEY1 as `0x${string}`);
@@ -1007,7 +1029,7 @@ Checks if a specified module is enabled for a given Safe account. This function 
 
 ### createAddOwnerWithThresholdMetaTransactions
 
-Creates a meta-transaction to add a new owner to the Safe account with a specified threshold. This function returns an object containing the meta-transaction details, including the target address, encoded data, and transaction value.
+Creates the meta-transactions to add a new owner to the Safe account with a specified threshold. This function returns a promise that resolves to a list of meta-transactions: the add-owner call, preceded by a verifier deployment when the new owner is a WebAuthn signer whose verifier is not deployed yet.
 
 <Tabs>
 <TabItem value="Param type" label="Param Types">
@@ -1061,6 +1083,10 @@ Creates a meta-transaction to disable a module from the Safe account. The functi
 
 A static method that verifies a webAuthn signed hash message for Passkeys, and can be also used even if the safe account hasn't been deployed yet.
 
+:::caution
+In `abstractionkit` v1.0.0 this method returns `false` for every signature, including valid ones. Do not rely on its result until the fix ships in the next SDK release.
+:::
+
 <Tabs>
 <TabItem value="Param type" label="Param Types">
   <DataTable items={verifyWebAuthnSignatureForMessageHashParam} />
@@ -1092,7 +1118,7 @@ Creates an array of meta-transactions to migrate a Safe account from EntryPoint 
 ```ts
 import { SafeAccountV0_2_0 as SafeAccount } from "abstractionkit";
 
-const nodeRpcUrl = "https://rpc2.sepolia.org";
+const nodeRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com";
 
 const smartAccount = new SafeAccount(accountAddress);
 

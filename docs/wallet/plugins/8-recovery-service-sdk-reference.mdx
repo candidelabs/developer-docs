@@ -92,9 +92,10 @@ import {
   Alerts,
   generateSIWEMessage,
   SafeRecoveryServiceSdkError,
-  SocialRecoveryModuleGracePeriodSelector,
 } from "safe-recovery-service-sdk";
 ```
+
+Every class takes the service URL as `serviceEndpoint` and appends `/v1/...` to it. If your credential is an API key, include it in the URL: `https://<your-service-url>/<YOUR_API_KEY>`.
 
 ---
 
@@ -105,12 +106,14 @@ Service client for managing recovery flows using self-managed guardians. Handles
 ### Initialize
 
 ```ts
-import { RecoveryByGuardian, SocialRecoveryModuleGracePeriodSelector } from "safe-recovery-service-sdk";
+import { RecoveryByGuardian } from "safe-recovery-service-sdk";
+import { SocialRecoveryModuleGracePeriodSelectorV1 } from "abstractionkit";
 
 const recoveryService = new RecoveryByGuardian(
   "https://safe-recovery.candide.dev",
   1n, // chainId
-  SocialRecoveryModuleGracePeriodSelector.After3Days
+  // the SDK types this parameter with an enum it does not export, hence the cast
+  SocialRecoveryModuleGracePeriodSelectorV1.After3Days as any
 );
 ```
 
@@ -291,7 +294,7 @@ Returns the SIWE statement string that needs to be signed to fetch registrations
   </TabItem>
   <TabItem value="Return type" label="Return Types">
     <p><font color="#22c916">string</font></p>
-    <p>The SIWE statement to sign.</p>
+    <p>The complete SIWE (EIP-4361) message to sign, containing the statement.</p>
   </TabItem>
 </Tabs>
 
@@ -319,7 +322,7 @@ Returns the SIWE statement for registering an email recovery method.
   </TabItem>
   <TabItem value="Return type" label="Return Types">
     <p><font color="#22c916">string</font></p>
-    <p>The SIWE statement to sign.</p>
+    <p>The complete SIWE (EIP-4361) message to sign, containing the statement.</p>
   </TabItem>
 </Tabs>
 
@@ -347,7 +350,7 @@ Returns the SIWE statement for registering an SMS recovery method.
   </TabItem>
   <TabItem value="Return type" label="Return Types">
     <p><font color="#22c916">string</font></p>
-    <p>The SIWE statement to sign.</p>
+    <p>The complete SIWE (EIP-4361) message to sign, containing the statement.</p>
   </TabItem>
 </Tabs>
 
@@ -375,7 +378,7 @@ Generic method that returns the SIWE statement for registering any recovery chan
   </TabItem>
   <TabItem value="Return type" label="Return Types">
     <p><font color="#22c916">string</font></p>
-    <p>The SIWE statement to sign.</p>
+    <p>The complete SIWE (EIP-4361) message to sign, containing the statement.</p>
   </TabItem>
 </Tabs>
 
@@ -417,7 +420,7 @@ Returns the SIWE statement for deleting a registration.
   </TabItem>
   <TabItem value="Return type" label="Return Types">
     <p><font color="#22c916">string</font></p>
-    <p>The SIWE statement to sign.</p>
+    <p>The complete SIWE (EIP-4361) message to sign, containing the statement.</p>
   </TabItem>
 </Tabs>
 
@@ -512,7 +515,7 @@ Returns the SIWE statement for creating an email alert subscription.
   </TabItem>
   <TabItem value="Return type" label="Return Types">
     <p><font color="#22c916">string</font></p>
-    <p>The SIWE statement to sign.</p>
+    <p>The complete SIWE (EIP-4361) message to sign, containing the statement.</p>
   </TabItem>
 </Tabs>
 
@@ -540,7 +543,7 @@ Generic method that returns the SIWE statement for creating an alert subscriptio
   </TabItem>
   <TabItem value="Return type" label="Return Types">
     <p><font color="#22c916">string</font></p>
-    <p>The SIWE statement to sign.</p>
+    <p>The complete SIWE (EIP-4361) message to sign, containing the statement.</p>
   </TabItem>
 </Tabs>
 
@@ -582,7 +585,7 @@ Returns the SIWE statement for fetching active subscriptions.
   </TabItem>
   <TabItem value="Return type" label="Return Types">
     <p><font color="#22c916">string</font></p>
-    <p>The SIWE statement to sign.</p>
+    <p>The complete SIWE (EIP-4361) message to sign, containing the statement.</p>
   </TabItem>
 </Tabs>
 
@@ -610,7 +613,7 @@ Returns the SIWE statement for removing a subscription.
   </TabItem>
   <TabItem value="Return type" label="Return Types">
     <p><font color="#22c916">string</font></p>
-    <p>The SIWE statement to sign.</p>
+    <p>The complete SIWE (EIP-4361) message to sign, containing the statement.</p>
   </TabItem>
 </Tabs>
 
@@ -676,7 +679,7 @@ Represents an active alert subscription.
 
 ### SocialRecoveryModuleGracePeriodSelector
 
-Enum of deployed Social Recovery Module addresses with different grace periods. These are the module v0.1.0 addresses, the same as `SocialRecoveryModuleGracePeriodSelectorV1` in abstractionkit. Pair the service with `SocialRecoveryModuleV1`.
+The type of the `recoveryModuleAddress` constructor parameter: the deployed Social Recovery Module v0.1.0 addresses with different grace periods. The package does not export this enum. Pass the matching value of `SocialRecoveryModuleGracePeriodSelectorV1` from abstractionkit, which holds the same addresses, with a cast, and pair the service with `SocialRecoveryModuleV1`.
 
 <DataTable items={socialRecoveryModuleGracePeriodSelectorType} />
 

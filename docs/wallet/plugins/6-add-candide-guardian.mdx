@@ -63,7 +63,11 @@ NODE_URL=https://ethereum-sepolia-rpc.publicnode.com
 
 # Recovery Service URL
 # Get access here: https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5
+# If your credential is an API key, append it to the URL: https://<your-service-url>/<YOUR_API_KEY>
 RECOVERY_SERVICE_URL= 
+
+# Safe Owner
+OWNER_PRIVATE_KEY=0x..
 ```
 
 </TabItem>
@@ -73,9 +77,18 @@ RECOVERY_SERVICE_URL=
 
 ```ts
 import { RecoveryByCustodialGuardian } from "safe-recovery-service-sdk";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+import { privateKeyToAccount } from 'viem/accounts';
 
 const chainId = BigInt(process.env.CHAIN_ID as string);
 const serviceUrl = process.env.RECOVERY_SERVICE_URL as string;
+const ownerPrivateKey = process.env.OWNER_PRIVATE_KEY as `0x${string}`;
+const userEmail = "user@example.com";
+const userPhone = "+1234567890";
+
+// The Safe account to protect and its owner
+const ownerAccount = privateKeyToAccount(ownerPrivateKey);
+const smartAccount = SafeAccount.initializeNewAccount([ownerAccount.address]);
 
 // highlight-start
 const custodialGuardianService = new RecoveryByCustodialGuardian(serviceUrl, chainId);
@@ -90,9 +103,9 @@ Generate a SIWE (Sign-In with Ethereum) statement for guardian registration. Thi
 <TabItem value="email" label="Email Registration">
 
 ```ts
-const siweStatementToSign = await custodialGuardianService.createRegistrationToEmailRecoverySiweStatementToSign(
+const emailRegistrationSiweMessage = custodialGuardianService.createRegistrationToEmailRecoverySiweStatementToSign(
   smartAccount.accountAddress,
-  "user@example.com"
+  userEmail
 );
 ```
 
@@ -100,9 +113,9 @@ const siweStatementToSign = await custodialGuardianService.createRegistrationToE
 <TabItem value="sms" label="SMS Registration">
 
 ```ts
-const siweStatementToSign = await custodialGuardianService.createRegistrationToSmsRecoverySiweStatementToSign(
+const smsRegistrationSiweMessage = custodialGuardianService.createRegistrationToSmsRecoverySiweStatementToSign(
   smartAccount.accountAddress,
-  "+1234567890"
+  userPhone
 );
 ```
 
@@ -117,15 +130,8 @@ Sign the SIWE statement with the Smart Account owner key and submit registration
 <TabItem value="email" label="Email Registration">
 
 ```ts
-import { 
-  SafeMultiChainSigAccountV1 as SafeAccount,
-  getSafeMessageEip712Data, 
-  SAFE_MESSAGE_PRIMARY_TYPE 
-} from "abstractionkit";
+import { getSafeMessageEip712Data, SAFE_MESSAGE_PRIMARY_TYPE } from "abstractionkit";
 import { TypedDataDomain } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
-
-const ownerAccount = privateKeyToAccount(ownerPrivateKey);
 
 const emailSafeTypedData = getSafeMessageEip712Data(
     smartAccount.accountAddress,
@@ -156,15 +162,8 @@ const emailRegistrationChallengeId = await custodialGuardianService.createRegist
 <TabItem value="sms" label="SMS Registration">
 
 ```ts
-import { 
-  SafeMultiChainSigAccountV1 as SafeAccount,
-  getSafeMessageEip712Data, 
-  SAFE_MESSAGE_PRIMARY_TYPE 
-} from "abstractionkit";
+import { getSafeMessageEip712Data, SAFE_MESSAGE_PRIMARY_TYPE } from "abstractionkit";
 import { TypedDataDomain } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
-
-const ownerAccount = privateKeyToAccount(ownerPrivateKey);
 
 const smsSafeTypedData = getSafeMessageEip712Data(
     smartAccount.accountAddress,

@@ -29,7 +29,8 @@ Here's the [complete code](https://github.com/candidelabs/abstractionkit-example
 1. Install dependencies:
 
 ```bash
-npm i abstractionkit dotenv
+npm i typescript tsx --save-dev
+npm i abstractionkit dotenv ethers viem
 ```
 
 2. Configure environment variables. Create a `.env` file:
@@ -42,9 +43,10 @@ PAYMASTER_URL=https://api.candide.dev/public/v3/11155111
 PRIVATE_KEY=your_eoa_private_key_here
 ```
 
-3. Create your script file with imports and initialization:
+3. Create your script file with imports and initialization. The rest of the code in this guide goes inside `main()`, with any new `import` lines added at the top of the file:
 
 ```ts title="index.ts"
+import * as dotenv from "dotenv";
 import { Wallet } from "ethers";
 import {
     Calibur7702Account,
@@ -53,24 +55,32 @@ import {
     ZeroAddress,
 } from "abstractionkit";
 
-const chainId = BigInt(process.env.CHAIN_ID as string);
-const bundlerUrl = process.env.BUNDLER_URL as string;
-const paymasterUrl = process.env.PAYMASTER_URL as string;
-const nodeUrl = process.env.JSON_RPC_NODE_PROVIDER as string;
-const privateKey = process.env.PRIVATE_KEY as string;
+async function main(): Promise<void> {
+    dotenv.config(); // load the .env file
 
-const eoaWallet = new Wallet(privateKey);
-const eoaAddress = eoaWallet.address;
+    const chainId = BigInt(process.env.CHAIN_ID as string);
+    const bundlerUrl = process.env.BUNDLER_URL as string;
+    const paymasterUrl = process.env.PAYMASTER_URL as string;
+    const nodeUrl = process.env.JSON_RPC_NODE_PROVIDER as string;
+    const privateKey = process.env.PRIVATE_KEY as string;
 
-const smartAccount = new Calibur7702Account(eoaAddress);
-const paymaster = new CandidePaymaster(paymasterUrl);
+    const eoaWallet = new Wallet(privateKey);
+    const eoaAddress = eoaWallet.address;
 
-// This guide requires an already-delegated account.
-const delegated = await smartAccount.isDelegatedToThisAccount(nodeUrl);
-if (!delegated) {
-    console.log("EOA is not yet delegated to Calibur. Run the quickstart first.");
-    process.exit(1);
+    const smartAccount = new Calibur7702Account(eoaAddress);
+    const paymaster = new CandidePaymaster(paymasterUrl);
+
+    // This guide requires an already-delegated account.
+    const delegated = await smartAccount.isDelegatedToThisAccount(nodeUrl);
+    if (!delegated) {
+        console.log("EOA is not yet delegated to Calibur. Run the quickstart first.");
+        process.exit(1);
+    }
+
+    // The code from the following steps goes here, inside main()...
 }
+
+main();
 ```
 
 4. List all registered keys and their settings:
@@ -103,7 +113,7 @@ for (const key of keys) {
 Run the code to verify:
 
 ```cli title="Terminal"
-npx ts-node index.ts
+npx tsx index.ts
 ```
 
 <details>
@@ -112,16 +122,21 @@ npx ts-node index.ts
 ```terminal
 Registered keys:
 
-  Key: 0x0000000000000000...
-    Type:    Secp256k1
-    Admin:   true
-    Expires: never
-    Hook:    none
 ```
 
 </details>
 
-The zero-hash entry is the root key (your EOA). It is always admin and never expires.
+A freshly delegated account lists no keys. `getKeys` returns only the secondary keys registered on the account. The root key (your EOA) is not part of the list: it has `keyHash = bytes32(0)`, is always admin and never expires. Run the script again after Step 2 to see the new key listed:
+
+```terminal
+Registered keys:
+
+  Key: 0x78f4c1cd9c063c6d...
+    Type:    Secp256k1
+    Admin:   false
+    Expires: 2026-12-11T16:16:26.000Z
+    Hook:    none
+```
 
 ---
 
@@ -188,7 +203,7 @@ console.log("Sending registration UserOperation...");
 const registerResponse = await smartAccount.sendUserOperation(registerOp, bundlerUrl);
 const registerReceipt = await registerResponse.included();
 
-if (registerReceipt.success) {
+if (registerReceipt?.success) {
     console.log("Key registered! Tx:", registerReceipt.receipt.transactionHash);
 } else {
     console.log("Registration failed:", registerReceipt);
@@ -204,10 +219,10 @@ console.log("Registered on-chain:", isRegistered); // true
 <summary>Result example</summary>
 
 ```terminal
-Registering secondary key: 0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B
-This UserOperation may cost up to: 712040000000000 wei
+Registering secondary key: 0xd7438071413F83D8c280A7ab8F4e75e9A6B8bbBd
+This UserOperation may cost up to: 101971548 wei
 Sending registration UserOperation...
-Key registered! Tx: 0x4a1b2c3d...
+Key registered! Tx: 0xc653baddf8487b5954afa4d13a70f8ad3490798d7689d29eae5c0fc1d5aa2478
 Registered on-chain: true
 ```
 
@@ -257,7 +272,7 @@ console.log("Sending transaction signed by secondary key...");
 const secondaryResponse = await smartAccount.sendUserOperation(secondaryOp, bundlerUrl);
 const secondaryReceipt = await secondaryResponse.included();
 
-if (secondaryReceipt.success) {
+if (secondaryReceipt?.success) {
     console.log("Transaction confirmed! Tx:", secondaryReceipt.receipt.transactionHash);
 } else {
     console.log("Transaction failed:", secondaryReceipt);
@@ -271,7 +286,7 @@ The `keyHash` override wraps the signature so Calibur verifies it against the co
 
 ```terminal
 Sending transaction signed by secondary key...
-Transaction confirmed! Tx: 0x9f8e7d6c...
+Transaction confirmed! Tx: 0x28d1f3903239979a6239e5d5cc0f9223734a54c3bc53b64d54a50855349cd829
 ```
 
 </details>
@@ -314,7 +329,7 @@ updateOp.signature = smartAccount.signUserOperation(
 const updateResponse = await smartAccount.sendUserOperation(updateOp, bundlerUrl);
 const updateReceipt = await updateResponse.included();
 
-if (updateReceipt.success) {
+if (updateReceipt?.success) {
     const updatedSettings = await smartAccount.getKeySettings(nodeUrl, newKeyHash);
     console.log(
         "Expiration updated to:",
@@ -332,8 +347,8 @@ A non-admin key attempting this call will be rejected on-chain.
 <summary>Result example</summary>
 
 ```terminal
-Expiration updated to: 2027-03-28T12:00:00.000Z
-Tx: 0x1a2b3c4d...
+Expiration updated to: 2027-11-11T21:41:28.000Z
+Tx: 0x2ca506b12c41933a21978359f3e1d71a7210c7fb5550f1560d7cd1c569fbce02
 ```
 
 </details>
@@ -370,7 +385,7 @@ revokeOp.signature = smartAccount.signUserOperation(
 const revokeResponse = await smartAccount.sendUserOperation(revokeOp, bundlerUrl);
 const revokeReceipt = await revokeResponse.included();
 
-if (revokeReceipt.success) {
+if (revokeReceipt?.success) {
     const stillRegistered = await smartAccount.isKeyRegistered(nodeUrl, newKeyHash);
     console.log("Key still registered:", stillRegistered); // false
     console.log("Tx:", revokeReceipt.receipt.transactionHash);
@@ -386,7 +401,7 @@ After revocation, `isKeyRegistered` returns `false` and any UserOperation signed
 
 ```terminal
 Key still registered: false
-Tx: 0x5e6f7a8b...
+Tx: 0xc111ae5cd8dcb150be378473c4e26986c156a2c19d302bf601d7d58cce98b27a
 ```
 
 </details>

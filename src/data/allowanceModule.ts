@@ -226,7 +226,7 @@ const createRemoveDelegateParams = [
 const getTokensParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The JSON-RPC API URL for the target chain.",
   },
   {
@@ -250,7 +250,7 @@ const getTokensReturn = [{
 const getTokensAllowanceParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The JSON-RPC API URL for the target chain.",
   },
   {
@@ -309,7 +309,7 @@ const getTokensAllowanceReturn = [
 const getDelegatesParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The JSON-RPC API URL for the target chain.",
   },
   {
@@ -348,7 +348,7 @@ const getDelegatesReturn = [
 const baseGetDelegatesParams = [
   {
     key: "nodeRpcUrl",
-    type: "string",
+    type: "string | Transport | JsonRpcNode",
     description: "The JSON-RPC API URL for the target chain.",
   },
   {

@@ -10,6 +10,10 @@ Smart wallets can sign arbitrary messages similar to EOAs. Learn how to sign mes
 
 ## Single Owner Safe
 
+The Safe must already be deployed: `getMessageHash` and `isValidSignature` are contract calls and fail on an account that has not sent its first UserOperation yet.
+
+The snippets below use top-level `await` and `ethers` v6. Install it with `npm install ethers`, and run them as an ES module: save the file as `index.mts`, or set `"type": "module"` in your `package.json`.
+
 ### Sign Message 
 
 ```ts title="Signing"

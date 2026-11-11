@@ -174,7 +174,7 @@ async function main(): Promise<void> {
     
     try {
         // Try public gas policies first
-        console.log("Checking for public gas policies...")
+        console.log("Checking for public gas policies...");
         ({ userOperation: paymasterUserOperation } =
             await paymaster.createPaymasterUserOperation(
                 smartAccount,
@@ -186,7 +186,7 @@ async function main(): Promise<void> {
     } catch (error) {
         try {
             // Fallback to private gas policy
-            console.log("Trying private gas policy fallback...")
+            console.log("Trying private gas policy fallback...");
             ({ userOperation: paymasterUserOperation } =
                 await paymaster.createPaymasterUserOperation(
                     smartAccount,
@@ -226,7 +226,9 @@ async function main(): Promise<void> {
     console.log("UserOperation receipt received.")
     console.log(userOperationReceiptResult)
     
-    if (userOperationReceiptResult.success) {
+    if (userOperationReceiptResult == null) {
+        console.log("Receipt not found (timeout)")
+    } else if (userOperationReceiptResult.success) {
         console.log("Gasless transaction successful! Hash:", userOperationReceiptResult.receipt.transactionHash)
     } else {
         console.log("UserOperation execution failed")

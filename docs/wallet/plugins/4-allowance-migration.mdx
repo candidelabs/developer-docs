@@ -97,15 +97,15 @@ const disableOldModuleMetaTx = await safeAccount.createDisableModuleMetaTransact
 
 ### Step 5: Submit as a Batched UserOperation
 
-All four steps can be batched into a single UserOperation:
+All four steps can be batched into a single UserOperation. Put the disable transaction first: `createDisableModuleMetaTransaction` looks up the old module's position in the Safe's module list as it is now, and enabling the new module in the same batch before it would change that position and revert the disable.
 
 ```ts
 const userOp = await safeAccount.createUserOperation(
   [
+    disableOldModuleMetaTx, // first, see note above
     enableModuleMetaTx,
     addDelegateMetaTx,
     setAllowanceMetaTx,
-    disableOldModuleMetaTx,
   ],
   nodeUrl,
   bundlerUrl,

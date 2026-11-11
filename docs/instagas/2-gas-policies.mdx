@@ -69,6 +69,8 @@ Each rule constrains one call:
 
 To sponsor a single call, add one rule. To sponsor a batch, add one rule per call and order them the way the UserOperation executes them.
 
+A policy with no transaction rules does not restrict calldata: any call can be sponsored, subject to the general, account, and access rules.
+
 <img src="/img/instagas/instagas-transaction-rules.png" width="900" />
 
 
@@ -108,8 +110,8 @@ For request validation, update semantics, and response fields, use the [Gas Poli
   "general": {
     "enabled": true,
     "private": false,
-    "startDate": 1751500800000,
-    "endDate": 1754179200000
+    "startDate": 1798761600000,
+    "endDate": 1830297600000
   },
   "accountRules": {
     "totalMax": "0x6f05b59d3b20000",
@@ -146,7 +148,7 @@ For request validation, update semantics, and response fields, use the [Gas Poli
 | `enabled` | `boolean` | Whether the policy is active. Disabled policies never sponsor, regardless of dates. |
 | `private` | `boolean` | Private policies require the wallet to pass the policy ID when requesting sponsorship. Public policies apply without one. |
 | `sponsorshipPolicyId` | `string` | Assigned by InstaGas at creation. Wallets reference it as the sponsorship policy ID for private policies. |
-| `startDate` | `number` | Unix timestamp in milliseconds. Sponsorship starts at this time. |
+| `startDate` | `number` | Unix timestamp in milliseconds. Sponsorship starts at this time. The API rejects a new value more than one day in the past. |
 | `endDate` | `number` | Unix timestamp in milliseconds. Sponsorship stops at this time. |
 
 ### Account
@@ -198,4 +200,12 @@ Supported operators:
 | `$lte` | Less than or equal |
 | `$startsWith` | Value prefix match |
 
-The comparison operators apply to numeric parameters. Use `$eq` for addresses and exact matches.
+The operators available depend on the parameter type:
+
+| parameter type | operators |
+| :--- | :--- |
+| `uint` (any size) | `$eq`, `$gt`, `$gte`, `$lt`, `$lte` |
+| `string`, `bytes` | `$eq`, `$startsWith` |
+| `address`, `bool` | `$eq` |
+
+For an `address` parameter, the value can also be the literal `${userop.sender}`, which matches the account sending the UserOperation.

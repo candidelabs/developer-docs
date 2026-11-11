@@ -14,7 +14,7 @@ export const recoveryByGuardianConstructorParams = [
     {
         key: "recoveryModuleAddress",
         type: "SocialRecoveryModuleGracePeriodSelector",
-        description: "The address of the Social Recovery Module with the desired grace period. Options: After3Minutes, After3Days, After7Days, After14Days",
+        description: "The address of the Social Recovery Module v0.1.0 with the desired grace period: After3Minutes, After3Days, After7Days, or After14Days of SocialRecoveryModuleGracePeriodSelectorV1 in abstractionkit (the package does not export its own enum)",
     },
 ];
 
@@ -163,7 +163,7 @@ export const recoveryByGuardianRequestType = [
     {
         key: "signatures",
         type: "string[]",
-        description: "Guardian signatures collected for this recovery request",
+        description: "Guardian signatures collected for this recovery request. The service returns them as [signer, signature] pairs",
     },
     {
         key: "executeData",
@@ -200,7 +200,7 @@ export const recoveryByGuardianRequestType = [
     {
         key: "status",
         type: '"PENDING" | "EXECUTED" | "FINALIZED"',
-        description: "Current status of the recovery request",
+        description: "Current status of the recovery request. The service also returns EXECUTION-IN-PROGRESS and FINALIZATION-IN-PROGRESS while a transaction is being processed",
     },
     {
         key: "discoverable",
@@ -567,7 +567,7 @@ export const signatureRequestType = [
             {
                 key: "target",
                 type: "string",
-                description: "The email address or phone number to verify",
+                description: "The masked email address or phone number to verify",
             },
         ],
         description: "List of authentication methods that can be used for verification",

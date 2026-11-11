@@ -40,14 +40,14 @@ Key v0.9 addition for the Paymaster API:
 
 The two-phase flow uses a single context field, `signingPhase`, which can be `"commit"` or `"finalize"`. It is only valid on `pm_getPaymasterData` calls against the EntryPoint v0.9 entrypoint.
 
-1. **Commit phase** — call `pm_getPaymasterData` with `context: { signingPhase: "commit", ... }`. The paymaster reserves gas limits, computes the paymaster data and its signature, stores the signed result in a server-side commitment keyed by `sender:nonce`, and returns the **unsigned** paymaster data so the wallet can compute the UserOp hash and sign it in parallel.
-2. **Finalize phase** — once the user has signed the UserOp, call `pm_getPaymasterData` again with `context: { signingPhase: "finalize", ... }` and the same UserOp (unchanged between commit and finalize). The paymaster returns the previously committed signed paymaster data.
+1. **Commit phase**: call `pm_getPaymasterData` with `context: { signingPhase: "commit", ... }`. The paymaster reserves gas limits, computes the paymaster data and its signature, stores the signed result in a server-side commitment keyed by `sender:nonce`, and returns the **unsigned** paymaster data so the wallet can compute the UserOp hash and sign it in parallel.
+2. **Finalize phase**: once the user has signed the UserOp, call `pm_getPaymasterData` again with `context: { signingPhase: "finalize", ... }` and the same UserOp (unchanged between commit and finalize). The paymaster returns the previously committed signed paymaster data.
 
 If anything about the UserOp changes between the two calls, the commitment lookup fails and the call is rejected.
 
 ### pm_supportedERC20Tokens
 
-Same semantics and response shape as the [v0.8 method](#pm_supportederc20tokens). Pass the v0.9 EntryPoint address as `params[0]`.
+Same semantics and response shape as the [v0.8 method](#pm_supportederc20tokens-1). Pass the v0.9 EntryPoint address as `params[0]`.
 
 ```json
 {
@@ -60,7 +60,7 @@ Same semantics and response shape as the [v0.8 method](#pm_supportederc20tokens)
 
 ### pm_sponsorUserOperation
 
-Same semantics, UserOp shape, and response shape as the [v0.8 method](#pm_sponsoruseroperation). Pass the v0.9 EntryPoint address.
+Same semantics, UserOp shape, and response shape as the [v0.8 method](#pm_sponsoruseroperation-1). Pass the v0.9 EntryPoint address.
 
 <Tabs>
 <TabItem value="request type" label="Request Types">
@@ -82,7 +82,7 @@ Same semantics, UserOp shape, and response shape as the [v0.8 method](#pm_sponso
     </tr>
     <tr>
       <td align="left">entrypoint</td>
-      <td align="left"><code>string</code> — EntryPoint v0.9 address</td>
+      <td align="left"><code>string</code>: EntryPoint v0.9 address</td>
     </tr>
     <tr>
       <td align="left">context</td>
@@ -103,19 +103,19 @@ Same semantics, UserOp shape, and response shape as the [v0.8 method](#pm_sponso
 
 ### pm_supportedEntryPoints
 
-Returns the entryPoint addresses supported by the paymaster. The response array includes the v0.9 EntryPoint address (`0x433709009B8330FDa32311DF1C2AFA402eD8D009`) when supported. See the [v0.8 reference](#pm_supportedentrypoints).
+Returns the entryPoint addresses supported by the paymaster. The response array includes the v0.9 EntryPoint address (`0x433709009B8330FDa32311DF1C2AFA402eD8D009`) when supported. See the [v0.8 reference](#pm_supportedentrypoints-1).
 
 ### pm_chainId
 
-Same as [v0.8 reference](#pm_chainid).
+Same as [v0.8 reference](#pm_chainid-1).
 
 ### pm_getPaymasterStubData
 
-[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Same semantics, UserOp shape, and response shape as the [v0.8 method](#pm_getpaymasterstubdata). Pass the v0.9 EntryPoint address. The `signingPhase` context parameter is **not** valid here; use `pm_getPaymasterData` for the two-phase flow.
+[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Same semantics, UserOp shape, and response shape as the [v0.8 method](#pm_getpaymasterstubdata-1). Pass the v0.9 EntryPoint address. The `signingPhase` context parameter is **not** valid here; use `pm_getPaymasterData` for the two-phase flow.
 
 ### pm_getPaymasterData
 
-[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Same semantics, UserOp shape, and response shape as the [v0.8 method](#pm_getpaymasterdata). Pass the v0.9 EntryPoint address.
+[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Same semantics, UserOp shape, and response shape as the [v0.8 method](#pm_getpaymasterdata-1). Pass the v0.9 EntryPoint address.
 
 To opt into parallelizable paymaster signing, set `context.signingPhase` to `"commit"` for the first call and `"finalize"` for the second call (see [Parallelizable Paymaster Signing](#parallelizable-paymaster-signing) above).
 
@@ -139,7 +139,7 @@ To opt into parallelizable paymaster signing, set `context.signingPhase` to `"co
       "paymaster": "0x..",
       "paymasterVerificationGasLimit": "0x..",
       "paymasterPostOpGasLimit": "0x..",
-      "paymasterAndData": "0x",
+      "paymasterData": "0x",
       "signature": "0x"
     },
     "0x433709009B8330FDa32311DF1C2AFA402eD8D009",
@@ -186,7 +186,7 @@ Gets supported ERC-20 tokens for gas payments, alongside the paymaster metadata.
       name: string,
       symbol: string,
       address: string,
-      decimals: number,
+      decimals: string, // hex-encoded, for example "0x12" for 18
       exchangeRate: string,
     }]
   }
@@ -214,11 +214,11 @@ Gets supported ERC-20 tokens for gas payments, alongside the paymaster metadata.
   "id": 0,
   "result": {
     "paymasterMetadata": {
-      "name": "Candide Paymaster",
-      "description": "Candide Paymaster a fast, secure and feature-rich 4337 Paymaster",
+      "name": "CANDIDE Paymaster",
+      "description": "CANDIDE Paymaster a fast, secure and feature-rich 4337 Paymaster",
       "icons": [],
-      "address": "0x7e3393ebA62DA6f555a5341E079e0F6585CE8c56",
-      "sponsoredEventTopic": "0x13..fa1",
+      "address": "0xa8151918EaC3818DEb713D3dBbB7930329fe86ed",
+      "sponsoredEventTopic": "0xa0..471",
       "dummyPaymasterAndData": {
         "paymaster": "0x...",
         "paymasterData": "0x...",
@@ -230,7 +230,7 @@ Gets supported ERC-20 tokens for gas payments, alongside the paymaster metadata.
       "name": "Maker DAI",
       "symbol": "DAI",
       "address": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
-      "decimal": "0x12",
+      "decimals": "0x12",
       "exchangeRate": "0x0ddeb609310c89b1"
     }]
   }
@@ -337,7 +337,7 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
       "paymaster": "0x..",
       "paymasterVerificationGasLimit": "0x..",
       "paymasterPostOpGasLimit": "0x..",
-      "paymasterAndData": "0x",
+      "paymasterData": "0x",
       "signature": "0x",
     },
     "0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108",
@@ -468,7 +468,12 @@ Returns the entryPoint addresses supported by the paymaster.
 {
   "jsonrpc": "2.0",
   "id": 0,
-  "result": ["0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789", "0x0000000071727de22e5e9d8baf0edac6f37da032", "0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108"] // Entrypoint addresses
+  "result": [
+    "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+    "0x0000000071727de22e5e9d8baf0edac6f37da032",
+    "0x4337084d9e255ff0702461cf8895ce9e3b5ff108",
+    "0x433709009b8330fda32311df1c2afa402ed8d009"
+  ] // Entrypoint addresses
 }
 ```
 
@@ -492,7 +497,7 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
 #### Return
 
 ```json
-{ "result": number }
+{ "result": string }
 ```
 
 <Tabs>
@@ -515,7 +520,7 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
 {
   "jsonrpc": "2.0",
   "id": 0,
-  "result": 1
+  "result": "0x1"
 }
 ```
 
@@ -536,11 +541,11 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
         <td align="left">chainId</td>
         <td align="left">
           <code>
-            <span style={{ color: "#e25894" }}>number</span>
+            <span style={{ color: "#e25894" }}>string</span>
           </code>
         </td>
         <td align="left">
-          Chain ID that the paymaster supports
+          Chain ID that the paymaster supports, hex-encoded
         </td>
       </tr>
     </tbody>
@@ -550,13 +555,10 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
 
 ### pm_getPaymasterStubData
 
-[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivalent to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation).
-It can return `isFinal: true` if the stub data is sufficient and no further data is needed.
+[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivalent to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation-1).
+It always returns `isFinal: false`: call `pm_getPaymasterData` afterwards to get the final paymaster data.
 
-It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
-
-- **ERC-20 Gas Payments**: No gas overrides are returned.
-- **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
+It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. Unlike `pm_sponsorUserOperation`, it does not return gas overrides: the gas fields of the UserOperation are used as sent.
 
 Supports two types of Gas Policies:
 
@@ -580,17 +582,11 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
     paymasterData: string,
     paymasterVerificationGasLimit: string,
     paymasterPostOpGasLimit: string,
-    callGasLimit?: string,
-    verificationGasLimit?: string,
-    preVerificationGas?: string,
-    maxFeePerGas?: string,
-    maxPriorityFeePerGas?: string,
     sponsor?: {
       name: string,
-      description: string,
-      url: string,
-      icons: string[],
-    }
+      icon: string,
+    },
+    isFinal: boolean
   }
 }
 ```
@@ -618,7 +614,7 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
       "paymaster": "0x..",
       "paymasterVerificationGasLimit": "0x..",
       "paymasterPostOpGasLimit": "0x..",
-      "paymasterAndData": "0x",
+      "paymasterData": "0x",
       "signature": "0x",
     },
     "0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108",
@@ -640,18 +636,11 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
     "paymasterData": "0x..",
     "paymasterVerificationGasLimit": "0x..",
     "paymasterPostOpGasLimit": "0x..",
-    "callGasLimit": "0x...",
-    "verificationGasLimit": "0x...",
-    "preVerificationGas": "0x..",
-    "maxFeePerGas": "0x..",
-    "maxPriorityFeePerGas": "0x..",
     "sponsor": {
       "name": "Aave",
-      "description": "Open Source Liquidity Protocol",
-      "url": "https://app.aave.com/",
-      "icons": ["https://aave.com/aave-2030-header.svg"],
+      "icon": "https://aave.com/aave-2030-header.svg"
     },
-    "isFinal": true,
+    "isFinal": false
   }
 }
 ```
@@ -737,12 +726,9 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
 
 ### pm_getPaymasterData
 
-[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivalent to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation).
+[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivalent to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation-1).
 
-It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
-
-- **ERC-20 Gas Payments**: No gas overrides are returned.
-- **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
+It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. Unlike `pm_sponsorUserOperation`, it does not return gas overrides: the gas fields of the UserOperation are used as sent.
 
 Supports two types of Gas Policies:
 
@@ -766,11 +752,10 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
     paymasterData: string,
     paymasterVerificationGasLimit: string,
     paymasterPostOpGasLimit: string,
-    callGasLimit?: string,
-    verificationGasLimit?: string,
-    preVerificationGas?: string,
-    maxFeePerGas?: string,
-    maxPriorityFeePerGas?: string,
+    sponsor?: {
+      name: string,
+      icon: string,
+    }
   }
 }
 ```
@@ -798,7 +783,7 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
       "paymaster": "0x..",
       "paymasterVerificationGasLimit": "0x..",
       "paymasterPostOpGasLimit": "0x..",
-      "paymasterAndData": "0x",
+      "paymasterData": "0x",
       "signature": "0x",
     },
     "0x4337084D9E255Ff0702461CF8895CE9E3b5Ff108",
@@ -820,11 +805,10 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
     "paymasterData": "0x..",
     "paymasterVerificationGasLimit": "0x..",
     "paymasterPostOpGasLimit": "0x..",
-    "callGasLimit": "0x...",
-    "verificationGasLimit": "0x...",
-    "preVerificationGas": "0x..",
-    "maxFeePerGas": "0x..",
-    "maxPriorityFeePerGas": "0x..",
+    "sponsor": {
+      "name": "Aave",
+      "icon": "https://aave.com/aave-2030-header.svg"
+    }
   }
 }
 ```
@@ -942,7 +926,7 @@ Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
       name: string,
       symbol: string,
       address: string,
-      decimals: number,
+      decimals: string, // hex-encoded, for example "0x12" for 18
       exchangeRate: string,
     }]
   }
@@ -970,11 +954,11 @@ Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
   "id": 0,
   "result": {
     "paymasterMetadata": {
-      "name": "Candide Paymaster",
-      "description": "Candide Paymaster a fast, secure and feature-rich 4337 Paymaster",
+      "name": "CANDIDE Paymaster",
+      "description": "CANDIDE Paymaster a fast, secure and feature-rich 4337 Paymaster",
       "icons": [],
-      "address": "0x7e3393ebA62DA6f555a5341E079e0F6585CE8c56",
-      "sponsoredEventTopic": "0x13..fa1",
+      "address": "0x8b1f6cb5d062aa2Ce8d581942bbb960420d875BA",
+      "sponsoredEventTopic": "0xa0..471",
       "dummyPaymasterAndData": {
         "paymaster": "0x...",
         "paymasterData": "0x...",
@@ -986,7 +970,7 @@ Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
       "name": "Maker DAI",
       "symbol": "DAI",
       "address": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
-      "decimal": "0x12",
+      "decimals": "0x12",
       "exchangeRate": "0x0ddeb609310c89b1"
     }]
   }
@@ -1093,7 +1077,7 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
       "paymaster": "0x..",
       "paymasterVerificationGasLimit": "0x..",
       "paymasterPostOpGasLimit": "0x..",
-      "paymasterAndData": "0x",
+      "paymasterData": "0x",
       "signature": "0x",
     },
     "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
@@ -1224,7 +1208,12 @@ Returns the entryPoint addresses supported by the paymaster.
 {
   "jsonrpc": "2.0",
   "id": 0,
-  "result": ["0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789", "0x0000000071727de22e5e9d8baf0edac6f37da032"] // Entrypoint addresses
+  "result": [
+    "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+    "0x0000000071727de22e5e9d8baf0edac6f37da032",
+    "0x4337084d9e255ff0702461cf8895ce9e3b5ff108",
+    "0x433709009b8330fda32311df1c2afa402ed8d009"
+  ] // Entrypoint addresses
 }
 ```
 
@@ -1248,7 +1237,7 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
 #### Return
 
 ```json
-{ "result": number }
+{ "result": string }
 ```
 
 <Tabs>
@@ -1271,7 +1260,7 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
 {
   "jsonrpc": "2.0",
   "id": 0,
-  "result": 1
+  "result": "0x1"
 }
 ```
 
@@ -1292,11 +1281,11 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
         <td align="left">chainId</td>
         <td align="left">
           <code>
-            <span style={{ color: "#e25894" }}>number</span>
+            <span style={{ color: "#e25894" }}>string</span>
           </code>
         </td>
         <td align="left">
-          Chain ID that the paymaster supports
+          Chain ID that the paymaster supports, hex-encoded
         </td>
       </tr>
     </tbody>
@@ -1306,13 +1295,10 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
 
 ### pm_getPaymasterStubData
 
-[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivalent to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation).
-It can return `isFinal: true` if the stub data is sufficient and no further data is needed.
+[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivalent to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation-2).
+It always returns `isFinal: false`: call `pm_getPaymasterData` afterwards to get the final paymaster data.
 
-It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
-
-- **ERC-20 Gas Payments**: No gas overrides are returned.
-- **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
+It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. Unlike `pm_sponsorUserOperation`, it does not return gas overrides: the gas fields of the UserOperation are used as sent.
 
 Supports two types of Gas Policies:
 
@@ -1336,17 +1322,11 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
     paymasterData: string,
     paymasterVerificationGasLimit: string,
     paymasterPostOpGasLimit: string,
-    callGasLimit?: string,
-    verificationGasLimit?: string,
-    preVerificationGas?: string,
-    maxFeePerGas?: string,
-    maxPriorityFeePerGas?: string,
     sponsor?: {
       name: string,
-      description: string,
-      url: string,
-      icons: string[],
-    }
+      icon: string,
+    },
+    isFinal: boolean
   }
 }
 ```
@@ -1374,7 +1354,7 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
       "paymaster": "0x..",
       "paymasterVerificationGasLimit": "0x..",
       "paymasterPostOpGasLimit": "0x..",
-      "paymasterAndData": "0x",
+      "paymasterData": "0x",
       "signature": "0x",
     },
     "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
@@ -1396,18 +1376,11 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
     "paymasterData": "0x..",
     "paymasterVerificationGasLimit": "0x..",
     "paymasterPostOpGasLimit": "0x..",
-    "callGasLimit": "0x...",
-    "verificationGasLimit": "0x...",
-    "preVerificationGas": "0x..",
-    "maxFeePerGas": "0x..",
-    "maxPriorityFeePerGas": "0x..",
     "sponsor": {
       "name": "Aave",
-      "description": "Open Source Liquidity Protocol",
-      "url": "https://app.aave.com/",
-      "icons": ["https://aave.com/aave-2030-header.svg"],
+      "icon": "https://aave.com/aave-2030-header.svg"
     },
-    "isFinal": true,
+    "isFinal": false
   }
 }
 ```
@@ -1493,12 +1466,9 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
 
 ### pm_getPaymasterData
 
-[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivalent to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation).
+[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivalent to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation-2).
 
-It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
-
-- **ERC-20 Gas Payments**: No gas overrides are returned.
-- **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
+It receives a userOperation for off-chain verification. If approved, it will return the paymasterData. Unlike `pm_sponsorUserOperation`, it does not return gas overrides: the gas fields of the UserOperation are used as sent.
 
 Supports two types of Gas Policies:
 
@@ -1522,11 +1492,10 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
     paymasterData: string,
     paymasterVerificationGasLimit: string,
     paymasterPostOpGasLimit: string,
-    callGasLimit?: string,
-    verificationGasLimit?: string,
-    preVerificationGas?: string,
-    maxFeePerGas?: string,
-    maxPriorityFeePerGas?: string,
+    sponsor?: {
+      name: string,
+      icon: string,
+    }
   }
 }
 ```
@@ -1554,7 +1523,7 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
       "paymaster": "0x..",
       "paymasterVerificationGasLimit": "0x..",
       "paymasterPostOpGasLimit": "0x..",
-      "paymasterAndData": "0x",
+      "paymasterData": "0x",
       "signature": "0x",
     },
     "0x0000000071727De22E5E9d8BAf0edAc6f37da032",
@@ -1576,11 +1545,10 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
     "paymasterData": "0x..",
     "paymasterVerificationGasLimit": "0x..",
     "paymasterPostOpGasLimit": "0x..",
-    "callGasLimit": "0x...",
-    "verificationGasLimit": "0x...",
-    "preVerificationGas": "0x..",
-    "maxFeePerGas": "0x..",
-    "maxPriorityFeePerGas": "0x..",
+    "sponsor": {
+      "name": "Aave",
+      "icon": "https://aave.com/aave-2030-header.svg"
+    }
   }
 }
 ```
@@ -1693,7 +1661,7 @@ Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
       name: string,
       symbol: string,
       address: string,
-      decimals: number,
+      decimals: string, // hex-encoded, for example "0x12" for 18
       exchangeRate: string,
     }]
   }
@@ -1721,18 +1689,18 @@ Gets supported ERC-20 Tokens for gas payments, along side the paymaster metadata
   "id": 0,
   "result": {
     "paymasterMetadata": {
-      "name": "Candide Paymaster",
-      "description": "Candide Paymaster a fast, secure and feature-rich 4337 Paymaster",
+      "name": "CANDIDE Paymaster",
+      "description": "CANDIDE Paymaster a fast, secure and feature-rich 4337 Paymaster",
       "icons": [],
-      "address": "0x7e3393ebA62DA6f555a5341E079e0F6585CE8c56",
-      "sponsoredEventTopic": "0x13..fa1",
+      "address": "0x36F4Aa64673568782461bF03C75462f8ef0A1b76",
+      "sponsoredEventTopic": "0xa0..471",
       "dummyPaymasterAndData": "0x69...135",
     },
     "tokens": [{
       "name": "Maker DAI",
       "symbol": "DAI",
       "address": "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
-      "decimal": "0x12",
+      "decimals": "0x12",
       "exchangeRate": "0x0ddeb609310c89b1"
     }]
   }
@@ -1960,7 +1928,12 @@ Returns the entryPoint addresses supported by the paymaster.
 {
   "jsonrpc": "2.0",
   "id": 0,
-  "result": ["0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789", "0x0000000071727de22e5e9d8baf0edac6f37da032"] // Entrypoint addresses
+  "result": [
+    "0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789",
+    "0x0000000071727de22e5e9d8baf0edac6f37da032",
+    "0x4337084d9e255ff0702461cf8895ce9e3b5ff108",
+    "0x433709009b8330fda32311df1c2afa402ed8d009"
+  ] // Entrypoint addresses
 }
 ```
 
@@ -1984,7 +1957,7 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
 #### Return
 
 ```json
-{ "result": number }
+{ "result": string }
 ```
 
 <Tabs>
@@ -2007,7 +1980,7 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
 {
   "jsonrpc": "2.0",
   "id": 0,
-  "result": 1
+  "result": "0x1"
 }
 ```
 
@@ -2028,11 +2001,11 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
         <td align="left">chainId</td>
         <td align="left">
           <code>
-            <span style={{ color: "#e25894" }}>number</span>
+            <span style={{ color: "#e25894" }}>string</span>
           </code>
         </td>
         <td align="left">
-          Chain ID that the paymaster supports
+          Chain ID that the paymaster supports, hex-encoded
         </td>
       </tr>
     </tbody>
@@ -2042,13 +2015,10 @@ Get Chain ID asks the paymaster service to return the chain_id it currently supp
 
 ### pm_getPaymasterStubData
 
-[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivalent to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation-1).
-It can return `isFinal: true` if the stub data is sufficient and no further data is needed.
+[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivalent to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation-3).
+It always returns `isFinal: false`: call `pm_getPaymasterData` afterwards to get the final paymaster data.
 
-Sends a UserOperation to a paymaster for off-chain verification. If approved, it will return the `paymasterAndData`. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
-
-- **ERC-20 Gas Payments**: No gas overrides are returned.
-- **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
+Sends a UserOperation to a paymaster for off-chain verification. If approved, it will return the `paymasterAndData`. Unlike `pm_sponsorUserOperation`, it does not return gas overrides: the gas fields of the UserOperation are used as sent.
 
 Supports two types of Gas Policies:
 
@@ -2069,15 +2039,11 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
 {
   "result": {
     paymasterAndData: string,
-    callGasLimit?: string,
-    verificationGasLimit?: string,
-    preVerificationGas?: string,
-    maxFeePerGas?: string,
-    maxPriorityFeePerGas?: string,
     sponsor?: {
       name: string,
-      icon?: string,
-    }
+      icon: string,
+    },
+    isFinal: boolean
   }
 }
 ```
@@ -2120,17 +2086,11 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
   "id": 0,
   "result": {
     "paymasterAndData": "0x....",
-    "callGasLimit": "0x...",
-    "verificationGasLimit": "0x...",
-    "preVerificationGas": "0x..",
-    "maxFeePerGas": "0x..",
-    "maxPriorityFeePerGas": "0x..",
     "sponsor": {
       "name": "Aave",
-      "description": "Open Source Liquidity Protocol",
-      "url": "https://app.aave.com/",
-      "icon": "https://aave.com/aave-2030-header.svg",
+      "icon": "https://aave.com/aave-2030-header.svg"
     },
+    "isFinal": false
   }
 }
 ```
@@ -2216,12 +2176,9 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
 
 ### pm_getPaymasterData
 
-[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivalent to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation-1).
+[ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) compatible method. Equivalent to Candide's [`pm_sponsorUserOperation`](/wallet/paymaster/rpc-methods/#pm_sponsoruseroperation-3).
 
-Sends a UserOperation to a paymaster for off-chain verification. If approved, it will return the `paymasterAndData`. It will also return gas overrides when the mode for gas sponsorship uses a Gas Policy.
-
-- **ERC-20 Gas Payments**: No gas overrides are returned.
-- **Gas Policies**: Mandatory `callGasLimit`, `verificationGasLimit`, `preVerificationGas`, `maxFeePerGas`, and `maxPriorityFeePerGas` fields are returned.
+Sends a UserOperation to a paymaster for off-chain verification. If approved, it will return the `paymasterAndData`. Unlike `pm_sponsorUserOperation`, it does not return gas overrides: the gas fields of the UserOperation are used as sent.
 
 Supports two types of Gas Policies:
 
@@ -2242,11 +2199,10 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
 {
   "result": {
     paymasterAndData: string,
-    callGasLimit?: string,
-    verificationGasLimit?: string,
-    preVerificationGas?: string,
-    maxFeePerGas?: string,
-    maxPriorityFeePerGas?: string,
+    sponsor?: {
+      name: string,
+      icon: string,
+    }
   }
 }
 ```
@@ -2289,17 +2245,10 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
   "id": 0,
   "result": {
     "paymasterAndData": "0x....",
-    "callGasLimit": "0x...",
-    "verificationGasLimit": "0x...",
-    "preVerificationGas": "0x..",
-    "maxFeePerGas": "0x..",
-    "maxPriorityFeePerGas": "0x..",
     "sponsor": {
       "name": "Aave",
-      "description": "Open Source Liquidity Protocol",
-      "url": "https://app.aave.com/",
-      "icon": "https://aave.com/aave-2030-header.svg",
-    },
+      "icon": "https://aave.com/aave-2030-header.svg"
+    }
   }
 }
 ```

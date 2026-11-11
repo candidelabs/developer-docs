@@ -210,7 +210,9 @@ async function main(): Promise<void> {
     console.log("📋 UserOperation receipt received.")
     console.log(userOperationReceiptResult)
     
-    if (userOperationReceiptResult.success) {
+    if (userOperationReceiptResult == null) {
+        console.log("Receipt not found (timeout)")
+    } else if (userOperationReceiptResult.success) {
         console.log("🎉 Multisig transaction successful! Hash:", userOperationReceiptResult.receipt.transactionHash)
     } else {
         console.log("❌ UserOperation execution failed")
@@ -258,15 +260,15 @@ import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 const newOwnerAddress = "0x..."; // New owner's address
 const newThreshold = 3;
 
-const addOwnerTx = await smartAccount.createAddOwnerWithThresholdMetaTransactions(
+// Returns an array of meta-transactions
+const addOwnerTxs = await smartAccount.createAddOwnerWithThresholdMetaTransactions(
     newOwnerAddress,
-    newThreshold,
-    jsonRpcNodeProvider
+    newThreshold
 );
 
 // Create UserOperation with the add owner transaction
 let userOperation = await smartAccount.createUserOperation(
-    [addOwnerTx],
+    addOwnerTxs,
     jsonRpcNodeProvider,
     bundlerUrl
 );
@@ -290,9 +292,9 @@ const ownerToRemove = "0x..."; // Owner address to remove
 const newThreshold = 1; // New threshold after removal
 
 const removeOwnerTx = await smartAccount.createRemoveOwnerMetaTransaction(
+    jsonRpcNodeProvider,
     ownerToRemove,
-    newThreshold,
-    jsonRpcNodeProvider
+    newThreshold
 );
 
 // Create UserOperation with the remove owner transaction
@@ -321,9 +323,9 @@ const oldOwnerAddress = "0x..."; // Owner to replace
 const newOwnerAddress = "0x..."; // New owner address
 
 const swapOwnerTxs = await smartAccount.createSwapOwnerMetaTransactions(
-    oldOwnerAddress,
+    jsonRpcNodeProvider,
     newOwnerAddress,
-    jsonRpcNodeProvider
+    oldOwnerAddress
 );
 
 // Note: This returns an array of transactions (might include deployment)

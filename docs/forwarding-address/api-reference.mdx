@@ -20,6 +20,8 @@ The API uses JSON-RPC 2.0 over HTTP POST with `Content-Type: application/json`, 
 https://api.candide.dev/forwarder/v3/<team-api-key>
 ```
 
+Addresses and hashes are accepted in any casing. Responses return them lowercased, so compare addresses case-insensitively. Amounts are strings in the token's smallest unit. Optional response fields are omitted when they have no value, unless a method documents `null`.
+
 ## Authentication
 
 Access is self-serve through the [Candide Dashboard](https://dashboard.candide.dev). You need two credentials:
@@ -68,23 +70,23 @@ Response:
     "routes": [
       {
         "sourceChainId": 1,
-        "sourceChainName": "Ethereum",
+        "sourceChainName": "ethereum",
         "destinationChainId": 42161,
-        "destinationChainName": "Arbitrum One",
+        "destinationChainName": "arbitrum",
         "tokens": [
           {
-            "address": "0x0000000000000000000000000000000000000000",
-            "symbol": "ETH",
-            "decimals": 18,
-            "destinationAddress": "0x0000000000000000000000000000000000000000",
-            "feeBps": 50
-          },
-          {
-            "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+            "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
             "symbol": "USDT",
             "decimals": 6,
-            "destinationAddress": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
-            "feeBps": 50
+            "destinationAddress": "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+            "feeBps": 20
+          },
+          {
+            "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            "symbol": "USDC",
+            "decimals": 6,
+            "destinationAddress": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+            "feeBps": 20
           }
         ]
       }
@@ -97,11 +99,11 @@ Token fields:
 
 | Field | Description |
 |-------|-------------|
-| `address` | Token contract address on the source chain. `0x000...000` represents native ETH |
+| `address` | Token contract address on the source chain |
 | `symbol` | Human-readable token symbol |
 | `decimals` | Token decimal places (source chain) |
 | `destinationAddress` | Token contract address on the destination chain. Use this when verifying arrival or displaying the output token |
-| `feeBps` | Service fee in basis points (50 = 0.5%) |
+| `feeBps` | Service fee in basis points (20 = 0.2%). `0` on same-chain routes |
 
 ---
 
@@ -127,7 +129,7 @@ Request:
   "params": [{
     "sourceChainId": 1,
     "destinationChainId": 42161,
-    "token": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+    "token": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
   }]
 }
 ```
@@ -149,7 +151,7 @@ Response:
 
 | Field | Description |
 |-------|-------------|
-| `bridges` | Object keyed by bridge identifier. Each entry contains a `minAmount` in the smallest unit of the source token. A deposit below every bridge's minimum will not be forwarded |
+| `bridges` | Object keyed by bridge identifier (`across`, `oft`, `cctp`, or `same_chain`). Only the bridges currently available for the route appear, so the object can be empty. Each entry contains a `minAmount` in the smallest unit of the source token. A deposit below every bridge's minimum will not be forwarded |
 
 ---
 
@@ -303,10 +305,15 @@ Response:
         "status": "expired",
         "expiredAt": 1740528000
       }
-    ]
+    ],
+    "recipient": "0xabcdef0123456789abcdef0123456789abcdef01",
+    "custodialWithdrawer": "0xabcdef0123456789abcdef0123456789abcdef01",
+    "destinationChainId": 10
   }
 }
 ```
+
+`recipient`, `custodialWithdrawer`, and `destinationChainId` are present only when the address has been activated at least once. For an address that was never activated, `sourceChains` is empty and these fields are omitted.
 
 ---
 
@@ -322,8 +329,9 @@ Parameters:
 |------|------|----------|-------------|
 | `sourceChainId` | `number` | Yes | Source chain where the deposit originates |
 | `destinationChainId` | `number` | Yes | Destination chain ID |
-| `token` | `address` | Yes | Token address on source chain (`0x000...000` for native ETH) |
-| `amount` | `string` | Yes | Input amount in smallest unit (e.g. `"1000000000000000000"` for 1 ETH) |
+| `token` | `address` | Yes | Token address on source chain |
+| `amount` | `string` | Yes | Input amount in smallest unit (e.g. `"1000000000"` for 1,000 USDC) |
+| `proxyAddress` | `address` | No | An active forwarding address on `sourceChainId`. When set, the quote reflects that address's policy: if the policy sponsors fees, `outputAmount` equals the input amount. An address that is not active on the source chain returns error `-32602` |
 
 Request:
 
@@ -335,8 +343,8 @@ Request:
   "params": [{
     "sourceChainId": 1,
     "destinationChainId": 42161,
-    "token": "0x0000000000000000000000000000000000000000",
-    "amount": "1000000000000000000"
+    "token": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "amount": "1000000000"
   }]
 }
 ```
@@ -349,22 +357,22 @@ Response:
   "id": 1,
   "result": {
     "destinationChainId": 42161,
-    "outputToken": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+    "outputToken": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
     "outputTokenSymbol": "USDC",
     "bridge": "across",
-    "outputAmount": "994005000",
-    "relayerBotFee": "5000000",
-    "bridgeProtocolFee": "995000"
+    "outputAmount": "997811790",
+    "relayerBotFee": "2080965",
+    "bridgeProtocolFee": "107245"
   }
 }
 ```
 
 | Field | Description |
 |-------|-------------|
-| `bridge` | Identifier of the bridge selected for this route (e.g. `"across"`, `"oft"`) |
+| `bridge` | Identifier of the bridge selected for this route: `"across"`, `"oft"`, `"cctp"`, or `"same_chain"` |
 | `outputToken` | Token contract address on the destination chain |
 | `outputAmount` | Amount the recipient receives, in the smallest unit of the output token |
-| `relayerBotFee` | Relayer service fee in smallest unit (source token decimals). Same-chain forwards return `"0"` |
+| `relayerBotFee` | Relayer fee in smallest unit (source token decimals): the service fee plus the gas cost of the forward. Same-chain forwards have no service fee, so this is the gas cost only |
 | `bridgeProtocolFee` | Bridge protocol fee in smallest unit (source token decimals) |
 
 :::note
@@ -383,7 +391,7 @@ Three methods return a unified, self-describing `Forward` object (see [The `Forw
 
 ### `forwarding_getForwardsByRecipient`
 
-Returns every confirmed forward for a recipient on a destination chain. This is the primary method for tracking deposit status: call it after activating a forwarding address to see forwards as they're picked up and delivered.
+Returns the confirmed forwards for a recipient on a destination chain, newest first and paginated. This is the primary method for tracking deposit status: call it after activating a forwarding address to see forwards as they're picked up and delivered.
 
 Parameters:
 
@@ -391,6 +399,8 @@ Parameters:
 |------|------|----------|-------------|
 | `recipient` | `address` | Yes | Destination recipient address |
 | `destinationChainId` | `number` | Yes | Destination chain ID |
+| `pageSize` | `number` | No | Maximum number of forwards to return, from 1 to 500. Defaults to 100 |
+| `cursor` | `string` | No | The `nextCursor` of the previous response, passed back unchanged, to fetch the next page |
 
 Request:
 
@@ -418,19 +428,25 @@ Response:
         "forwardId": "550e8400-e29b-41d4-a716-446655440000",
         "route": "across",
         "status": "delivered",
-        "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
+        "recipient": "0xabcdef0123456789abcdef0123456789abcdef01",
         "sourceChainId": 1,
         "sourceTxHash": "0x123...abc",
-        "proxyAddress": "0xDEF456...",
-        "sourceBlockTimestamp": 1741132800,
+        "sourceAddresses": [
+          { "address": "0x999...999", "amount": "100000000" }
+        ],
         "destinationChainId": 10,
         "destinationTxHash": "0x789...def",
+        "proxyAddress": "0xdef456...",
+        "sourceBlockTimestamp": 1741132800,
         "depositId": 12345
       }
-    ]
+    ],
+    "nextCursor": null
   }
 }
 ```
+
+`nextCursor` is an opaque string to pass as `cursor` for the next page, or `null` on the last page.
 
 ---
 
@@ -442,8 +458,8 @@ Parameters:
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `sourceChainId` | `number` | Yes | Source chain ID |
 | `sourceTxHash` | `hash` | Yes | Source transaction hash |
+| `sourceChainId` | `number` | No | Source chain ID. When omitted, it is derived from the matching transaction |
 
 Request:
 
@@ -471,7 +487,7 @@ Response:
         "forwardId": "550e8400-e29b-41d4-a716-446655440000",
         "route": "layerzero",
         "status": "pending",
-        "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
+        "recipient": "0xabcdef0123456789abcdef0123456789abcdef01",
         "sourceChainId": 8453,
         "sourceTxHash": "0x123...abc",
         "destinationChainId": 10,
@@ -488,7 +504,7 @@ An empty `forwards` array means the source tx has no confirmed forward rows yet,
 
 ### `forwarding_getForwardById`
 
-Resolves a single forward by its opaque `forwardId` — the round-trippable UUID returned on every `Forward`. Pluck an id from a `forwarding_getForwardsByRecipient` or `forwarding_getForwardsByTx` response and poll this method for cheaper, targeted status refreshes instead of refetching the whole list.
+Resolves a single forward by its opaque `forwardId`, the round-trippable UUID returned on every `Forward`. Pluck an id from a `forwarding_getForwardsByRecipient` or `forwarding_getForwardsByTx` response and poll this method for cheaper, targeted status refreshes instead of refetching the whole list.
 
 Parameters:
 
@@ -520,7 +536,7 @@ Response:
       "forwardId": "550e8400-e29b-41d4-a716-446655440000",
       "route": "across",
       "status": "delivered",
-      "recipient": "0xAbCdEf0123456789AbCdEf0123456789AbCdEf01",
+      "recipient": "0xabcdef0123456789abcdef0123456789abcdef01",
       "sourceChainId": 1,
       "sourceTxHash": "0x123...abc",
       "destinationChainId": 10,
@@ -541,11 +557,12 @@ Every `Forward` is discriminated on `route` and carries a normalized `status`, r
 | Field | Description |
 |-------|-------------|
 | `forwardId` | Opaque round-trippable UUID. Pass it to [`forwarding_getForwardById`](#forwarding_getforwardbyid) for a targeted refresh |
-| `route` | `"across"`, `"layerzero"`, `"cctp"`, or `"same_chain"` |
-| `status` | Normalized delivery state: `"pending"`, `"delivered"`, or `"failed"` |
+| `route` | `"across"`, `"layerzero"`, `"cctp"`, or `"same_chain"`. Omitted when `status` is `"unknown"` |
+| `status` | Normalized delivery state: `"pending"`, `"delivered"`, `"failed"`, or `"unknown"`. `"unknown"` means the status could not be checked right now (for example the bridge provider did not respond): retry, and do not treat it as a failure |
 | `recipient` | Destination recipient address |
 | `sourceChainId` | Chain ID the deposit originated on |
 | `sourceTxHash` | Source transaction hash |
+| `sourceAddresses` | Depositors that funded the forward, largest first: `[{ "address": "0x...", "amount": "<smallest unit>" }]`. `null` when the depositors could not be determined, omitted on older forwards. Very small deposits are listed with `"address": "redacted"` |
 | `proxyAddress` | Forwarding address the deposit was sent to (present once known) |
 | `sourceBlockTimestamp` | Unix timestamp (seconds) of the source block (present once known) |
 | `destinationChainId` | Destination chain ID (present once known) |
@@ -567,7 +584,7 @@ Route-specific fields, present only on the matching `route`:
 | `messageHash` | `cctp` | Circle CCTP message hash |
 
 :::note
-CCTP forwards top out at `"pending"` — Circle's attestation API only confirms the message was signed, not that the destination-chain mint executed. `same_chain` forwards are always `"delivered"` immediately, since there is no bridge: delivery is the source-tx confirmation itself.
+CCTP forwards top out at `"pending"`: Circle's attestation API only confirms the message was signed, not that the destination-chain mint executed. `same_chain` forwards are always `"delivered"` immediately, since there is no bridge: delivery is the source-tx confirmation itself.
 :::
 
 ---
@@ -590,7 +607,7 @@ interface RouteToken {
   symbol: string;
   decimals: number;
   destinationAddress: string;  // token address on destination chain
-  feeBps: number;      // basis points (50 = 0.5%)
+  feeBps: number;      // basis points (20 = 0.2%)
 }
 
 interface Route {
@@ -631,6 +648,10 @@ interface SourceChainActivation {
 interface ActivationStatus {
   address: string;
   sourceChains: SourceChainActivation[];
+  // present only when the address has been activated at least once
+  recipient?: string;
+  custodialWithdrawer?: string;
+  destinationChainId?: number;
 }
 
 interface EstimateResult {
@@ -644,15 +665,16 @@ interface EstimateResult {
 }
 
 type ForwardRoute = "across" | "layerzero" | "cctp" | "same_chain";
-type ForwardStatus = "pending" | "delivered" | "failed";
+type ForwardStatus = "pending" | "delivered" | "failed" | "unknown";
 
 interface Forward {
   forwardId: string | null;
-  route: ForwardRoute | string;
+  route?: ForwardRoute | string;   // omitted when status is "unknown"
   status: ForwardStatus | string;
   recipient: string;
   sourceChainId: number;
   sourceTxHash: string;
+  sourceAddresses?: { address: string; amount: string }[] | null;
   proxyAddress?: string;
   sourceBlockTimestamp?: number;   // unix seconds
   destinationChainId?: number;
@@ -676,6 +698,7 @@ interface Forward {
 
 interface ForwardsResult {
   forwards: Forward[];
+  nextCursor?: string | null;      // forwarding_getForwardsByRecipient only
 }
 ```
 

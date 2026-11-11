@@ -43,7 +43,7 @@ npm i abstractionkit safe-recovery-service-sdk viem
 <TabItem value="yarn" label="yarn">
 
 ```bash
-yarn add abstractionkit safe-recovery-service-sdk
+yarn add abstractionkit safe-recovery-service-sdk viem
 ```
 
 </TabItem>
@@ -89,10 +89,7 @@ import {
   SocialRecoveryModuleV1,
   SocialRecoveryModuleGracePeriodSelectorV1,
 } from "abstractionkit";
-import {
-  RecoveryByGuardian,
-  SocialRecoveryModuleGracePeriodSelector,
-} from "safe-recovery-service-sdk";
+import { RecoveryByGuardian } from "safe-recovery-service-sdk";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 const recoveryServiceURL = process.env.RECOVERY_SERVICE_URL as string;
@@ -107,13 +104,17 @@ const guardian2PrivateKey = process.env.GUARDIAN_2_PRIVATE_KEY as `0x${string}`;
 const guardian2Account = privateKeyToAccount(guardian2PrivateKey);
 
 // highlight-start
-// module v0.1.0, matching the safe-recovery-service-sdk selector below
+// module v0.1.0, the version safe-recovery-service-sdk supports
 const srm = new SocialRecoveryModuleV1(SocialRecoveryModuleGracePeriodSelectorV1.After3Minutes);
+
+// safe-recovery-service-sdk does not export its grace period selector type,
+// so pass the same module address and cast it to the constructor's parameter type
+type RecoveryModuleAddress = ConstructorParameters<typeof RecoveryByGuardian>[2];
 
 const recoveryService = new RecoveryByGuardian(
   recoveryServiceURL,
   chainId,
-  SocialRecoveryModuleGracePeriodSelector.After3Minutes
+  srm.moduleAddress as RecoveryModuleAddress
 );
 // highlight-end
 ```
@@ -148,7 +149,7 @@ const guardian1Signature = await guardian1Account.signTypedData({
 const recoveryRequest = await recoveryService.createRecoveryRequest(
     smartAccountAddress,
     [newOwnerAddress],
-    1n,
+    1,
     guardian1Account.address,
     guardian1Signature
 );

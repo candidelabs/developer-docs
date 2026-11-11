@@ -30,14 +30,14 @@ Relevant links for additional information during this guide:
 <TabItem value="ethers" label="ethers">
 
 ```bash
-npm i abstractionkit && @turnkey/http && @turnkey/api-key-stamper && @turnkey/ethers
+npm i abstractionkit @turnkey/http @turnkey/api-key-stamper @turnkey/ethers ethers
 ```
 
 </TabItem>
 <TabItem value="viem" label="viem">
 
 ```bash
-npm i abstractionkit && @turnkey/http && @turnkey/api-key-stamper && @turnkey/viem
+npm i abstractionkit @turnkey/http @turnkey/api-key-stamper @turnkey/viem viem
 ```
 
 </TabItem>
@@ -81,7 +81,7 @@ const enableModuleTx = srm.createEnableModuleMetaTransaction(
     smartAccount.accountAddress
 );
 const addGuardianTx = srm.createAddGuardianWithThresholdMetaTransaction(
-    process.env.TURNKEY_PUBLIC_KEY, // Turnkey Guardian Address
+    process.env.TURNKEY_WALLET_ADDRESS, // Turnkey Guardian Address
     1n //threshold
 );
 
@@ -100,6 +100,7 @@ let userOperation = await smartAccount.createUserOperation(
 ```ts
 import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
+import { JsonRpcProvider } from "ethers";
 import { TurnkeySigner } from "@turnkey/ethers";
 import { TurnkeyClient } from "@turnkey/http";
 import { ApiKeyStamper } from "@turnkey/api-key-stamper";
@@ -115,7 +116,7 @@ const guardianSigner = new TurnkeySigner({
   client: turnkeyClient,
   organizationId: process.env.TURNKEY_ORG_ID as string,
   signWith: process.env.TURNKEY_WALLET_ADDRESS as string,  // For this demo, we manually generated the signer on turnkey dashboard
-});
+}, new JsonRpcProvider(process.env.JSON_RPC_NODE_PROVIDER as string)); // a provider is required to send transactions
 
 // the account's current recovery nonce
 const nonce = await srm.nonce(process.env.JSON_RPC_NODE_PROVIDER, smartAccount.accountAddress);
@@ -129,7 +130,7 @@ const initiateRecoveryMetaTx = srm.createConfirmRecoveryMetaTransaction(
 )
 
 // make sure to fund the guardian address on turnkey
-const sendTx = guardianSigner.sendTransaction({
+const sendTx = await guardianSigner.sendTransaction({
     to: initiateRecoveryMetaTx.to,
     data: initiateRecoveryMetaTx.data,
     value: 0,

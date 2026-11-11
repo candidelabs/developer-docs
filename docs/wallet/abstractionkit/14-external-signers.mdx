@@ -32,7 +32,7 @@ AbstractionKit ships built-in adapters for the common signing sources, plus an o
 
 | Signing source | Adapter | Use when |
 |---|---|---|
-| viem `LocalAccount` | `fromViem(localAccount)` | The project uses viem. Works for `privateKeyToAccount`, `toAccount`, and wagmi connector accounts. |
+| viem `LocalAccount` | `fromViem(localAccount)` | The project uses viem. Works for local accounts that implement `sign({ hash })` and `signTypedData`, such as `privateKeyToAccount` and `mnemonicToAccount`. |
 | viem `WalletClient` | `fromViemWalletClient(client)` | The signer is a browser or injected JSON-RPC wallet (typed-data signing only). |
 | ethers `Wallet` / `HDNodeWallet` | `fromEthersWallet(wallet)` | The project already uses ethers v6. |
 | Raw private key string | `fromPrivateKey(privateKey)` | You want every owner (private key, HSM, hardware) to flow through the same async interface. |
@@ -177,6 +177,8 @@ const signer: ExternalSigner = {
   },
 };
 ```
+
+A signer annotated as plain `ExternalSigner` is typed for the single-UserOperation methods. To also pass it to `signUserOperationsWithSigners`, annotate it as `ExternalSigner<unknown>` if it ignores the context argument (this is what the built-in adapters return), or as `ExternalSigner<MultiOpSignContext>` if it reads the multi-op context.
 
 Full example: [`signer/customSigner.ts`](https://github.com/candidelabs/abstractionkit-examples/blob/main/signer/customSigner.ts).
 

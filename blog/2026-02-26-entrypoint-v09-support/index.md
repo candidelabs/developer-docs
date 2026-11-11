@@ -39,7 +39,6 @@ Voltaire Bundler now supports EntryPoint v0.9. The API is fully backward compati
     "params": [
         {
             "sender": "0x...",
-            "paymasterSignature": "0x...",
             // all other userop params
         },
         "0x433709009B8330FDa32311DF1C2AFA402eD8D009"

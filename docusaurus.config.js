@@ -154,6 +154,10 @@ const config = {
             to: '/',
           },
           {
+            from: '/wallet/guides/recovery-with-google-using-lit/',
+            to: '/wallet/plugins/add-candide-guardian/',
+          },
+          {
             from: '/wallet/paymaster/rpc-methods-v2/',
             to: '/wallet/paymaster/rpc-methods/',
           },

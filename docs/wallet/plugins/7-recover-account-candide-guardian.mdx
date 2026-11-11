@@ -32,7 +32,7 @@ The recovery process consists of five key steps:
 
 1. **Generate New Owner Key** - Create a replacement for the lost key
 2. **Request Guardian Signature** - Initiate recovery through the Guardian service
-3. **Verify All Channels** - Confirm identity through ALL registered methods
+3. **Verify Channels** - Confirm identity through the required number of registered methods
 4. **Execute Recovery** - Submit the recovery transaction
 5. **Finalize Recovery** - Complete ownership transfer after the grace period
 
@@ -72,6 +72,7 @@ NODE_URL=https://ethereum-sepolia-rpc.publicnode.com
 
 # Recovery Service URL
 # Get access here: https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5
+# If your credential is an API key, append it to the URL: https://<your-service-url>/<YOUR_API_KEY>
 RECOVERY_SERVICE_URL= 
 ```
 
@@ -86,6 +87,7 @@ import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
 
 const chainId = BigInt(process.env.CHAIN_ID as string);
 const serviceUrl = process.env.RECOVERY_SERVICE_URL as string;
+const safeAccountAddress = "0x..."; // the Safe account to recover
 
 // Initialize recovery service
 const custodialGuardianService = new RecoveryByCustodialGuardian(serviceUrl, chainId);
@@ -108,9 +110,9 @@ const signatureRequest = await custodialGuardianService.requestCustodialGuardian
 );
 ```
 
-## Step 3: Verify All Recovery Channels
+## Step 3: Verify Recovery Channels
 
-You must verify **ALL** registered channels to complete recovery. Submit the OTP codes received:
+The guardian signature is returned once `signatureRequest.requiredVerifications` channels are verified. That is a majority of the registered channels: one when a single channel is registered, both when email and SMS are registered. Submit the OTP codes received:
 
 <Tabs>
 <TabItem value="email" label="Email Verification">
@@ -118,6 +120,7 @@ You must verify **ALL** registered channels to complete recovery. Submit the OTP
 ```ts
 // Find the email authentication challenge
 const emailAuth = signatureRequest.auths.find(auth => auth.channel === 'email');
+if (!emailAuth) throw new Error("No email channel registered");
 
 // Enter OTP from email
 const emailOtp = "123456"; // Replace with actual OTP
@@ -135,6 +138,7 @@ const verificationResult = await custodialGuardianService.submitCustodialGuardia
 ```ts
 // Find the SMS authentication challenge
 const smsAuth = signatureRequest.auths.find(auth => auth.channel === 'sms');
+if (!smsAuth) throw new Error("No SMS channel registered");
 
 // Enter OTP from SMS
 const smsOtp = "654321"; // Replace with actual OTP
@@ -150,7 +154,7 @@ const verificationResult = await custodialGuardianService.submitCustodialGuardia
 <TabItem value="both" label="Verify All Channels">
 
 ```ts
-// Verify ALL registered channels (required for recovery)
+// Verify every registered channel
 let verificationResult;
 
 for (const auth of signatureRequest.auths) {
@@ -170,9 +174,14 @@ for (const auth of signatureRequest.auths) {
 
 ## Step 4: Execute Recovery Transaction
 
-After verifying all channels, execute the recovery with the obtained guardian signature:
+After the required verifications, execute the recovery with the obtained guardian signature:
 
 ```ts
+// The signature is only returned once enough channels are verified
+if (!verificationResult?.custodianGuardianSignature) {
+    throw new Error("More channel verifications are required");
+}
+
 // Execute recovery using the service
 const recoveryRequest = await custodialGuardianService.createAndExecuteRecoveryRequest(
     safeAccountAddress,
@@ -188,10 +197,8 @@ const recoveryRequest = await custodialGuardianService.createAndExecuteRecoveryR
 Wait for the grace period to expire, then finalize the recovery:
 
 ```ts
-import {
-    RecoveryByGuardian,
-    SocialRecoveryModuleGracePeriodSelector, // module v0.1.0 addresses
-} from "safe-recovery-service-sdk";
+import { RecoveryByGuardian } from "safe-recovery-service-sdk";
+import { SocialRecoveryModuleGracePeriodSelectorV1 } from "abstractionkit"; // module v0.1.0 addresses
 
 // Wait for grace period (3 minutes)
 await new Promise(resolve => setTimeout(resolve, 3 * 60 * 1000));
@@ -200,7 +207,8 @@ await new Promise(resolve => setTimeout(resolve, 3 * 60 * 1000));
 const recoveryService = new RecoveryByGuardian(
     serviceUrl,
     chainId,
-    SocialRecoveryModuleGracePeriodSelector.After3Minutes
+    // the SDK types this parameter with an enum it does not export, hence the cast
+    SocialRecoveryModuleGracePeriodSelectorV1.After3Minutes as any
 );
 
 // Finalize the recovery

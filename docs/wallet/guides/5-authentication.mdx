@@ -56,7 +56,6 @@ Below are some third-party recovery options that you can consider. Candide does 
 | Dfns         | HSM, MPC                                | Custom                        | No                     |                           |
 | Dynamic      | MPC (Turnkey under the hood)            | Email, Social, Wallets        | Yes                    |                           |
 | Fireblocks   | MPC                                     | Custom                        | No                     |                           |
-| Lit Protocol | MPC                                     | Email, Social, Phone          | No                     | [Add a Google Account as a Recovery Method using Lit](/wallet/guides/recovery-with-google-using-lit)|
 | Magic.link   | AWS KMS                                 | Email, Social                 | Yes                    | [Add an Social Account as a Recovery Method using Magic](./magic.mdx)|
 | Privy        | MPC                                     | Email, Social, Wallets        | Yes                    |                           |
 | Turnkey      | AWS KMS                                 | Custom                        | No                     | [Use Turnkey with AbstractionKit](./turnkey.mdx)|
@@ -128,6 +127,8 @@ let userOperation = ... // Use createUserOperation() to help you construct the u
 
 const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(userOperation, chainId);
 
+// Signing a raw hash requires a local key: `signer` here is an ethers Wallet.
+// Browser wallets cannot sign raw hashes, use the typed data method below.
 const signature = signer.signingKey.sign(safeUserOpHash).serialized;
 
 userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
@@ -147,6 +148,9 @@ const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(
   chainId
 ) as `0x${string}`;
 
+// Signing a raw hash requires a wallet client created with a local account
+// (for example privateKeyToAccount). Browser wallets cannot sign raw hashes,
+// use the typed data method below.
 const signature = await viemWalletClient.account.sign({ hash: safeUserOpHash });
 
 userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
@@ -173,7 +177,7 @@ let userOperation = ... // Use createUserOperation() to help you construct the u
 
 const { domain, types, messageValue } = SafeAccount.getUserOperationEip712Data(userOperation, chainId);
 
-const signature = await wallet.signTypedData(domain, types, messageValue);
+const signature = await signer.signTypedData(domain, types, messageValue);
 userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
   [{ signer: signer.address, signature }],
   { isMultiChainSignature: true },
@@ -189,6 +193,7 @@ let userOperation = ... // Use createUserOperation() to help you construct the u
 const { domain, types, messageValue } = SafeAccount.getUserOperationEip712Data(userOperation, chainId);
 
 const signedTypedData = await viemWalletClient.signTypedData({
+  account: signerAddress,
   domain,
   types,
   message: messageValue,
@@ -196,7 +201,7 @@ const signedTypedData = await viemWalletClient.signTypedData({
 } as any);
 
 userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
-  [{ signer: viemWalletClient.account.address, signature: signedTypedData }],
+  [{ signer: signerAddress, signature: signedTypedData }],
   { isMultiChainSignature: true },
 );
 ```
@@ -242,13 +247,13 @@ Use the [External Signers SDK reference](/wallet/abstractionkit/external-signers
 Every account class exposes the same method family:
 
 ```ts
-// Safe accounts — multi-signer (plural)
+// Safe accounts: multi-signer (plural)
 userOperation.signature = await safe.signUserOperationWithSigners(userOperation, [signer], chainId)
 
-// Simple7702 / Calibur — single signer
+// Simple7702 / Calibur: single signer
 userOperation.signature = await account.signUserOperationWithSigner(userOperation, signer, chainId)
 
-// SafeMultiChainSigAccountV1 — multi-op, one signature across chains
+// SafeMultiChainSigAccountV1: multi-op, one signature across chains
 const signatures = await account.signUserOperationsWithSigners(
   [{ userOperation: op1, chainId: id1 }, { userOperation: op2, chainId: id2 }],
   [signer],

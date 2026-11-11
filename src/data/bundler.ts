@@ -50,6 +50,18 @@ export const estimateUserOperationGasReturn = [
     description:
       "The amount of gas to pay for to compensate the bundler for pre-verification execution and calldata",
   },
+  {
+    key: "paymasterVerificationGasLimit?",
+    type: "bigint",
+    description:
+      "The amount of gas to allocate for the paymaster validation code. Non-standard: only present when the bundler returns it",
+  },
+  {
+    key: "paymasterPostOpGasLimit?",
+    type: "bigint",
+    description:
+      "The amount of gas to allocate for the paymaster post-operation code. Non-standard: only present when the bundler returns it",
+  },
 ];
 
 export const sendUserOperationParam = [
