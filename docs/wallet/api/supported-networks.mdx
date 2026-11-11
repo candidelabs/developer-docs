@@ -81,7 +81,7 @@ export const chainList = [
     chainHandle: "somnia",
   },
   {
-    network: "Tempo",
+    network: "Tempo (Bundler only)",
     logo: "/img/networks/4217.png",
     chainId: 4217,
     chainHandle: "tempo",
@@ -132,7 +132,7 @@ export const testChainList = [
     chainHandle: "somnia-testnet",
   },
   {
-    network: "Tempo Testnet",
+    network: "Tempo Testnet (Bundler only)",
     logo: "/img/networks/4217.png",
     chainId: 42431,
     chainHandle: "tempo-testnet",
@@ -173,6 +173,10 @@ export const exclusiveChainList = [
 
 ### EVM Testnet
 <ChainListTable items={testChainList} />
+
+:::info Tempo
+Tempo and Tempo Testnet are bundler only: there is no Paymaster endpoint, and the bundler sponsors the gas. Tempo is not enabled by default. [Contact us](https://www.candide.dev/contact) to activate it for your team.
+:::
 
 ## Solana
 
