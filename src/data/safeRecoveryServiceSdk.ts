@@ -163,7 +163,7 @@ export const recoveryByGuardianRequestType = [
     {
         key: "signatures",
         type: "string[]",
-        description: "Guardian signatures collected for this recovery request. The service returns them as [signer, signature] pairs",
+        description: "Guardian signatures collected for this recovery request. The SDK declares string[], but at runtime the service returns [string, string][]: one [signer, signature] pair per guardian",
     },
     {
         key: "executeData",
@@ -200,7 +200,7 @@ export const recoveryByGuardianRequestType = [
     {
         key: "status",
         type: '"PENDING" | "EXECUTED" | "FINALIZED"',
-        description: "Current status of the recovery request. The service also returns EXECUTION-IN-PROGRESS and FINALIZATION-IN-PROGRESS while a transaction is being processed",
+        description: "Current status of the recovery request. The type shown is the union the SDK declares. At runtime a response can also carry EXECUTION-IN-PROGRESS or FINALIZATION-IN-PROGRESS while a transaction is being processed, so handle those two values as well",
     },
     {
         key: "discoverable",

@@ -54,7 +54,7 @@ export const estimateUserOperationGasReturn = [
     key: "paymasterVerificationGasLimit?",
     type: "bigint",
     description:
-      "The amount of gas to allocate for the paymaster validation code. Non-standard: only present when the bundler returns it",
+      "The amount of gas to allocate for the paymaster validation code. Only present when the bundler returns it",
   },
   {
     key: "paymasterPostOpGasLimit?",

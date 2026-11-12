@@ -334,7 +334,7 @@ userOperation.signature = smartAccount.signUserOperation(
 
 ```ts title="Remove an owner"
 const ownerToRemove = "0x..."; // Owner address to remove
-const newThreshold = 2; // New threshold after removal
+const newThreshold = 2; // New threshold after removal. It cannot exceed the number of remaining owners: use 1 when one owner is left
 
 const removeOwnerTx = await smartAccount.createRemoveOwnerMetaTransaction(
     jsonRpcNodeProvider,

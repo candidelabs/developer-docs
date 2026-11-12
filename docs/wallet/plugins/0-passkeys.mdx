@@ -430,7 +430,7 @@ const eoaSignerSignaturePair: SignerSignaturePair = {
 
 userOperation.signature = smartAccount.formatUserOperationSignature(
     // highlight-start
-    [webAuthnSignerSignaturePair, eoaSignerSignaturePair],
+    [signerSignaturePair, eoaSignerSignaturePair],
     // highlight-end
     { isInit: userOperation.factory != null }
 );
@@ -480,7 +480,7 @@ let userOperation = await smartAccount.createUserOperation(
 
 ```ts title="precompileSignature.ts"
 userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
-    [webAuthnSignerSignaturePair],
+    [signerSignaturePair],
     {
         isInit: userOperation.factory != null,
         // highlight-start
