@@ -233,7 +233,7 @@ The discriminated union enforces at compile time that every signer implements at
 
 Both `signHash` and `signTypedData` may return either a signature directly or a `Promise` of one (`Hex | Promise<Hex>`). A local-key signer can return synchronously without wrapping the result in a `Promise`; async signers (HSMs, MPC, remote APIs) work unchanged.
 
-Canonical source: [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/signer/types.ts#L159).
+Canonical source: [`src/signer/types.ts`](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/signer/types.ts#L159).
 
 ## End-to-end examples
 

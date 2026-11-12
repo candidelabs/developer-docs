@@ -135,7 +135,7 @@ const { userOperation: sponsoredUserOperation, sponsorMetadata } =
 </Tabs>
 
 #### Source code
-[createSponsorPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L598)
+[createSponsorPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/CandidePaymaster.ts#L631)
 
 ### fetchSupportedERC20TokensAndPaymasterMetadata
 
@@ -301,7 +301,7 @@ userOperation = sponsoredUserOperation;
 </details>
 
 #### Source code
-[createTokenPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L639)
+[createTokenPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/CandidePaymaster.ts#L701)
 
 ### calculateUserOperationErc20TokenMaxGasCost
 
@@ -349,7 +349,7 @@ const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
 </details>
 
 #### Source code
-[calculateUserOperationErc20TokenMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L755)
+[calculateUserOperationErc20TokenMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/CandidePaymaster.ts#L813)
 
 ### decodeTokenQuote
 
@@ -393,7 +393,7 @@ if (quote !== null) {
 </Tabs>
 
 #### Source code
-[CandidePaymaster.decodeTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L122) | [Erc7677Paymaster.decodeTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/Erc7677Paymaster.ts#L340) | [DecodedTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/decodeTokenQuote.ts#L25)
+[CandidePaymaster.decodeTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/CandidePaymaster.ts#L131) | [Erc7677Paymaster.decodeTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/Erc7677Paymaster.ts#L346) | [DecodedTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/decodeTokenQuote.ts#L25)
 
 ## Advanced Methods
 
@@ -454,7 +454,7 @@ const paymasterResult = await paymaster.getPaymasterMetaData(SafeAccount.DEFAULT
 
 #### source code
 
-[getPaymasterMetaData](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L354)
+[getPaymasterMetaData](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/CandidePaymaster.ts#L372)
 
 ### getSupportedEntrypoints
 
@@ -495,7 +495,7 @@ const paymasterResult = await paymaster.getSupportedEntrypoints();
 </details>
 
 #### source code
-[getSupportedEntrypoints](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L331)
+[getSupportedEntrypoints](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/CandidePaymaster.ts#L351)
 
 ### isSupportedERC20Token
 
@@ -536,7 +536,7 @@ true
 </details>
 
 #### Source
-[isSupportedERC20Token](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L371)
+[isSupportedERC20Token](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/CandidePaymaster.ts#L385)
 
 ### getSupportedERC20TokenData
 
@@ -583,7 +583,7 @@ const erc20TokenData = await paymaster.getSupportedERC20TokenData(erc20TokenAddr
 </details>
 
 #### Source code
-[getSupportedERC20TokenData](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L387)
+[getSupportedERC20TokenData](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/CandidePaymaster.ts#L402)
 
 ### fetchTokenPaymasterExchangeRate
 
@@ -626,7 +626,7 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 </details>
 
 #### Source code
-[fetchTokenPaymasterExchangeRate](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L791)
+[fetchTokenPaymasterExchangeRate](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/CandidePaymaster.ts#L841)
 
 ### createPaymasterUserOperation
 
@@ -637,7 +637,7 @@ const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenA
 :::
 
 #### Source code
-[createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/CandidePaymaster.ts#L557)
+[createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/CandidePaymaster.ts#L580)
 
 ## Erc7677Paymaster
 
@@ -715,4 +715,36 @@ The context object is forwarded to the paymaster RPC as the fourth argument of `
 `Erc7677Paymaster.decodeTokenQuote(userOperation, nodeRpcUrl)` is the same static method as [`CandidePaymaster.decodeTokenQuote`](#decodetokenquote).
 
 #### Source code
-[Erc7677Paymaster](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/Erc7677Paymaster.ts#L222) | [createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/paymaster/Erc7677Paymaster.ts#L465)
+[Erc7677Paymaster](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/Erc7677Paymaster.ts#L228) | [createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/paymaster/Erc7677Paymaster.ts#L480)
+
+## Error Handling
+
+`CandidePaymaster` and `Erc7677Paymaster` follow one rule: the error code names who failed.
+
+| Error | Thrown when |
+| --- | --- |
+| `AbstractionKitError` with `code: "PAYMASTER_ERROR"` | The paymaster failed or refused: a denied sponsorship policy, an unsupported EntryPoint or token, a malformed paymaster response, a final paymaster that differs from the approved one, or a paymaster rejection during gas estimation (EntryPoint `AA3x` or `AA50`, or bundler codes `-32501` and `-32508` when there is no AA code). |
+| `AbstractionKitError` with `code: "BUNDLER_ERROR"` | Gas estimation failed for a reason that is not the paymaster's, such as the account's own validation (`AA23`, `AA24`). It is the same error an account's `createUserOperation` throws. |
+| `RangeError` | The UserOperation input is invalid, such as a negative gas override. |
+
+When the failure comes from an RPC call, the underlying error is on `cause`. Its JSON-RPC code is copied to `errno`, and an EntryPoint revert code to `aaCode`, so you can branch on the specific cause without parsing the message. An error the SDK raises itself, such as an unsupported or invalid token address, has no `cause` and no `errno`; `CandidePaymaster`'s unsupported token error lists the accepted tokens on `context.supportedTokens`.
+
+```ts
+import { AbstractionKitError } from "abstractionkit";
+
+try {
+  const { userOperation: sponsoredUserOperation } =
+    await paymaster.createSponsorPaymasterUserOperation(
+      smartAccount,
+      userOperation,
+      bundlerUrl,
+    );
+} catch (error) {
+  if (error instanceof AbstractionKitError && error.code === "PAYMASTER_ERROR") {
+    // the paymaster refused: fall back to another way to pay for gas
+    console.log(error.message, error.errno, error.aaCode);
+  } else {
+    throw error;
+  }
+}
+```

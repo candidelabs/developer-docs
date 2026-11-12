@@ -523,10 +523,6 @@ const webauthnSignature: string = SafeAccount.createWebAuthnSignature(webauthSig
 
 - Validating a signed webAuthn message [`verifyWebAuthnSignatureForMessageHash`](/wallet/abstractionkit/safe-account-v3/#verifywebauthnsignatureformessagehash)
 
-:::caution
-In `abstractionkit` v1.0.0 this method returns `false` for every signature, including valid ones. Do not rely on its result until the fix ships in the next SDK release.
-:::
-
 ```ts title="verifyMessage.ts"
 const isSignatureValid: boolean =
     await SafeAccount.verifyWebAuthnSignatureForMessageHash(
