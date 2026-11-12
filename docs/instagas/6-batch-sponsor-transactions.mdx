@@ -151,8 +151,8 @@ import { useSendCalls } from 'wagmi'
 import { useChainId, useSendTransaction } from 'wagmi';
 import { parseGwei, zeroAddress, type Address, type Hex } from 'viem';
 
-const { sendCalls, data: id } = useSendCalls(); // to send batch & sponsored tx
-const { sendTransaction } = useSendTransaction(); // to send standard tx
+const { sendCallsAsync, data: id } = useSendCalls(); // to send batch & sponsored tx
+const { sendTransactionAsync } = useSendTransaction(); // to send standard tx
 const chainId = useChainId();
 
 const paymasterUrl = "https://api.candide.dev/api/v3/CHAIN_ID/API_KEY";
@@ -164,12 +164,12 @@ const tx = {
   data: '0x' as Hex,
 };
 
-const handleSendTx = () => {
+const handleSendTx = async () => {
   // if smart capabilities are supported, send a batched and optionally sponsored transaction
   try {
     if (!capabilities) {
       // Fallback to standard sendTransactions if capabilities are not available
-      sendTransaction(tx);
+      await sendTransactionAsync(tx);
       return;
     }
 
@@ -177,7 +177,8 @@ const handleSendTx = () => {
     const isAtomicSupported = atomicStatus === "supported" || atomicStatus === "ready";
 
     if (isAtomicSupported) {
-      sendCalls({
+      // the async variants reject on failure, so the catch below sees a wallet rejection
+      await sendCallsAsync({
         calls: [tx, tx],
         // with "ready", the wallet upgrades to atomic execution or rejects,
         // instead of sending the calls as separate transactions
@@ -195,7 +196,7 @@ const handleSendTx = () => {
       });
     } else {
       // if not, fallback to standard sendTransactions
-      sendTransaction(tx);
+      await sendTransactionAsync(tx);
     }
   } catch (err) {
     console.log('Error sending transaction:', err);
