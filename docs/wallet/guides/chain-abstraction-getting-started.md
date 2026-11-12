@@ -272,7 +272,7 @@ userOperation2 = finalOp2
 #### Submit and Verify
 
 ```ts title="index.ts"
-import { UserOperationV9 } from "abstractionkit"
+import { AbstractionKitError, UserOperationV9 } from "abstractionkit"
 
 // Submit in parallel
 await Promise.all([
@@ -307,9 +307,19 @@ async function sendAndMonitor(
     const account = new SafeAccount(userOperation.sender)
     const response = await account.sendUserOperation(userOperation, bundlerUrl)
     console.log(`  [${name}] Submitted. Waiting...`)
-    const receipt = await response.included()
+    let receipt
+    try {
+        receipt = await response.included()
+    } catch (error) {
+        // included() throws a TIMEOUT error if the receipt is not found in time
+        if (error instanceof AbstractionKitError && error.code === "TIMEOUT") {
+            console.log(`  [${name}] Still pending. UserOperation hash: ${response.userOperationHash}`)
+            return
+        }
+        throw error
+    }
     if (receipt == null) {
-        console.log(`  [${name}] Receipt not found (timeout)`)
+        console.log(`  [${name}] Receipt not found`)
     } else if (receipt.success) {
         console.log(`  [${name}] Success! Tx: ${receipt.receipt.transactionHash}`)
     } else {

@@ -24,7 +24,7 @@ The quickest way to get started is to use the docker image.
 docker run --net=host --rm -d ghcr.io/candidelabs/voltaire/voltaire-bundler:$VOLTAIRE_VERSION --bundler_secret $BUNDLER_SECRET --rpc_url $RPC_URL --ethereum_node_url $ETHEREUM_NODE_URL --chain_id $CHAIN_ID --verbose
 ```
 
-This command will pull the latest docker image and will then start the bundler to listen for UserOperations. Once running, you can then send User Operation to `$RPC_URL:3000/rpc`. The supported EntryPoint versions (v0.6, v0.7, v0.8 and v0.9) are built in, so there is no EntryPoint flag to pass.
+This command will pull the latest docker image and will then start the bundler to listen for UserOperations. Once running, you can then send User Operations to `http://127.0.0.1:3000/rpc`. `--rpc_url` is the host the server binds to, not a client URL: when it is `0.0.0.0`, remote clients use the server's reachable hostname or IP address. The supported EntryPoint versions (v0.6, v0.7, v0.8 and v0.9) are built in, so there is no EntryPoint flag to pass.
 
 | flags            |Comment                                     
 | -----------------| -------------------------------------------

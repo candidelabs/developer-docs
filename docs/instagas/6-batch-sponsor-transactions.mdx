@@ -179,6 +179,9 @@ const handleSendTx = () => {
     if (isAtomicSupported) {
       sendCalls({
         calls: [tx, tx],
+        // with "ready", the wallet upgrades to atomic execution or rejects,
+        // instead of sending the calls as separate transactions
+        forceAtomic: true,
         // and sponsor the tx, optionally with a sponsorshipPolicyId
         capabilities: {
           paymasterService: {

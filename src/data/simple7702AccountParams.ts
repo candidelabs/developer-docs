@@ -157,7 +157,7 @@ export const createUserOperationOverridesV8 = [
     key: "parallelPaymasterInitValues?",
     type: "{ paymaster: string; paymasterVerificationGasLimit: bigint; paymasterPostOpGasLimit: bigint; paymasterData: string }",
     description:
-      "Paymaster fields to include during gas estimation for parallel paymaster signing. Only works with EntryPoint v0.9 (Simple7702AccountV09)",
+      "Paymaster fields to include during gas estimation for parallel paymaster signing. Only works with EntryPoint v0.9 (Simple7702AccountV09). paymasterData must end with the PAYMASTER_SIG_MAGIC suffix 22e325a297439656",
   },
 ];
 
