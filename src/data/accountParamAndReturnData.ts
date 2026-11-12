@@ -945,7 +945,7 @@ export const sendUserOperationReturn = [
     key: "included()",
     type: "Promise<UserOperationReceiptResult>",
     description:
-      "Waits for the user operation to be included onchain and returns the user operation receipt. Takes optional timeoutInSeconds (default 180) and requestIntervalInSeconds (default 2), and throws an AbstractionKitError with code TIMEOUT if the receipt is not found in time",
+      "Waits for the user operation to be included onchain and returns the user operation receipt. Takes optional timeoutInSeconds (default 180) and requestIntervalInSeconds (default 2), and throws an AbstractionKitError with code TIMEOUT if the receipt is not found in time. A poll that fails with a transient error is retried, and the last failure becomes the cause of the TIMEOUT error",
   },
 ];
 

@@ -21,7 +21,7 @@ const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress], {
     project: "YourProject",        // required: the thing you key analytics off
     platform: "Web",               // optional: 'Web' | 'Mobile' | 'Safe App' | 'Widget'
     tool: "abstractionkit",        // optional: which SDK
-    toolVersion: "1.0.0",          // optional: SDK version
+    toolVersion: "2.0.0",          // optional: SDK version
   },
   //highlight-end
 });
@@ -46,7 +46,7 @@ const onchainIdentifier = smartAccount.onChainIdentifier;
 // "5afe00..." (64 hex characters, no 0x prefix)
 ```
 
-View the identifier generation in the [generateOnChainIdentifier](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeAccount.ts#L3543) source code.
+View the identifier generation in the [generateOnChainIdentifier](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeAccount.ts#L3693) source code.
 
 ## Indexer patterns
 

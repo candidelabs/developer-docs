@@ -904,7 +904,7 @@ export const decodeUserOperationRevertReasonParams = [
     key: "receipt",
     type: "NonNullable<UserOperationReceiptResult>",
     description:
-      "A mined UserOperation receipt. The function reads the EntryPoint's UserOperationRevertReason log from it directly, with no extra RPC call.",
+      "A mined UserOperation receipt. The function reads the EntryPoint's UserOperationRevertReason, PostOpRevertReason and UserOperationPrefundTooLow logs from it directly, with no extra RPC call.",
   },
 ];
 
@@ -921,7 +921,19 @@ export const decodeUserOperationRevertReasonReturn = [
         key: "outOfGas",
         type: "boolean",
         description:
-          "True when the inner call left no revert data. Usually out-of-gas, though a bare revert()/assert or a call to a non-contract also produce empty data.",
+          "True when the inner call left no revert data. Usually out-of-gas, though a bare revert()/assert or a call to a non-contract also produce empty data. With postOpReverted set, it is the paymaster's postOp that left no revert data.",
+      },
+      {
+        key: "postOpReverted?",
+        type: "boolean",
+        description:
+          "True when the paymaster's postOp reverted (EntryPoint v0.7 and later). The account call is undone even if it succeeded, and errorMessage, panicCode and revertData then describe the postOp revert, not the account call.",
+      },
+      {
+        key: "prefundTooLow?",
+        type: "boolean",
+        description:
+          "True when the EntryPoint emitted UserOperationPrefundTooLow: the prefund did not cover the actual gas cost (EntryPoint v0.7 and later).",
       },
       {
         key: "errorMessage?",

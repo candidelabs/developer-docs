@@ -76,8 +76,8 @@ Social Recovery Module v0.2.0 fixes the findings of [Certora's audit](https://gi
 
 | Module version | Class | Grace period selector | Recovery request type |
 |---|---|---|---|
-| v0.2.0 (recommended) | [`SocialRecoveryModuleV2`](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/modules/SocialRecoveryModule.ts#L559) | `SocialRecoveryModuleGracePeriodSelectorV2` | `RecoveryRequestV2` |
-| v0.1.0 | [`SocialRecoveryModuleV1`](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/modules/SocialRecoveryModule.ts#L691) | `SocialRecoveryModuleGracePeriodSelectorV1` | `RecoveryRequestV1` |
+| v0.2.0 (recommended) | [`SocialRecoveryModuleV2`](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/modules/SocialRecoveryModule.ts#L564) | `SocialRecoveryModuleGracePeriodSelectorV2` | `RecoveryRequestV2` |
+| v0.1.0 | [`SocialRecoveryModuleV1`](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/modules/SocialRecoveryModule.ts#L696) | `SocialRecoveryModuleGracePeriodSelectorV1` | `RecoveryRequestV1` |
 
 :::warning Accounts on v0.1.0 must stay on V1
 Pick the class that matches the module your accounts enabled. If your users enabled the v0.1.0 module, use `SocialRecoveryModuleV1` and `SocialRecoveryModuleGracePeriodSelectorV1`. Pointed at a v0.2.0 address, an account that enabled v0.1.0 has no guardians, and its recovery calls fail.
@@ -102,7 +102,7 @@ On V2, pass the recovery nonce the guardians signed to the confirm methods. Read
 
 ### SocialRecoveryModuleBase
 
-[`SocialRecoveryModuleBase`](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/modules/SocialRecoveryModule.ts#L51) is the abstract class both versions extend. It holds every method the two versions share: guardian management, execute, finalize, cancel, the read helpers, and `getRecoveryRequestEip712Data`. Use it as a type for code that accepts either version. The confirm methods and `getRecoveryRequest` differ between versions, so they live on `SocialRecoveryModuleV1` and `SocialRecoveryModuleV2`.
+[`SocialRecoveryModuleBase`](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/modules/SocialRecoveryModule.ts#L51) is the abstract class both versions extend. It holds every method the two versions share: guardian management, execute, finalize, cancel, the read helpers, and `getRecoveryRequestEip712Data`. Use it as a type for code that accepts either version. The confirm methods and `getRecoveryRequest` differ between versions, so they live on `SocialRecoveryModuleV1` and `SocialRecoveryModuleV2`.
 
 ```ts
 import { SocialRecoveryModuleBase } from "abstractionkit";

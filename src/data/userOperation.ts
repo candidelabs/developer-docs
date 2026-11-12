@@ -442,7 +442,7 @@ export const PolygonChainType = [
   {
     key: "ZkMainnet",
     type: "zkevm",
-    description: "Polygon zkEVM Mainnet",
+    description: "Deprecated. The Polygon Gas Station no longer serves a zkEVM endpoint, so this value always fails.",
   },
   {
     key: "Amoy",
@@ -452,6 +452,6 @@ export const PolygonChainType = [
   {
     key: "Cardona",
     type: "cardona",
-    description: "Polygon Cardona zkEVM Testnet",
+    description: "Deprecated. The Polygon Gas Station no longer serves a Cardona endpoint, so this value always fails.",
   },
 ];

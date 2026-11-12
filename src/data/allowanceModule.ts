@@ -148,7 +148,7 @@ const createAllowanceTransferParams = [
         key: "paymentAmount",
         type: "bigint",
         description:
-          "The amount of the payment token to be transferred. Required if paymentToken is specified.",
+          "The amount to pay for execution. Required if paymentToken is specified. Without paymentToken it is paid in the native token. The module sends the payment to tx.origin, which is the bundler's EOA when the transfer is executed through a UserOperation.",
       },
     ],
     description:

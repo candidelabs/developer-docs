@@ -59,7 +59,7 @@ const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
 
 To pin the singleton explicitly, pass `Safe_L2_V1_4_1` or `Safe_L2_V1_5_0` (both exported, each with `singletonAddress` and `singletonInitHash`) as the `safeAccountSingleton` override.
 
-Source: [SafeMultiChainSigAccountV2](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeMultiChainSigAccountV2.ts#L27)
+Source: [SafeMultiChainSigAccountV2](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeMultiChainSigAccountV2.ts#L27)
 
 ## Audits
 
@@ -130,7 +130,7 @@ A few differences to be aware of when migrating:
   });
   ```
 
-  See the [migration e2e test](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/test/integration/e2e/migrate-safe-v07-to-v09/migrate.test.js#L116).
+  See the [migration e2e test](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/test/integration/e2e/migrate-safe-v07-to-v09/migrate.test.js#L116).
 - **The UserOperation type is `UserOperationV9`.** It adds a nullable `eip7702Auth` field to the v0.7 shape; every other field, including the gas fields and the paymaster and factory fields, is unchanged.
 - **Signatures always use the multichain encoding.** `isMultiChainSignature` is set for you, including on single-chain UserOperations: the single-op path signs the leaf SafeOp hash directly rather than a Merkle root. This is handled inside AbstractionKit; you only need it when [formatting a signature yourself](#manual-eip-712-signing-for-a-single-useroperation).
 - **Your bundler and paymaster must serve EntryPoint v0.9.** Check that the v0.9 EntryPoint and the Safe multichain signature module are deployed on your target chains before predicting addresses for them.
@@ -170,7 +170,7 @@ console.log("Account address (sender): " + smartAccount.accountAddress);
 
 #### Source code
 
-[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L195)
+[initializeNewAccount](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L212)
 
 ### createUserOperation
 
@@ -280,7 +280,7 @@ const userOperation = await smartAccount.createUserOperation(
 
 #### Source code
 
-[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L432)
+[createUserOperation](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L455)
 
 ### estimateUserOperationGas
 
@@ -326,7 +326,7 @@ const [preVerificationGas, verificationGasLimit, callGasLimit] =
 
 #### Source code
 
-[estimateUserOperationGas](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L508)
+[estimateUserOperationGas](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L533)
 
 ### signUserOperation
 
@@ -353,7 +353,7 @@ userOperation.signature = smartAccount.signUserOperation(
 
 #### Source code
 
-[signUserOperation](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L641)
+[signUserOperation](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L670)
 
 ### signUserOperations
 
@@ -406,7 +406,7 @@ userOp2.signature = signatures[1];
 
 #### Source code
 
-[signUserOperations](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L736)
+[signUserOperations](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L763)
 
 ### signUserOperationsWithSigners
 
@@ -507,7 +507,7 @@ See [External Signers](/wallet/abstractionkit/external-signers) for the full lis
 
 #### Source code
 
-[signUserOperationsWithSigners](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L832)
+[signUserOperationsWithSigners](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L859)
 
 ### getMultiChainSingleSignatureUserOperationsEip712Hash
 
@@ -542,7 +542,7 @@ const hash = SafeAccount.getMultiChainSingleSignatureUserOperationsEip712Hash([
 
 #### Source code
 
-[getMultiChainSingleSignatureUserOperationsEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L966)
+[getMultiChainSingleSignatureUserOperationsEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L993)
 
 ### getMultiChainSingleSignatureUserOperationsEip712Data
 
@@ -581,7 +581,7 @@ const signature = await wallet.signTypedData(domain, types, messageValue);
 
 #### Source code
 
-[getMultiChainSingleSignatureUserOperationsEip712Data](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L998)
+[getMultiChainSingleSignatureUserOperationsEip712Data](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L1025)
 
 ### formatSignaturesToUseroperationsSignatures
 
@@ -635,7 +635,7 @@ userOp2.signature = signatures[1];
 
 #### Source code
 
-[formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L1073)
+[formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeMultiChainSigAccount.ts#L1102)
 
 ### Manual EIP-712 signing for a single UserOperation
 
@@ -751,7 +751,7 @@ const userOperation = await smartAccount.createUserOperation(
 
 #### Source code
 
-[createAddOwnerWithThresholdMetaTransactions](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeAccount.ts#L2560)
+[createAddOwnerWithThresholdMetaTransactions](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeAccount.ts#L2679)
 
 ### createStandardAddOwnerWithThresholdMetaTransaction
 
@@ -774,7 +774,7 @@ const addOwnerMetaTransaction =
 
 #### Source code
 
-[createStandardAddOwnerWithThresholdMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v1.0.0/src/account/Safe/SafeAccount.ts#L2621)
+[createStandardAddOwnerWithThresholdMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v2.0.0/src/account/Safe/SafeAccount.ts#L2735)
 
 ## Gas Sponsorship
 
