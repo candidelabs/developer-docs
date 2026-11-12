@@ -275,35 +275,36 @@ userOperation2 = finalOp2
 import { AbstractionKitError, UserOperationV9 } from "abstractionkit"
 
 // Submit in parallel
-await Promise.all([
+const [included1, included2] = await Promise.all([
     sendAndMonitor(userOperation1, bundlerUrl1, "Chain 1"),
     sendAndMonitor(userOperation2, bundlerUrl2, "Chain 2"),
 ])
 
-// Verify owners on both chains
+// Verify owners on each chain where the operation was included
 console.log("\nVerifying owners on both chains...")
 
-const [owners1, owners2] = await Promise.all([
-    smartAccount.getOwners(nodeUrl1),
-    smartAccount.getOwners(nodeUrl2),
+const [hasNewOwner1, hasNewOwner2] = await Promise.all([
+    included1 && hasNewOwner(nodeUrl1, "Chain 1"),
+    included2 && hasNewOwner(nodeUrl2, "Chain 2"),
 ])
-
-console.log("\nOwners on Chain 1:", owners1)
-console.log("Owners on Chain 2:", owners2)
-
-const hasNewOwner1 = owners1.map(o => o.toLowerCase()).includes(newOwnerAddress.toLowerCase())
-const hasNewOwner2 = owners2.map(o => o.toLowerCase()).includes(newOwnerAddress.toLowerCase())
 
 if (hasNewOwner1 && hasNewOwner2) {
     console.log("\nNew owner successfully added on BOTH chains with ONE signature!")
 }
 
-// Helper function
+// Helper functions
+async function hasNewOwner(nodeUrl: string, name: string): Promise<boolean> {
+    const owners = await smartAccount.getOwners(nodeUrl)
+    console.log(`\nOwners on ${name}:`, owners)
+    return owners.map(o => o.toLowerCase()).includes(newOwnerAddress.toLowerCase())
+}
+
+// Resolves to true once the UserOperation is included and succeeded
 async function sendAndMonitor(
     userOperation: UserOperationV9,
     bundlerUrl: string,
     name: string,
-): Promise<void> {
+): Promise<boolean> {
     const account = new SafeAccount(userOperation.sender)
     const response = await account.sendUserOperation(userOperation, bundlerUrl)
     console.log(`  [${name}] Submitted. Waiting...`)
@@ -314,17 +315,20 @@ async function sendAndMonitor(
         // included() throws a TIMEOUT error if the receipt is not found in time
         if (error instanceof AbstractionKitError && error.code === "TIMEOUT") {
             console.log(`  [${name}] Still pending. UserOperation hash: ${response.userOperationHash}`)
-            return
+            return false
         }
         throw error
     }
     if (receipt == null) {
         console.log(`  [${name}] Receipt not found`)
-    } else if (receipt.success) {
+        return false
+    }
+    if (receipt.success) {
         console.log(`  [${name}] Success! Tx: ${receipt.receipt.transactionHash}`)
     } else {
         console.log(`  [${name}] Execution failed`)
     }
+    return receipt.success
 }
 ```
 
@@ -352,6 +356,7 @@ New owner to add: 0x...
 Verifying owners on both chains...
 
 Owners on Chain 1: ['0x...', '0x...']
+
 Owners on Chain 2: ['0x...', '0x...']
 
 New owner successfully added on BOTH chains with ONE signature!
