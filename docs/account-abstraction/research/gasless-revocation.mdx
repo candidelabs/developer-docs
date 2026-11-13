@@ -1,0 +1,317 @@
+---
+title: "Gasless EIP-7702 Revocation"
+description: "Remove an EOA's EIP-7702 delegation without holding gas: sign a revocation, and the relayer sends and pays for the transaction."
+keywords:
+  - eip-7702
+  - revocation
+  - revoke-delegation
+  - gasless
+  - relayer
+  - json-rpc
+  - early-access
+---
+
+# Gasless EIP-7702 Revocation
+
+*Remove an EOA's EIP-7702 delegation without holding gas on the chain.*
+
+## Why gasless revocation
+
+Revoking an EIP-7702 delegation normally means sending a transaction, so the EOA needs gas on that chain, often exactly when it has none. Here the user only signs the revocation; the relayer sends it, pays the gas, and verifies onchain that the delegation is gone.
+
+- **Revocations only:** authorizations to any address other than zero are refused.
+- **One chain per request:** sign one revocation per chain; `chainId: 0` is refused.
+- **Works without a delegation:** the revocation still uses up the EOA's current nonce on that chain, invalidating any other authorization signed for that same nonce and chain.
+
+## How it works
+
+1. Read the EOA's current nonce on the target chain.
+2. Sign an EIP-7702 authorization with `address` = zero address, `chainId` = the target chain, and that nonce.
+3. Send it to `relayer_revokeDelegation`. You get a `delegationHash` and a status back. If the status is `skipped`, nothing is sent: check `reason` (see [skip reasons](#relayer_revokedelegation)) and sign again if needed.
+4. Otherwise poll `relayer_getStatus` until the status is `confirmed` or `failed`.
+
+The status moves `queued → submitted → confirmed | failed`. `confirmed` means the relayer checked the block that mined the transaction: the EOA's nonce was used and its code is empty.
+
+### Example
+
+A complete script with [AbstractionKit](/wallet/abstractionkit/introduction) is in the examples repo: [`early-access/eip7702-gasless-revocation`](https://github.com/candidelabs/abstractionkit-examples/tree/main/early-access/eip7702-gasless-revocation). It checks that the EOA is delegated, signs the revocation, sends it and waits for confirmation.
+
+The core of it:
+
+```ts
+import { createAndSignEip7702DelegationAuthorization, sendJsonRpcRequest, ZeroAddress } from "abstractionkit"
+
+const headers = { Authorization: `Bearer ${RELAYER_API_KEY}` }
+
+// the EOA's current nonce on that chain
+const nonce = BigInt(await sendJsonRpcRequest(nodeUrl, "eth_getTransactionCount", [eoaAddress, "pending"]))
+
+// an authorization to the zero address = a revocation
+const authorization = createAndSignEip7702DelegationAuthorization(chainId, ZeroAddress, nonce, privateKey)
+
+const { delegationHash, status } = await sendJsonRpcRequest(
+  relayerUrl, "relayer_revokeDelegation", [authorization], headers,
+)
+// then poll relayer_getStatus with delegationHash
+```
+
+Any library or wallet that signs EIP-7702 authorizations works. Wallets that don't expose the private key (hardware wallets, HSMs, KMS) sign the hash from [`relayer_getAuthorizationHash`](#relayer_getauthorizationhash) and send `yParity`, `r` and `s`.
+
+## API reference
+
+### Protocol
+
+JSON-RPC 2.0 over HTTP `POST`, with `Content-Type: application/json`. Requests can be sent one at a time or in a batch of up to 50.
+
+Numbers in params and results are hex quantities (`"0xaa36a7"`, not `11155111`). The exceptions are `attempts`, a JSON number, and `createdAt`/`updatedAt`, ISO 8601 strings.
+
+### Authentication
+
+Every method requires an API key. Send it as `Authorization: Bearer <key>` (or `X-Api-Key: <key>`). Keys in the query string are not accepted.
+
+A missing or wrong key returns HTTP 401:
+
+```json
+{ "jsonrpc": "2.0", "id": null, "error": { "code": -32001, "message": "Unauthorized" } }
+```
+
+---
+
+### `relayer_supportedChains`
+
+Returns the chains that accept revocations right now.
+
+Parameters: none.
+
+Request:
+
+```json
+{ "jsonrpc": "2.0", "id": 1, "method": "relayer_supportedChains", "params": [] }
+```
+
+Response:
+
+```json
+{ "jsonrpc": "2.0", "id": 1, "result": ["0xaa36a7"] }
+```
+
+The relayer checks every chain for EIP-7702 support at startup and every minute after. A chain that fails the check is left out of the list, and requests for it are refused, until it passes again.
+
+---
+
+### `relayer_revokeDelegation`
+
+Relays one signed revocation to its chain.
+
+Parameters: one authorization object.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `chainId` | hex | Yes | The chain to revoke on. Must not be `0x0`, and must be a supported chain |
+| `nonce` | hex | Yes | The EOA's current nonce on that chain |
+| `yParity` | hex | Yes | Signature `yParity` (`0x0` or `0x1`) |
+| `r` | hex | Yes | Signature `r` |
+| `s` | hex | Yes | Signature `s`. A high-s value is accepted and normalized |
+| `address` | address | No | If sent, must be the zero address |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "relayer_revokeDelegation",
+  "params": [{
+    "chainId": "0xaa36a7",
+    "address": "0x0000000000000000000000000000000000000000",
+    "nonce": "0x2",
+    "yParity": "0x1",
+    "r": "0x162bc447be438c821fb865d429fdecf2f4c065298628a768077b79bee4539a68",
+    "s": "0x2b381b46a46183f34e54fe83a0357fc0f99fec8c3e5575c6fedee0e1fd24ab23"
+  }]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "delegationHash": "0xdfa0fe718f44d68198fff0a0100c43b93a6639a8137f9625933f03e6307fa03d",
+    "chainId": "0xaa36a7",
+    "status": "queued",
+    "reason": null
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `delegationHash` | Id of this revocation. Pass it to `relayer_getStatus` |
+| `chainId` | The chain it is relayed to |
+| `status` | A new revocation is `queued`, or `skipped` if it can't apply on chain right now. Sending one that is already in progress or done returns its current status: `queued`, `submitted` or `confirmed` |
+| `reason` | Set when `status` is `skipped`, see below |
+
+A revocation is `skipped` when it can't apply right now:
+
+| `reason` | Meaning |
+|----------|---------|
+| `NONCE_MISMATCH` | The `nonce` isn't the EOA's current nonce on that chain. Read the nonce again and sign a new revocation |
+| `AUTHORITY_IS_CONTRACT` | The signer's address holds contract code that isn't a delegation |
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "delegationHash": "0xd10ceec627344bc1b2a8d3d58fb654e8659ea736319cf0f50495fdaae32f9dc6",
+    "chainId": "0xaa36a7",
+    "status": "skipped",
+    "reason": "NONCE_MISMATCH"
+  }
+}
+```
+
+The call is idempotent: sending the same signed revocation again returns the same `delegationHash` and its current status. A `skipped` or `failed` revocation is checked again and queued if it now passes.
+
+---
+
+### `relayer_getStatus`
+
+Returns the status of a revocation, its transaction and the gas the relayer paid.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `delegationHash` | hex | Yes | The hash returned by `relayer_revokeDelegation` |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "relayer_getStatus",
+  "params": ["0xdfa0fe718f44d68198fff0a0100c43b93a6639a8137f9625933f03e6307fa03d"]
+}
+```
+
+Response (confirmed):
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "delegationHash": "0xdfa0fe718f44d68198fff0a0100c43b93a6639a8137f9625933f03e6307fa03d",
+    "chainId": "0xaa36a7",
+    "authority": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+    "delegate": "0x0000000000000000000000000000000000000000",
+    "nonce": "0x2",
+    "status": "confirmed",
+    "reason": null,
+    "txHash": "0xf169e8bff10cb324efd24f800635b73aa4d5763d1a76473cfa8fbd1066dcb6d6",
+    "blockNumber": "0xd",
+    "gasUsed": "0x8fc0",
+    "effectiveGasPrice": "0x479d3fd8",
+    "l1Fee": null,
+    "totalCost": "0x28368c998a00",
+    "error": null,
+    "attempts": 1,
+    "createdAt": "2026-11-13T10:35:32.398Z",
+    "updatedAt": "2026-11-13T10:35:35.592Z"
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `authority` | The EOA that signed the revocation |
+| `delegate` | Always the zero address |
+| `nonce` | The authorization nonce |
+| `status` | `queued`, `submitted`, `confirmed`, `failed` or `skipped` |
+| `reason` | Skip reason, when `status` is `skipped` |
+| `txHash` | The relayer's transaction. Set from `submitted` on; it can change if the transaction is re-sent with higher fees |
+| `blockNumber` | Block the transaction was mined in |
+| `gasUsed`, `effectiveGasPrice` | From the receipt |
+| `l1Fee` | L1 data fee, on OP-stack chains only (wei) |
+| `totalCost` | Total gas cost paid by the relayer (wei) |
+| `error` | `{ code, message }` when `status` is `failed` |
+| `attempts` | How many times the revocation was checked or sent (JSON number) |
+
+`error.code` is one of:
+
+| Code | Meaning |
+|------|---------|
+| `AUTHORIZATION_NOT_APPLIED` | The transaction was mined, but the revocation didn't apply (e.g. the nonce was used by another transaction first) |
+| `TX_DROPPED` | The relayer's transaction was replaced before it was mined. Send the revocation again |
+| `BROADCAST_REJECTED` | The node rejected the transaction |
+
+---
+
+### `relayer_getAuthorizationHash`
+
+Returns the EIP-7702 hash a wallet signs: `keccak256(0x05 ‖ rlp([chainId, address, nonce]))`. Use it when your signer only signs hashes.
+
+Parameters:
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `chainId` | hex | Yes | The chain to revoke on |
+| `address` | address | Yes | The zero address |
+| `nonce` | hex | Yes | The EOA's current nonce on that chain |
+
+Request:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "relayer_getAuthorizationHash",
+  "params": ["0xaa36a7", "0x0000000000000000000000000000000000000000", "0x2"]
+}
+```
+
+Response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "0xf250028ea9d429c4f529daf0c9f34ec948aa2433e5af76e07f0051758f93d7ac"
+}
+```
+
+---
+
+### Errors
+
+A refused request returns a JSON-RPC error. `data.code` names the error:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "code": -32004,
+    "message": "only revocations are relayed: authorization.address must be omitted or the zero address",
+    "data": { "code": "DELEGATE_NOT_ALLOWED" }
+  }
+}
+```
+
+| `code` | `data.code` | Meaning |
+|--------|-------------|---------|
+| `-32001` | | Missing or wrong API key (HTTP 401) |
+| `-32002` | `CHAIN_ID_ZERO_NOT_SUPPORTED` | `chainId` is `0x0`. Sign one revocation per chain |
+| `-32003` | `UNSUPPORTED_CHAIN` | The chain isn't supported, or its EIP-7702 check is failing |
+| `-32004` | `DELEGATE_NOT_ALLOWED` | `address` isn't the zero address. Only revocations are relayed |
+| `-32005` | `INVALID_SIGNATURE` | The signature doesn't recover |
+| `-32006` | `DELEGATION_NOT_FOUND` | Unknown `delegationHash` |
+| `-32007` | `PAYLOAD_TOO_LARGE` | The request body is too large |
+| `-32602` | `INVALID_PARAMS` | Malformed params |
+| `-32601` | | Unknown method |
+| `-32000` | `NODE_ERROR` | A call to the chain's node failed. Retry |
