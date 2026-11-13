@@ -776,6 +776,11 @@ const sidebars = {
           id: "account-abstraction/research/safe-simulation",
           label: "Safe Simulation"
         },
+        {
+          type: "doc",
+          id: "account-abstraction/research/gasless-revocation",
+          label: "Gasless EIP-7702 Revocation"
+        },
       ],
     },
   ],
