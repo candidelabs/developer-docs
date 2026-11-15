@@ -29,7 +29,7 @@ These are wallet-level versions of two properties from the [Trustless Manifesto]
 
 | Signer | Where the key lives | Who takes part in signing | Can someone else move funds? | Can someone stop the user? |
 |---|---|---|---|---|
-| Onchain passkey | Secure hardware on the user's device | The user's device. The account contract verifies the signature. | No | No |
+| Onchain passkey | The user's authenticator: secure hardware on the device, or the user's platform account for synced passkeys | The user's device. The account contract verifies the signature. | No | No |
 | The user's own wallet (browser or hardware) | The user's wallet | The user's wallet | No | No |
 | A key your backend holds | Your servers | Your servers | Yes: your app | Yes: your app |
 | Hosted signing service | The provider's infrastructure (MPC, secure enclaves or cloud KMS) | The provider's servers, after the provider checks the user's login | The provider, or anyone who gets past its login, depending on the design | Yes: the provider |
@@ -42,7 +42,7 @@ For [EIP-7702 accounts](/wallet/guides/getting-started-eip-7702/), the original 
 
 Candide recommends onchain passkeys as the main signer for user accounts.
 
-The user's device creates the passkey in its secure hardware, and the private key does not leave it. The user signs with Face ID, a fingerprint or the device PIN, and the Safe verifies the WebAuthn signature onchain through the [passkey module](/wallet/plugins/passkeys/). No server takes part in signing, including Candide's. Both questions in the test get the right answer.
+The user's authenticator creates the passkey. A device-bound passkey stays in the device's secure hardware and never leaves it. A synced passkey is backup-eligible: the platform copies it, end-to-end encrypted, to the user's other devices, so it can be available on other authenticators signed in to the same platform account. Either way, the user signs with Face ID, a fingerprint or the device PIN, and the Safe verifies the WebAuthn signature onchain through the [passkey module](/wallet/plugins/passkeys/). No server takes part in signing, including Candide's. Both questions in the test get the right answer.
 
 Passkeys have tradeoffs worth stating plainly:
 
@@ -74,10 +74,10 @@ A smart account can have several owners and a recovery module, so the same key c
 
 | Role of the service-held key | Can the service move funds alone? | Can the service stop the user? |
 |---|---|---|
-| The only owner | Yes | Yes |
-| One of two owners, threshold 1 | Yes | No |
+| The only owner | Yes, if the provider (or whoever passes its login) can produce a signature without the user. Some designs need a user-held share. | Yes |
+| One of two owners, threshold 1 | Yes | Yes: its signature alone authorizes Safe transactions, including one that removes the user's owner |
 | One of two owners, threshold 2, alongside a passkey (like 2FA) | No | Yes, unless the account also has recovery |
-| One recovery guardian among several, with a grace period, alongside a passkey owner | No | No |
+| Recovery guardian(s), with a grace period, alongside a passkey owner, where the service controls fewer guardians than the recovery threshold | No | No |
 
 The pattern: a non-custodial account can include a service, as long as the service can't act alone and can't lock the user out. The Trustless Manifesto puts it plainly: "Delegation may exist. Dependence must not."
 
