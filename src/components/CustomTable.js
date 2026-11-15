@@ -70,14 +70,20 @@ export function PaymasterSupportedToken({ items }) {
         <div
           style={{
             display: "flex",
-            justifyContent: "flex-start center",
+            alignItems: "center",
+            gap: "10px",
           }}
         >
           <img
             src={item.logo}
+            alt=""
+            width="24"
+            height="24"
             style={{
-              width: "25px",
-              marginRight: "10px",
+              width: "24px",
+              height: "24px",
+              flexShrink: 0,
+              objectFit: "contain",
             }}
           />
           <span>{item.token}</span>
@@ -88,6 +94,11 @@ export function PaymasterSupportedToken({ items }) {
           href={`${item.blockExplorer}${item.address}${item.blockExplorerQuery ?? ""}`}
           target="_blank"
           rel="noopener noreferrer"
+          style={{
+            fontFamily: "var(--ifm-font-family-monospace)",
+            fontSize: "0.8125rem",
+            whiteSpace: "nowrap",
+          }}
         >
           {item.address}
         </a>

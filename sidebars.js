@@ -46,26 +46,6 @@ const sidebars = {
   infraSideBar: [
     {
       type: "category",
-      label: "Platform API",
-      className: "category-not-collapsible",
-      collapsible: false,
-      collapsed: false,
-      items: [
-        {
-          type: "doc",
-          id: "platform/overview",
-          label: "Overview"
-        },
-        {
-          type: "doc",
-          id: "platform/gas-policy-api",
-          label: "Gas Policy API",
-          className: "sidebar-badge-new"
-        },
-      ],
-    },
-    {
-      type: "category",
       label: "Bundler & Paymaster",
       className: "category-not-collapsible",
       collapsible: false,
@@ -100,6 +80,39 @@ const sidebars = {
           id: "wallet/bundler/rpc-methods",
           label: "RPC Methods"
         },
+      ],
+    },
+    {
+      type: "category",
+      label: "Paymaster",
+      className: "category-not-collapsible",
+      collapsible: false,
+      items: [
+        {
+          type: "doc",
+          id: "wallet/paymaster/rpc-methods",
+          label: "EVM RPC Methods"
+        },
+        {
+          type: "doc",
+          id: "wallet/solana-paymaster/rpc-methods",
+          label: "Solana RPC Methods",
+          className: "sidebar-badge-new"
+        },
+        {
+          type: "doc",
+          id: "wallet/paymaster/tokens-supported",
+          label: "Supported Gas Tokens"
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "Error Codes",
+      className: "category-not-collapsible",
+      collapsible: false,
+      collapsed: false,
+      items: [
         {
           type: "category",
           label: "Bundler Error Codes",
@@ -326,25 +339,21 @@ const sidebars = {
     },
     {
       type: "category",
-      label: "Paymaster",
+      label: "Platform API",
       className: "category-not-collapsible",
       collapsible: false,
+      collapsed: false,
       items: [
         {
           type: "doc",
-          id: "wallet/paymaster/rpc-methods",
-          label: "EVM RPC Methods"
+          id: "platform/overview",
+          label: "Overview"
         },
         {
           type: "doc",
-          id: "wallet/solana-paymaster/rpc-methods",
-          label: "Solana RPC Methods",
+          id: "platform/gas-policy-api",
+          label: "Gas Policy API",
           className: "sidebar-badge-new"
-        },
-        {
-          type: "doc",
-          id: "wallet/paymaster/tokens-supported",
-          label: "Supported Gas Tokens"
         },
       ],
     },
