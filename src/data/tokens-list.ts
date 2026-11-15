@@ -288,6 +288,13 @@ export const plasmaList = [
     blockExplorer: "https://plasmascan.to/token/",
     website: "https://gold.usdt0.to/",
   },
+  {
+    token: "USDC",
+    logo: "/img/tokens/usdc-logo.svg",
+    address: "0x2d661C89D812261039AF9764eceaAee884f5F67F",
+    blockExplorer: "https://plasmascan.to/token/",
+    website: "https://www.circle.com/",
+  },
 ];
 
 export const solanaList = [
