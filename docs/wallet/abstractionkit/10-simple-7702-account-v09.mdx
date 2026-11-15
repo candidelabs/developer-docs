@@ -3,6 +3,8 @@ title: AbstractionKit EIP-7702 Simple Account for EntryPoint v0.9 SDK Reference
 description: Learn how to upgrade EOAs to Smart Accounts using Simple7702AccountV09 with EntryPoint v0.9
 keywords: [simple7702account, "7702", sdk, account-abstraction, entrypoint-v09]
 ---
+
+import ActionCard from "/src/components/ActionCard";
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import { DataTable } from "/src/components/Table";
@@ -52,9 +54,13 @@ The following ERCs are supported:
 - ERC-1271
 - ERC-4337 v0.9
 
-:::info Full Example
-A complete working example is available on GitHub: [01-upgrade-eoa.ts](https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/01-upgrade-eoa.ts)
-:::
+<ActionCard
+  icon="/img/logo/candide_logo_icon.png"
+  title="Full example"
+  description="Upgrade an EOA with 01-upgrade-eoa.ts"
+  action="View on GitHub"
+  href="https://github.com/candidelabs/abstractionkit-examples/blob/main/eip-7702/simple-account/01-upgrade-eoa.ts"
+/>
 
 
 ## Smart Contracts and Audits
@@ -479,9 +485,7 @@ Creates a signed EIP-7702 transaction that revokes the delegation, restoring the
 
 This is a regular Ethereum transaction (type `0x04`), not a UserOperation. The EOA needs native tokens to pay for gas.
 
-:::note
 Revocation cannot be done via a UserOperation because the authorization list is processed before execution, which would remove the account's code mid-transaction.
-:::
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">

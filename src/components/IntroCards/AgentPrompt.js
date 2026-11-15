@@ -1,14 +1,28 @@
 import React, { useEffect, useRef, useState } from 'react'
+import useBaseUrl from '@docusaurus/useBaseUrl'
 import styles from './styles.module.css'
 
 const PROMPT =
     'Read https://docs.candide.dev/llms.txt, then help me integrate Candide into this project.'
 
+// `logo` tabs show only the logo; `label` stays as the accessible name and tooltip.
 const TABS = [
-    { label: 'Claude Code', text: `claude "${PROMPT}"` },
-    { label: 'Codex', text: `codex "${PROMPT}"` },
+    { label: 'Claude Code', logo: '/img/agents/claude.svg', color: '#D97757', text: `claude "${PROMPT}"` },
+    { label: 'Codex', logo: '/img/agents/openai.svg', color: '#ffffff', text: `codex "${PROMPT}"` },
     { label: 'Any agent', text: PROMPT },
 ]
+
+// Single-color logo tinted through a CSS mask, so the SVG files stay untouched.
+function Logo({ src, color }) {
+    const url = `url(${useBaseUrl(src)})`
+    return (
+        <span
+            aria-hidden="true"
+            className={styles.tabLogo}
+            style={{ backgroundColor: color, maskImage: url, WebkitMaskImage: url }}
+        />
+    )
+}
 
 // Copyable command that starts a coding agent with the docs index.
 export default function AgentPrompt() {
@@ -40,13 +54,15 @@ export default function AgentPrompt() {
                             key={t.label}
                             type="button"
                             aria-pressed={i === active}
+                            aria-label={t.logo ? t.label : undefined}
+                            title={t.logo ? t.label : undefined}
                             className={i === active ? styles.tabActive : styles.tab}
                             onClick={() => {
                                 setActive(i)
                                 setStatus('idle')
                             }}
                         >
-                            {t.label}
+                            {t.logo ? <Logo src={t.logo} color={t.color} /> : t.label}
                         </button>
                     ))}
                 </div>

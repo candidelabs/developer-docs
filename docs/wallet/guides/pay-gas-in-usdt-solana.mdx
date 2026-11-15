@@ -20,13 +20,9 @@ The paymaster speaks Kora's JSON-RPC protocol, the Solana Foundation's open fee-
 
 The USDT fee is priced from the live SOL cost of the transaction. If the recipient does not yet have a USDT token account, the rent for creating it is included in the quoted fee.
 
-:::info Supported fee tokens
 On Solana Mainnet, USDT (`Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB`) and USDC (`EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`) are the fee tokens enabled by default. Other SPL tokens and full gas sponsorship on mainnet are available on request: [contact us](https://www.candide.dev/contact) to enable them for your API key. See the [Solana Paymaster API reference](/wallet/solana-paymaster/rpc-methods/#supported-tokens) for details.
-:::
 
-:::tip Pay gas in USDC
 To pay the fee in USDC instead, use the USDC mint (`EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`) in place of `usdtMint`. USDC also has 6 decimals, so the fee math in this guide stays the same. The quoted and paid fees are then in USDC, so change the `USDT` labels in the `console.log` lines to `USDC`.
-:::
 
 :::tip Test on Devnet first
 Solana Devnet is supported, with gas paid in devnet USDC (`4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`) from [Circle's faucet](https://faucet.circle.com/). Set `SOLANA_PAYMASTER_URL=https://api.candide.dev/public/v3/solana-devnet`, `SOLANA_NODE_URL=https://api.devnet.solana.com`, and use the devnet USDC mint in place of `usdtMint`. See [Solana Devnet](/wallet/solana-paymaster/rpc-methods/#solana-devnet) for details.

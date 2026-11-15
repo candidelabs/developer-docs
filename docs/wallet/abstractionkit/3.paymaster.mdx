@@ -211,9 +211,7 @@ const supportedERC20Tokens = await paymaster.fetchSupportedERC20TokensAndPaymast
 
 Estimates gas limits and returns the user operation with the paymaster data for ERC-20 Token sponsorship.
 
-:::tip Token Approval Reset
 Some tokens like USDT do not allow changing a non-zero allowance directly. For known tokens (e.g. USDT on Ethereum mainnet), the SDK automatically prepends an `approve(0)` call before the actual approval. You can also manually trigger this behavior for other tokens by setting `resetApproval: true` in the overrides.
-:::
 
 The `overrides` parameter also accepts an `entrypoint` field, which allows you to manually specify the EntryPoint address instead of relying on auto-detection from the UserOperation structure.
 

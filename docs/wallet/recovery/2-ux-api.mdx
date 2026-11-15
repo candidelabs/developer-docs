@@ -509,10 +509,10 @@ For queries without the `executed` and `finalized` filters, stop when fewer than
 </TabItem>
 </Tabs>
 
-:::tip When to use fetchByAddress vs listByAddress
+Choosing between the two endpoints:
+
 - **`/v1/recoveries/fetchByAddress`**: Use when you know the exact nonce. Ideal for checking a specific pending request or looking up the current recovery state.
 - **`/v1/recoveries/listByAddress`**: Use when you need to query multiple requests with filtering, pagination, or sorting. Better for dashboard UIs showing recovery history.
-:::
 
 ### Fetch recovery by ID
 

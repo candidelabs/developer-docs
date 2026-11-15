@@ -10,6 +10,8 @@ keywords:
   - add-owner
 ---
 
+import ActionCard from "/src/components/ActionCard";
+
 # Getting Started with Chain Abstraction
 
 **Add a new owner to your Safe on multiple chains with a single signature.**
@@ -37,9 +39,13 @@ Before starting, make sure you have:
 - **Node.js 18+** and npm/yarn
 - **Basic TypeScript knowledge**
 
-:::tip Complete Example
-You can [fork the complete code](https://github.com/candidelabs/abstractionkit-examples/tree/main/chain-abstraction) and follow along.
-:::
+<ActionCard
+  icon="/img/logo/candide_logo_icon.png"
+  title="Complete example"
+  description="Fork the chain abstraction example and follow along"
+  action="View on GitHub"
+  href="https://github.com/candidelabs/abstractionkit-examples/tree/main/chain-abstraction"
+/>
 
 ## Step 1: Project Setup
 
@@ -140,9 +146,7 @@ Owner: 0x...
 Safe Account Address: 0x...
 ```
 
-:::info How It Works
 `initializeNewAccount()` deterministically computes your smart account address locally using only the provided inputs. No network calls are required. The account contract is not deployed at this stage; deployment occurs automatically when you send your first transaction.
-:::
 
 ## Step 3: Create the Add Owner Transaction
 
@@ -215,9 +219,7 @@ userOperation1 = commitOp1
 userOperation2 = commitOp2
 ```
 
-:::info Two-Phase Paymaster
 The CandidePaymaster uses a two-phase flow for multichain operations. The **commit** phase (before signing) reserves gas sponsorship. The **finalize** phase (after signing) completes the sponsorship with the final signed operation.
-:::
 
 ## Step 5: Sign Once for All Chains
 
@@ -242,9 +244,7 @@ userOperation2.signature = signatures[1]
 console.log("  Single signing operation generated", signatures.length, "signatures!")
 ```
 
-:::info How It Works
 `signUserOperations` builds a Merkle tree where each leaf is a UserOperation hash. You sign the Merkle root once. Each chain receives the signature plus a Merkle proof to verify independently.
-:::
 
 ## Step 6: Finalize and Submit
 
