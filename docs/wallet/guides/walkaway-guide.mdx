@@ -75,6 +75,7 @@ A forwarding address is a contract on each source chain. The relayer watches for
 - The recipient can withdraw from the forwarding address contract on the source chain at any time, with no timelock.
 - If you set a company recovery wallet (`custodialWithdrawer`), it can withdraw after the timelock.
 - Both withdrawals are ordinary contract calls. Any tool that sends transactions can make them.
+- The relayer deploys a forwarding address on its first deposit. If an address was never deployed on a source chain, it has to be deployed there before anyone can withdraw from it, which needs its full deployment parameters (see [What to Store](#what-to-store)).
 
 See [The custodialWithdrawer Role](/forwarding-address/integration-guide/#the-custodialwithdrawer-role) for how the two withdrawal paths work.
 
@@ -82,10 +83,10 @@ See [The custodialWithdrawer Role](/forwarding-address/integration-guide/#the-cu
 
 Walking away is only possible if you kept what you need to find and control the accounts. Store:
 
-- **The account class and setup** for each account: owners, threshold and the class it was created with. The address is derived from these, so you can recompute it and rebuild the account object with any copy of AbstractionKit.
+- **Each account's address and setup:** the address itself, plus its owners, threshold and the class it was created with. Recomputing the address takes the same creation inputs, including any non-default `c2Nonce`, factory or singleton override, so store those too. The stored address is the reference, and the setup is the fallback that lets you rebuild the account object with any copy of AbstractionKit.
 - **Passkey public keys and credential IDs.** The account needs them to verify signatures, and an undeployed account can't be used without them.
 - **Guardian addresses and the threshold**, so guardians can be contacted and recovery can be run without the Recovery Service.
-- **Forwarding address inputs:** recipient, recovery wallet, destination chain and salt. These derive the address, and you need them to find and withdraw from it.
+- **Forwarding address deployment parameters.** Recipient, recovery wallet, destination chain and salt are not a complete backup: the address also depends on the factory, singleton, allowed relayer and proxy creation code. While the API is available, save the full result of [`forwarding_getDeployParamsByAddress`](/forwarding-address/api-reference/#forwarding_getdeployparamsbyaddress) for each address. You need all of it to deploy the address and withdraw from it.
 
 ## Check Your Integration
 
