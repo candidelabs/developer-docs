@@ -564,7 +564,7 @@ const sidebars = {
         {
           type: "doc",
           id: "wallet/guides/authentication",
-          label: "Add Authentication"
+          label: "Signers and Custody"
         },
         {
           type: "doc",

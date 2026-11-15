@@ -1,72 +1,93 @@
 ---
-title: Different authentication methods that can be used with smart accounts using abstractionkit
-description: Learn how to manage user authentication with smart accounts
+title: Signers and Custody
+description: How the choice of signer decides whether a smart account is custodial, and how to set up signers your users control
 image: /img/posters/abstractionkit-meta.png
-keywords: [mpc, hosted-wallets, social-login, passkeys, biometrics]
+keywords: [signers, custody, self-custody, non-custodial, passkeys, multisig, hosted-wallets, mpc]
 ---
 
-# Authentication Methods in Smart Wallets
+# Signers and Custody
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-Smart Accounts, like regular accounts (EOAs), rely on signatures for validating transactions and messages. What distinguishes Smart Accounts is their ability to support various signature schemes, including Passkeys and Multisig.
+A smart account is a contract that does what its owners' signatures authorize. The contract is usually the same open, audited code in every setup, so it doesn't decide whether a wallet is custodial. The owner keys do: who holds them, and who has to take part when they sign.
 
-## Passkeys
+This page gives a test you can apply to any signer setup, shows how common setups do on it, and then covers the code for each signer type.
 
-Candide supports on-chain Passkeys, enabling users to sign transactions directly from their devices.
-Using default device authentication systems (PIN, biometrics, FaceID), signatures are authenticated on-chain through smart contracts without relying on centralized infrastructure.
+## The Test
 
-See a demo at [passkeys.candide.dev](https://passkeys.candide.dev) and learn more on the [Passkeys documentation page](../plugins/0-passkeys.mdx).
+Ask two questions about the account's owners:
 
-## Multisig
+1. **Can anyone other than the user move the funds?** If a third party can produce a valid signature without the user, that party can take the funds, or be compelled to.
+2. **Can the user move the funds without anyone else?** If a third party must take part in every signature, that party can stop the user: by choice, by mistake, during an outage, or under legal pressure.
 
-Candide supports on-chain multisig (multi-signature) accounts that enhance security by requiring multiple approvals for transactions. This feature is ideal for implementing two-factor authentication (2FA) and suits wallets targeting companies or DAOs where transactions require multiple key approvals.
+A wallet is non-custodial when the answers are "no" and "yes". Both answers matter. A setup that prevents theft but lets an operator freeze the user still leaves the user dependent on that operator.
 
-Visit the dedicated [Multisig guide](/wallet/guides/multisig/).
+These are wallet-level versions of two properties from the [Trustless Manifesto](https://trustlessness.eth.limo/general/2025/11/11/the-trustless-manifesto.html): self-sovereignty, where no one acts on the user's behalf, and the walkaway test, where the user can still act if an operator disappears.
 
-## Traditional Signers
+## How Signer Types Compare
 
-Externally Owned Accounts (EOAs) utilize private and public keys for security. Similarly, Smart Accounts can employ the same approach through locally generated private keys, hosted MPC solutions, or existing user wallets like MetaMask.
+| Signer | Where the key lives | Who takes part in signing | Can someone else move funds? | Can someone stop the user? |
+|---|---|---|---|---|
+| Onchain passkey | Secure hardware on the user's device | The user's device. The account contract verifies the signature. | No | No |
+| The user's own wallet (browser or hardware) | The user's wallet | The user's wallet | No | No |
+| A key your backend holds | Your servers | Your servers | Yes: your app | Yes: your app |
+| Hosted signing service | The provider's infrastructure (MPC, secure enclaves or cloud KMS) | The provider's servers, after the provider checks the user's login | The provider, or anyone who gets past its login, depending on the design | Yes: the provider |
 
-### Social / Email
+A key your backend holds is the right tool for accounts your app owns, such as a treasury or an automation bot. For accounts that belong to your users, it is custodial by definition.
 
-Developers can integrate third-party "Signer services" into their smart accounts, 
-providing the benefits of traditional Web2 onboarding experiences. These services enable user 
-authentication through familiar methods such as email magic links, social logins, or SMS.
+For [EIP-7702 accounts](/wallet/guides/getting-started-eip-7702/), the original EOA key always keeps full control of the account, so apply the same test to whoever holds that key.
 
-- Candide's AbstractionKit is highly adaptable, supporting any third-party Signer service. 
-The process for assigning the smart account owner and signing a User Operation is consistent 
-across all services. These services generate an EOA wallet for each user in their backend and 
-provide authentication via social logins (e.g., Twitter), email, or a backend passkey. 
+## Onchain Passkeys
 
-- Since the service provides the EOA public address, it can be easily assigned as the owner of the 
-smart wallet in AbstractionKit. The authentication method does not affect integration, ensuring a 
-consistent process for assigning  smart account ownership and signing User Operations. For details 
-on how to integrate as third-parties as main signer, you can refer to the [guide for EOA wallets and Third Party Signers](./#eoa-wallets--third-party-signers).
+Candide recommends onchain passkeys as the main signer for user accounts.
 
-- However, it is important to note that using third-party services as the primary signer of 
-the account makes the wallet you are offering **custodial.** Candide recommends using onchain 
-[Safe Passkeys](/wallet/plugins/passkeys) as the main signer.
+The user's device creates the passkey in its secure hardware, and the private key does not leave it. The user signs with Face ID, a fingerprint or the device PIN, and the Safe verifies the WebAuthn signature onchain through the [passkey module](/wallet/plugins/passkeys/). No server takes part in signing, including Candide's. Both questions in the test get the right answer.
 
-Below are some third-party recovery options that you can consider. Candide does not endorse any of these options; the guides are provided for educational purposes only.
+Passkeys have tradeoffs worth stating plainly:
 
-| Service      | Key Management Method                   | Authentication Methods        | Plug-n-play Front End? | Guide                     |
-| ------------ | --------------------------------------- | ----------------------------- | ---------------------- | ------------------------- |
-| Dfns         | HSM, MPC                                | Custom                        | No                     |                           |
-| Dynamic      | MPC (Turnkey under the hood)            | Email, Social, Wallets        | Yes                    |                           |
-| Fireblocks   | MPC                                     | Custom                        | No                     |                           |
-| Magic.link   | AWS KMS                                 | Email, Social                 | Yes                    | [Add an Social Account as a Recovery Method using Magic](./magic.mdx)|
-| Privy        | MPC                                     | Email, Social, Wallets        | Yes                    |                           |
-| Turnkey      | AWS KMS                                 | Custom                        | No                     | [Use Turnkey with AbstractionKit](./turnkey.mdx)|
-| Web3Auth     | MPC, key sharding                       | Social, Email                 | Yes                    |  |
+- **Synced passkeys depend on the user's platform account for backup.** Passkeys stored in iCloud Keychain or Google Password Manager survive a lost phone, but someone who takes over that platform account can use them. This is a dependency for backup and sync, not for signing. Device-bound passkeys avoid it, but they are lost with the device.
+- **A passkey is bound to the domain that created it.** It signs only for your app's domain (the RP ID). If that domain goes away, so does the passkey's ability to sign.
 
-### EOA Wallets & Third-party signers
+Both tradeoffs have the same answer: give the user a second way in. Add [guardians](/wallet/plugins/recovery-with-guardians/) through the recovery module, or a second owner. As [Vitalik Buterin puts it](https://vitalik.eth.limo/general/2024/12/03/wallets.html), passkeys are "a valuable security gain for ordinary users, but they alone are not strong enough to protect a user's life savings."
 
-You can allow users to use MetaMask, or any other EOA wallet, or third-party signers to be the owner of 
-the Smart Account.EOAs exposes a JavaScript Ethereum Provider API. 
+See a demo at [passkeys.candide.dev](https://passkeys.candide.dev), and follow the [Passkeys guide](/wallet/plugins/passkeys/) to set one up.
 
-#### Setup Account Owner
+## Hosted Signing Services
+
+Many teams want a login their users already know: email, a social account or SMS. Hosted signing services offer this. They create a key for each user inside their own infrastructure and expose it as an ordinary EOA address, which can be set as the owner of a smart account. The integration looks the same as any other EOA owner.
+
+These services have real strengths. Users get a familiar login and no seed phrase. Designs based on MPC, secure enclaves or cloud KMS mean a single compromised server or employee usually can't extract a key, which is a real improvement over keys stored in a database.
+
+What they don't change is who takes part in signing. Running the test:
+
+- **The provider can refuse to sign.** Its servers take part in every signature, so an outage, a terms-of-service decision, a sanctions screen, an acquisition or a shutdown stops the user from transacting. This holds even for designs where the provider can't sign alone.
+- **Whoever passes the login can sign.** The user proves who they are with an email link, a social login or an SMS code, and the provider checks it. Anyone who takes over that login can get signatures: through a phished email account, a SIM swap, an insider, or a legal order to the provider. The wallet is as strong as that login.
+- **The protections can't be checked onchain.** MPC thresholds and enclave attestation are properties of software the provider writes, runs and updates. Users have to trust that it does what it says.
+- **Key export depends on the provider.** Where a provider offers key export, it runs through the provider's login and only while the provider is online.
+
+Some providers describe this setup as non-custodial because no single party holds the whole key. That is a statement about how the key is stored. The test is about what the user can do when the provider stops cooperating. When a hosted key is the account's only owner, the user can't do anything.
+
+## How the Account Setup Changes the Answer
+
+A smart account can have several owners and a recovery module, so the same key can play very different roles. Here is how a service-held key does on the test in each role:
+
+| Role of the service-held key | Can the service move funds alone? | Can the service stop the user? |
+|---|---|---|
+| The only owner | Yes | Yes |
+| One of two owners, threshold 1 | Yes | No |
+| One of two owners, threshold 2, alongside a passkey (like 2FA) | No | Yes, unless the account also has recovery |
+| One recovery guardian among several, with a grace period, alongside a passkey owner | No | No |
+
+The pattern: a non-custodial account can include a service, as long as the service can't act alone and can't lock the user out. The Trustless Manifesto puts it plainly: "Delegation may exist. Dependence must not."
+
+In the 2FA setup, recovery is what removes the dependency. If the service stops co-signing, the user's guardians can replace it as an owner after the grace period. See [Set Up Multisig](/wallet/guides/multisig/) for threshold setups and [Account Recovery](/wallet/plugins/recovery-with-guardians/) for guardians.
+
+## Use the User's Own Wallet
+
+Users who already have a wallet, such as MetaMask or a hardware wallet, can use it as the owner of the smart account. Their wallet exposes the standard JavaScript Ethereum Provider API.
+
+### Set Up the Account Owner
 
 <Tabs queryString="library">
 <TabItem value="ethers" label="ethers example">
@@ -102,13 +123,13 @@ const smartAccount = SafeAccount.initializeNewAccount([signerAddress]);
 </TabItem>
 </Tabs>
 
-#### Signing a UserOperation
+### Signing a UserOperation
 
-The recommended path for every new integration is the capability-oriented **[External Signer](#external-signers)** API. `signUserOperationWithSigner(s)` returns an account-ready signature: hash computation and signature formatting are handled for you across viem, ethers, hardware wallets, HSMs, MPC, and WebAuthn signers, without handing private keys to the SDK.
+The recommended path for every new integration is the capability-oriented **[External Signer](#external-signers)** API. `signUserOperationWithSigner(s)` returns an account-ready signature: hash computation and signature formatting are handled for you across viem, ethers, hardware wallets, HSMs and WebAuthn signers, without handing private keys to the SDK.
 
 The manual EIP-712 flow below is kept for advanced use cases where you need direct control over hash computation or signature formatting.
 
-##### Manual EIP-712 signing (advanced)
+#### Manual EIP-712 signing (advanced)
 
 Only this manual flow requires formatting the raw signature yourself. The External Signer API above does this automatically.
 
@@ -209,11 +230,11 @@ userOperation.signature = SafeAccount.formatSignaturesToUseroperationSignature(
 </TabItem>
 </Tabs>
 
-### Private key Storage
+## Keys Your Backend Holds
 
-Traditional wallets encrypts the private key in local storage. In this setup, the owner of the smart account is represented by it. Use [signUserOperation](/wallet/abstractionkit/safe-unified-account/#signuseroperation).
+For accounts your app owns, such as a treasury, a bot or a test account, the owner can be a private key your backend holds. Use [signUserOperation](/wallet/abstractionkit/safe-unified-account/#signuseroperation). Keep the key in a secret store and never ship it to a client. Don't use this setup for accounts that belong to your users: whoever holds the key holds the funds.
 
-#### Signup Account Owner
+### Set Up the Account Owner
 
 ```ts
 import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
@@ -223,7 +244,7 @@ const ownerPublicAddress = process.env.PUBLIC_ADDRESS as string;
 const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
 ```
 
-#### Sign UserOperation
+### Sign UserOperation
 
 ```ts
 const chainId = BigInt(process.env.CHAIN_ID as string);
@@ -240,7 +261,7 @@ userOperation.signature = smartAccount.signUserOperation(
 
 ## External Signers
 
-Available since AbstractionKit v0.3.2. `ExternalSigner` is a capability-oriented interface that lets you plug any signing source into AbstractionKit without passing raw private keys to the SDK. It covers viem local accounts, viem WalletClients, ethers Wallets, hardware wallets, HSMs, MPC services, and WebAuthn signers through a single API.
+Available since AbstractionKit v0.3.2. `ExternalSigner` is a capability-oriented interface that lets you plug any signing source into AbstractionKit without passing raw private keys to the SDK. It covers viem local accounts, viem WalletClients, ethers Wallets, hardware wallets, HSMs and WebAuthn signers through a single API.
 
 Use the [External Signers SDK reference](/wallet/abstractionkit/external-signers) for the agent-oriented decision workflow, compatibility tables, adapter recipes, and full example links.
 
@@ -259,3 +280,9 @@ const signatures = await account.signUserOperationsWithSigners(
   [signer],
 )
 ```
+
+## Further Reading
+
+- [The Trustless Manifesto](https://trustlessness.eth.limo/general/2025/11/11/the-trustless-manifesto.html), Yoav Weiss, Vitalik Buterin and Marissa Posner
+- [What I would love to see in a wallet](https://vitalik.eth.limo/general/2024/12/03/wallets.html), Vitalik Buterin
+- [Why we need wide adoption of social recovery wallets](https://vitalik.eth.limo/general/2021/01/11/recovery.html), Vitalik Buterin

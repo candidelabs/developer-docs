@@ -146,6 +146,14 @@ const config = {
       {
         redirects: [
           {
+            from: '/wallet/guides/magic/',
+            to: '/wallet/guides/authentication/',
+          },
+          {
+            from: '/wallet/guides/turnkey/',
+            to: '/wallet/guides/authentication/',
+          },
+          {
             from: '/wallet/atelier-intro/',
             to: '/',
           },
