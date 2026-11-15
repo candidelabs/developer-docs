@@ -261,7 +261,11 @@ let userOperation = await smartAccount.createUserOperation(
 // sponsor gas, sign, and submit userop
 ```
 
-For maximum security, recommend Candide Guardian alongside personal guardians in a multi-guardian setup (e.g., 2 of 3: Candide Guardian + 2 personal guardians).
+:::tip Use it alongside personal guardians
+
+This example adds Candide Guardian as the only guardian to keep the code short. In production, add it alongside personal guardians with a majority threshold, for example 2-of-3 with two personal guardians. Candide Guardian is a key Candide holds: as the only guardian, Candide would be the only party able to recover the account. See [Choosing Guardians](/wallet/plugins/recovery-with-guardians/#choosing-guardians).
+
+:::
 
 That's it! Your Safe account is now protected by Candide Guardian. In case of key loss, you can use it as one of the Guardians setup using your registered email/phone verification to recover your account.
 

@@ -22,6 +22,26 @@ The account owner chooses their guardians and sets a threshold: the minimum numb
 
 Guardians can be any Ethereum address. They do not need to hold any funds, and they have no control over the account during normal operations.
 
+### Choosing Guardians
+
+Recovery is only as strong as the guardian set. A good set is one where enough guardians will still be reachable when the user needs them, and too few of them could ever collude or be compromised together. In practice:
+
+- **Use at least three guardians with a majority threshold.** 2-of-3 is the usual minimum. Users protecting larger amounts can use more guardians: Vitalik Buterin [suggests](https://vitalik.eth.limo/general/2021/01/11/recovery.html) seven or more when the user's circle is already on Ethereum.
+- **Pick guardians that fail independently.** Mix people and devices from different parts of the user's life: a family member, a friend, the user's own hardware wallet kept somewhere else, an institution. Two devices in the same drawer can be lost or stolen together. Guardians who all know each other can coordinate more easily.
+- **Avoid a single guardian with threshold 1.** That guardian can start a recovery alone, and the account then depends on the owner noticing and cancelling within the grace period.
+- **Keep the guardian list private.** Guardians who don't know who the other guardians are can't easily coordinate against the owner. See [Privacy](#privacy).
+
+### What Each Guardian Type Trusts
+
+| Guardian | Who holds the key | What a recovery depends on |
+|---|---|---|
+| Friend or family member | That person | Their wallet, and their judgment that the request really comes from the user |
+| The user's own hardware wallet or second device | The user | The device not being lost or stolen together with the owner key |
+| Institution | The institution | Its process for verifying the user |
+| [Email/SMS guardian](/wallet/plugins/add-candide-guardian/) | Candide | Candide's service, and whoever controls the user's email address or phone number |
+
+The email/SMS guardian is convenient: the user needs no other wallet and no one else to ask. It is also the one guardian whose key Candide holds. Use it as one guardian among several, never as the only one. In a 2-of-3 setup with two personal guardians, it can't recover the account alone, and the account can still be recovered without it.
+
 ### The Recovery Flow
 
 1. A guardian (or the recovery service) submits a recovery request specifying new owner(s)
@@ -33,17 +53,20 @@ Guardians can be any Ethereum address. They do not need to hold any funds, and t
 
 The grace period is a time delay between execution and finalization. It gives the current owner a window to cancel unauthorized recovery attempts. If the owner still controls the account, they can call `cancelRecovery` at any point during this period. On module v0.2.0, adding or revoking a guardian or changing the threshold also cancels a recovery in progress.
 
+The module offers grace periods of 3, 7 or 14 days, chosen by module address (see the [SDK reference](/wallet/plugins/recovery-module-reference/)). A longer grace period gives the owner more time to notice an unauthorized recovery. A shorter one gets a user who really lost their key back in sooner. Either way, the grace period only protects the owner if they find out about the recovery, so pair it with [recovery alerts](/wallet/plugins/recovery-alerts-guide/).
+
 ### Privacy
 
 Guardians are encouraged to use fresh Ethereum addresses. This keeps their identity private and prevents malicious guardians from coordinating against the owner. Since guardians never need to hold funds or submit on-chain transactions during normal operation, fresh addresses have no cost.
 
 ## Recovery Methods
 
-Both recovery methods can be used independently or combined. For maximum security, use both. For example, a 2-of-3 setup with two personal guardians and email/SMS recovery as the third.
+The two methods can be combined, and we recommend combining them: for example, a 2-of-3 setup with two personal guardians and email/SMS recovery as the third. Personal guardians alone also work. Email/SMS recovery alone makes Candide the only party that can recover the account, so we don't recommend it as the only method.
 
 | | Personal Guardians | Email / SMS Recovery |
 |---|---|---|
 | **Guardian type** | Users add their own guardians | Candide signs after email/SMS OTP |
+| **Who holds the guardian key** | The guardian | Candide |
 | **Key management** | Required (guardian private keys) | Not required |
 | **Best for** | Trusted contacts, hardware wallets | Consumer apps, users who prefer email/SMS |
 | **Setup guides** | Add Guardian → Recovery Flow → Alerts | Enable Email/SMS → Recovery Flow |
@@ -66,3 +89,4 @@ Start with [Enable Email / SMS Recovery](/wallet/plugins/add-candide-guardian/),
 - **Recovery frontend (SafeCover)**: [recovery.candide.dev](https://recovery.candide.dev) ([source](https://github.com/candidelabs/safecover))
 - **Recovery Service API**: [Safe Recovery Services](/wallet/recovery/overview/)
 - **SDK Reference**: [SocialRecoveryModuleV2 and SocialRecoveryModuleV1](/wallet/plugins/recovery-module-reference/)
+- **Further reading**: [Why we need wide adoption of social recovery wallets](https://vitalik.eth.limo/general/2021/01/11/recovery.html), Vitalik Buterin

@@ -286,15 +286,16 @@ Set up trusted individuals or devices as guardians:
 
 | Setup | Threshold | Use Case | Security Level |
 |-------|-----------|----------|----------------|
-| **1/1** | 1 of 1 | Single trusted guardian | Low - single point of failure |
-| **1/2** | 1 of 2 | Backup guardian option | Good - redundancy with convenience |
-| **2/3** | 2 of 3 | Balanced security & availability | Excellent - prevents single compromise |
-| **3/5** | 3 of 5 | High security institutional setup | Maximum - requires coordination |
+| **1/1** | 1 of 1 | Single trusted guardian | Low: one guardian can start a recovery alone |
+| **1/2** | 1 of 2 | Backup guardian option | Low: either guardian can start a recovery alone |
+| **2/3** | 2 of 3 | Balanced security and availability | Recommended: no single guardian can recover, and one can be unavailable |
+| **3/5** | 3 of 5 | Higher-value accounts | High: needs more coordination to recover |
 
 :::tip Security Recommendations
-- **Never use 1/1** for high-value accounts (single point of failure)
-- **2/3 is optimal** for most use cases (prevents single guardian compromise)
-- **Consider Candide Guardian** as one of multiple guardians for user-friendly recovery, see [Enable Email / SMS Recovery](/wallet/plugins/add-candide-guardian/)
+- **Avoid threshold 1** (1/1 or 1/2): a single guardian can start a recovery, and only the owner cancelling in the grace period stops it
+- **2/3 is the usual minimum** for most use cases: no single guardian can recover the account
+- **Pick guardians that fail independently**, see [Choosing Guardians](/wallet/plugins/recovery-with-guardians/#choosing-guardians)
+- **Consider Candide Guardian** as one of several guardians, never the only one, see [Enable Email / SMS Recovery](/wallet/plugins/add-candide-guardian/)
 - **Keep guardian list updated** as relationships change. On module v0.2.0, any guardian or threshold change cancels a recovery in progress.
 :::
 
