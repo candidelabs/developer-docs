@@ -231,23 +231,27 @@ const config = {
         },
         items: [
           {
-            to: '/',
+            type: 'docSidebar',
+            sidebarId: 'walletSideBar',
             position: 'left',
             label: 'Get Started',
           },
           {
-            to: '/wallet/plugins/passkeys',
+            type: 'docSidebar',
+            sidebarId: 'pluginsSideBar',
             position: 'left',
             label: 'Safe Account Plugins',
           },
           {
-            to: '/forwarding-address/overview',
+            type: 'docSidebar',
+            sidebarId: 'forwardingAddressSideBar',
             position: 'left',
             label: 'Forwarding Address',
             className: 'navbar-badge-new',
           },
           {
-            to: '/wallet/api/supported-networks',
+            type: 'docSidebar',
+            sidebarId: 'infraSideBar',
             position: 'left',
             label: 'API',
           },

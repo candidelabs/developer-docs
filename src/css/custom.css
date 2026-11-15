@@ -56,6 +56,9 @@ html[data-theme='dark'] .footer {
 
 html[data-theme='dark'] {
   background: linear-gradient(to right, #000000 50%, rgba(231, 0, 115, 0.1)) fixed;
+  /* Softer body text; headings stay brighter so the hierarchy holds. */
+  --ifm-font-color-base: #d4d4d8;
+  --ifm-heading-color: #ededed;
   --docusaurus-highlighted-code-line-bg: rgba(72, 77, 91, 1);
   --ifm-background-surface-color: #000000;
   --ifm-background-color: #000000;
@@ -67,21 +70,25 @@ h1, h2, h3, h4, h5, h6 {
   text-wrap: balance;
 }
 
+/* Headings guide the eye without shouting: moderate sizes, semibold weight. */
 .markdown h1 {
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
+  font-size: 2.25rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .markdown h2 {
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  line-height: 1.25;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
 .markdown h3 {
+  font-size: 1.1875rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.005em;
 }
 
 /* Text selection matches brand */
@@ -115,6 +122,67 @@ html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
 #__docusaurus > footer > div > div.text--center > div > a:hover {
   color: var(--ifm-link-color);
   text-decoration: underline;
+}
+
+/* Quiet navigation: sidebar, navbar and TOC sit below the content in
+   size and brightness so the reading column is the loudest thing on screen.
+   Active items keep the brand color. */
+:root {
+  --ifm-menu-color: #6b6b6b;
+  --ifm-navbar-link-color: #6b6b6b;
+  --ifm-toc-link-color: #6b6b6b;
+  --nav-hover-color: #1a1a1a;
+}
+
+html[data-theme='dark'] {
+  --ifm-menu-color: #9a9a9a;
+  --ifm-navbar-link-color: #9a9a9a;
+  --ifm-toc-link-color: #8a8a8a;
+  --nav-hover-color: #e3e3e3;
+}
+
+.theme-doc-sidebar-menu {
+  font-size: 0.875rem;
+}
+
+.theme-doc-sidebar-menu .menu__link:not(.menu__link--active):hover,
+.navbar__link:not(.navbar__link--active):hover,
+.table-of-contents__link:not(.table-of-contents__link--active):hover {
+  color: var(--nav-hover-color);
+}
+
+.navbar__item.navbar__link,
+.navbar__item > .navbar__link {
+  font-size: 0.875rem;
+}
+
+/* Body links: same color as the text, marked by a soft brand-colored
+   underline. Pink text is reserved for hover and active states. Links
+   with a real class (cards, buttons, heading anchors) keep their own styles. */
+.markdown a:is(:not([class]), [class=""]) {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: rgba(231, 0, 115, 0.45);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+
+.markdown a:is(:not([class]), [class=""]):hover {
+  color: var(--ifm-color-primary);
+  text-decoration-color: currentColor;
+}
+
+/* Copy Page button: neutral until hovered or focused, like the navigation. */
+.llm-tools {
+  --copy-btn-color: var(--ifm-toc-link-color);
+  --copy-btn-border: var(--ifm-color-emphasis-300);
+}
+
+.llm-tools:hover,
+.llm-tools:focus-within {
+  --copy-btn-color: var(--ifm-color-primary);
+  --copy-btn-border: var(--ifm-color-primary);
 }
 
 /* sidebar non collapsible categories */
@@ -267,6 +335,34 @@ html[data-theme='dark'] .theme-admonition.alert {
   height: 1.1em;
   width: 1.1em;
   fill: var(--admonition-label-color);
+}
+
+/* Reading width: cap the doc column so lines stay readable on wide screens
+   (about 90 characters at 16px), centered in the space left of the TOC.
+   The landing page has its own wider cap below. */
+html:not([class~='docs-doc-id-wallet/intro']) [class*='docItemContainer_'],
+html:not([class~='docs-doc-id-wallet/intro']) .pagination-nav {
+  max-width: 45rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Landing page proof lines: quiet, secondary to the headline and subtitle. */
+.markdown p.intro-proof {
+  font-size: 0.875rem;
+  color: var(--ifm-toc-link-color);
+}
+
+.markdown p.intro-proof a {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: rgba(231, 0, 115, 0.45);
+  text-underline-offset: 0.2em;
+  margin-left: 0.25rem;
+}
+
+.markdown p.intro-proof a:hover {
+  color: var(--ifm-color-primary);
 }
 
 /* Landing page: no TOC, so cap and center the column instead of going full width. */

@@ -125,8 +125,8 @@ Help me implement "${metadata.title}". Provide working TypeScript code examples 
   const isIdle = copyState === 'idle';
 
   const stateColor = {
-    idle: 'var(--ifm-color-primary)',
-    loading: 'var(--ifm-color-primary)',
+    idle: 'var(--copy-btn-color)',
+    loading: 'var(--copy-btn-color)',
     copied: '#22c55e',
     error: '#ef4444',
   }[copyState];
@@ -165,10 +165,10 @@ Help me implement "${metadata.title}". Provide working TypeScript code examples 
       position: 'relative',
       display: 'inline-flex',
       flexShrink: 0,
-      border: `1px solid ${stateColor}`,
+      border: `1px solid ${isIdle || copyState === 'loading' ? 'var(--copy-btn-border)' : stateColor}`,
       borderRadius: '6px',
       overflow: 'hidden',
-      transition: 'border-color 0.15s',
+      transition: 'border-color 0.15s, color 0.15s',
     },
     copyBtn: {
       ...sharedBtnStyle,
@@ -221,7 +221,7 @@ Help me implement "${metadata.title}". Provide working TypeScript code examples 
   };
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', display: 'inline-block', flexShrink: 0 }}>
+    <div ref={containerRef} className="llm-tools" style={{ position: 'relative', display: 'inline-block', flexShrink: 0 }}>
       <div style={styles.container}>
         {/* Primary action: copy */}
         <button
