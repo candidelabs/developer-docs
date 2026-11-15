@@ -525,6 +525,11 @@ const sidebars = {
           id: "account-abstraction/intro",
           label: "Account Abstraction"
         },
+        {
+          type: "doc",
+          id: "wallet/principles",
+          label: "Principles"
+        },
       ],
     },
     {
@@ -597,6 +602,11 @@ const sidebars = {
           type: "doc",
           id: "wallet/guides/onchain-identifiers",
           label: "Add Onchain Tracking"
+        },
+        {
+          type: "doc",
+          id: "wallet/guides/walkaway-guide",
+          label: "Run Without Candide"
         },
         {
           type: "category",

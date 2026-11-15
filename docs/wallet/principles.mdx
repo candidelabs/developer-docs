@@ -1,0 +1,85 @@
+---
+title: Principles
+description: The principles Candide builds by, and where each Candide product stands against them
+keywords: [principles, self-custody, non-custodial, trustless, walkaway test, censorship resistance, open source]
+---
+
+# Principles
+
+Ethereum lets people hold and move value without asking anyone for permission. A wallet keeps that property only if the wallet itself has it. As [Vitalik Buterin writes](https://vitalik.eth.limo/general/2024/12/03/wallets.html), users get the benefits of decentralization, censorship resistance, security and privacy only "to the extent that the wallet itself also has these properties."
+
+Candide builds infrastructure for those wallets. Part of it is open-source code that anyone can run. Part of it is hosted services that we operate. This page states what we hold ourselves to, and where each product stands. We prefer tests to adjectives, so most principles below come with one.
+
+Many of these principles follow the [Trustless Manifesto](https://trustlessness.eth.limo/general/2025/11/11/the-trustless-manifesto.html).
+
+## Users Authorize Their Own Actions
+
+Only the user should be able to move the user's funds, and the user should be able to move them without anyone else.
+
+- **What we recommend:** onchain [passkeys](/wallet/plugins/passkeys/) as the main signer. The key stays on the user's device and the account contract verifies the signature, so no server takes part in signing, including ours.
+- **What we don't do:** Candide never holds the keys that own user accounts.
+- **Where Candide holds a key:** the [email/SMS guardian](/wallet/plugins/add-candide-guardian/) is a recovery guardian whose key Candide holds. It can't move funds and can't act alone when it is one guardian among several, and every recovery waits through a grace period the owner can cancel. We recommend it only in that role.
+
+[Signers and Custody](/wallet/guides/authentication/) explains how to apply this test to any signer setup.
+
+## The Walkaway Test
+
+If Candide disappears or misbehaves, the wallets built on it should keep working, and someone else should be able to step in without our approval.
+
+Accounts are onchain contracts, so they and their funds don't depend on us. AbstractionKit follows ERC-4337, EIP-7702 and ERC-7677, so it works with any compliant bundler and paymaster, and Candide's endpoints work with any compliant SDK. The [walkaway guide](/wallet/guides/walkaway-guide/) lists every Candide service, what stops if it goes away, and how to replace it.
+
+## No Indispensable Intermediaries
+
+Every service we host should have a replacement that follows the same public rules:
+
+| Candide service | Replacement |
+|---|---|
+| Bundler | Any ERC-4337 bundler, the open-source [Voltaire](/wallet/bundler/installation/) bundler run by you, or a direct call to the EntryPoint contract |
+| Paymaster and gas policies | Another ERC-7677 paymaster, or users paying gas in the native token |
+| Recovery Service | Guardians calling the recovery module directly, through the open-source [SafeCover](https://github.com/candidelabs/safecover) frontend or any tool that sends transactions |
+| Forwarding Address relayer | The recipient withdrawing directly from the forwarding address contract |
+| Solana Paymaster | Any [Kora](https://github.com/solana-foundation/kora) node, including one you run, or users paying fees in SOL |
+
+A hosted service is a convenience you can delegate to. It should never be a dependency you can't leave. The Trustless Manifesto puts it plainly: "Delegation may exist. Dependence must not."
+
+## Verifiability
+
+Anyone should be able to check what an account can do and what happened to it from public data.
+
+Account logic lives in audited contracts onchain: Safe and its passkey and allowance modules, Candide's [recovery module](https://github.com/candidelabs/candide-contracts) and [multichain signature module](https://github.com/candidelabs/safe-4337-multi-chain-signature-module), and the EIP-7702 accounts. Their source code and audit reports are public, and every address is listed on [Deployments](/wallet/technical-reference/deployments/). A smart account's address is derived deterministically from its setup, so you can compute it yourself and compare it with what any service returns.
+
+## Censorship Resistance
+
+Any valid action should be included in a reasonable time and at a reasonable cost.
+
+A UserOperation is a signed message that any bundler can submit to the public EntryPoint contract. If one bundler refuses a UserOperation, including ours, another can include it. Our gas policies decide what Candide pays for. They don't decide what users can do with their accounts.
+
+## Open Standards and Open Source
+
+Developers should be free to leave without rewriting their app.
+
+[AbstractionKit](https://github.com/candidelabs/abstractionkit), the [Voltaire](https://github.com/candidelabs/voltaire) bundler, the [recovery](https://github.com/candidelabs/candide-contracts) and [multichain signature](https://github.com/candidelabs/safe-4337-multi-chain-signature-module) contracts, and the [SafeCover](https://github.com/candidelabs/safecover) recovery frontend are open source. Where a standard exists, we build on it rather than on a proprietary API: ERC-4337 for UserOperations, ERC-7677 for paymasters, ERC-5792 for batched calls, EIP-7702 for EOA upgrades.
+
+## Privacy
+
+Collect only what a feature needs.
+
+Signing, gas payment and account deployment need no personal data. The features that do are the email/SMS guardian and recovery alerts, which store the email address or phone number the user registers. Guardians are encouraged to use fresh addresses that reveal nothing about who they are, and the guardian list is the account owner's choice.
+
+## Accessibility
+
+Building a non-custodial wallet should not require servers, capital or a sales call.
+
+[Public endpoints](/wallet/api/public-endpoints/) work without an API key. Testnet usage is free. API keys for production are self-serve from the dashboard, and the code that matters runs on any machine.
+
+## Fail Publicly and Recoverably
+
+When something goes wrong, the user should have time to see it and a way to undo it.
+
+Recovery waits through a grace period the owner can cancel. Forwarding addresses let the recipient withdraw at any time, and the company recovery wallet only after a timelock. Errors from our APIs map to public error codes ([bundler](/wallet/technical-reference/bundler-error-codes/), [EntryPoint](/wallet/technical-reference/entrypoint-error-codes/)), not opaque failures.
+
+## Further Reading
+
+- [The Trustless Manifesto](https://trustlessness.eth.limo/general/2025/11/11/the-trustless-manifesto.html), Yoav Weiss, Vitalik Buterin and Marissa Posner
+- [What I would love to see in a wallet](https://vitalik.eth.limo/general/2024/12/03/wallets.html), Vitalik Buterin
+- [Why we need wide adoption of social recovery wallets](https://vitalik.eth.limo/general/2021/01/11/recovery.html), Vitalik Buterin
