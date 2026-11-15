@@ -203,14 +203,6 @@ const config = {
         respectPrefersColorScheme: false,
       },
       image: 'img/posters/atelier-meta.png',
-      announcementBar: {
-        id: 'forwarding-address-launch',
-        content:
-          'Let users deposit from any supported chain into one address. <a href="/forwarding-address/overview/">Read the docs</a>',
-        backgroundColor: '#fce7f0',
-        textColor: '#1a1a1a',
-        isCloseable: true,
-      },
       metadata: [{
         name:
           'twitter:card',
