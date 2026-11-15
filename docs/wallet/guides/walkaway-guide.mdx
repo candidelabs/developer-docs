@@ -1,0 +1,99 @@
+---
+title: Run Without Candide
+description: What keeps working if Candide's hosted services go away, and how to replace each one
+keywords: [walkaway test, self-hosting, exit, vendor lock-in, bundler, paymaster, recovery, forwarding address]
+---
+
+# Run Without Candide
+
+A wallet built on Candide should pass the walkaway test: if Candide disappears or misbehaves, the wallet keeps working, and someone else can step in without our approval. This page shows how to check that for your integration. It lists every Candide service, what stops if it goes away, and how to replace it.
+
+The short version: accounts and funds are onchain and don't depend on Candide. What depends on Candide is convenience: sponsored gas, a hosted bundler, coordinated recovery and automatic deposit forwarding. Each one has a replacement.
+
+## What Never Depends on Candide
+
+- **Accounts and funds.** Safe accounts, their modules and EIP-7702 accounts are contracts on each chain. Candide has no admin key over them and can't upgrade, pause or move them.
+- **Signing.** Passkeys live on the user's device and are bound to your app's domain, not to Candide's. Keys in a user's own wallet stay there.
+- **AbstractionKit.** The SDK runs inside your app and is [open source](https://github.com/candidelabs/abstractionkit) under the MIT license. You can keep using the version you have, or fork it.
+
+## Service by Service
+
+| Candide service | If it goes away | Replacement |
+|---|---|---|
+| Bundler | UserOperations sent to Candide's endpoint aren't submitted | Any ERC-4337 bundler that serves your EntryPoint version, or [Voltaire](/wallet/bundler/installation/) run by you |
+| Paymaster (sponsorship and ERC-20 gas) | Gas is no longer sponsored or paid in tokens through Candide | Another ERC-7677 paymaster, or users pay gas in the native token |
+| Gas policies and dashboard | Policies stop applying | Nothing to replace: they only control Candide's paymaster |
+| Recovery Service | Signature collection, the email/SMS guardian and alerts stop | Guardians sign and submit to the recovery module directly. The email/SMS guardian can't sign, so the other guardians must meet the threshold. |
+| Forwarding Address relayer | Deposits are no longer forwarded and stay at the address | The recipient withdraws directly from the forwarding address contract on the source chain |
+| Solana Paymaster | Fees are no longer paid in stablecoins through Candide | Any [Kora](https://github.com/solana-foundation/kora) node, including one you run, or users pay fees in SOL |
+
+### Bundler
+
+A UserOperation is a signed message. Any bundler that serves the same EntryPoint version can submit it, so switching is a change of URL:
+
+```ts
+// Before: Candide's endpoint. After: any ERC-4337 bundler, or your own Voltaire.
+const bundlerUrl = process.env.BUNDLER_URL as string;
+
+let userOperation = await smartAccount.createUserOperation(transactions, nodeUrl, bundlerUrl);
+// ...sign...
+await smartAccount.sendUserOperation(userOperation, bundlerUrl);
+```
+
+[Voltaire](https://github.com/candidelabs/voltaire), the bundler Candide runs, is open source. The [installation guide](/wallet/bundler/installation/) shows how to run it with Docker against your own node.
+
+As a last resort, no bundler is needed at all. The EntryPoint is a public contract: any address can call `handleOps` with a signed UserOperation, pay the transaction's gas, and be refunded from the account.
+
+### Paymaster
+
+Without a paymaster, the account pays its own gas in the native token. Remove the paymaster step and make sure the account holds enough to cover gas.
+
+To keep sponsoring gas, point `Erc7677Paymaster` at another provider's ERC-7677 endpoint. The class is built for this: it speaks the standard methods, not a Candide-specific API.
+
+```ts
+import { Erc7677Paymaster } from "abstractionkit";
+
+// Any ERC-7677 paymaster endpoint
+const paymaster = new Erc7677Paymaster(process.env.PAYMASTER_URL as string);
+```
+
+`CandidePaymaster` and Candide's gas policies are Candide-specific. If you use them, plan how your app falls back to the native token or to another paymaster.
+
+### Recovery
+
+The [Social Recovery Module](/wallet/plugins/recovery-with-guardians/) is a contract on each chain, and the Recovery Service only coordinates around it. Without the service:
+
+- Guardians sign the recovery request and anyone submits it to the module, then finalizes it after the grace period.
+- The open-source [SafeCover](https://github.com/candidelabs/safecover) frontend does this from a browser. You can use [recovery.candide.dev](https://recovery.candide.dev) or host SafeCover yourself.
+- The email/SMS guardian is a key Candide holds, so it can't sign without Candide. This is why it should be one guardian among several, never the only one: with two personal guardians in a 2-of-3 setup, recovery still works.
+- Recovery alerts stop. The account owner can still cancel a recovery during the grace period, but has to watch for one another way.
+
+### Forwarding Address
+
+A forwarding address is a contract on each source chain. The relayer watches for deposits and forwards them, and without it deposits stay where they landed:
+
+- The recipient can withdraw from the forwarding address contract on the source chain at any time, with no timelock.
+- If you set a company recovery wallet (`custodialWithdrawer`), it can withdraw after the timelock.
+- Both withdrawals are ordinary contract calls. Any tool that sends transactions can make them.
+
+See [The custodialWithdrawer Role](/forwarding-address/integration-guide/#the-custodialwithdrawer-role) for how the two withdrawal paths work.
+
+## What to Store
+
+Walking away is only possible if you kept what you need to find and control the accounts. Store:
+
+- **The account class and setup** for each account: owners, threshold and the class it was created with. The address is derived from these, so you can recompute it and rebuild the account object with any copy of AbstractionKit.
+- **Passkey public keys and credential IDs.** The account needs them to verify signatures, and an undeployed account can't be used without them.
+- **Guardian addresses and the threshold**, so guardians can be contacted and recovery can be run without the Recovery Service.
+- **Forwarding address inputs:** recipient, recovery wallet, destination chain and salt. These derive the address, and you need them to find and withdraw from it.
+
+## Check Your Integration
+
+Ask these about your app:
+
+1. Can a user move their funds if every Candide endpoint is down?
+2. Can a user recover their account without the Recovery Service?
+3. Are endpoint URLs configuration, so switching provider needs no code change?
+4. Do you store everything in [What to Store](#what-to-store)?
+
+If any answer is "no", that is where your app depends on Candide. See [Principles](/wallet/principles/) for why this matters to us.
