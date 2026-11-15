@@ -141,9 +141,7 @@ The three fixes below are all security improvements. Only the nonce limit introd
 
 v1.0.0 adds overflow protection on the `uint16` nonce. Each delegate can execute at most 65,534 `executeAllowanceTransfer` calls for a given token on a given Safe. After that, the contract reverts.
 
-:::warning Nonce Limit
 After 65,534 transfers, the delegate can no longer execute transfers for that token. The workaround is to register a new delegate address. This is unlikely to affect most use cases, but high-frequency automated delegates should account for it.
-:::
 
 ### Failed ERC-20 Transfers Now Revert
 

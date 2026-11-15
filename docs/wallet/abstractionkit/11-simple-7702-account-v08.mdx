@@ -481,9 +481,7 @@ Creates a signed EIP-7702 transaction that revokes the delegation, restoring the
 
 This is a regular Ethereum transaction (type `0x04`), not a UserOperation. The EOA needs native tokens to pay for gas.
 
-:::note
 Revocation cannot be done via a UserOperation because the authorization list is processed before execution, which would remove the account's code mid-transaction.
-:::
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">

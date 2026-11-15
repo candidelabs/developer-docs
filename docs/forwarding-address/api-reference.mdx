@@ -263,9 +263,7 @@ Response:
 
 Checks the activation status of a forwarding address across all source chains it was registered on.
 
-:::note
 This endpoint tracks activation status (whether the relayer is monitoring this address), not deposit or forwarding completion status.
-:::
 
 Parameters:
 
@@ -375,9 +373,7 @@ Response:
 | `relayerBotFee` | Relayer fee in smallest unit (source token decimals): the service fee plus the gas cost of the forward. Same-chain forwards have no service fee, so this is the gas cost only |
 | `bridgeProtocolFee` | Bridge protocol fee in smallest unit (source token decimals) |
 
-:::note
 To format `outputAmount` for display, look up the output token's decimals from [`forwarding_getRoutes`](#forwarding_getroutes) (the matching `destinationAddress` on the route's token list).
-:::
 
 ---
 
@@ -583,9 +579,7 @@ Route-specific fields, present only on the matching `route`:
 | `sourceDomain` / `destinationDomain` | `cctp` | Circle CCTP domain IDs for the source/destination chain |
 | `messageHash` | `cctp` | Circle CCTP message hash |
 
-:::note
 CCTP forwards top out at `"pending"`: Circle's attestation API only confirms the message was signed, not that the destination-chain mint executed. `same_chain` forwards are always `"delivered"` immediately, since there is no bridge: delivery is the source-tx confirmation itself.
-:::
 
 ---
 

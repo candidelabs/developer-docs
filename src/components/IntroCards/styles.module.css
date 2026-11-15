@@ -60,14 +60,14 @@
 
 .title {
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 1.0625rem;
     color: var(--ifm-heading-color);
 }
 
 .text {
-    font-size: 0.875rem;
-    line-height: 1.5;
-    color: var(--ifm-color-emphasis-600);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--ifm-color-emphasis-700);
 }
 
 .icon {
@@ -124,6 +124,24 @@
     cursor: pointer;
 }
 
+.tab,
+.tabActive {
+    display: inline-flex;
+    align-items: center;
+}
+
+.tabLogo {
+    display: block;
+    width: 16px;
+    height: 16px;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+}
+
 .tab:hover {
     color: var(--ifm-color-emphasis-900);
 }
@@ -157,18 +175,19 @@
 .copyButton {
     flex-shrink: 0;
     min-width: 5.5rem;
-    padding: 0.45rem 0.875rem;
-    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
     border: none;
-    background: var(--ifm-color-primary);
-    color: #fff;
+    background: #ffffff;
+    color: #000000;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
+    transition: opacity 0.15s ease;
 }
 
 .copyButton:hover {
-    background: var(--ifm-color-primary-dark);
+    opacity: 0.85;
 }
 
 .tab:focus-visible,

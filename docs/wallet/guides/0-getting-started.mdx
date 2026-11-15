@@ -4,6 +4,9 @@ description: Create a smart account and send gasless batched transactions using 
 keywords: [smart-account, userOperation, batch-transactions, abstractionkit]
 ---
 
+import ActionCard from "/src/components/ActionCard";
+import Tag from "/src/components/Tag";
+
 # Your First Gasless Smart Account Transaction
 
 **Create a Smart Account and send gasless batched transactions in under 10 minutes.**
@@ -35,9 +38,13 @@ Before starting, make sure you have:
 - **Node.js 18+** and npm/yarn
 - **Basic TypeScript knowledge** - We'll explain the smart account concepts
 
-:::tip Complete Example
-You can also [fork the complete code](https://github.com/candidelabs/abstractionkit-examples/blob/main/sponsor-gas/sponsor-gas.ts) and follow along.
-:::
+<ActionCard
+  icon="/img/logo/candide_logo_icon.png"
+  title="Complete example"
+  description="Fork sponsor-gas.ts and follow along"
+  action="View on GitHub"
+  href="https://github.com/candidelabs/abstractionkit-examples/blob/main/sponsor-gas/sponsor-gas.ts"
+/>
 
 
 ## Step 1: Project Setup
@@ -62,7 +69,7 @@ npm install abstractionkit dotenv
 - `dotenv` - Loads environment variables from .env file
 - `tsx` - Runs TypeScript files directly
 
-#### Configure Environment Variables
+#### Configure Environment Variables <Tag>Sepolia</Tag>
 
 Create a `.env` file in your project root:
 
@@ -135,10 +142,8 @@ npx tsx index.ts
 Smart Account Address: 0x107373B27221401322A2315078DE983Cf659E94A
 ```
 
-:::info How It Works
 The `initializeNewAccount()` method deterministically computes your smart account address locally using only the provided inputs. No network calls are required.
 The account contract is not deployed at this stage; deployment occurs automatically when you send your first transaction.
-:::
 
 
 ## Step 3: Prepare Your Transactions
@@ -195,10 +200,6 @@ const transaction2: MetaTransaction = {
 
 console.log("Prepared 2 NFT minting transactions");
 ```
-
-:::info Why Batch Transactions?
-Instead of sending two separate transactions, batch them into one UserOperation for a seamless one-click user experience.
-:::
 
 ## Step 4: Create UserOperation
 
