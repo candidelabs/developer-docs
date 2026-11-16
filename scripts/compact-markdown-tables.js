@@ -25,37 +25,64 @@ function splitCells(row) {
   return row.trim().replace(/^\|/, '').replace(/(?<!\\)\|$/, '').split(/(?<!\\)\|/);
 }
 
-function compactRow(row) {
+// `isDelimiterRow` is true only for the row right after a table's header, so a
+// body row whose cells happen to be dashes keeps its content.
+function compactRow(row, isDelimiterRow) {
+  const indent = row.match(/^\s*/)[0];
   const cells = splitCells(row);
-  const isSeparator = cells.every((cell) => /^\s*:?-+:?\s*$/.test(cell));
+  const isSeparator =
+    isDelimiterRow && cells.every((cell) => /^\s*:?-+:?\s*$/.test(cell));
   const compacted = cells.map((cell) =>
     isSeparator ? cell.trim().replace(/-+/, '---') : cell.trim(),
   );
-  return `| ${compacted.join(' | ')} |`;
+  // Keep the leading indentation so tables nested in list items stay nested.
+  return `${indent}| ${compacted.join(' | ')} |`;
+}
+
+// Width of leading whitespace, with tabs counted to the next multiple of 4.
+function indentWidth(line) {
+  let width = 0;
+  for (const ch of line) {
+    if (ch === ' ') width += 1;
+    else if (ch === '\t') width += 4 - (width % 4);
+    else break;
+  }
+  return width;
 }
 
 function compactTables(content) {
-  let inFence = false;
-  let fenceMarker = '';
+  let fence = null; // { char, length } while inside a fenced code block
+  let tableRow = 0; // position of the current line in a run of table rows
   return content
     .split('\n')
     .map((line) => {
-      const fence = line.match(/^\s*(`{3,}|~{3,})/);
       if (fence) {
-        if (!inFence) {
-          inFence = true;
-          fenceMarker = fence[1][0];
-        } else if (fence[1][0] === fenceMarker) {
-          inFence = false;
+        // A closing fence uses the same character, is at least as long as the
+        // opening fence, is indented at most 3 spaces and has nothing after it.
+        const close = line.match(/^ {0,3}(`+|~+)\s*$/);
+        if (close && close[1][0] === fence.char && close[1].length >= fence.length) {
+          fence = null;
         }
         return line;
       }
-      if (inFence) return line;
-      const trimmed = line.trim();
-      if (trimmed.startsWith('|') && trimmed.endsWith('|') && trimmed.length > 1) {
-        return compactRow(line);
+      const open = line.match(/^ {0,3}(`{3,}|~{3,})/);
+      if (open) {
+        fence = { char: open[1][0], length: open[1].length };
+        tableRow = 0;
+        return line;
       }
-      return line;
+      const trimmed = line.trim();
+      const isTableRow =
+        trimmed.startsWith('|') && trimmed.endsWith('|') && trimmed.length > 1;
+      // Four or more columns of indentation can be an indented code block, so
+      // leave those lines exactly as they are.
+      if (!isTableRow || indentWidth(line) >= 4) {
+        tableRow = 0;
+        return line;
+      }
+      const result = compactRow(line, tableRow === 1);
+      tableRow += 1;
+      return result;
     })
     .join('\n');
 }
