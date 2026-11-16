@@ -32,3 +32,40 @@ test('leaves text that is not a table unchanged', () => {
   const input = 'A line with a | pipe in it\n\n|';
   assert.equal(compactTables(input), input);
 });
+
+test('shortens only the delimiter row, not body rows made of dashes', () => {
+  const input = ['| A   | B   |', '| --- | --- |', '| -   | -   |'].join('\n');
+  assert.equal(
+    compactTables(input),
+    ['| A | B |', '| --- | --- |', '| - | - |'].join('\n'),
+  );
+});
+
+test('leaves indented code blocks alone', () => {
+  const input = ['Example:', '', '    | not  | a table |', '    | ---- | ------- |'].join('\n');
+  assert.equal(compactTables(input), input);
+});
+
+test('keeps the indentation of a table inside a list item', () => {
+  const input = ['- item', '', '  | A   | B   |', '  | --- | --- |'].join('\n');
+  assert.equal(
+    compactTables(input),
+    ['- item', '', '  | A | B |', '  | --- | --- |'].join('\n'),
+  );
+});
+
+test('a shorter fence inside a longer one does not close it', () => {
+  const input = ['````md', '```', '| x   | y |', '```', '````', '| a   | b |'].join('\n');
+  assert.equal(
+    compactTables(input),
+    ['````md', '```', '| x   | y |', '```', '````', '| a | b |'].join('\n'),
+  );
+});
+
+test('a fence line with text after it does not close the block', () => {
+  const input = ['```', '``` not a close', '| x   | y |', '```', '| a   | b |'].join('\n');
+  assert.equal(
+    compactTables(input),
+    ['```', '``` not a close', '| x   | y |', '```', '| a | b |'].join('\n'),
+  );
+});
