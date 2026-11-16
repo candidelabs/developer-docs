@@ -871,7 +871,7 @@ export const createInvalidateNonceMetaTransactionParam = [
   {
     key: "newNonce",
     type: "bigint",
-    description: "The new nonce value (all nonces below this are invalidated)",
+    description: "The new Calibur nonce, laid out as (key << 64) | sequence. Nonces of that key below the sequence are invalidated. EntryPoint nonces are not affected.",
   },
 ];
 

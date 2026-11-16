@@ -224,7 +224,7 @@ userOperation.callData = callDataWithApproval;
 
 ### createInvalidateNonceMetaTransaction
 
-Static method. Creates a meta-transaction to invalidate nonces up to a given value. All nonces below the specified value become invalid, preventing replay of previously signed but unsubmitted UserOperations.
+Static method. Creates a meta-transaction that invalidates Calibur nonces up to a given value. `newNonce` is laid out as `(key << 64) | sequence`, and every nonce of that key below the sequence becomes invalid. This acts on Calibur's own nonce, the one its signed batched calls use. It does not change the EntryPoint nonce that [`getNonce`](#getnonce) reads and UserOperations use, so it cannot cancel a signed UserOperation.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
@@ -232,7 +232,7 @@ Static method. Creates a meta-transaction to invalidate nonces up to a given val
 ```ts title="example.ts"
 import { Calibur7702Account } from "abstractionkit";
 
-// Invalidate all nonces below 100
+// Invalidate Calibur nonces of key 0 below sequence 100
 const invalidateTx = Calibur7702Account.createInvalidateNonceMetaTransaction(100n);
 
 const userOperation = await smartAccount.createUserOperation(
