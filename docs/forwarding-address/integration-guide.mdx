@@ -38,17 +38,10 @@ Forwarding Address access is self-serve through the [Candide Dashboard](https://
 
 1. Create a team API key under [**API Keys**](https://dashboard.candide.dev/api-keys). It goes in the forwarder endpoint URL.
 2. Under **Forwarder Policies**, create a policy. Name it and pick the source networks it accepts deposits on.
-3. Configure sponsorship and its limits (see below).
-4. Generate the policy's bearer token and store it in your server's secrets. It is shown only once and can only be rotated, not retrieved.
+3. Configure sponsorship and its limits, and fund the policy if it sponsors fees.
+4. On the policy's **General Rules** tab, click **Rotate** to get its bearer token, and store it in your server's secrets. It is shown only once.
 
-A forwarder policy controls the addresses activated with its bearer token:
-
-- **Source networks**: the chains where deposits arrive and are forwarded. Deposits arriving on a removed chain are held on the address until the chain is added back.
-- **Active**: pausing a policy holds all deposits on its addresses until it is re-enabled.
-- **Sponsorship**: when on, the policy pays the forwarding fees from its balance, within its limits. Deposits it cannot pay for are held. When off, fees are deducted from each deposit and the policy's balance and limits are not used.
-- **Sponsorship limits**: the maximum fee per forward, per address per UTC day, and per address over its lifetime, plus a rate limit per address.
-
-The policy page also lists every address activated under it, with its status, forwards count, and fees sponsored.
+See [Forwarder Policies](./forwarder-policies.mdx) for every setting, its default, and how sponsorship, limits, and the policy balance work.
 
 ---
 

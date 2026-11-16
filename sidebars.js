@@ -37,6 +37,11 @@ const sidebars = {
         },
         {
           type: "doc",
+          id: "forwarding-address/forwarder-policies",
+          label: "Forwarder Policies"
+        },
+        {
+          type: "doc",
           id: "forwarding-address/api-reference",
           label: "API Reference"
         },
