@@ -212,7 +212,7 @@ const estimation = await bundler.estimateUserOperationGas(userOperation, entryPo
 [eth_estimateUserOperationGas](/wallet/bundler/rpc-methods/#eth_estimateuseroperationgas)
 
 ### sendUserOperation
-Asks the bundler to sign and submit a User Operation
+Submits a UserOperation to the bundler for on-chain inclusion. The account owner signs the UserOperation first; the bundler does not sign it.
 
 #### Usage
 
@@ -229,6 +229,13 @@ const bundler: Bundler = new Bundler(bundlerRPC);
 const entrypointAddress = "0x0000000071727De22E5E9d8BAf0edAc6f37da032";
 // Use createUserOperation() to help you construct the userOp below
 const userOperation = await smartAccount.createUserOperation(/* ... */);
+
+// Sign with the owner's key before sending
+userOperation.signature = smartAccount.signUserOperation(
+  userOperation,
+  [ownerPrivateKey],
+  chainId,
+);
 
 // highlight-start
 const userOperationHash = await bundler.sendUserOperation(userOperation, entrypointAddress);
