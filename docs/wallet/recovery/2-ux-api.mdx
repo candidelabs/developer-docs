@@ -1,6 +1,6 @@
 ---
 title: Safe Recovery UX API Reference
-description: API specification for Candide's Safe Recovery Service. Features signature aggregation and storage, recovery request monitoring, and gas-sponsored execution and finalization.
+description: Start here for Candide's Safe Recovery Service API. The main recovery flow, getNetworkConfig then create, sign, execute, and finalize, with guardian signature aggregation, request tracking, gas-sponsored execution and finalization, and email/SMS alerts.
 keywords: [safe recovery, social recovery, smart wallet, email recovery, guardian recovery]
 ---
 
@@ -11,10 +11,6 @@ import { DataTable } from "/src/components/Table";
 import {
     postRecoveriesCreate,
     postRecoveriesCreateResponse,
-    getRecoveriesFetchByAddress,
-    getRecoveriesFetchByAddressResponse,
-    getRecoveriesListByAddress,
-    getRecoveriesListByAddressResponse,
     getRecoveriesFetchById,
     getRecoveriesFetchByIdResponse,
     postRecoveriesSign,
@@ -32,6 +28,25 @@ import {
 Use the Recovery UX API to collect guardian signatures, submit recovery transactions, track requests, and manage email/SMS alerts for Safe accounts. It works with the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/) v0.1.0 and v0.2.0.
 
 For email/SMS verification that produces a guardian signature, use the [Email/SMS Recovery API](/wallet/recovery/auth-api/). For an explanation of the full recovery process, see the [service overview](/wallet/recovery/overview/).
+
+## Endpoints at a Glance
+
+| Endpoint | Key params | Returns |
+|---|---|---|
+| [`GET /v1/config/getNetworkConfig`](#get-network-configuration) | `chainId` | `name`, `chainId`, default `moduleAddress`, `modules`, `sponsorships`, `alertChannels` |
+| [`POST /v1/recoveries/create`](#create-recovery-request) | `account`, `newOwners`, `newThreshold`, `chainId`, `moduleAddress?`, `signer`, `signature` | Recovery request (`id`, `emoji`, `moduleAddress`, `recoveryHash`, `status`, ...) |
+| [`POST /v1/recoveries/sign`](#collect-a-guardian-signature) | `id`, `signer`, `signature` | `{ success }` |
+| [`POST /v1/recoveries/execute`](#execute-a-recovery-by-id) | `id` | `{ success }` |
+| [`POST /v1/recoveries/finalize`](#finalize-recovery-by-id) | `id` | `{ success }` |
+| [`GET /v1/recoveries/fetchById`](#fetch-recovery-by-id) | `id` | Recovery request |
+| [`GET /v1/recoveries/fetchByAddress`](/wallet/recovery/account-lookups/#fetch-recovery-by-address) | `account`, `chainId`, `moduleAddress?`, `nonce` | Array of recovery requests |
+| [`GET /v1/recoveries/listByAddress`](/wallet/recovery/account-lookups/#list-all-recoveries-by-address) | `account`, `chainId`, `moduleAddress?`; optional filters `status`, `executed`, `finalized`, `nonce`, `createdAt`, `orderBy`, `order`, `limit`, `offset` | Array of recovery requests |
+| [`POST /v1/alerts/subscribe`](#alerts-subscribe-to-recovery-requests) | `account`, `owner`, `chainId`, `channel`, `target`, `message`, `signature` | `{ subscriptionId }` |
+| [`POST /v1/alerts/activate`](#alerts-activate-subscription-to-recovery-requests) | `subscriptionId`, `challenge` | `{ success }` |
+| [`GET /v1/alerts/subscriptions`](#alerts-get-active-subscription) | `account`, `owner`, `chainId`, `message`, `signature` | `{ subscriptions: [{ id, owner, channel, target }] }` |
+| [`POST /v1/alerts/unsubscribe`](#alerts-unsubscribe) | `subscriptionId`, `owner`, `chainId`, `message`, `signature` | `{ success }` |
+
+The main flow is `getNetworkConfig`, then `create`, `sign`, `execute`, and `finalize`, tracked with `fetchById`. The two account lookups, `fetchByAddress` and `listByAddress`, are documented on [Recovery Lookups by Account](/wallet/recovery/account-lookups/).
 
 ## Before You Start
 
@@ -80,23 +95,6 @@ Before a request is created, the service checks that the module is enabled on th
 The proposed owners must be ones the module can set: at least one address, no duplicates, and none of the zero address, the sentinel address `0x0000000000000000000000000000000000000001`, the Safe itself, or one of its guardians on that module. The v0.1.0 contract accepts such proposals but can never finalize them, so the service rejects them for both versions.
 
 An empty signature (`0x`) is accepted on v0.2.0 modules only, where it is checked on-chain with EIP-1271 for a Safe guardian that approved the recovery hash. The v0.1.0 contract cannot execute it, so the service rejects it there.
-
-## Endpoints
-
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | `/v1/config/getNetworkConfig` | Read a network's modules, sponsorship settings, and alert channels. |
-| POST | `/v1/recoveries/create` | Create a request with a guardian signature. |
-| POST | `/v1/recoveries/sign` | Add another guardian's signature. |
-| POST | `/v1/recoveries/execute` | Submit execution once the guardian threshold is met. |
-| POST | `/v1/recoveries/finalize` | Submit finalization after the grace period. |
-| GET | `/v1/recoveries/fetchById` | Fetch one request by its service ID. |
-| GET | `/v1/recoveries/fetchByAddress` | Fetch requests for an account, chain, and recovery nonce. |
-| GET | `/v1/recoveries/listByAddress` | List requests with filters, sorting, and pagination. |
-| POST | `/v1/alerts/subscribe` | Create an inactive alert subscription and send a verification code. |
-| POST | `/v1/alerts/activate` | Verify the code and activate the subscription. |
-| GET | `/v1/alerts/subscriptions` | List active subscriptions for an account and owner. |
-| POST | `/v1/alerts/unsubscribe` | Remove a subscription. |
 
 ## Network Configuration
 
@@ -340,180 +338,6 @@ curl -X POST \
 </TabItem>
 </Tabs>
 
-### Fetch recovery by address
-
-Fetch all discoverable requests matching a Safe account, chain, module, and recovery nonce. The response is an array, which can be empty. Supply `nonce` as a hexadecimal string; it is the account's nonce on the module named by `moduleAddress`.
-
-#### `GET /v1/recoveries/fetchByAddress`
-
-<Tabs>
-<TabItem value="example-request" label="Example Request">
-
-```bash
-curl -G "https://yourcompany.recovery.candide.dev/v1/recoveries/fetchByAddress" \
-  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
-  --data-urlencode "account=0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba" \
-  --data-urlencode "chainId=1" \
-  --data-urlencode "moduleAddress=0x00480F5ecC008995469fA7e12c70Ef3DC9FEe7fD" \
-  --data-urlencode "nonce=0x1"
-```
-
-</TabItem>
-<TabItem value="example-response" label="Example Response">
-```json
-[
-  {
-    "id": "123456789",
-    "emoji": "🤖😅🥵👻🖖",
-    "account": "0xd422b9d638a7ba4ebef9e33af9456007eab4ccba",
-    "chainId": 1,
-    "newOwners": [
-      "0x41153290c995c8c4410d50f95d87ee86a1b07eec",
-      "0xb97a1c3993a551f0febf030539630acb77e6832d"
-    ],
-    "newThreshold": 2,
-    "nonce": "0x1",
-    "moduleAddress": "0x00480f5ecc008995469fa7e12c70ef3dc9fee7fd",
-    "recoveryHash": "0x6b1e4d9a2c7f8e0b3d5a9c1f4e7b2d8a0c3f6e9b1d4a7c0e3f5b8d2a6c9e1f4b",
-    "signatures": [
-      [
-        "0x795B9cD1E5419C54B07768d4AD09809407dfAF5b",
-        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
-      ]
-    ],
-    "executeData": {
-      "sponsored": false,
-      "transactionHash": ""
-    },
-    "finalizeData": {
-      "sponsored": false,
-      "transactionHash": ""
-    },
-    "status": "PENDING",
-    "discoverable": true,
-    "createdAt": "2023-04-18T12:34:56.789Z",
-    "updatedAt": "2023-04-18T12:34:56.789Z"
-  },
-  {
-    "id": "72682373",
-    "emoji": "💳📿🪣📥📹",
-    "account": "0xd422b9d638a7ba4ebef9e33af9456007eab4ccba",
-    "chainId": 1,
-    "newOwners": [
-      "0x73f7b1184b5cd361cc0f7654998953e2a251dd58",
-      "0x7cb027917b27bcb5963c548657a008bf45b25bdc"
-    ],
-    "newThreshold": 2,
-    "nonce": "0x1",
-    "moduleAddress": "0x00480f5ecc008995469fa7e12c70ef3dc9fee7fd",
-    "recoveryHash": "0x6b1e4d9a2c7f8e0b3d5a9c1f4e7b2d8a0c3f6e9b1d4a7c0e3f5b8d2a6c9e1f4b",
-    "signatures": [
-      [
-        "0x795B9cD1E5419C54B07768d4AD09809407dfAF5b",
-        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
-      ]
-    ],
-    "executeData": {
-      "sponsored": false,
-      "transactionHash": ""
-    },
-    "finalizeData": {
-      "sponsored": false,
-      "transactionHash": ""
-    },
-    "status": "PENDING",
-    "discoverable": true,
-    "createdAt": "2023-04-18T12:34:56.789Z",
-    "updatedAt": "2023-04-18T12:34:56.789Z"
-  }
-]
-```
-</TabItem>
-
-<TabItem value="request" label="Query Parameters">
-    <DataTable items={getRecoveriesFetchByAddress} />
-</TabItem>
-<TabItem value="response" label="Response">
-    <DataTable items={getRecoveriesFetchByAddressResponse} />
-</TabItem>
-</Tabs>
-
-### List all recoveries by address
-
-Lists the recovery requests made for a Safe account on one module, with filtering, pagination, and ordering. The `executed` and `finalized` filters are cross-checked with the on-chain events indexed for that module.
-
-#### `GET /v1/recoveries/listByAddress`
-
-<Tabs>
-<TabItem value="example-request" label="Example Request">
-
-```bash
-curl -G "https://yourcompany.recovery.candide.dev/v1/recoveries/listByAddress" \
-  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
-  --data-urlencode "account=0xD422B9d638a7BA4eBeF9e33Af9456007eAB4ccba" \
-  --data-urlencode "chainId=1" \
-  --data-urlencode "moduleAddress=0x00480F5ecC008995469fA7e12c70Ef3DC9FEe7fD" \
-  --data-urlencode "limit=20" \
-  --data-urlencode "offset=0"
-```
-
-</TabItem>
-<TabItem value="example-response" label="Example Response">
-```json
-[
-  {
-    "id": "123456789",
-    "emoji": "🤖😅🥵👻🖖",
-    "account": "0xd422b9d638a7ba4ebef9e33af9456007eab4ccba",
-    "chainId": 1,
-    "newOwners": [
-      "0x41153290c995c8c4410d50f95d87ee86a1b07eec",
-      "0xb97a1c3993a551f0febf030539630acb77e6832d"
-    ],
-    "newThreshold": 2,
-    "nonce": "0x1",
-    "moduleAddress": "0x00480f5ecc008995469fa7e12c70ef3dc9fee7fd",
-    "recoveryHash": "0x6b1e4d9a2c7f8e0b3d5a9c1f4e7b2d8a0c3f6e9b1d4a7c0e3f5b8d2a6c9e1f4b",
-    "signatures": [
-      [
-        "0x795B9cD1E5419C54B07768d4AD09809407dfAF5b",
-        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
-      ]
-    ],
-    "executeData": {
-      "sponsored": false,
-      "transactionHash": ""
-    },
-    "finalizeData": {
-      "sponsored": false,
-      "transactionHash": ""
-    },
-    "status": "PENDING",
-    "discoverable": true,
-    "createdAt": "2023-04-18T12:34:56.789Z",
-    "updatedAt": "2023-04-18T12:34:56.789Z"
-  }
-]
-```
-
-The response is a plain array with no total count. Request each next page by increasing `offset` by `limit`.
-
-For queries without the `executed` and `finalized` filters, stop when fewer than `limit` items are returned. These two filters are applied after pagination, so queries using either filter can return a short or empty page even when later pages contain matching requests. For those queries, response length does not reliably indicate the end of the results.
-</TabItem>
-
-<TabItem value="request" label="Query Parameters">
-    <DataTable items={getRecoveriesListByAddress} />
-</TabItem>
-<TabItem value="response" label="Response">
-    <DataTable items={getRecoveriesListByAddressResponse} />
-</TabItem>
-</Tabs>
-
-Choosing between the two endpoints:
-
-- **`/v1/recoveries/fetchByAddress`**: Use when you know the exact nonce. Ideal for checking a specific pending request or looking up the current recovery state.
-- **`/v1/recoveries/listByAddress`**: Use when you need to query multiple requests with filtering, pagination, or sorting. Better for dashboard UIs showing recovery history.
-
 ### Fetch recovery by ID
 
 Fetch one request using the `id` returned when it was created. The response includes the request's `moduleAddress` and `recoveryHash`, so guardians can sign the right hash for `/v1/recoveries/sign`.
@@ -574,6 +398,10 @@ curl -G "https://yourcompany.recovery.candide.dev/v1/recoveries/fetchById" \
     <DataTable items={getRecoveriesFetchByIdResponse} />
 </TabItem>
 </Tabs>
+
+### Look up recoveries by account
+
+To find requests for a Safe account instead of by ID, use `/v1/recoveries/fetchByAddress` (one recovery nonce) or `/v1/recoveries/listByAddress` (filters, sorting, and pagination). Both are documented on [Recovery Lookups by Account](/wallet/recovery/account-lookups/).
 
 ## Alerts
 
