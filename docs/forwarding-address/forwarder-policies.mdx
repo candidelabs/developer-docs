@@ -1,0 +1,76 @@
+---
+title: Forwarder Policies
+description: Configure Candide forwarder policies in the Dashboard. Covers source networks, sponsorship, fee limits, balance, alerts, and bearer tokens.
+keywords:
+  - forwarding-address
+  - forwarder policy
+  - sponsorship
+  - bearer token
+  - dashboard
+---
+
+# Forwarder Policies
+
+A forwarder policy sets the rules for every forwarding address activated with its bearer token: which networks accept deposits, who pays the forwarding fee, and how much you are willing to pay. Manage policies under **Forwarder Policies** in the [Candide Dashboard](https://dashboard.candide.dev). A team can have several.
+
+## Create a Policy
+
+1. Create a policy. Choose its name and source networks.
+2. On the **General Rules** tab, click **Rotate** to get the policy's bearer token. Store it in your server's secrets.
+3. Fund the policy, or turn sponsorship off.
+
+A new policy is active and sponsors fees, but its balance is empty. Until you fund it, its deposits are held.
+
+## General Rules
+
+<img src="/img/forwarding-address/general-rules.png" alt="General Rules tab: source networks, Active and Sponsorship toggles, bearer token" width="1200px" />
+
+- **Source Networks**: the chains that accept deposits. A deposit on a chain you removed stays on the address until you add the chain back.
+- **Active**: when off, deposits to every address under the policy are held. They are forwarded when you turn it back on.
+- **Sponsorship**: when on, the policy pays the forwarding fee and the user receives the full deposit. When off, the fee comes out of the deposit, and the policy's balance and limits are not used.
+
+## Sponsorship Limits
+
+<img src="/img/forwarding-address/sponsorship-limits.png" alt="Sponsorship Limits tab with the default limits" width="1200px" />
+
+Limits cap what a sponsoring policy pays. A deposit whose fee would exceed any limit is held.
+
+| Limit | Default | Caps |
+|-------|---------|------|
+| Max Fee Per Forward | $1 | The fee for one forward |
+| Max Fee Per Address Per Day | $10 | Fees for one address in a UTC day |
+| Max Fee Per Address | $100 | Fees for one address over its lifetime |
+| Rate Limit Per Address | Unlimited | Sponsored forwards per address per day or per week |
+
+## Balance
+
+A sponsoring policy pays fees from its own balance, separate from your team balance. To fund it, use **Transfer / Top Up** to move funds from the team balance. Top up the team balance first if it is empty.
+
+**Locked Balance** is reserved for forwards that have not settled yet. **Sponsored Forwards** and **Total Sponsored** count what the policy has paid so far.
+
+A **low-balance alert** emails your team when the available balance drops below an amount you set. Leave enough margin to top up before deposits are held.
+
+## Bearer Token
+
+Your server sends the bearer token when it calls [`account_activateForwardingAddress`](./api-reference.mdx#account_activateforwardingaddress). The team API key goes in the URL; the bearer token goes in the `Authorization` header:
+
+```bash
+curl -X POST https://api.candide.dev/forwarder/v3/<api-key> \
+  -H 'Authorization: Bearer <bearer-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{ "jsonrpc": "2.0", "id": 1, "method": "account_activateForwardingAddress", "params": [ ... ] }'
+```
+
+Addresses activated with a token belong to that token's policy and spend its balance. Keep the token on your server.
+
+The Dashboard shows a token once. You cannot view it again, only rotate it. Rotating revokes the old token at once, so activation calls fail until your server has the new one.
+
+## Addresses
+
+<img src="/img/forwarding-address/addresses.png" alt="Addresses tab with search and status filters" width="1200px" />
+
+The **Addresses** tab lists every address activated under the policy, with its destination, source chains, forwards, fees sponsored, and last activity. An address is **Expired** once its activation TTL ends; see [Keeping Addresses Alive](./integration-guide.mdx#keeping-addresses-alive).
+
+## Delete a Policy
+
+Deleting a policy turns it off, rotates its bearer token, and marks it **Pending Deletion**. Once forwards in progress settle, the remaining balance returns to your team balance.
