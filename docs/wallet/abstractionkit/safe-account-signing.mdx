@@ -1,0 +1,471 @@
+---
+title: AbstractionKit Safe Account Transactions and Signing
+description: Secondary reference for the calldata, signing and sending methods shared by every AbstractionKit Safe account class. For a new Safe, start with Safe Unified Account (SafeMultiChainSigAccountV1).
+image: /img/posters/abstractionkit-meta.png
+keywords: [safe-account, "4337", sdk, account-abstraction, gnosis-safe, eip-712, signing]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+import {
+  getUserOperationEip712HashParamV3,
+  getUserOperationEip712HashReturnV3,
+  sendUserOperationParamV7,
+  sendUserOperationReturn,
+  formatEip712SignaturesToUseroperationSignatureReturn,
+  formatEip712SignaturesToUseroperationSignatureParam,
+  createAccountCallDataSingleTransactionParam,
+  createAccountCallDataSingleTransactionReturn,
+  createAccountCallDataBatchTransactionsParam,
+  createAccountCallDataBatchTransactionsReturn,
+  getUserOperationEip712DataV7Param,
+  getUserOperationEip712DataReturn,
+} from "../../../src/data/accountParamAndReturnData";
+import { userOperationParamV07, userOperationReceiptResultType } from "/src/data/userOperation";
+
+# Safe Account Transactions and Signing
+
+Every AbstractionKit Safe account class inherits these methods from the base `SafeAccount` class: [Safe Unified Account](/wallet/abstractionkit/safe-unified-account) (`SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`, the recommended classes), [Safe Account V3](/wallet/abstractionkit/safe-account-v3) (`SafeAccountV0_3_0`) and [Safe Account V2](/wallet/abstractionkit/safe-account-v2) (`SafeAccountV0_2_0`). Building, estimating and signing with private keys are class-specific and documented on each class page. Owner, module and address methods are on [Safe Account Setup, Owners and Modules](/wallet/abstractionkit/safe-account-management).
+
+The examples import `SafeAccountV0_3_0 as SafeAccount`. Each method on this page is called the same way on `SafeMultiChainSigAccountV1`, `SafeMultiChainSigAccountV2` and `SafeAccountV0_2_0`: change the import to your class. Where a class differs (UserOperation type, default addresses, example output), the section says so.
+
+## Methods at a Glance
+
+| Method | Signature | Returns |
+|---|---|---|
+| [sendUserOperation](#senduseroperation) | `sendUserOperation(userOperation: UserOperationV6 \| UserOperationV7 \| UserOperationV9, bundlerRpc: string \| Transport \| Bundler)` | `Promise<SendUseroperationResponse>` |
+| [signUserOperationWithSigners](#signuseroperationwithsigners) | `signUserOperationWithSigners(userOperation, signers: ReadonlyArray<ExternalSigner>, chainId: bigint, options?: SafeSignatureOptions)` | `Promise<string>` |
+| [createAccountCallDataSingleTransaction](#createaccountcalldatasingletransaction) (static) | `createAccountCallDataSingleTransaction(metaTransaction: MetaTransaction, overrides?: { safeModuleExecutorFunctionSelector? })` | `string` |
+| [createAccountCallDataBatchTransactions](#createaccountcalldatabatchtransactions) (static) | `createAccountCallDataBatchTransactions(metaTransactions: MetaTransaction[], overrides?: { safeModuleExecutorFunctionSelector?; multisendContractAddress? })` | `string` |
+| [getUserOperationEip712Hash](#getuseroperationeip712hash) (static) | `getUserOperationEip712Hash(useroperation, chainId: bigint, overrides?: { validAfter?; validUntil?; entrypointAddress?; safe4337ModuleAddress? })` | `string` |
+| [getUserOperationEip712Data](#getuseroperationeip712data) (static) | `getUserOperationEip712Data(useroperation, chainId: bigint, overrides?: { validAfter?; validUntil?; entrypointAddress?; safe4337ModuleAddress? })` | `{ domain; types; messageValue }` |
+| [formatEip712SignaturesToUseroperationSignature](#formateip712signaturestouseroperationsignature) (static) | `formatEip712SignaturesToUseroperationSignature(signersAddresses: string[], signatures: string[], overrides?: { validAfter?; validUntil?; isMultiChainSignature?; merkleProof? })` | `string` |
+
+`useroperation` is `UserOperationV9` on the Safe Unified Account, `UserOperationV7` on `SafeAccountV0_3_0` and `UserOperationV6` on `SafeAccountV0_2_0`.
+
+## Methods
+
+### sendUserOperation
+
+This method sends the UserOperation to the bundler to be executed on-chain. It returns a promise `SendUseroperationResponse` object to confirm the on-chain inclusion of the UserOperation.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const sendUserOperationResponse = await smartAccount.sendUserOperation(userOperation, bundlerUrl)
+
+console.log("sendUserOperationResponse: ", sendUserOperationResponse);
+console.log("UserOperation sent. Waiting to be included...");
+
+const receipt = await sendUserOperationResponse.included()
+
+console.log("receipt: ", receipt);
+```
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+    <DataTable items={sendUserOperationParamV7} />
+    UserOperationV7
+    <DataTable items={userOperationParamV07} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={sendUserOperationReturn} />
+  UserOperationReceiptResult
+  <DataTable items={userOperationReceiptResultType} />
+</TabItem>
+
+</Tabs>
+<details>
+<summary>Example Response</summary>
+
+```terminal
+sendUserOperationResponse:  SendUseroperationResponse {
+  userOperationHash: '0xbd2cf2185876fbc6eccfdcb9e7a6d606f1032fd0f38b3a3c7ddf7d59d605f0e4',
+  bundler: Bundler {
+    transport: HttpTransport {
+      nextId: 2,
+      url: 'https://api.candide.dev/public/v3/11155111',
+      options: {}
+    },
+    outbound: { request: [Function: request] }
+  },
+  entrypointAddress: '0x0000000071727De22E5E9d8BAf0edAc6f37da032'
+}
+UserOperation sent. Waiting to be included...
+receipt:  {
+  userOpHash: '0xbd2cf2185876fbc6eccfdcb9e7a6d606f1032fd0f38b3a3c7ddf7d59d605f0e4',
+  entryPoint: '0x0000000071727De22E5E9d8BAf0edAc6f37da032',
+  sender: '0x4604a50478f900dbbb6dc5b3f2fd4d498bc8939d',
+  nonce: 0n,
+  paymaster: '0x8b1f6cb5d062aa2ce8d581942bbb960420d875ba',
+  actualGasCost: 161556241n,
+  actualGasUsed: 2098133n,
+  success: true,
+  logs: [
+    {
+      address: '0x0000000071727de22e5e9d8baf0edac6f37da032',
+      topics: [Array],
+      data: '0x000000000000000000000000000000000000000000000000000000000000000000000000...',
+      blockHash: '0x634d29185efba9d6ef6f98a6c547a50b71c021c3a78c389828970ca772181478',
+      blockNumber: '0xb8da33',
+      blockTimestamp: '0x6af4e230',
+      transactionHash: '0x3a69747ddf810c6f908036782319b75e24bd535bb4b9f880feecdedd301a075b',
+      transactionIndex: '0xb',
+      logIndex: '0x17',
+      removed: false
+    }
+  ],
+  receipt: {
+    blockHash: '0x634d29185efba9d6ef6f98a6c547a50b71c021c3a78c389828970ca772181478',
+    blockNumber: 12114483n,
+    from: '0x3cfdc212769c890907bce93d3d8c2c53de6a7a89',
+    cumulativeGasUsed: 7840335n,
+    gasUsed: 1974796n,
+    logs: [
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object],
+      [Object], [Object]
+    ],
+    logsBloom: '0x000004000018100000000001000000008000001000000000000000000200000000080000...',
+    transactionHash: '0x3a69747ddf810c6f908036782319b75e24bd535bb4b9f880feecdedd301a075b',
+    transactionIndex: 11n,
+    effectiveGasPrice: 171n
+  }
+}
+```
+
+</details>
+
+On `SafeAccountV0_2_0` (EntryPoint v0.6), `userOperation` is a `UserOperationV6` (see [Safe Account V2](/wallet/abstractionkit/safe-account-v2#createuseroperation) for its fields), and `entrypointAddress` in the response and `entryPoint` in the receipt are the EntryPoint v0.6 address `0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789`. On the Safe Unified Account (`SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`, EntryPoint v0.9), `userOperation` is a `UserOperationV9` (see [Safe Unified Account](/wallet/abstractionkit/safe-unified-account#createuseroperation)).
+
+To send from a fresh instance, attach the account by its address:
+
+```ts title="example.ts"
+const account = new SafeAccount(userOperation.sender);
+const response = await account.sendUserOperation(userOperation, bundlerUrl);
+const receipt = await response.included();
+```
+
+#### Source code
+[sendUserOperation](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L1100)
+
+### signUserOperationWithSigners
+
+Signs a UserOperation using one or more [`ExternalSigner`s](/wallet/abstractionkit/external-signers) instead of raw private keys. Integrates viem, ethers, hardware wallets, HSMs, MPC services, and WebAuthn through the same API.
+
+<Tabs>
+<TabItem value="viem" label="viem example">
+
+```ts title="example.ts"
+import { fromViem } from "abstractionkit";
+import { privateKeyToAccount } from "viem/accounts";
+
+const viemAccount = privateKeyToAccount("0x...");
+
+userOperation.signature = await smartAccount.signUserOperationWithSigners(
+  userOperation,
+  [fromViem(viemAccount)],
+  chainId,
+);
+```
+
+</TabItem>
+<TabItem value="ethers" label="ethers example">
+
+```ts title="example.ts"
+import { fromEthersWallet } from "abstractionkit";
+import { Wallet } from "ethers";
+
+const wallet = new Wallet("0x...");
+
+userOperation.signature = await smartAccount.signUserOperationWithSigners(
+  userOperation,
+  [fromEthersWallet(wallet)],
+  chainId,
+);
+```
+
+</TabItem>
+</Tabs>
+
+See [External Signers](/wallet/abstractionkit/external-signers) for the full list of adapters and custom-signer integrations.
+
+On `SafeAccountV0_2_0` (EntryPoint v0.6), `userOperation` is a `UserOperationV6`. On the Safe Unified Account (`SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`, EntryPoint v0.9), it is a `UserOperationV9`; the signature is always encoded with the multichain scheme (`isMultiChainSignature: true`), and a `multiChainMerkleProof` option is rejected. To sign several UserOperations under one signature, use [`signUserOperationsWithSigners`](/wallet/abstractionkit/safe-unified-account-multichain#signuseroperationswithsigners).
+
+#### Source code
+
+- SafeMultiChainSigAccountV1 / V2: [signUserOperationWithSigners](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeMultiChainSigAccount.ts#L725)
+- SafeAccountV0_3_0: [signUserOperationWithSigners](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccountV0_3_0.ts#L428)
+- SafeAccountV0_2_0: [signUserOperationWithSigners](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccountV0_2_0.ts#L507)
+
+### createAccountCallDataSingleTransaction
+
+Encode calldata for a single MetaTransaction to be executed by Safe account
+
+#### Usage
+
+In this example, we make a transfer of 1 wei to a random address.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+
+const ownerPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+
+// highlight-start
+const callData = SafeAccount.createAccountCallDataSingleTransaction({
+  to: "0x1a02592A3484c2077d2E5D24482497F85e1980C6",
+  value: 1n,
+  data: "0x",
+});
+// highlight-end
+
+console.log("callData: " + callData);
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createAccountCallDataSingleTransactionParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAccountCallDataSingleTransactionReturn} />
+</TabItem>
+
+</Tabs>
+
+<details>
+<summary>Example Response</summary>
+
+```terminal
+callData: 0x541d63c80000000000000000000000001a02592a3484c2077d2e5d24482497f85e1980c60000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+```
+
+</details>
+
+#### Source code
+
+[createAccountCallDataSingleTransaction](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L298)
+
+### createAccountCallDataBatchTransactions
+
+Encode calldata for a list of MetaTransactions to be executed by Safe account
+
+#### Usage
+
+In this example, we make a transfer to 2 different random addresses, 1 wei each.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import {
+  SafeAccountV0_3_0 as SafeAccount,
+  // highlight-start
+  MetaTransaction,
+  // highlight-end
+} from "abstractionkit";
+
+const ownerPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+
+// highlight-start
+const tx1: MetaTransaction = {
+  to: "0x1a02592A3484c2077d2E5D24482497F85e1980C6",
+  value: 1n,
+  data: "0x",
+};
+const tx2: MetaTransaction = {
+  to: "0x3fe285dcd76bcce4ac92d38a6f2f8e964041e020",
+  value: 1n,
+  data: "0x",
+};
+
+const callData = SafeAccount.createAccountCallDataBatchTransactions([tx1, tx2]);
+// highlight-end
+
+console.log("callData: " + callData);
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createAccountCallDataBatchTransactionsParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAccountCallDataBatchTransactionsReturn} />
+</TabItem>
+
+</Tabs>
+
+<details>
+<summary>Example Response</summary>
+
+```terminal
+callData: 0x541d63c800000000000000000000000038869bf66a61cf6bdb996a6ae40d5853fd43b52600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000001048d80ff0a000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000aa001a02592a3484c2077d2e5d24482497f85e1980c600000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000003fe285dcd76bcce4ac92d38a6f2f8e964041e020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+```
+
+</details>
+
+#### Source code
+
+[createAccountCallDataBatchTransactions](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L333)
+
+### getUserOperationEip712Hash
+
+Create a userOperation eip712 hash
+
+#### Usage
+
+<Tabs>
+  <TabItem value="example" label="example">
+
+```ts title="example"
+import {
+  SafeAccountV0_3_0 as SafeAccount,
+  UserOperationV7
+} from "abstractionkit";
+
+const userOperation: UserOperationV7 = await smartAccount.createUserOperation(..)
+
+// highlight-start
+const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(userOperation, chainId);
+// highlight-end
+
+console.log(safeUserOpHash);
+```
+
+  </TabItem>
+  <TabItem value="param type" label="Param Types">
+    <DataTable items={getUserOperationEip712HashParamV3} />
+  </TabItem>
+  <TabItem value="return type" label="Return Types">
+    <DataTable items={getUserOperationEip712HashReturnV3} />
+  </TabItem>
+</Tabs>
+
+<details>
+<summary>Example Response</summary>
+
+```ts
+0xec030c825b12b398c10f1b552004e43ec753fdf001e1c1daa1ceffe4f7ff5056
+```
+</details>
+
+On `SafeAccountV0_2_0` (EntryPoint v0.6), `userOperation` is a `UserOperationV6` and `entrypointAddress` defaults to EntryPoint v0.6. On the Safe Unified Account (`SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`, EntryPoint v0.9), it is a `UserOperationV9` and `entrypointAddress` defaults to EntryPoint v0.9. Each class defaults `safe4337ModuleAddress` to its own Safe 4337 module.
+
+#### Source code
+
+- SafeMultiChainSigAccountV1 / V2: [getUserOperationEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeMultiChainSigAccount.ts#L297)
+- SafeAccountV0_3_0: [getUserOperationEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccountV0_3_0.ts#L169)
+- SafeAccountV0_2_0: [getUserOperationEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccountV0_2_0.ts#L187)
+
+### getUserOperationEip712Data
+
+A static method that returns the EIP-712 domain data for a userOp
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getUserOperationEip712DataV7Param} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={getUserOperationEip712DataReturn} />
+</TabItem>
+</Tabs>
+
+On `SafeAccountV0_2_0` (EntryPoint v0.6), `userOperation` is a `UserOperationV6`. On the Safe Unified Account (`SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`, EntryPoint v0.9), it is a `UserOperationV9`. Each class defaults `entrypointAddress` and `safe4337ModuleAddress` to its own EntryPoint and Safe 4337 module.
+
+#### Source code
+
+- SafeMultiChainSigAccountV1 / V2: [getUserOperationEip712Data](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeMultiChainSigAccount.ts#L335)
+- SafeAccountV0_3_0: [getUserOperationEip712Data](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccountV0_3_0.ts#L203)
+- SafeAccountV0_2_0: [getUserOperationEip712Data](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccountV0_2_0.ts#L221)
+
+### formatEip712SignaturesToUseroperationSignature
+
+A static method to format a list of eip712 signatures to a userOperation signature.
+
+#### Usage
+
+<Tabs>
+<TabItem value="ethers" label="ethers example">
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { Wallet } from "ethers";
+
+const ownerPrivateKey = process.env.PRIVATE_KEY as string;
+const signer = new Wallet(ownerPrivateKey);
+const ownerPublicAddress = signer.address;
+
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+
+let userOperation = ... // smartAccount.createUserOperation(..)
+
+const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(userOperation, chainId);
+const signature = signer.signingKey.sign(safeUserOpHash).serialized;
+
+const formatedSig = SafeAccount.formatEip712SignaturesToUseroperationSignature([ownerPublicAddress], [signature]);
+userOperation.signature = formatedSig;
+```
+
+</TabItem>
+<TabItem value="viem" label="viem example">
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { privateKeyToAccount } from "viem/accounts";
+
+const ownerPrivateKey = process.env.PRIVATE_KEY as string;
+const signer = privateKeyToAccount(process.env.PRIVATE_KEY1 as `0x${string}`);
+const ownerPublicAddress = signer.address;
+
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+
+let userOperation = ... // smartAccount.createUserOperation(..)
+
+const chainId = BigInt(process.env.CHAIN_ID as string);
+const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(
+  userOperation,
+  chainId
+) as `0x${string}`;
+
+const signature = await signer.sign({ hash: safeUserOpHash });
+
+const formatedSig = SafeAccount.formatEip712SignaturesToUseroperationSignature([ownerPublicAddress], [signature]);
+userOperation.signature = formatedSig;
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={formatEip712SignaturesToUseroperationSignatureParam}/>
+</TabItem>
+<TabItem value="response type" label="Response Type">
+  <DataTable items={formatEip712SignaturesToUseroperationSignatureReturn}/>
+</TabItem>
+</Tabs>
+
+<details>
+<summary>Example Response</summary>
+
+```ts
+0x0000000000000000000000006da39f6f7b0d2c0035084d3c313350697b3167ff591a84bf0b4bb4741224b5d226682ec306544c091e2b6535042c900b459282edfe98e393d552963ca8db11731c
+```
+</details>
+
+On the Safe Unified Account, signatures always use the multichain encoding: pass `{ isMultiChainSignature: true }` as `overrides`. See [Manual EIP-712 signing for a single UserOperation](/wallet/abstractionkit/safe-unified-account#manual-eip-712-signing-for-a-single-useroperation).
+
+#### Source code
+[formatEip712SignaturesToUseroperationSignature](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L553)

@@ -354,7 +354,7 @@ If you're still stuck:
 
 #### New Account
 To initialize a smart account with multiple signer types, provide both a WebAuthn public key and an EOA public key to the initialization function, with the WebAuthn public key listed first.
-To add two Passkey signers, initialize and deploy the account with a single Passkey signer first, then use [`addOwnerWithThreshold`](/wallet/abstractionkit/safe-account-v3/#createaddownerwiththresholdmetatransactions) to add the second Passkey signer.
+To add two Passkey signers, initialize and deploy the account with a single Passkey signer first, then use [`addOwnerWithThreshold`](/wallet/abstractionkit/safe-account-management#createaddownerwiththresholdmetatransactions) to add the second Passkey signer.
 
 ```ts title="multisigInit.ts"
 import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
@@ -376,7 +376,7 @@ let smartAccount = SafeAccount.initializeNewAccount(
 
 #### Existing account
 
-- Add a Passkeys owner to an existing account using [`createAddOwnerWithThresholdMetaTransactions`](/wallet/abstractionkit/safe-account-v3/#createaddownerwiththresholdmetatransactions)
+- Add a Passkeys owner to an existing account using [`createAddOwnerWithThresholdMetaTransactions`](/wallet/abstractionkit/safe-account-management#createaddownerwiththresholdmetatransactions)
 
 ```ts title="addPasskeyOwner.ts"
 import { MetaTransaction } from "abstractionkit"
@@ -388,7 +388,7 @@ const addPasskeysOwner: MetaTransaction[] = await smartAccount.createAddOwnerWit
 );
 ```
 
-- Swap an existing owner to a Passkeys owner using [`createSwapOwnerMetaTransactions`](/wallet/abstractionkit/safe-account-v3/#createswapownermetatransactions)
+- Swap an existing owner to a Passkeys owner using [`createSwapOwnerMetaTransactions`](/wallet/abstractionkit/safe-account-management#createswapownermetatransactions)
 
 ```ts title="swapToPasskeyOwner.ts"
 import { MetaTransaction } from "abstractionkit"
@@ -521,7 +521,7 @@ const webauthSignatureData = webauthnSignatureFromAssertion({
 const webauthnSignature: string = SafeAccount.createWebAuthnSignature(webauthSignatureData);
 ```
 
-- Validating a signed webAuthn message [`verifyWebAuthnSignatureForMessageHash`](/wallet/abstractionkit/safe-account-v3/#verifywebauthnsignatureformessagehash)
+- Validating a signed webAuthn message [`verifyWebAuthnSignatureForMessageHash`](/wallet/abstractionkit/safe-account-management#verifywebauthnsignatureformessagehash)
 
 ```ts title="verifyMessage.ts"
 const isSignatureValid: boolean =

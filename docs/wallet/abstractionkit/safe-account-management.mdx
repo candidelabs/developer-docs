@@ -1,0 +1,443 @@
+---
+title: AbstractionKit Safe Account Setup, Owners and Modules
+description: Secondary reference for the address, owner, module and account-state methods shared by every AbstractionKit Safe account class. For a new Safe, start with Safe Unified Account (SafeMultiChainSigAccountV1).
+image: /img/posters/abstractionkit-meta.png
+keywords: [safe-account, "4337", sdk, account-abstraction, gnosis-safe, owners, modules, multisig]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+import {
+  createAccountAddressParam,
+  createAccountAddressReturn,
+  ecdsaPublicAddressType,
+  webAuthnPublicKeyType,
+  isDeployedParams,
+  isDeployedReturn,
+  createInitializerCallDataParamV3,
+  createInitializerCallDataReturnV3,
+  isModuleEnabledParams,
+  isModuleEnabledReturn,
+  createSwapOwnerMetaTransactionsParams,
+  createSwapOwnerMetaTransactionsReturn,
+  createRemoveOwnerMetaTransactionParams,
+  createRemoveOwnerMetaTransactionReturn,
+  createAddOwnerWithThresholdMetaTransactionsParams,
+  createAddOwnerWithThresholdMetaTransactionsReturn,
+  createDisableModuleMetaTransactionParams,
+  createDisableModuleMetaTransactionReturn,
+  verifyWebAuthnSignatureForMessageHashParam,
+  verifyWebAuthnSignatureForMessageHashReturn,
+  getFallbackHandlerParams,
+  getFallbackHandlerReturn,
+  getSafeVersionParams,
+  getSafeVersionReturn,
+} from "../../../src/data/accountParamAndReturnData";
+
+# Safe Account Setup, Owners and Modules
+
+Every AbstractionKit Safe account class has these methods: [Safe Unified Account](/wallet/abstractionkit/safe-unified-account) (`SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`, the recommended classes), [Safe Account V3](/wallet/abstractionkit/safe-account-v3) (`SafeAccountV0_3_0`) and [Safe Account V2](/wallet/abstractionkit/safe-account-v2) (`SafeAccountV0_2_0`). Calldata, signing and sending methods are on [Safe Account Transactions and Signing](/wallet/abstractionkit/safe-account-signing).
+
+The examples import `SafeAccountV0_3_0 as SafeAccount`. Each method on this page is called the same way on `SafeMultiChainSigAccountV1`, `SafeMultiChainSigAccountV2` and `SafeAccountV0_2_0`: change the import to your class. Where a class differs (UserOperation type, default addresses, example output), the section says so.
+
+## Methods at a Glance
+
+| Method | Signature | Returns |
+|---|---|---|
+| [isDeployed](#isdeployed) (static) | `isDeployed(accountAddress: string, nodeRpcUrl: string \| Transport \| JsonRpcNode)` | `Promise<boolean>` |
+| [createAccountAddress](#createaccountaddress) (static) | `createAccountAddress(owners: Signer[], overrides?: InitCodeOverrides)` | `string` |
+| [createInitializerCallData](#createinitializercalldata) (static) | `createInitializerCallData(owners: Signer[], threshold: number, overrides?)` | `string` |
+| [getSafeVersion](#getsafeversion) | `getSafeVersion(nodeRpcUrl: string \| Transport \| JsonRpcNode)` | `Promise<string>` |
+| [getFallbackHandler](#getfallbackhandler) | `getFallbackHandler(nodeRpcUrl: string \| Transport \| JsonRpcNode)` | `Promise<string>` |
+| [isModuleEnabled](#ismoduleenabled) | `isModuleEnabled(nodeRpcUrl: string \| Transport \| JsonRpcNode, moduleAddress: string)` | `Promise<boolean>` |
+| [createDisableModuleMetaTransaction](#createdisablemodulemetatransaction) | `createDisableModuleMetaTransaction(nodeRpcUrl, moduleToDisableAddress: string, accountAddress: string, overrides?: { prevModuleAddress?; modulesStart?; modulesPageSize? })` | `Promise<MetaTransaction>` |
+| [createAddOwnerWithThresholdMetaTransactions](#createaddownerwiththresholdmetatransactions) | `createAddOwnerWithThresholdMetaTransactions(newOwner: Signer, threshold: number, overrides?)` | `Promise<MetaTransaction[]>` |
+| [createStandardAddOwnerWithThresholdMetaTransaction](#createstandardaddownerwiththresholdmetatransaction) | `createStandardAddOwnerWithThresholdMetaTransaction(newOwner: string, threshold: number)` | `MetaTransaction` |
+| [createSwapOwnerMetaTransactions](#createswapownermetatransactions) | `createSwapOwnerMetaTransactions(nodeRpcUrl, newOwner: Signer, oldOwner: Signer, overrides?)` | `Promise<MetaTransaction[]>` |
+| [createRemoveOwnerMetaTransaction](#createremoveownermetatransaction) | `createRemoveOwnerMetaTransaction(nodeRpcUrl, ownerToDelete: Signer, threshold: number, overrides?)` | `Promise<MetaTransaction>` |
+| [verifyWebAuthnSignatureForMessageHash](#verifywebauthnsignatureformessagehash) (static) | `verifyWebAuthnSignatureForMessageHash(nodeRpcUrl, signer: WebauthnPublicKey, messageHash: string, signature: string, overrides?)` | `Promise<boolean>` |
+
+WebAuthn owners are derived with the Passkey module defaults of the class the method is called on: v0.2.1 on the Safe Unified Account classes. Per-call overrides win.
+
+## Account Address and State
+
+### isDeployed
+
+Static method that checks whether a Safe account is already deployed on-chain. Use it to decide between connecting to an existing account (`new SafeAccountV0_3_0(address)`) and initializing a counterfactual one (`SafeAccountV0_3_0.initializeNewAccount(owners)`). Once an account is deployed, the factory data carried by `initializeNewAccount` is no longer needed and including it would waste gas.
+
+The same static method exists on every Safe class, for example `SafeMultiChainSigAccountV1.isDeployed(...)`.
+
+This only checks for non-empty bytecode at `accountAddress`. It does not verify that the deployed code is a Safe or that its on-chain configuration matches a given owner set.
+
+#### Usage
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+
+const accountAddress = "0x1a02592A3484c2077d2E5D24482497F85e1980C6";
+const nodeRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com";
+
+const account = (await SafeAccount.isDeployed(accountAddress, nodeRpcUrl))
+    ? new SafeAccount(accountAddress)
+    : SafeAccount.initializeNewAccount([ownerPublicAddress]);
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={isDeployedParams} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={isDeployedReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[isDeployed](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L281)
+
+### createAccountAddress
+
+Calculates the Account address from the initial owners
+
+#### Usage
+
+In this example, we initiate a single owner account.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+
+const ownerPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
+const safeAddress = SafeAccount.createAccountAddress(
+    [ownerPublicAddress],
+);
+
+console.log("Account address (sender): " + safeAddress);
+```
+
+</TabItem>
+
+<TabItem value="param type" label="Param Types">
+  <DataTable items={createAccountAddressParam} />
+  <DataTable items={ecdsaPublicAddressType} />
+   WebauthnPublicKey
+  <DataTable items={webAuthnPublicKeyType} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAccountAddressReturn} />
+</TabItem>
+
+</Tabs>
+
+<details>
+<summary>Example Response</summary>
+
+```terminal
+Account address (sender): 0xd785Bb8A95A6a08aCE0Aa2e54aeE5cF04694b1db
+```
+
+With `SafeAccountV0_2_0`, the same owner gives `0xb8741a449D50ed0Dcfe395287F85BE152884c8d9`.
+
+</details>
+
+Each class derives the address from its own default Safe 4337 module, module setup contract and Passkey module defaults, so the same owners give a different address on each class. `SafeMultiChainSigAccountV2` uses the Safe L2 v1.5.0 singleton by default; see [V1 or V2](/wallet/abstractionkit/safe-unified-account#v1-or-v2).
+
+#### Source code
+
+- SafeMultiChainSigAccountV1: [createAccountAddress](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeMultiChainSigAccount.ts#L171)
+- SafeMultiChainSigAccountV2: [createAccountAddress](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeMultiChainSigAccountV2.ts#L108)
+- SafeAccountV0_3_0: [createAccountAddress](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccountV0_3_0.ts#L74)
+- SafeAccountV0_2_0: [createAccountAddress](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccountV0_2_0.ts#L73)
+
+### createInitializerCallData
+
+Creates the initializer calldata
+
+#### Usage
+
+<Tabs>
+  <TabItem value="example" label="Example">
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+
+const initializeCallData = SafeAccount.createInitializerCallData(
+  [ownerPublicAddress], // owners
+  1, //threshold
+);
+console.log("initializeCallData: " + initializeCallData);
+```
+
+  </TabItem>
+  <TabItem value="param type" label="Param Types">
+    <DataTable items={createInitializerCallDataParamV3}/>
+    <DataTable items={ecdsaPublicAddressType} />
+    WebauthnPublicKey
+    <DataTable items={webAuthnPublicKeyType} />
+  </TabItem>
+  <TabItem value="return type" label="Return Types">
+    <DataTable items={createInitializerCallDataReturnV3}/>
+  </TabItem>
+</Tabs>
+
+<details>
+<summary>Example Response</summary>
+
+```terminal
+initializeCallData: 0xb63e800d000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000010000000000000000000000002dd68b007b46fbe91b9a7c3eda5a7a1063cb5b47000000000000000000000000000000000000000000000000000000000000014000000000000000000000000075cf11467937ce3f2f357ce24ffc3dbf8fd5c2260000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d3100000000000000000000000000000000000000000000000000000000000000648d0dc49f0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000075cf11467937ce3f2f357ce24ffc3dbf8fd5c22600000000000000000000000000000000000000000000000000000000
+```
+
+With `SafeAccountV0_2_0`, which uses its own Safe 4337 module and module setup addresses:
+
+```terminal
+initializeCallData: 0xb63e800d000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000010000000000000000000000008ecd4ec46d4d2a6b64fe960b3d64e8b94b2234eb0000000000000000000000000000000000000000000000000000000000000140000000000000000000000000a581c4a4db7175302464ff3c06380bc3270b40370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d3100000000000000000000000000000000000000000000000000000000000000648d0dc49f00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000a581c4a4db7175302464ff3c06380bc3270b403700000000000000000000000000000000000000000000000000000000
+```
+
+</details>
+
+#### Source code
+
+- SafeMultiChainSigAccountV1 / V2: [createInitializerCallData](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeMultiChainSigAccount.ts#L372)
+- SafeAccountV0_3_0: [createInitializerCallData](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccountV0_3_0.ts#L241)
+- SafeAccountV0_2_0: [createInitializerCallData](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccountV0_2_0.ts#L284)
+
+### getSafeVersion
+
+Reads the Safe singleton version string via `VERSION()`, for example `"1.4.1"`.
+
+#### Usage
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+
+const accountAddress = "0x1a02592A3484c2077d2E5D24482497F85e1980C6";
+const nodeRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com";
+
+const smartAccount = new SafeAccount(accountAddress);
+const version = await smartAccount.getSafeVersion(nodeRpcUrl);
+```
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getSafeVersionParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={getSafeVersionReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[getSafeVersion](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L3072)
+
+### getFallbackHandler
+
+Reads the active ERC-4337 fallback handler (the 4337 module) currently set on the Safe.
+
+#### Usage
+
+```ts
+import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+
+const accountAddress = "0x1a02592A3484c2077d2E5D24482497F85e1980C6";
+const nodeRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com";
+
+const smartAccount = new SafeAccount(accountAddress);
+const fallbackHandler = await smartAccount.getFallbackHandler(nodeRpcUrl);
+```
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getFallbackHandlerParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={getFallbackHandlerReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[getFallbackHandler](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L3041)
+
+## Modules
+
+### isModuleEnabled
+
+Checks if a specified module is enabled for a given Safe account. This function returns a boolean indicating the module's status.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={isModuleEnabledParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+    <DataTable items={isModuleEnabledReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[isModuleEnabled](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L3013)
+
+### createDisableModuleMetaTransaction
+
+Creates a meta-transaction to disable a module from the Safe account. The function automatically fetches the previous module address in the linked list if not provided in the overrides. This function returns a promise that resolves to a meta-transaction object containing the necessary details for disabling the module.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createDisableModuleMetaTransactionParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={createDisableModuleMetaTransactionReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[createDisableModuleMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L3301)
+
+## Owners
+
+### createAddOwnerWithThresholdMetaTransactions
+
+Builds the MetaTransactions needed to add a new owner (an ECDSA address or a WebAuthn public key) and set a new threshold. If the new owner is a WebAuthn signer whose verifier contract is not yet deployed, the returned list also contains a MetaTransaction that deploys the verifier, so it resolves to one or two MetaTransactions.
+
+```ts
+createAddOwnerWithThresholdMetaTransactions(
+  newOwner: Signer,
+  threshold: number,
+  overrides?: {
+    nodeRpcUrl?: string | Transport | JsonRpcNode;
+    eip7212WebAuthnPrecompileVerifier?: string;
+    eip7212WebAuthnContractVerifier?: string;
+    webAuthnSignerFactory?: string;
+    webAuthnSignerSingleton?: string;
+    webAuthnSignerProxyCreationCode?: string;
+  },
+): Promise<MetaTransaction[]>
+```
+
+`overrides.nodeRpcUrl` is required when adding a WebAuthn owner, so the SDK can check whether the new owner's verifier is already deployed.
+
+On `SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`, a passkey owner is derived with the class's own Safe Passkey module v0.2.1 defaults, so the added owner is the signer the account signs with. Pass WebAuthn overrides only if you created the account with custom WebAuthn values.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const newOwnerPublicAddress = "0xNewOwnerAddress";
+
+const addOwnerMetaTransactions =
+    await smartAccount.createAddOwnerWithThresholdMetaTransactions(
+        newOwnerPublicAddress,
+        2, // new threshold
+    );
+
+const userOperation = await smartAccount.createUserOperation(
+    addOwnerMetaTransactions,
+    nodeRpcUrl,
+    bundlerUrl,
+);
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createAddOwnerWithThresholdMetaTransactionsParams} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAddOwnerWithThresholdMetaTransactionsReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[createAddOwnerWithThresholdMetaTransactions](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L2679)
+
+### createStandardAddOwnerWithThresholdMetaTransaction
+
+Builds the single standard `addOwnerWithThreshold` MetaTransaction for an owner public address. Unlike the plural variant above, it takes a plain address, performs no WebAuthn verifier handling, and returns synchronously.
+
+```ts
+createStandardAddOwnerWithThresholdMetaTransaction(
+  newOwner: string,
+  threshold: number,
+): MetaTransaction
+```
+
+```ts title="example.ts"
+const addOwnerMetaTransaction =
+    smartAccount.createStandardAddOwnerWithThresholdMetaTransaction(
+        "0xNewOwnerAddress",
+        2, // new threshold
+    );
+```
+
+#### Source code
+
+[createStandardAddOwnerWithThresholdMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L2735)
+
+### createSwapOwnerMetaTransactions
+
+Creates a meta-transaction to swap an owner in the Safe account. If a new owner verifier is not already deployed, it will deploy one and fetch the previous owner automatically. This function returns a promise that resolves to a list of meta-transactions containing the necessary details for the swap and deployment.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createSwapOwnerMetaTransactionsParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={createSwapOwnerMetaTransactionsReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[createSwapOwnerMetaTransactions](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L2541)
+
+### createRemoveOwnerMetaTransaction
+
+Creates a meta-transaction to remove an owner from the Safe account, fetching the previous owner if not provided. This function returns a promise that resolves to a meta-transaction object containing the necessary details for the removal.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={createRemoveOwnerMetaTransactionParams} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={createRemoveOwnerMetaTransactionReturn} />
+</TabItem>
+</Tabs>
+
+#### Source code
+
+[createRemoveOwnerMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L2626)
+
+### verifyWebAuthnSignatureForMessageHash
+
+A static method that verifies a webAuthn signed hash message for Passkeys, and can be also used even if the safe account hasn't been deployed yet.
+
+<Tabs>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={verifyWebAuthnSignatureForMessageHashParam} />
+</TabItem>
+<TabItem value="Return type" label="Return Types">
+  <DataTable items={verifyWebAuthnSignatureForMessageHashReturn} />
+</TabItem>
+</Tabs>
+
+On the Safe Unified Account classes, the default verifier addresses come from the class's Safe Passkey module v0.2.1 defaults.
+
+#### Source code
+
+- SafeMultiChainSigAccountV1 / V2: [verifyWebAuthnSignatureForMessageHash](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeMultiChainSigAccount.ts#L1228)
+- SafeAccountV0_3_0 and SafeAccountV0_2_0: [verifyWebAuthnSignatureForMessageHash](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeAccount.ts#L3162)
