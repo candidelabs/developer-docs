@@ -1,0 +1,364 @@
+---
+title: Safe Unified Account Multichain Signing SDK Reference
+description: Secondary reference for signing UserOperations on several chains with one signature using SafeMultiChainSigAccountV1 and SafeMultiChainSigAccountV2. Start with Safe Unified Account for account setup and single-chain transactions.
+image: /img/posters/abstractionkit-meta.png
+keywords: [safe-unified-account, chain-abstraction, multichain, merkle-tree, "4337", sdk, account-abstraction]
+---
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+import {
+  formatSignaturesToUseroperationsSignaturesParam,
+  formatSignaturesToUseroperationsSignaturesReturn,
+  getMultiChainEip712DataParam,
+  getMultiChainEip712DataReturn,
+  getMultiChainEip712HashParam,
+  getMultiChainEip712HashReturn,
+  signUserOperationsParam,
+  signUserOperationsReturn,
+  userOperationToSignType,
+  userOperationToSignWithOverridesType,
+} from "../../../src/data/accountParamAndReturnData";
+
+# Safe Unified Account Multichain Signing
+
+These methods of the [Safe Unified Account](/wallet/abstractionkit/safe-unified-account) (`SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`) sign UserOperations for several chains with a single signature, using a Merkle tree of the UserOperation hashes. Create the account, build each UserOperation and send it as described on [Safe Unified Account](/wallet/abstractionkit/safe-unified-account). For an ordinary single-chain transaction, use [`signUserOperation`](/wallet/abstractionkit/safe-unified-account#signuseroperation) instead.
+
+The examples use `SafeMultiChainSigAccountV1`. Every method works the same on `SafeMultiChainSigAccountV2`.
+
+## Methods at a Glance
+
+| Method | Signature | Returns |
+|---|---|---|
+| [signUserOperations](#signuseroperations) | `signUserOperations(userOperationsToSign: UserOperationToSign[], privateKeys: string[])` | `string[]` |
+| [signUserOperationsWithSigners](#signuseroperationswithsigners) | `signUserOperationsWithSigners(userOperationsToSign: UserOperationToSign[], signers: ReadonlyArray<ExternalSigner<MultiOpSignContext<UserOperationV9>>>)` | `Promise<string[]>` |
+| [getMultiChainSingleSignatureUserOperationsEip712Hash](#getmultichainsinglesignatureuseroperationseip712hash) (static) | `getMultiChainSingleSignatureUserOperationsEip712Hash(userOperationsToSign: UserOperationToSign[], overrides?: { safe4337ModuleAddress?; entrypointAddress? })` | `string` |
+| [getMultiChainSingleSignatureUserOperationsEip712Data](#getmultichainsinglesignatureuseroperationseip712data) (static) | `getMultiChainSingleSignatureUserOperationsEip712Data(userOperationsToSign: UserOperationToSign[], overrides?: { safe4337ModuleAddress?; entrypointAddress? })` | `{ domain; types; messageValue }` |
+| [formatSignaturesToUseroperationsSignatures](#formatsignaturestouseroperationssignatures) (static) | `formatSignaturesToUseroperationsSignatures(userOperationsToSign: UserOperationToSignWithOverrides[], signerSignaturePairs: SignerSignaturePair[])` | `string[]` |
+
+For gas sponsorship across chains, see [Gas Sponsorship](#gas-sponsorship).
+
+## Methods
+
+### signUserOperations
+
+Signs multiple UserOperations across different chains with a single signing session. Builds a Merkle tree from the UserOperation hashes, signs the Merkle root, and returns an array of signatures (one per UserOperation) each containing the Merkle proof for its chain.
+
+If only one UserOperation is provided, falls back to single-chain signing.
+
+In AbstractionKit `v0.3.5`, `UserOperationToSignWithOverrides` split the previous catch-all `overrides` field into `options` for normal signing options and `webAuthnSignatureOverrides` for WebAuthn-specific signature encoding values.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+
+// Create UserOperations for each chain
+const userOp1 = await smartAccount.createUserOperation([tx], nodeUrl1, bundlerUrl1);
+const userOp2 = await smartAccount.createUserOperation([tx], nodeUrl2, bundlerUrl2);
+
+// Sign all UserOperations with one signing session
+const signatures = smartAccount.signUserOperations(
+    [
+        { userOperation: userOp1, chainId: 11155111n },
+        { userOperation: userOp2, chainId: 11155420n },
+    ],
+    [ownerPrivateKey],
+);
+
+// Attach signatures
+userOp1.signature = signatures[0];
+userOp2.signature = signatures[1];
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={signUserOperationsParam} />
+
+  UserOperationToSign
+  <DataTable items={userOperationToSignType} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={signUserOperationsReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[signUserOperations](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeMultiChainSigAccount.ts#L763)
+
+### signUserOperationsWithSigners
+
+Multi-op variant that signs a Merkle-rooted bundle of UserOperations using one or more [`ExternalSigner`s](/wallet/abstractionkit/external-signers) instead of raw private keys. One signing session covers every chain in the bundle.
+
+Since `v0.3.8`, this path accepts typed-data-only signers such as `fromViemWalletClient` as well as raw-hash signers. Pass `chainId` inside each `UserOperationToSign` item so the SDK can build the per-chain typed-data payloads.
+
+```ts
+signUserOperationsWithSigners(
+  userOperationsToSign: UserOperationToSign[],
+  signers: ExternalSigner<MultiOpSignContext<UserOperationV9>>[],
+): Promise<string[]>
+```
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeMultiChainSigAccountV1 as SafeAccount, fromViem } from "abstractionkit";
+import { privateKeyToAccount } from "viem/accounts";
+
+const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
+const viemAccount = privateKeyToAccount("0x...");
+
+const signatures = await smartAccount.signUserOperationsWithSigners(
+    [
+        { userOperation: userOp1, chainId: 11155111n },
+        { userOperation: userOp2, chainId: 11155420n },
+    ],
+    [fromViem(viemAccount)],
+);
+
+userOp1.signature = signatures[0];
+userOp2.signature = signatures[1];
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <table>
+    <thead>
+    <tr>
+      <th align="left">Param Name</th>
+      <th align="left">Param Type</th>
+      <th align="left">Description</th>
+    </tr>
+  </thead>
+    <tbody>
+      <tr>
+        <td>userOperationsToSign</td>
+        <td align="left">
+          UserOperationToSign[]
+          <DataTable items={userOperationToSignType} />
+        </td>
+        <td align="left">
+          UserOperations with their chain IDs and optional validity windows.
+        </td>
+      </tr>
+      <tr>
+        <td>signers</td>
+        <td align="left">
+          {`ExternalSigner<MultiOpSignContext<UserOperationV9>>[]`}
+        </td>
+        <td align="left">
+          One signer per owner required by the threshold, in any order. The built-in adapters `fromPrivateKey`, `fromViem`, `fromEthersWallet`, and `fromViemWalletClient` all work here. A custom signer must be typed for the multi-op context, as described on the External Signers page.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <table>
+    <thead>
+    <tr>
+      <th align="left">Param Name</th>
+      <th align="left">Param Type</th>
+      <th align="left">Description</th>
+    </tr>
+  </thead>
+    <tbody>
+      <tr>
+        <td>signatures</td>
+        <td align="left">
+          {`Promise<string[]>`}
+        </td>
+        <td align="left">
+          One formatted signature per input UserOperation, in the same order.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</TabItem>
+
+</Tabs>
+
+See [External Signers](/wallet/abstractionkit/external-signers) for the full list of adapters, and the [multi-chain add-owner example](https://github.com/candidelabs/abstractionkit-examples/blob/main/chain-abstraction/add-owner-with-external-signer.ts) for a full end-to-end flow.
+
+#### Source code
+
+[signUserOperationsWithSigners](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeMultiChainSigAccount.ts#L859)
+
+### getMultiChainSingleSignatureUserOperationsEip712Hash
+
+Static method. Computes the EIP-712 hash of the Merkle tree root for a set of UserOperations. This is the hash that wallet signers (browser extensions, hardware wallets) sign to approve multiple cross-chain operations at once.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+
+const hash = SafeAccount.getMultiChainSingleSignatureUserOperationsEip712Hash([
+    { userOperation: userOp1, chainId: 11155111n },
+    { userOperation: userOp2, chainId: 11155420n },
+]);
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getMultiChainEip712HashParam} />
+
+  UserOperationToSign
+  <DataTable items={userOperationToSignType} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={getMultiChainEip712HashReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[getMultiChainSingleSignatureUserOperationsEip712Hash](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeMultiChainSigAccount.ts#L993)
+
+### getMultiChainSingleSignatureUserOperationsEip712Data
+
+Static method. Returns the EIP-712 typed data components (domain, types, message value) for a multi-chain Merkle tree root. Use this for wallet-compatible signing via `eth_signTypedData_v4`.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+
+const { domain, types, messageValue } =
+    SafeAccount.getMultiChainSingleSignatureUserOperationsEip712Data([
+        { userOperation: userOp1, chainId: 11155111n },
+        { userOperation: userOp2, chainId: 11155420n },
+    ]);
+
+// Use with a wallet provider
+const signature = await wallet.signTypedData(domain, types, messageValue);
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={getMultiChainEip712DataParam} />
+
+  UserOperationToSign
+  <DataTable items={userOperationToSignType} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={getMultiChainEip712DataReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[getMultiChainSingleSignatureUserOperationsEip712Data](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeMultiChainSigAccount.ts#L1025)
+
+### formatSignaturesToUseroperationsSignatures
+
+Static method. Formats EIP-712 signatures (from wallet signing) into UserOperation signatures with Merkle proofs. Use this after signing with `getMultiChainSingleSignatureUserOperationsEip712Hash` or `getMultiChainSingleSignatureUserOperationsEip712Data`.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
+
+const userOpsToSign = [
+    { userOperation: userOp1, chainId: 11155111n },
+    // Since v0.3.5, generic signing options and WebAuthn signature overrides
+    // use separate fields instead of the previous catch-all `overrides` field.
+    {
+        userOperation: userOp2,
+        chainId: 11155420n,
+        options: { safe4337ModuleAddress: "0x..." },
+        webAuthnSignatureOverrides: { isInit: userOp2.factory != null },
+    },
+];
+
+const signerSignaturePairs = [
+    { signer: ownerAddress, signature: eip712Signature },
+];
+
+const signatures = SafeAccount.formatSignaturesToUseroperationsSignatures(
+    userOpsToSign,
+    signerSignaturePairs,
+);
+
+userOp1.signature = signatures[0];
+userOp2.signature = signatures[1];
+```
+
+</TabItem>
+
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={formatSignaturesToUseroperationsSignaturesParam} />
+
+  UserOperationToSignWithOverrides
+  <DataTable items={userOperationToSignWithOverridesType} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={formatSignaturesToUseroperationsSignaturesReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+
+[formatSignaturesToUseroperationsSignatures](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Safe/SafeMultiChainSigAccount.ts#L1102)
+
+## Gas Sponsorship
+
+Use `CandidePaymaster` for gas sponsorship with multichain operations. The paymaster uses a two-phase flow: **commit** (before signing) and **finalize** (after signing).
+
+```ts title="example.ts"
+import { CandidePaymaster } from "abstractionkit";
+
+// One paymaster instance per chain
+const paymaster1 = new CandidePaymaster("https://api.candide.dev/public/v3/11155111");
+const paymaster2 = new CandidePaymaster("https://api.candide.dev/public/v3/11155420");
+
+// Phase 1: Commit (before signing)
+const commitContext = { signingPhase: "commit" as const };
+const commitOverrides = { preVerificationGasPercentageMultiplier: 20 };
+const [{ userOperation: commitOp1 }, { userOperation: commitOp2 }] = await Promise.all([
+    paymaster1.createSponsorPaymasterUserOperation(
+        smartAccount, userOperation1, bundlerUrl1, undefined, commitContext, commitOverrides
+    ),
+    paymaster2.createSponsorPaymasterUserOperation(
+        smartAccount, userOperation2, bundlerUrl2, undefined, commitContext, commitOverrides
+    ),
+]);
+userOperation1 = commitOp1;
+userOperation2 = commitOp2;
+
+// Sign here with signUserOperations...
+
+// Phase 2: Finalize (after signing)
+const finalizeContext = { signingPhase: "finalize" as const };
+const [{ userOperation: finalOp1 }, { userOperation: finalOp2 }] = await Promise.all([
+    paymaster1.createSponsorPaymasterUserOperation(
+        smartAccount, userOperation1, bundlerUrl1, undefined, finalizeContext
+    ),
+    paymaster2.createSponsorPaymasterUserOperation(
+        smartAccount, userOperation2, bundlerUrl2, undefined, finalizeContext
+    ),
+]);
+userOperation1 = finalOp1;
+userOperation2 = finalOp2;
+```
