@@ -80,7 +80,7 @@ Authenticated endpoints have higher rate limits than the [public endpoints](/wal
 An API key and a private gas policy ID carry different risks:
 
 - **API key:** a leaked key lets others use the API on your plan, so the cost is API usage billed to you. It can't move funds or spend your gas tank on its own. Prefer calling Candide from a backend in production, which also protects your usage. A key in frontend code is acceptable for prototypes and client-only apps.
-- **Private gas policy ID:** whoever holds it gets gas sponsored under that policy, paid from your gas tank. Keep it on a backend, so paymaster requests that carry it come from your server, and add [rules to the policy](/instagas/gas-policies/) (allowed domains, accounts, calls) to limit what it pays for.
+- **Private gas policy ID:** whoever holds it gets gas sponsored under that policy, paid from your gas tank. Keep it on a backend, so paymaster requests that carry it come from your server, and add [rules to the policy](/instagas/gas-policies/) (allowed domains, accounts, calls) to limit what it pays for. Your backend must also check who is asking before it attaches the ID, for example by requiring a signed-in user whose account belongs to your app. A backend that attaches the ID to any request sponsors anyone who finds it.
 
 Either way:
 
