@@ -1,7 +1,8 @@
 ---
 title: Calibur Account SDK Reference
-description: Learn how to use Calibur7702Account for EIP-7702 smart accounts with passkey support, multi-key management, and per-key hooks
+description: Start here for Calibur7702Account, the EIP-7702 account for users who already have an EOA and must keep its address. Create the account from an existing EOA, delegate it, and build, sign and send UserOperations.
 keywords: [calibur, calibur7702account, "7702", sdk, account-abstraction, eip-7702, passkeys, webauthn, key-management]
+image: /img/posters/abstractionkit-meta.png
 ---
 import CardList from "/src/components/CardList";
 import Tabs from "@theme/Tabs";
@@ -9,12 +10,6 @@ import TabItem from "@theme/TabItem";
 import { DataTable } from "/src/components/Table";
 
 import {
-  caliburKeyTypeEnum,
-  caliburKeyType,
-  caliburKeySettingsType,
-  caliburKeySettingsResultType,
-  webAuthnSignatureDataType,
-  caliburSignatureOverridesType,
   simpleMetaTransactionType,
   createUserOperationParam,
   createUserOperationReturn,
@@ -22,52 +17,10 @@ import {
   signUserOperationReturn,
   signUserOperationWithSignerParam,
   signUserOperationWithSignerReturn,
-  formatWebAuthnSignatureParam,
-  formatWebAuthnSignatureReturn,
   sendUserOperationParam,
   sendUserOperationReturn,
-  createSecp256k1KeyParam,
-  createSecp256k1KeyReturn,
-  createWebAuthnP256KeyParam,
-  createWebAuthnP256KeyReturn,
-  createP256KeyParam,
-  createP256KeyReturn,
-  getKeyHashParam,
-  getKeyHashReturn,
-  createRegisterKeyMetaTransactionsParam,
-  createRegisterKeyMetaTransactionsReturn,
-  createRevokeKeyMetaTransactionParam,
-  createRevokeKeyMetaTransactionReturn,
-  createUpdateKeySettingsMetaTransactionParam,
-  createUpdateKeySettingsMetaTransactionReturn,
-  packKeySettingsParam,
-  packKeySettingsReturn,
-  unpackKeySettingsParam,
-  unpackKeySettingsReturn,
-  isKeyRegisteredParam,
-  isKeyRegisteredReturn,
-  getKeySettingsParam,
-  getKeySettingsReturn,
-  getKeyParam,
-  getKeyReturn,
-  getKeysParam,
-  getKeysReturn,
   isDelegatedToThisAccountParam,
   isDelegatedToThisAccountReturn,
-  getNonceParam,
-  getNonceReturn,
-  createAccountCallDataParam,
-  createAccountCallDataReturn,
-  wrapSignatureParam,
-  wrapSignatureReturn,
-  createDummyWebAuthnSignatureParam,
-  createDummyWebAuthnSignatureReturn,
-  getUserOperationHashParam,
-  getUserOperationHashReturn,
-  prependTokenPaymasterApproveToCallDataParam,
-  prependTokenPaymasterApproveToCallDataReturn,
-  createInvalidateNonceMetaTransactionParam,
-  createInvalidateNonceMetaTransactionReturn,
 } from "/src/data/caliburAccountParams";
 import { sendUseroperationResponseType, bundlerJsonRpcErrorType } from "/src/requestRpcData";
 import { userOperationReceiptResultType } from "/src/data/userOperation";
@@ -75,6 +28,48 @@ import { userOperationReceiptResultType } from "/src/data/userOperation";
 # Calibur Account
 
 `Calibur7702Account` upgrades an EOA to a smart account via EIP-7702 delegation to the Calibur singleton. It provides batched transactions, passkey authentication, multi-key management with per-key hooks, and full ERC-4337 support through EntryPoint v0.8.
+
+Use Calibur when your users already have an EOA and must keep its address. For a new account, use [`SafeMultiChainSigAccountV1`](/wallet/abstractionkit/safe-unified-account) on EntryPoint v0.9 instead.
+
+:::note Root key
+The EOA's own key (the root key, `keyHash = bytes32(0)`) is always admin and cannot be revoked. Registering passkeys or other keys adds signers alongside it and never replaces it. See [Calibur Key Management](/wallet/abstractionkit/calibur-account-keys).
+:::
+
+## Methods at a Glance
+
+This page covers the core flow: create the account from an existing EOA, delegate it with an EIP-7702 authorization, then build, sign and send UserOperations. Key management (passkeys, secondary keys, settings, revocation) is on [Calibur Key Management](/wallet/abstractionkit/calibur-account-keys). Lower-level helpers are on [Calibur Utility Methods](/wallet/abstractionkit/calibur-account-utilities).
+
+| Method | Signature | Returns |
+|---|---|---|
+| [constructor](#usage) | `new Calibur7702Account(accountAddress: string, overrides?: { entrypointAddress?: string; delegateeAddress?: string })` | `Calibur7702Account` |
+| [createUserOperation](#createuseroperation) | `createUserOperation(transactions, providerRpc?, bundlerRpc?, overrides?)` | `Promise<UserOperationV8>` |
+| [signUserOperation](#signuseroperation) | `signUserOperation(userOperation, privateKey, chainId, overrides?)` | `string` |
+| [signUserOperationWithSigner](#signuseroperationwithsigner) | `signUserOperationWithSigner(userOperation, signer, chainId, overrides?)` | `Promise<string>` |
+| [sendUserOperation](#senduseroperation) | `sendUserOperation(userOperation, bundlerRpc)` | `Promise<SendUseroperationResponse>` |
+| [isDelegatedToThisAccount](#isdelegatedtothisaccount) | `isDelegatedToThisAccount(providerRpc)` | `Promise<boolean>` |
+| createRevokeDelegationRawTransaction | `createRevokeDelegationRawTransaction(chainId, eoaPrivateKey, providerRpc, overrides?)` | `Promise<string>` |
+| [createSecp256k1Key](/wallet/abstractionkit/calibur-account-keys#createsecp256k1key) (static) | `Calibur7702Account.createSecp256k1Key(address)` | `CaliburKey` |
+| [createWebAuthnP256Key](/wallet/abstractionkit/calibur-account-keys#createwebauthnp256key) (static) | `Calibur7702Account.createWebAuthnP256Key(x, y)` | `CaliburKey` |
+| [createP256Key](/wallet/abstractionkit/calibur-account-keys#createp256key) (static) | `Calibur7702Account.createP256Key(x, y)` | `CaliburKey` |
+| [getKeyHash](/wallet/abstractionkit/calibur-account-keys#getkeyhash) (static) | `Calibur7702Account.getKeyHash(key)` | `string` |
+| [createRegisterKeyMetaTransactions](/wallet/abstractionkit/calibur-account-keys#createregisterkeymetatransactions) (static) | `Calibur7702Account.createRegisterKeyMetaTransactions(key, settings?)` | `[SimpleMetaTransaction, SimpleMetaTransaction]` |
+| [createRevokeKeyMetaTransaction](/wallet/abstractionkit/calibur-account-keys#createrevokekeymetatransaction) (static) | `Calibur7702Account.createRevokeKeyMetaTransaction(keyHash)` | `SimpleMetaTransaction` |
+| createRevokeAllKeysMetaTransactions | `createRevokeAllKeysMetaTransactions(providerRpc)` | `Promise<SimpleMetaTransaction[]>` |
+| [createUpdateKeySettingsMetaTransaction](/wallet/abstractionkit/calibur-account-keys#createupdatekeysettingsmetatransaction) (static) | `Calibur7702Account.createUpdateKeySettingsMetaTransaction(keyHash, settings)` | `SimpleMetaTransaction` |
+| [packKeySettings](/wallet/abstractionkit/calibur-account-keys#packkeysettings) (static) | `Calibur7702Account.packKeySettings(settings)` | `bigint` |
+| [unpackKeySettings](/wallet/abstractionkit/calibur-account-keys#unpackkeysettings) (static) | `Calibur7702Account.unpackKeySettings(packed)` | `CaliburKeySettingsResult` |
+| [isKeyRegistered](/wallet/abstractionkit/calibur-account-keys#iskeyregistered) | `isKeyRegistered(providerRpc, keyHash)` | `Promise<boolean>` |
+| [getKeySettings](/wallet/abstractionkit/calibur-account-keys#getkeysettings) | `getKeySettings(providerRpc, keyHash)` | `Promise<CaliburKeySettingsResult>` |
+| [getKey](/wallet/abstractionkit/calibur-account-keys#getkey) | `getKey(providerRpc, keyHash)` | `Promise<CaliburKey>` |
+| [getKeys](/wallet/abstractionkit/calibur-account-keys#getkeys) | `getKeys(providerRpc, overrides?)` | `Promise<CaliburKey[]>` |
+| [formatWebAuthnSignature](/wallet/abstractionkit/calibur-account-keys#formatwebauthnsignature) | `formatWebAuthnSignature(keyHash, webAuthnAuth, overrides?)` | `string` |
+| [createDummyWebAuthnSignature](/wallet/abstractionkit/calibur-account-keys#createdummywebauthnsignature) (static) | `Calibur7702Account.createDummyWebAuthnSignature(keyHash)` | `string` |
+| [getNonce](/wallet/abstractionkit/calibur-account-utilities#getnonce) | `getNonce(providerRpc, sequenceKey?)` | `Promise<bigint>` |
+| [getUserOperationHash](/wallet/abstractionkit/calibur-account-utilities#getuseroperationhash) | `getUserOperationHash(userOperation, chainId)` | `string` |
+| [createAccountCallData](/wallet/abstractionkit/calibur-account-utilities#createaccountcalldata) (static) | `Calibur7702Account.createAccountCallData(transactions, revertOnFailure?)` | `string` |
+| [wrapSignature](/wallet/abstractionkit/calibur-account-utilities#wrapsignature) (static) | `Calibur7702Account.wrapSignature(keyHash, rawSignature, hookData?)` | `string` |
+| [prependTokenPaymasterApproveToCallData](/wallet/abstractionkit/calibur-account-utilities#prependtokenpaymasterapprovetocalldata) | `prependTokenPaymasterApproveToCallData(callData, tokenAddress, paymasterAddress, approveAmount)` | `string` |
+| [createInvalidateNonceMetaTransaction](/wallet/abstractionkit/calibur-account-utilities#createinvalidatenoncemetatransaction) (static) | `Calibur7702Account.createInvalidateNonceMetaTransaction(newNonce)` | `SimpleMetaTransaction` |
 
 ## When to Use Calibur Account
 
@@ -323,52 +318,6 @@ See [External Signers](/wallet/abstractionkit/external-signers) for the full lis
 #### Source code
 [signUserOperationWithSigner](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L751)
 
-### formatWebAuthnSignature
-
-Formats a WebAuthn (passkey) assertion into Calibur's signature format. Use this after getting an assertion from the browser's `navigator.credentials.get()` API. The challenge for the assertion should be the UserOperation hash.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account, WebAuthnSignatureData } from "abstractionkit";
-
-// After getting a WebAuthn assertion from the browser
-const webAuthnSignatureData: WebAuthnSignatureData = {
-  authenticatorData: "0x...",
-  clientDataJSON: '{"type":"webauthn.get","challenge":"...","origin":"https://example.com"}',
-  challengeIndex: 23n, // index of '"challenge"' in clientDataJSON
-  typeIndex: 1n, // index of '"type"' in clientDataJSON
-  r: 0x...n,
-  s: 0x...n,
-};
-
-const keyHash = Calibur7702Account.getKeyHash(webAuthnKey);
-
-// Format the WebAuthn signature for the UserOperation
-userOperation.signature = smartAccount.formatWebAuthnSignature(
-  keyHash,
-  webAuthnSignatureData,
-);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={formatWebAuthnSignatureParam} />
-  WebAuthnSignatureData
-  <DataTable items={webAuthnSignatureDataType} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={formatWebAuthnSignatureReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[formatWebAuthnSignature](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L792)
-
 ### sendUserOperation
 
 Sends a signed UserOperation to the bundler for execution on-chain.
@@ -410,486 +359,7 @@ console.log("Transaction receipt:", receipt);
 #### Source code
 [sendUserOperation](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L826)
 
-## Key Management Methods
-
-### createSecp256k1Key
-
-Static method. Creates a secp256k1 key descriptor from an Ethereum address.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-const secondaryAddress = "0x742D35CC6634C0532925a3B844Bc9E7595F2bD18";
-const key = Calibur7702Account.createSecp256k1Key(secondaryAddress);
-
-console.log(key);
-// { keyType: 2, publicKey: "0x000000000000000000000000742d35cc6634c0532925a3b844bc9e7595f2bd18" }
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={createSecp256k1KeyParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createSecp256k1KeyReturn} />
-  CaliburKey
-  <DataTable items={caliburKeyType} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[createSecp256k1Key](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L846)
-
-### createWebAuthnP256Key
-
-Static method. Creates a WebAuthn P-256 key descriptor from public key coordinates. Use this when registering a passkey on the account.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-// Extract x, y coordinates from a WebAuthn credential
-const x = 0x1234...n; // P-256 public key x coordinate
-const y = 0x5678...n; // P-256 public key y coordinate
-
-const webAuthnKey = Calibur7702Account.createWebAuthnP256Key(x, y);
-const keyHash = Calibur7702Account.getKeyHash(webAuthnKey);
-console.log("Key hash:", keyHash);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={createWebAuthnP256KeyParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createWebAuthnP256KeyReturn} />
-  CaliburKey
-  <DataTable items={caliburKeyType} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[createWebAuthnP256Key](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L859)
-
-### createP256Key
-
-Static method. Creates a raw P-256 (secp256r1) key descriptor from public key coordinates. Use this for non-WebAuthn P-256 keys.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-const x = 0x1234...n; // P-256 public key x coordinate
-const y = 0x5678...n; // P-256 public key y coordinate
-
-const p256Key = Calibur7702Account.createP256Key(x, y);
-const keyHash = Calibur7702Account.getKeyHash(p256Key);
-console.log("Key hash:", keyHash);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={createP256KeyParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createP256KeyReturn} />
-  CaliburKey
-  <DataTable items={caliburKeyType} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[createP256Key](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L872)
-
-### getKeyHash
-
-Static method. Computes the key hash for a Calibur key. Uses double hashing: `keccak256(abi.encode(uint8 keyType, bytes32 keccak256(publicKey)))`.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-const key = Calibur7702Account.createSecp256k1Key("0x742D35CC6634C0532925a3B844Bc9E7595F2bD18");
-const keyHash = Calibur7702Account.getKeyHash(key);
-
-console.log("Key hash:", keyHash);
-// bytes32 hex string, e.g. "0xabc123..."
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={getKeyHashParam} />
-  CaliburKey
-  <DataTable items={caliburKeyType} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={getKeyHashReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[getKeyHash](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L886)
-
-### createRegisterKeyMetaTransactions
-
-Static method. Creates meta-transactions to register a new key on the Calibur account. Returns two transactions (`[register, update]`) that must both be included in the same UserOperation. For safety, the key is always registered as non-admin, and the method throws if `settings.isAdmin` is `true`.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-// Create the key to register
-const newKey = Calibur7702Account.createSecp256k1Key("0x742D35CC6634C0532925a3B844Bc9E7595F2bD18");
-
-// Build register + update transactions (both required in the same UserOp)
-const registerTxs = Calibur7702Account.createRegisterKeyMetaTransactions(
-  newKey,
-  {
-    expiration: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60, // 30 days
-  }
-);
-
-// Include both transactions in the UserOperation
-const userOperation = await smartAccount.createUserOperation(
-  registerTxs, // array of two SimpleMetaTransactions
-  nodeRpc,
-  bundlerRpc,
-);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={createRegisterKeyMetaTransactionsParam} />
-  CaliburKeySettings
-  <DataTable items={caliburKeySettingsType} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createRegisterKeyMetaTransactionsReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[createRegisterKeyMetaTransactions](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L947)
-
-### createRevokeKeyMetaTransaction
-
-Static method. Creates a meta-transaction to revoke a key from the Calibur account. Only admin keys can execute revoke operations.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-const keyHash = "0x...key-hash-to-revoke";
-const revokeTx = Calibur7702Account.createRevokeKeyMetaTransaction(keyHash);
-
-// Include in a UserOperation signed by an admin key
-const userOperation = await smartAccount.createUserOperation(
-  [revokeTx],
-  nodeRpc,
-  bundlerRpc,
-);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={createRevokeKeyMetaTransactionParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createRevokeKeyMetaTransactionReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[createRevokeKeyMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L987)
-
-### createUpdateKeySettingsMetaTransaction
-
-Static method. Creates a meta-transaction to update settings for a registered key. Only admin keys can execute update operations. Throws if `isAdmin` is set to `true` in the settings.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-const keyHash = "0x...registered-key-hash";
-
-// Extend key expiration to 1 year from now
-const updateTx = Calibur7702Account.createUpdateKeySettingsMetaTransaction(
-  keyHash,
-  {
-    expiration: Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60,
-  }
-);
-
-const userOperation = await smartAccount.createUserOperation(
-  [updateTx],
-  nodeRpc,
-  bundlerRpc,
-);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={createUpdateKeySettingsMetaTransactionParam} />
-  CaliburKeySettings
-  <DataTable items={caliburKeySettingsType} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createUpdateKeySettingsMetaTransactionReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[createUpdateKeySettingsMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L1175)
-
-### packKeySettings
-
-Static method. Packs key settings into a single uint256 value. Layout: `(isAdmin << 200) | (expiration << 160) | hook`.
-
-`expiration` is a unix timestamp in seconds. Since v0.4.1, `packKeySettings` throws a `RangeError` if `expiration` does not fit the contract's `uint40` field (for example, a millisecond timestamp from `Date.now()`) or if `hook` is outside the 160-bit address range. `hook` is parsed with `BigInt`, so a non-numeric string throws a `SyntaxError` instead.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-const packed = Calibur7702Account.packKeySettings({
-  hook: "0x0000000000000000000000000000000000000000",
-  expiration: Math.floor(Date.now() / 1000) + 86400, // 1 day
-  isAdmin: false,
-});
-
-console.log("Packed settings:", packed);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={packKeySettingsParam} />
-  CaliburKeySettings
-  <DataTable items={caliburKeySettingsType} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={packKeySettingsReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[packKeySettings](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L899)
-
-### unpackKeySettings
-
-Static method. Unpacks a uint256 settings value into a `CaliburKeySettingsResult` object with all fields populated.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-const packed = 0x...n; // packed settings from the contract
-
-const settings = Calibur7702Account.unpackKeySettings(packed);
-console.log("Admin:", settings.isAdmin);
-console.log("Expiration:", settings.expiration);
-console.log("Hook:", settings.hook);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={unpackKeySettingsParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={unpackKeySettingsReturn} />
-  CaliburKeySettingsResult
-  <DataTable items={caliburKeySettingsResultType} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[unpackKeySettings](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L923)
-
-## Read Methods
-
-### isKeyRegistered
-
-Checks if a key is registered on this account by querying the on-chain `isRegistered(bytes32)` function.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-const keyHash = Calibur7702Account.getKeyHash(key);
-const isRegistered = await smartAccount.isKeyRegistered(
-  "https://ethereum-sepolia-rpc.publicnode.com",
-  keyHash,
-);
-
-console.log("Key registered:", isRegistered);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={isKeyRegisteredParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={isKeyRegisteredReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[isKeyRegistered](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L1246)
-
-### getKeySettings
-
-Gets the settings for a registered key. Returns a `CaliburKeySettingsResult` with hook address, expiration timestamp, and admin flag.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-const keyHash = Calibur7702Account.getKeyHash(key);
-const settings = await smartAccount.getKeySettings(
-  "https://ethereum-sepolia-rpc.publicnode.com",
-  keyHash,
-);
-
-console.log("Admin:", settings.isAdmin);
-console.log("Expiration:", settings.expiration === 0 ? "never" : new Date(settings.expiration * 1000).toISOString());
-console.log("Hook:", settings.hook);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={getKeySettingsParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={getKeySettingsReturn} />
-  CaliburKeySettingsResult
-  <DataTable items={caliburKeySettingsResultType} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[getKeySettings](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L1275)
-
-### getKey
-
-Gets the full key data for a registered key, including the key type and ABI-encoded public key bytes.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-const keyHash = "0x...registered-key-hash";
-const key = await smartAccount.getKey(
-  "https://ethereum-sepolia-rpc.publicnode.com",
-  keyHash,
-);
-
-console.log("Key type:", key.keyType); // 0 = P256, 1 = WebAuthnP256, 2 = Secp256k1
-console.log("Public key:", key.publicKey);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={getKeyParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={getKeyReturn} />
-  CaliburKey
-  <DataTable items={caliburKeyType} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[getKey](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L1305)
-
-### getKeys
-
-Returns all keys registered on this account. Iterates `keyCount()` and `keyAt(i)` to enumerate all keys.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-const keys = await smartAccount.getKeys(
-  "https://ethereum-sepolia-rpc.publicnode.com",
-);
-
-for (const key of keys) {
-  const keyHash = Calibur7702Account.getKeyHash(key);
-  const settings = await smartAccount.getKeySettings(nodeRpc, keyHash);
-  console.log("Key:", keyHash.slice(0, 18) + "...");
-  console.log("  Type:", key.keyType);
-  console.log("  Admin:", settings.isAdmin);
-}
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={getKeysParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={getKeysReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[getKeys](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L1352)
+## Delegation Check
 
 ### isDelegatedToThisAccount
 
@@ -924,259 +394,3 @@ if (isDelegated) {
 
 #### Source code
 [isDelegatedToThisAccount](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L1222)
-
-### getNonce
-
-Gets the account nonce from the EntryPoint. Supports parallel nonce channels via the optional `sequenceKey` parameter.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-// Default nonce (sequence key = 0)
-const nonce = await smartAccount.getNonce(
-  "https://ethereum-sepolia-rpc.publicnode.com"
-);
-console.log("Nonce:", nonce);
-
-// Parallel nonce channel
-const parallelNonce = await smartAccount.getNonce(
-  "https://ethereum-sepolia-rpc.publicnode.com",
-  1 // sequence key
-);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={getNonceParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={getNonceReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[getNonce](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L1235)
-
-## Utility Methods
-
-### createAccountCallData
-
-Static method. Encodes calldata for `executeUserOp` with BatchedCall format. All transactions (even single ones) go through the same BatchedCall path.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-const transactions = [
-  { to: "0x...", value: 0n, data: "0x..." },
-  { to: "0x...", value: 1000000000000000000n, data: "0x" },
-];
-
-const callData = Calibur7702Account.createAccountCallData(transactions);
-
-// With revertOnFailure disabled (individual calls can fail without reverting the batch)
-const callDataNoRevert = Calibur7702Account.createAccountCallData(transactions, false);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={createAccountCallDataParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createAccountCallDataReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[createAccountCallData](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L311)
-
-### wrapSignature
-
-Static method. Wraps a raw ECDSA signature in Calibur's signature format: `abi.encode(bytes32 keyHash, bytes signature, bytes hookData)`. Use this when signing externally (e.g., with viem, hardware wallet, MPC) to avoid manually ABI-encoding the wrapped signature.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-// Root key hash (bytes32 zero) for the EOA's own key
-const ROOT_KEY_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
-
-const rawEcdsaSignature = "0x..."; // 65-byte ECDSA signature
-
-// Wrap for root key
-const wrappedSignature = Calibur7702Account.wrapSignature(
-  ROOT_KEY_HASH,
-  rawEcdsaSignature,
-);
-
-// Wrap for a secondary key with hook data
-const wrappedWithHook = Calibur7702Account.wrapSignature(
-  "0x...secondary-key-hash",
-  rawEcdsaSignature,
-  "0x...hook-data",
-);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={wrapSignatureParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={wrapSignatureReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[wrapSignature](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L177)
-
-### createDummyWebAuthnSignature
-
-Static method. Creates a dummy WebAuthn signature for gas estimation when signing with a passkey. The key hash must correspond to an actually registered key on the account, otherwise the contract's `validateUserOp` will revert.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-const keyHash = Calibur7702Account.getKeyHash(webAuthnKey);
-
-const dummySignature = Calibur7702Account.createDummyWebAuthnSignature(keyHash);
-
-// Pass as override during UserOperation creation for accurate gas estimation
-const userOperation = await smartAccount.createUserOperation(
-  transactions,
-  nodeRpc,
-  bundlerRpc,
-  { dummySignature },
-);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={createDummyWebAuthnSignatureParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createDummyWebAuthnSignatureReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[createDummyWebAuthnSignature](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L135)
-
-### getUserOperationHash
-
-Computes the UserOperation hash for this account's EntryPoint. Convenience wrapper that automatically uses this account's EntryPoint address.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-const userOpHash = smartAccount.getUserOperationHash(
-  userOperation,
-  11155111n // chain ID
-);
-
-console.log("UserOperation hash:", userOpHash);
-// Use this hash as the challenge for WebAuthn assertions
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={getUserOperationHashParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={getUserOperationHashReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[getUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L241)
-
-### prependTokenPaymasterApproveToCallData
-
-Prepends a token `approve` call to existing calldata for a token paymaster. Decodes the existing BatchedCall, prepends an ERC-20 approve transaction, and re-encodes.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-const callDataWithApproval = smartAccount.prependTokenPaymasterApproveToCallData(
-  userOperation.callData,
-  "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC token address (Ethereum mainnet)
-  "0x...", // paymaster address
-  1000000n // approve amount (1 USDC)
-);
-
-userOperation.callData = callDataWithApproval;
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={prependTokenPaymasterApproveToCallDataParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={prependTokenPaymasterApproveToCallDataReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[prependTokenPaymasterApproveToCallData](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L1438)
-
-### createInvalidateNonceMetaTransaction
-
-Static method. Creates a meta-transaction to invalidate nonces up to a given value. All nonces below the specified value become invalid, preventing replay of previously signed but unsubmitted UserOperations.
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { Calibur7702Account } from "abstractionkit";
-
-// Invalidate all nonces below 100
-const invalidateTx = Calibur7702Account.createInvalidateNonceMetaTransaction(100n);
-
-const userOperation = await smartAccount.createUserOperation(
-  [invalidateTx],
-  nodeRpc,
-  bundlerRpc,
-);
-```
-
-</TabItem>
-
-<TabItem value="Param Types" label="Param Types">
-  <DataTable items={createInvalidateNonceMetaTransactionParam} />
-</TabItem>
-
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createInvalidateNonceMetaTransactionReturn} />
-</TabItem>
-
-</Tabs>
-
-#### Source code
-[createInvalidateNonceMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L1205)
