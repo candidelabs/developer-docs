@@ -478,6 +478,11 @@ const sidebars = {
             },
             {
               type: "doc",
+              id: "wallet/recovery/account-lookups",
+              label: "Recovery Lookups by Account"
+            },
+            {
+              type: "doc",
               id: "wallet/recovery/auth-api",
               label: "Email / SMS Recovery API"
             },
