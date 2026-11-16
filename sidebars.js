@@ -100,6 +100,16 @@ const sidebars = {
         },
         {
           type: "doc",
+          id: "wallet/paymaster/rpc-methods-v07",
+          label: "EVM RPC Methods (EntryPoint v0.7)"
+        },
+        {
+          type: "doc",
+          id: "wallet/paymaster/rpc-methods-v06",
+          label: "EVM RPC Methods (EntryPoint v0.6)"
+        },
+        {
+          type: "doc",
           id: "wallet/solana-paymaster/rpc-methods",
           label: "Solana RPC Methods",
           className: "sidebar-badge-new"
