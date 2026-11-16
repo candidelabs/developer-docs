@@ -1,6 +1,6 @@
 ---
 title: AbstractionKit CandidePaymaster SDK Reference
-description: CandidePaymaster, AbstractionKit's Candide-specific paymaster client for two-phase paymaster signing and Candide's token paymaster APIs.
+description: Advanced and optional. CandidePaymaster adds EntryPoint v0.9 two-phase paymaster signing and Candide's token metadata APIs. To sponsor gas or pay gas in ERC-20 tokens, start with Erc7677Paymaster on the Paymaster page.
 keywords: [paymaster, candide, "sdk", gas-abstraction, sponsor-gas, erc-20, two-phase signing]
 image: /img/posters/abstractionkit-meta.png
 ---
@@ -45,7 +45,7 @@ import {
   decodedTokenQuoteType,
 } from "/src/data/paymaster";
 
-# CandidePaymaster
+# CandidePaymaster (Advanced)
 
 `CandidePaymaster` is the client for Candide-hosted paymasters. For one-shot sponsorship and ERC-20 gas, start with the standard [`Erc7677Paymaster`](/wallet/abstractionkit/paymaster) instead. Use `CandidePaymaster` when you need the EntryPoint v0.9 two-phase `commit -> sign -> finalize` flow, which lets the user sign while the paymaster prepares its signature, or Candide's token and metadata APIs below.
 
