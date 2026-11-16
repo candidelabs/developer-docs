@@ -697,6 +697,12 @@ export const createPaymasterUserOperationOverridesType = [
       "When true, prepend an approve(0) call before the actual token approval. Required for tokens like USDT that do not allow changing a non-zero allowance directly. Automatically applied for known tokens (e.g. USDT on Ethereum mainnet).",
   },
   {
+    key: "approveAmount",
+    type: "bigint?",
+    description:
+      "Token paymaster flows only: the allowance the prepended approve grants, in the token's smallest unit. Replaces the default of twice the quoted tokenCost and is reported back as tokenQuote.approveAmount. Throws PAYMASTER_ERROR if below the quoted tokenCost. Ignored where no approval is built.",
+  },
+  {
     key: "callGasLimit",
     type: "bigint",
     description:
