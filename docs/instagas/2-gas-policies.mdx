@@ -19,7 +19,7 @@ InstaGas provides customizable rules for gas policies. These rules are organized
 - **Active State**: Toggle to activate or deactivate the policy at any time.
 - **Private or Public**: Choose between public and private gas policies:
   - **Public Gas Policies**: Set up by dApps for wallet consumption without requiring a sponsorship policy ID.
-  - **Private Gas Policies**: Set up by wallets, requiring a sponsorship policy ID. Used when no public gas policy matches.
+  - **Private Gas Policies**: Set up by wallets, requiring a sponsorship policy ID. Used when no public gas policy matches. Keep the policy ID on your backend: anyone who holds it gets gas sponsored under the policy.
 - **Signature Validity**: How long the paymaster signature stays valid. The UserOperation must be included onchain before it expires, or the EntryPoint rejects it with [`AA32`](/wallet/technical-reference/aa32-paymaster-expired-or-not-due).
     - Example: "Sponsored UserOperations must land within 10 minutes of being signed."
     - Defaults to 3 minutes. All plans can choose up to 10 minutes. Paid plans can go up to 2 days, for flows where signing takes longer, like multisig approvals.
