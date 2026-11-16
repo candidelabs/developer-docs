@@ -69,3 +69,19 @@ test('a fence line with text after it does not close the block', () => {
     ['```', '``` not a close', '| x   | y |', '```', '| a | b |'].join('\n'),
   );
 });
+
+test('a fence opened on a list item line keeps its code and closes at the indented fence', () => {
+  const input = ['- ```md', '  | x   | y |', '  ```', '', '| a   | b |'].join('\n');
+  assert.equal(
+    compactTables(input),
+    ['- ```md', '  | x   | y |', '  ```', '', '| a | b |'].join('\n'),
+  );
+});
+
+test('a fence opened on an ordered list item line works the same way', () => {
+  const input = ['1. ```', '   | x   | y |', '   ```', '| a   | b |'].join('\n');
+  assert.equal(
+    compactTables(input),
+    ['1. ```', '   | x   | y |', '   ```', '| a | b |'].join('\n'),
+  );
+});
