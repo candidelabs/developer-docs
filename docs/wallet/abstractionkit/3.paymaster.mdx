@@ -1,9 +1,10 @@
 ---
-title: AbstractionKit Paymaster Class SDK Reference
-description: Learn how to use AbstractionKit to sponsor gas using an ERC-4337 verifying paymaster
-keywords: [paymaster, "verifying", "sdk", gas-abstraction, sponsor-gas]
+title: AbstractionKit Paymaster SDK Reference
+description: Sponsor gas or let users pay gas in ERC-20 tokens with AbstractionKit's Erc7677Paymaster, the recommended paymaster client.
+keywords: [paymaster, erc-7677, "sdk", gas-abstraction, sponsor-gas, erc-20]
 image: /img/posters/abstractionkit-meta.png
 ---
+
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
@@ -45,12 +46,22 @@ import {
 } from "/src/data/paymaster";
 
 # Paymaster
-AbstractionKit includes two paymaster clients. `CandidePaymaster` can sponsor one-shot UserOperations, but new integrations should prefer the standard `Erc7677Paymaster` for one-shot sponsorship and ERC-20 token gas flows. `Erc7677Paymaster` auto-detects supported providers such as Candide and Pimlico and handles provider-specific metadata, supported token data, exchange rates, and paymaster addresses internally. Use `CandidePaymaster` when you need Candide-specific APIs or the EntryPoint v0.9 two-phase `commit -> sign -> finalize` flow.
 
-**Supports:**
-- Gas sponsorship through Gas Policies
-- ERC-20 Token Sponsorship
-- Multi-EntryPoint
+Use `Erc7677Paymaster` to sponsor gas or let users pay gas in an ERC-20 token. It implements the standard [ERC-7677](https://eips.ethereum.org/EIPS/eip-7677) protocol, so it works with Candide and any other compliant provider. AbstractionKit also has a Candide-specific client, [`CandidePaymaster`](/wallet/abstractionkit/candide-paymaster), for two-phase paymaster signing and Candide's token APIs.
+
+## Methods at a Glance
+
+| Method | Signature | Returns |
+|---|---|---|
+| [constructor](#import) | `new Erc7677Paymaster(rpc: string \| Transport, options?: { chainId?: bigint; provider?: "auto" \| Erc7677Provider })` | `Erc7677Paymaster` |
+| [createPaymasterUserOperation](#sponsored-useroperation) | `createPaymasterUserOperation(smartAccount, userOperation, bundlerRpc, context?, overrides?)` | `Promise<{ userOperation; tokenQuote? }>` |
+| [decodeTokenQuote](#decodetokenquote) (static) | `Erc7677Paymaster.decodeTokenQuote(userOperation, nodeRpcUrl, overrides?)` | `Promise<DecodedTokenQuote \| null>` |
+| getPaymasterStubData | `getPaymasterStubData(userOperation, entrypoint, chainIdHex, context?)` | `Promise<Erc7677StubDataResult>` |
+| getPaymasterData | `getPaymasterData(userOperation, entrypoint, chainIdHex, context?)` | `Promise<Erc7677PaymasterFields>` |
+
+- **Sponsor gas:** pass `{ sponsorshipPolicyId }` as `context`.
+- **ERC-20 gas:** pass `{ token }` as `context`. Set `overrides.approveAmount` to cap the token allowance.
+- `getPaymasterStubData` and `getPaymasterData` are the raw ERC-7677 calls. `createPaymasterUserOperation` makes both for you.
 
 ## Which Paymaster Client to Use
 
@@ -61,583 +72,8 @@ Both clients are supported; neither is deprecated. `Erc7677Paymaster` implements
 | Sponsored gas, one-shot | `Erc7677Paymaster` | Recommended standard path: `createPaymasterUserOperation(..., context?)` |
 | ERC-20 token gas | `Erc7677Paymaster` | `createPaymasterUserOperation(..., { token })` |
 | Provider metadata and supported token details for Candide/Pimlico | `Erc7677Paymaster` | Handled automatically from the paymaster URL |
-| Candide-specific one-shot sponsorship | `CandidePaymaster` | Supported via `createSponsorPaymasterUserOperation(...)` |
-| Two-phase paymaster signing to reduce user waiting time | `CandidePaymaster` | `createSponsorPaymasterUserOperation(..., { signingPhase })` |
-
-## Usage
-
-### Import
-
-```ts
-import { CandidePaymaster } from "abstractionkit";
-```
-
-### How to Use
-
-Initialize a Paymaster with your RPC URL. Get an API key from the [dashboard](https://dashboard.candide.dev).
-
-```ts title="paymaster.ts"
-import { CandidePaymaster } from "abstractionkit";
-
-const paymasterRPC = "https://api.candide.dev/public/v3/11155111";
-const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
-```
-
-Then consume Paymaster methods:
-
-```ts
-const supportedEntryPoints = await paymaster.getSupportedEntrypoints();
-```
-
-## Methods
-
-### createSponsorPaymasterUserOperation
-
-Returns the paymaster data if the the userOperation has a Gas Policy. Otherwise it returns an error message. Supports two types of Gas Policies:
-
-- **Public Gas Policies**: These are gas policies provided by third parties, which do not require a sponsorship policy ID.
-- **Private Gas Policies**: These require a sponsorship policy ID and can be used if no public gas policy matches the user operation.
-
-
-#### Usage
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { CandidePaymaster } from "abstractionkit";
-
-const paymasterRPC = "https://api.candide.dev/public/v3/11155111";
-const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
-const sponsorshipPolicyId = '1234';
-
-// Use createUserOperation() to help you construct a userOp
-const userOperation = smartAccount.createUserOperation(..)
-
-// highlight-start
-const { userOperation: sponsoredUserOperation, sponsorMetadata } =
-  await paymaster.createSponsorPaymasterUserOperation(
-    smartAccount,
-    userOperation,
-    bundlerUrl,
-    sponsorshipPolicyId, // optional
-  );
-// highlight-end
-```
-
-</TabItem>
-<TabItem value="Param Type" label="Param Type">
-  <DataTable items={createSponsorPaymasterUserOperationParam} />
-</TabItem>
-<TabItem value="Return Type" label="Return Type">
-  <DataTable items={createSponsorPaymasterUserOperationReturn} />
-</TabItem>
-</Tabs>
-
-#### Source code
-[createSponsorPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/CandidePaymaster.ts#L631)
-
-### fetchSupportedERC20TokensAndPaymasterMetadata
-
-Returns a promise with the supported erc20 tokens and their exchange rate, along with the paymaster metadata
-
-#### Usage
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { CandidePaymaster, SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
-
-const paymasterRPC="https://api.candide.dev/public/v3/11155111";
-const paymaster = new CandidePaymaster(paymasterRPC);
-
-const supportedERC20Tokens = await paymaster.fetchSupportedERC20TokensAndPaymasterMetadata(SafeAccount.DEFAULT_ENTRYPOINT_ADDRESS);
-```
-
-</TabItem>
-<TabItem value="Param type" label="Param Types">
-  <DataTable items={fetchSupportedERC20TokensAndPaymasterMetadataParam} />
-</TabItem>
-<TabItem value="response type" label="Response Type">
-    <DataTable items={fetchSupportedERC20TokensAndPaymasterMetadataReturn} />
-    SupportedERC20TokensAndMetadataV7WithExchangeRate
-    <DataTable items={SupportedERC20TokensAndMetadataV7WithExchangeRateType} />
-    SupportedERC20TokensAndMetadataV6WithExchangeRate
-    <DataTable items={SupportedERC20TokensAndMetadataV6WithExchangeRateType} />
-</TabItem>
-</Tabs>
-
-<details title="Example Response">
-<summary>Example Response</summary>
-
-```ts
-{
-  tokens: [
-    {
-      name: 'Candide Test Token',
-      symbol: 'CTT',
-      address: '0xFa5854FBf9964330d761961F46565AB7326e5a3b',
-      decimals: 18,
-      exchangeRate: 1000000000000000000n
-    },
-    {
-      name: 'Tether',
-      symbol: 'USDT',
-      address: '0xd077a400968890eacc75cdc901f0356c943e4fdb',
-      decimals: 6,
-      exchangeRate: 2075579999n
-    }
-  ],
-  paymasterMetadata: {
-    name: 'CANDIDE Paymaster',
-    description: 'CANDIDE Paymaster a fast, secure and feature-rich 4337 Paymaster',
-    icons: [],
-    address: '0xca944fb73fa5191969014ded9bb075381d59c7de',
-    sponsoredEventTopic: '0xa050a122b4c0e369e3385eb6b7cccd8019638b2764de67bec0af99130ddf8471',
-    dummyPaymasterAndData: {
-      paymaster: '0xca944fb73fa5191969014ded9bb075381d59c7de',
-      paymasterVerificationGasLimit: 70000n,
-      paymasterPostOpGasLimit: 75000n,
-      paymasterData: '0x0001000000000000ffff000000000000000000000000000000000000000000000000000000000000ffff010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101011c'
-    }
-  }
-}
-```
-</details>
-
-
-### createTokenPaymasterUserOperation
-
-Estimates gas limits and returns the user operation with the paymaster data for ERC-20 Token sponsorship.
-
-Some tokens like USDT do not allow changing a non-zero allowance directly. For known tokens (e.g. USDT on Ethereum mainnet), the SDK automatically prepends an `approve(0)` call before the actual approval. You can also manually trigger this behavior for other tokens by setting `resetApproval: true` in the overrides.
-
-The `overrides` parameter also accepts an `entrypoint` field, which allows you to manually specify the EntryPoint address instead of relying on auto-detection from the UserOperation structure.
-
-By default the prepended `approve` grants twice the quoted token cost. Set `overrides.approveAmount` (a `bigint` in the token's smallest unit) to choose the allowance yourself, for example to cap it at a maximum fee the user agreed to. The method throws a `PAYMASTER_ERROR` if the amount is below the quoted token cost, with both values in the error's `context`. The token cost is quoted during the call, so it isn't known beforehand. The `finalize` signing phase builds no approval and ignores this override.
-
-The returned `tokenQuote` reports the paymaster the prepended `approve` was granted to (`paymaster`) and the allowance it set (`approveAmount`), so you can compare the spender against your configured paymaster without decoding `callData`. The method throws a `PAYMASTER_ERROR` if the final paymaster data is missing a paymaster or names a different one than the approval spender.
-
-#### Usage
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts
-import { SafeMultiChainSigAccountV1 as SafeAccount, CandidePaymaster } from "abstractionkit";
-
-const paymasterRPC="https://api.candide.dev/public/v3/11155111";
-const erc20TokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b"; // CTT test token
-const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
-
-const ownerPublicAddress = "0x2Ef844456580b6e1E22e1D584EBbC2467D9298B2"
-const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress])
-
-// Use createUserOperation() to help you construct a userOp
-let userOperation = smartAccount.createUserOperation(..);
-
-const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
-
-// highlight-start
-const { userOperation: sponsoredUserOperation, tokenQuote } =
-  await paymaster.createTokenPaymasterUserOperation(
-    smartAccount,
-    userOperation,
-    erc20TokenAddress,
-    bundlerRPC,
-  );
-userOperation = sponsoredUserOperation;
-// highlight-end
-```
-
-</TabItem>
-<TabItem value="Param type" label="Param Types">
-  <DataTable items={createTokenPaymasterUserOperationParam} />
-</TabItem>
-<TabItem value="response type" label="Response Type">
-    <DataTable items={createTokenPaymasterUserOperationReturn} />
-    TokenQuote
-    <DataTable items={tokenQuoteType} />
-</TabItem>
-</Tabs>
-
-<details title="Example Response">
-<summary>Example Response</summary>
-
-```ts
-{
-  userOperation: {
-    sender: '0x9371252D5001d2aF35b1E69Fd33e268b4357D424',
-    nonce: 1n,
-    callData: '0x541d63c8...095ea7b3...',
-    //highlight-start
-    callGasLimit: 191545n,
-    verificationGasLimit: 135864n,
-    preVerificationGas: 150767n,
-    //highlight-end
-    maxFeePerGas: 82n,
-    maxPriorityFeePerGas: 60n,
-    signature: '0x00ffffffffffffffffffffffff47003599ffa7e9...',
-    factory: null,
-    factoryData: null,
-    //highlight-start
-    paymaster: '0xca944fb73fa5191969014ded9bb075381d59c7de',
-    paymasterVerificationGasLimit: 70000n,
-    paymasterPostOpGasLimit: 75000n,
-    paymasterData: '0x0000000000006af4e929...',
-    //highlight-end
-    eip7702Auth: null
-  },
-  tokenQuote: {
-    token: '0xFa5854FBf9964330d761961F46565AB7326e5a3b',
-    exchangeRate: 1000000000000000000n,
-    tokenCost: 51100432n,
-    paymaster: '0xca944fb73fa5191969014ded9bb075381d59c7de',
-    approveAmount: 102200864n
-  }
-}
-```
-</details>
-
-#### Source code
-[createTokenPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/CandidePaymaster.ts#L704)
-
-### calculateUserOperationErc20TokenMaxGasCost
-
-Calculates the maximum gas cost in ERC-20 tokens for a given userOperation
-
-#### Usage
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts
-import { CandidePaymaster } from "abstractionkit";
-
-const erc20TokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b"; // CTT test token
-// Use createUserOperation() to help you construct a userOp
-const userOperation = smartAccount.createUserOperation(..)
-
-const paymasterRPC="https://api.candide.dev/public/v3/11155111";
-const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
-
-// highlight-start
-const cost = await paymaster.calculateUserOperationErc20TokenMaxGasCost(
-  smartAccount,
-  userOperation,
-  erc20TokenAddress,
-);
-// highlight-end
-```
-
-</TabItem>
-<TabItem value="Param type" label="Param Types">
-  <DataTable items={calculateUserOperationErc20TokenMaxGasCostParam} />
-</TabItem>
-<TabItem value="Return type" label="Return Types">
-  <DataTable items={calculateUserOperationErc20TokenMaxGasCostReturn} />
-</TabItem>
-</Tabs>
-
-<details title="Example Response">
-<summary>Example Response</summary>
-
-```ts
-35424864n
-```
-</details>
-
-#### Source code
-[calculateUserOperationErc20TokenMaxGasCost](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/CandidePaymaster.ts#L820)
-
-### decodeTokenQuote
-
-Reads the token payment a finished UserOperation commits to from the paymaster data the paymaster signed: the paymaster, token, exchange rate, validity window, and `maxTokenCost`, the most the user can be charged. In Candide's on-chain markup mode, the markup is read from the paymaster contract when `decodeTokenQuote` runs, so `maxTokenCost` reflects the markup at that moment. This is useful for co-signers who did not build the UserOperation and never saw its `TokenQuote`, so they can check the charge before signing.
-
-`decodeTokenQuote` is a static method and needs no paymaster URL. It is available on both `CandidePaymaster` and `Erc7677Paymaster`, and works for any account, whichever client built the UserOperation. It supports Candide's token paymasters on EntryPoint v0.6 to v0.9 and Pimlico's on v0.6 to v0.8, identified by the paymaster address on the UserOperation.
-
-- Returns `null` when the UserOperation has no paymaster or is sponsored (no token payment).
-- Throws a `PAYMASTER_ERROR` if the paymaster is not a known deployment, and `BAD_DATA` if the paymaster data cannot be read.
-- Candide's paymaster data names the token by an on-chain slot, so the method makes one `eth_call` through `nodeRpcUrl` to read it. For Candide, `nodeRpcUrl` must be a node on the same chain as the UserOperation. For Pimlico, `nodeRpcUrl` is not used.
-
-#### Usage
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { CandidePaymaster } from "abstractionkit";
-
-const nodeRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com";
-
-// userOperation received from the account owner who built it
-// highlight-start
-const quote = await CandidePaymaster.decodeTokenQuote(userOperation, nodeRpcUrl);
-// highlight-end
-
-if (quote !== null) {
-  console.log(`Pays up to ${quote.maxTokenCost} of ${quote.token} to ${quote.paymaster}`);
-}
-```
-
-</TabItem>
-<TabItem value="Param type" label="Param Types">
-  <DataTable items={decodeTokenQuoteParam} />
-</TabItem>
-<TabItem value="Return type" label="Return Type">
-  <DataTable items={decodeTokenQuoteReturn} />
-  DecodedTokenQuote
-  <DataTable items={decodedTokenQuoteType} />
-</TabItem>
-</Tabs>
-
-#### Source code
-[CandidePaymaster.decodeTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/CandidePaymaster.ts#L131) | [Erc7677Paymaster.decodeTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/Erc7677Paymaster.ts#L346) | [DecodedTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/decodeTokenQuote.ts#L25)
-
-## Advanced Methods
-
-### getPaymasterMetaData
-
-Returns the metadata associated with the Paymaster, along with dummyPaymasterAndData useful for gas estimates
-
-#### Usage
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { CandidePaymaster, SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
-
-const paymasterRPC="https://api.candide.dev/public/v3/11155111";
-const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
-
-const paymasterResult = await paymaster.getPaymasterMetaData(SafeAccount.DEFAULT_ENTRYPOINT_ADDRESS);
-```
-
-</TabItem>
-
-<TabItem value="Param type" label="Param Type">
-  <DataTable items={getPaymasterMetaDataParam} />
-</TabItem>
-
-<TabItem value="Return type" label="Return Type">
-  <DataTable items={getPaymasterMetaDataReturn} />
-  PaymasterMetadataV7
-  <DataTable items={paymasterMetadataV7Type} />
-  PaymasterMetadataV6
-  <DataTable items={paymasterMetadataV6Type} />
-</TabItem>
-
-</Tabs>
-
-<details>
-<summary>Example Response</summary>
-
-```ts
-{
-  name: 'CANDIDE Paymaster',
-  description: 'CANDIDE Paymaster a fast, secure and feature-rich 4337 Paymaster',
-  icons: [],
-  address: '0xca944fb73fa5191969014ded9bb075381d59c7de',
-  sponsoredEventTopic: '0xa050a122b4c0e369e3385eb6b7cccd8019638b2764de67bec0af99130ddf8471',
-  dummyPaymasterAndData: {
-    paymaster: '0xca944fb73fa5191969014ded9bb075381d59c7de',
-    paymasterVerificationGasLimit: 70000n,
-    paymasterPostOpGasLimit: 75000n,
-    paymasterData: '0x0001000000000000ffff000000000000000000000000000000000000000000000000000000000000ffff010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101011c'
-  }
-}
-```
-
-</details>
-
-#### source code
-
-[getPaymasterMetaData](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/CandidePaymaster.ts#L372)
-
-### getSupportedEntrypoints
-
-Returns the supported Entrypoints by the paymaster
-
-#### Usage
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { CandidePaymaster } from "abstractionkit";
-
-const paymasterRPC="https://api.candide.dev/public/v3/11155111";
-const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
-
-const paymasterResult = await paymaster.getSupportedEntrypoints();
-```
-
-</TabItem>
-<TabItem value="Return type" label="Return Type">
-  <DataTable items={getSupportedEntrypointsReturn} />
-</TabItem>
-</Tabs>
-
-<details>
-<summary>Example Response</summary>
-
-```ts
-[
-  '0x5ff137d4b0fdcd49dca30c7cf57e578a026d2789',
-  '0x0000000071727de22e5e9d8baf0edac6f37da032',
-  '0x4337084d9e255ff0702461cf8895ce9e3b5ff108',
-  '0x433709009b8330fda32311df1c2afa402ed8d009'
-]
-```
-
-</details>
-
-#### source code
-[getSupportedEntrypoints](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/CandidePaymaster.ts#L351)
-
-### isSupportedERC20Token
-
-Checks if a particular ERC-20 token is accepted as gas payment by the paymaster. Returns a boolean
-
-#### Usage
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { CandidePaymaster } from "abstractionkit";
-
-const paymasterRPC="https://api.candide.dev/public/v3/11155111";
-const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
-
-const erc20TokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b"; // CTT on sepolia testnet
-
-const isSupported = await paymaster.isSupportedERC20Token(erc20TokenAddress);
-```
-
-</TabItem>
-<TabItem value="Param type" label="Param Types">
-  <DataTable items={isSupportedERC20TokenParam} />
-</TabItem>
-<TabItem value="response type" label="Response Type">
-  <DataTable items={isSupportedERC20TokenReturn} />
-</TabItem>
-
-</Tabs>
-
-<details>
-<summary>Example Response</summary>
-
-```ts
-true
-```
-
-</details>
-
-#### Source
-[isSupportedERC20Token](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/CandidePaymaster.ts#L385)
-
-### getSupportedERC20TokenData
-
-Returns the token data given an erc20 address
-
-#### Usage
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { CandidePaymaster } from "abstractionkit";
-
-const paymasterRPC = "https://api.candide.dev/public/v3/11155111";
-
-const erc20TokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b";
-const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
-//highlight-start
-const erc20TokenData = await paymaster.getSupportedERC20TokenData(erc20TokenAddress);
-//highlight-end
-```
-
-</TabItem>
-<TabItem value="Param type" label="Param Types">
-  <DataTable items={getSupportedERC20TokenDataParam} />
-</TabItem>
-<TabItem value="Return type" label="Return Type">
-  <DataTable items={getSupportedERC20TokenDataReturn} />
-  <DataTable items={erc20TokenType} />
-</TabItem>
-</Tabs>
-<details title="Example Response">
-<summary>Example Response</summary>
-
-```js
-{
-  name: 'Candide Test Token',
-  symbol: 'CTT',
-  address: '0xFa5854FBf9964330d761961F46565AB7326e5a3b',
-  decimals: 18
-}
-```
-
-</details>
-
-#### Source code
-[getSupportedERC20TokenData](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/CandidePaymaster.ts#L402)
-
-### fetchTokenPaymasterExchangeRate
-
-Fetches the current exchange rate for an ERC-20 token from the paymaster. The exchange rate represents the token cost per unit of native currency, used to calculate how much of the token is needed to cover gas fees.
-
-#### Usage
-
-<Tabs>
-<TabItem value="example.ts" label="example.ts">
-
-```ts title="example.ts"
-import { CandidePaymaster } from "abstractionkit";
-
-const paymasterRPC = "https://api.candide.dev/public/v3/11155111";
-const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
-
-const erc20TokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b"; // CTT on sepolia testnet
-
-// highlight-start
-const exchangeRate = await paymaster.fetchTokenPaymasterExchangeRate(erc20TokenAddress);
-// highlight-end
-```
-
-</TabItem>
-<TabItem value="Param type" label="Param Types">
-  <DataTable items={fetchTokenPaymasterExchangeRateParams} />
-</TabItem>
-<TabItem value="Return type" label="Return Type">
-  <DataTable items={fetchTokenPaymasterExchangeRateReturn} />
-</TabItem>
-</Tabs>
-
-<details>
-<summary>Example Response</summary>
-
-```ts
-1000000000000000000n
-```
-
-</details>
-
-#### Source code
-[fetchTokenPaymasterExchangeRate](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/CandidePaymaster.ts#L848)
-
-### createPaymasterUserOperation
-
-:::note Private on CandidePaymaster
-`CandidePaymaster.createPaymasterUserOperation` is a private helper, not part of the public API. Use [`createSponsorPaymasterUserOperation`](#createsponsorpaymasteruseroperation) for gas sponsorship or [`createTokenPaymasterUserOperation`](#createtokenpaymasteruseroperation) for ERC-20 token payment instead.
-
-`Erc7677Paymaster` exposes a public method with the same name; that one is the recommended entry point for the standard ERC-7677 flow and is documented in the [Erc7677Paymaster section](#erc7677paymaster) below.
-:::
-
-#### Source code
-[createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/CandidePaymaster.ts#L580)
+| Candide-specific one-shot sponsorship | [`CandidePaymaster`](/wallet/abstractionkit/candide-paymaster) | Supported via [`createSponsorPaymasterUserOperation(...)`](/wallet/abstractionkit/candide-paymaster#createsponsorpaymasteruseroperation) |
+| Two-phase paymaster signing to reduce user waiting time | [`CandidePaymaster`](/wallet/abstractionkit/candide-paymaster) | `createSponsorPaymasterUserOperation(..., { signingPhase })` |
 
 ## Erc7677Paymaster
 
@@ -722,11 +158,51 @@ The context object is forwarded to the paymaster RPC as the fourth argument of `
 
 <DataTable items={erc7677ContextType} />
 
-#### Decode a token quote
+### decodeTokenQuote
 
-`Erc7677Paymaster.decodeTokenQuote(userOperation, nodeRpcUrl)` is the same static method as [`CandidePaymaster.decodeTokenQuote`](#decodetokenquote).
+Reads the token payment a finished UserOperation commits to from the paymaster data the paymaster signed: the paymaster, token, exchange rate, validity window, and `maxTokenCost`, the most the user can be charged. In Candide's on-chain markup mode, the markup is read from the paymaster contract when `decodeTokenQuote` runs, so `maxTokenCost` reflects the markup at that moment. This is useful for co-signers who did not build the UserOperation and never saw its `TokenQuote`, so they can check the charge before signing.
+
+`decodeTokenQuote` is a static method and needs no paymaster URL. It is available on both `CandidePaymaster` and `Erc7677Paymaster`, and works for any account, whichever client built the UserOperation. It supports Candide's token paymasters on EntryPoint v0.6 to v0.9 and Pimlico's on v0.6 to v0.8, identified by the paymaster address on the UserOperation.
+
+- Returns `null` when the UserOperation has no paymaster or is sponsored (no token payment).
+- Throws a `PAYMASTER_ERROR` if the paymaster is not a known deployment, and `BAD_DATA` if the paymaster data cannot be read.
+- Candide's paymaster data names the token by an on-chain slot, so the method makes one `eth_call` through `nodeRpcUrl` to read it. For Candide, `nodeRpcUrl` must be a node on the same chain as the UserOperation. For Pimlico, `nodeRpcUrl` is not used.
+
+#### Usage
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { Erc7677Paymaster } from "abstractionkit";
+
+const nodeRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com";
+
+// userOperation received from the account owner who built it
+// highlight-start
+const quote = await Erc7677Paymaster.decodeTokenQuote(userOperation, nodeRpcUrl);
+// highlight-end
+
+if (quote !== null) {
+  console.log(`Pays up to ${quote.maxTokenCost} of ${quote.token} to ${quote.paymaster}`);
+}
+```
+
+</TabItem>
+<TabItem value="Param type" label="Param Types">
+  <DataTable items={decodeTokenQuoteParam} />
+</TabItem>
+<TabItem value="Return type" label="Return Type">
+  <DataTable items={decodeTokenQuoteReturn} />
+  DecodedTokenQuote
+  <DataTable items={decodedTokenQuoteType} />
+</TabItem>
+</Tabs>
 
 #### Source code
+[CandidePaymaster.decodeTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/CandidePaymaster.ts#L131) | [Erc7677Paymaster.decodeTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/Erc7677Paymaster.ts#L346) | [DecodedTokenQuote](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/decodeTokenQuote.ts#L25)
+
+### Source code
 [Erc7677Paymaster](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/Erc7677Paymaster.ts#L228) | [createPaymasterUserOperation](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/paymaster/Erc7677Paymaster.ts#L480)
 
 ## Error Handling
@@ -746,10 +222,11 @@ import { AbstractionKitError } from "abstractionkit";
 
 try {
   const { userOperation: sponsoredUserOperation } =
-    await paymaster.createSponsorPaymasterUserOperation(
+    await paymaster.createPaymasterUserOperation(
       smartAccount,
       userOperation,
       bundlerUrl,
+      { sponsorshipPolicyId: "sp_..." },
     );
 } catch (error) {
   if (error instanceof AbstractionKitError && error.code === "PAYMASTER_ERROR") {
