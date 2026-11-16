@@ -1,10 +1,14 @@
 #!/usr/bin/env node
-// One-off: rewrite #L<n> anchors on abstractionkit/blob/v0.3.2 links to point
-// to the correct line of each symbol as it exists in the pinned tag.
+// Move abstractionkit source links from one release tag to another and point
+// each #L<n> anchor at the symbol's line in the new tag.
+//
+// Usage: node scripts/pin-source-links.mjs <from-tag> <to-tag>
+//   e.g. node scripts/pin-source-links.mjs v2.0.0 v2.1.0
+// Pass the same tag twice to re-pin anchors without bumping the version.
 //
 // Strategy:
-//   1. Grep MDX files for links matching `[<symbol>](…abstractionkit/blob/v0.3.2/<path>#L<n>)`.
-//   2. For each unique <path>, fetch the file at v0.3.2 and parse with the TS
+//   1. Grep MDX files for links matching `[<symbol>](…abstractionkit/blob/<from-tag>/<path>#L<n>)`.
+//   2. For each unique <path>, fetch the file at <to-tag> and parse with the TS
 //      compiler. Record line numbers for every MethodDeclaration,
 //      FunctionDeclaration, and ConstructorDeclaration, keyed by symbol name.
 //      Inside a file, a name may resolve to multiple lines — record them all.
@@ -23,8 +27,13 @@ import ts from "typescript";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "..");
-const TAG = "v0.3.2";
-const CACHE = join(repoRoot, ".cache-abstractionkit-v0.3.2");
+const [FROM_TAG, TAG] = process.argv.slice(2);
+if (!FROM_TAG || !TAG) {
+	console.error("Usage: node scripts/pin-source-links.mjs <from-tag> <to-tag>");
+	process.exit(1);
+}
+const CACHE = join(repoRoot, `.cache-abstractionkit-${TAG}`);
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 mkdirSync(CACHE, { recursive: true });
 
@@ -79,13 +88,15 @@ function collectSymbolLines(source) {
 	return map;
 }
 
-const LINK_RE =
-	/\[([A-Za-z_][\w]*)\]\((https:\/\/github\.com\/candidelabs\/abstractionkit\/blob\/v0\.3\.2\/([^)#\s"]+))#L(\d+)\)/g;
+const LINK_RE = new RegExp(
+	`\\[([A-Za-z_][\\w]*)\\]\\((https:\\/\\/github\\.com\\/candidelabs\\/abstractionkit\\/blob\\/${escapeRe(FROM_TAG)}\\/([^)#\\s"]+))#L(\\d+)\\)`,
+	"g",
+);
 
 let mdxFiles;
 try {
 	mdxFiles = execSync(
-		`grep -rl "abstractionkit/blob/v0.3.2" --include="*.mdx" --include="*.md" docs/`,
+		`grep -rlF "abstractionkit/blob/${FROM_TAG}/" --include="*.mdx" --include="*.md" docs/`,
 		{ encoding: "utf8", cwd: repoRoot },
 	).trim().split("\n").filter(Boolean);
 } catch (err) {
@@ -130,7 +141,8 @@ for (const rel of mdxFiles) {
 			note = `ambiguous (${candidates.length}): ${candidates.join(",")} → closest to ${oldLine}`;
 		}
 		report.push({ file: rel, symbol, path, oldLine, newLine, note });
-		return `[${symbol}](${urlBase}#L${newLine})`;
+		const newBase = urlBase.replace(`/blob/${FROM_TAG}/`, `/blob/${TAG}/`);
+		return `[${symbol}](${newBase}#L${newLine})`;
 	});
 	if (updated !== text) writeFileSync(full, updated);
 }
