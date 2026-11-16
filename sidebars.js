@@ -750,6 +750,16 @@ const sidebars = {
         },
         {
           type: "doc",
+          id: "wallet/abstractionkit/calibur-account-keys",
+          label: "Calibur Key Management"
+        },
+        {
+          type: "doc",
+          id: "wallet/abstractionkit/calibur-account-utilities",
+          label: "Calibur Utility Methods"
+        },
+        {
+          type: "doc",
           id: "wallet/abstractionkit/external-signers",
           label: "External Signers"
         },
