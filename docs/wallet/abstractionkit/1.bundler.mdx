@@ -230,7 +230,9 @@ const entrypointAddress = "0x0000000071727De22E5E9d8BAf0edAc6f37da032";
 // Use createUserOperation() to help you construct the userOp below
 const userOperation = await smartAccount.createUserOperation(/* ... */);
 
-// Sign with the owner's key before sending
+// Sign before sending. Safe accounts take one private key per owner
+// required by the threshold, as an array. Calibur7702Account and
+// Simple7702Account take a single key: signUserOperation(userOperation, privateKey, chainId)
 userOperation.signature = smartAccount.signUserOperation(
   userOperation,
   [ownerPrivateKey],
