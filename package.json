@@ -6,7 +6,7 @@
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
     "prebuild": "npm run test:gas-policy-examples",
-    "build": "docusaurus build && node scripts/fix-markdown-links.js",
+    "build": "docusaurus build && node scripts/fix-markdown-links.js && node scripts/check-page-sizes.js",
     "test:markdown-links": "node --test scripts/fix-markdown-links.test.js",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",

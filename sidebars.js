@@ -750,6 +750,11 @@ const sidebars = {
         },
         {
           type: "doc",
+          id: "wallet/abstractionkit/candide-paymaster",
+          label: "CandidePaymaster"
+        },
+        {
+          type: "doc",
           id: "wallet/abstractionkit/utilities",
           label: "Utilities"
         },
