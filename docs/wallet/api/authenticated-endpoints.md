@@ -26,7 +26,7 @@ https://api.candide.dev/api/v3/{CHAIN_ID}/{API_KEY}
 https://api.candide.dev/api/v3/11155111/YOUR_API_KEY
 ```
 
-The API key is a path segment: there are no separate auth headers. Treat the full URL as a secret.
+The API key is a path segment: there are no separate auth headers.
 
 :::caution
 The older per-service URL formats (`/bundler/v3/` and `/paymaster/v3/` with chain names) are deprecated. Use the unified format above.
@@ -77,6 +77,12 @@ Authenticated endpoints have higher rate limits than the [public endpoints](/wal
 
 ## Key Safety
 
-- Keep keys out of client-side code where possible. For frontend paymaster flows, scope what a key can sponsor with [gas policies](/instagas/gas-policies/) so a leaked key cannot drain your gas tank.
-- The repository holding your key config should never commit the full endpoint URL.
+An API key and a private gas policy ID carry different risks:
+
+- **API key:** a leaked key lets others use the API on your plan, so the cost is API usage billed to you. It can't move funds or spend your gas tank on its own. Prefer calling Candide from a backend in production, which also protects your usage. A key in frontend code is acceptable for prototypes and client-only apps.
+- **Private gas policy ID:** whoever holds it gets gas sponsored under that policy, paid from your gas tank. Keep it on a backend, so paymaster requests that carry it come from your server, and add [rules to the policy](/instagas/gas-policies/) (allowed domains, accounts, calls) to limit what it pays for.
+
+Either way:
+
+- Don't commit the full endpoint URL or a policy ID to a repository.
 - If a key leaks, issue a new one from the [dashboard](https://dashboard.candide.dev), update your deployments, and remove the old key.
