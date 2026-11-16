@@ -96,7 +96,7 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
     },
     "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
     "0x01",
-    { "sponsorshipPolicyId" : "1234" } // sponsorshipPolicyId key value field is optional if using a private gas policy.
+    { "sponsorshipPolicyId" : "1234" } // sponsorshipPolicyId is required for a private gas policy and optional for public gas policies.
   ]
 }
 ```
@@ -255,7 +255,7 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
     },
     "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
     "0x01",
-    { "sponsorshipPolicyId" : "1234" } // sponsorshipPolicyId key value field is optional if using a private gas policy.
+    { "sponsorshipPolicyId" : "1234" } // sponsorshipPolicyId is required for a private gas policy and optional for public gas policies.
   ]
 }
 ```
@@ -420,7 +420,7 @@ If the paymaster rejects the UserOperation, it returns a standard JSON-RPC error
       "signature": "0x",
     },
     "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
-    { "sponsorshipPolicyId" : "1234" } // sponsorshipPolicyId key value field is optional if using a private gas policy.
+    { "sponsorshipPolicyId" : "1234" } // sponsorshipPolicyId is required for a private gas policy and optional for public gas policies.
   ]
 }
 ```
