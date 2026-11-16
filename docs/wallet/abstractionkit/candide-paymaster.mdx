@@ -113,7 +113,7 @@ const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
 const sponsorshipPolicyId = '1234';
 
 // Use createUserOperation() to help you construct a userOp
-const userOperation = smartAccount.createUserOperation(..)
+const userOperation = await smartAccount.createUserOperation(/* ... */);
 
 // highlight-start
 const { userOperation: sponsoredUserOperation, sponsorMetadata } =
@@ -236,7 +236,7 @@ const ownerPublicAddress = "0x2Ef844456580b6e1E22e1D584EBbC2467D9298B2"
 const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress])
 
 // Use createUserOperation() to help you construct a userOp
-let userOperation = smartAccount.createUserOperation(..);
+let userOperation = await smartAccount.createUserOperation(/* ... */);
 
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
 
@@ -306,7 +306,7 @@ userOperation = sponsoredUserOperation;
 
 ### calculateUserOperationErc20TokenMaxGasCost
 
-Calculates the maximum gas cost in ERC-20 tokens for a given userOperation
+Converts a UserOperation's maximum gas cost to the ERC-20 token at the paymaster's current exchange rate. It uses the same calculation as `tokenQuote.tokenCost`, so it leaves out Candide's post-operation overhead and markup. For the most a finished UserOperation can charge the user, use [`decodeTokenQuote`](/wallet/abstractionkit/paymaster#decodetokenquote).
 
 #### Usage
 
@@ -318,7 +318,7 @@ import { CandidePaymaster } from "abstractionkit";
 
 const erc20TokenAddress = "0xFa5854FBf9964330d761961F46565AB7326e5a3b"; // CTT test token
 // Use createUserOperation() to help you construct a userOp
-const userOperation = smartAccount.createUserOperation(..)
+const userOperation = await smartAccount.createUserOperation(/* ... */);
 
 const paymasterRPC="https://api.candide.dev/public/v3/11155111";
 const paymaster: CandidePaymaster = new CandidePaymaster(paymasterRPC);
