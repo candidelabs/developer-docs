@@ -703,20 +703,7 @@ createAddOwnerWithThresholdMetaTransactions(
 
 `overrides.nodeRpcUrl` is required when adding a WebAuthn owner, so the SDK can check whether the new owner's verifier is already deployed.
 
-On `SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`, this inherited method still falls back to the base Safe Passkey module v0.2.0 defaults, not the classes' v0.2.1 defaults, so a passkey owner added without overrides is not the signer the class derives when signing. Pass the class's own defaults:
-
-```ts
-await smartAccount.createAddOwnerWithThresholdMetaTransactions(webauthnPublicKey, 2, {
-    nodeRpcUrl,
-    eip7212WebAuthnPrecompileVerifier: SafeAccount.DEFAULT_WEB_AUTHN_PRECOMPILE,
-    eip7212WebAuthnContractVerifier: SafeAccount.DEFAULT_WEB_AUTHN_CONTRACT_VERIFIER,
-    webAuthnSignerFactory: SafeAccount.DEFAULT_WEB_AUTHN_SIGNER_FACTORY,
-    webAuthnSignerSingleton: SafeAccount.DEFAULT_WEB_AUTHN_SIGNER_SINGLETON,
-    webAuthnSignerProxyCreationCode: SafeAccount.DEFAULT_WEB_AUTHN_SIGNER_PROXY_CREATION_CODE,
-});
-```
-
-Here `SafeAccount` is `SafeMultiChainSigAccountV1` (or `SafeMultiChainSigAccountV2`), whose statics hold the v0.2.1 values.
+On `SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`, a passkey owner is derived with the class's own Safe Passkey module v0.2.1 defaults, so the added owner is the signer the account signs with. Pass WebAuthn overrides only if you created the account with custom WebAuthn values.
 
 <Tabs>
 <TabItem value="example.ts" label="example.ts">
