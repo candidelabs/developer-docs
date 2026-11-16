@@ -51,23 +51,37 @@ function indentWidth(line) {
 }
 
 function compactTables(content) {
-  let fence = null; // { char, length } while inside a fenced code block
+  // { char, length, column } while inside a fenced code block. `column` is
+  // where the fence starts, which is past the marker for a fence that opens
+  // on a list item line ("- ```ts").
+  let fence = null;
   let tableRow = 0; // position of the current line in a run of table rows
   return content
     .split('\n')
     .map((line) => {
       if (fence) {
         // A closing fence uses the same character, is at least as long as the
-        // opening fence, is indented at most 3 spaces and has nothing after it.
-        const close = line.match(/^ {0,3}(`+|~+)\s*$/);
-        if (close && close[1][0] === fence.char && close[1].length >= fence.length) {
+        // opening fence, starts at most 3 columns past the opening fence's
+        // column and has nothing after it.
+        const close = line.match(/^(\s*)(`+|~+)\s*$/);
+        if (
+          close &&
+          close[2][0] === fence.char &&
+          close[2].length >= fence.length &&
+          indentWidth(close[1]) <= fence.column + 3
+        ) {
           fence = null;
         }
         return line;
       }
-      const open = line.match(/^ {0,3}(`{3,}|~{3,})/);
-      if (open) {
-        fence = { char: open[1][0], length: open[1].length };
+      // An opening fence, optionally after a list marker on the same line.
+      const open = line.match(/^(\s*(?:[-*+]|\d{1,9}[.)])[ \t]+)?( {0,3})(`{3,}|~{3,})/);
+      if (open && (open[1] !== undefined || indentWidth(line) <= 3)) {
+        fence = {
+          char: open[3][0],
+          length: open[3].length,
+          column: indentWidth((open[1] || '').replace(/[^\s]/g, ' ') + open[2]),
+        };
         tableRow = 0;
         return line;
       }
