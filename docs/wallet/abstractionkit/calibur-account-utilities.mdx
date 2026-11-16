@@ -1,0 +1,258 @@
+---
+title: Calibur Utility Methods SDK Reference
+description: Lower-level Calibur7702Account helpers for nonces, UserOperation hashes, call data encoding, signature wrapping, token paymaster approvals and nonce invalidation. To create the account from an EOA and send UserOperations, start at the Calibur Account page.
+keywords: [calibur, calibur7702account, "7702", sdk, eip-7702, nonce, calldata, signature]
+image: /img/posters/abstractionkit-meta.png
+---
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+
+import {
+  getNonceParam,
+  getNonceReturn,
+  createAccountCallDataParam,
+  createAccountCallDataReturn,
+  wrapSignatureParam,
+  wrapSignatureReturn,
+  getUserOperationHashParam,
+  getUserOperationHashReturn,
+  prependTokenPaymasterApproveToCallDataParam,
+  prependTokenPaymasterApproveToCallDataReturn,
+  createInvalidateNonceMetaTransactionParam,
+  createInvalidateNonceMetaTransactionReturn,
+} from "/src/data/caliburAccountParams";
+
+# Calibur Utility Methods
+
+Lower-level `Calibur7702Account` helpers. Most integrations do not need them: `createUserOperation` fetches the nonce and encodes the call data for you. To create the account from an existing EOA and send UserOperations, start with [Calibur Account](/wallet/abstractionkit/calibur-account).
+
+## Methods at a Glance
+
+| Method | Signature | Returns |
+|---|---|---|
+| [getNonce](#getnonce) | `getNonce(providerRpc, sequenceKey?)` | `Promise<bigint>` |
+| [createAccountCallData](#createaccountcalldata) (static) | `Calibur7702Account.createAccountCallData(transactions, revertOnFailure?)` | `string` |
+| [wrapSignature](#wrapsignature) (static) | `Calibur7702Account.wrapSignature(keyHash, rawSignature, hookData?)` | `string` |
+| [getUserOperationHash](#getuseroperationhash) | `getUserOperationHash(userOperation, chainId)` | `string` |
+| [prependTokenPaymasterApproveToCallData](#prependtokenpaymasterapprovetocalldata) | `prependTokenPaymasterApproveToCallData(callData, tokenAddress, paymasterAddress, approveAmount)` | `string` |
+| prependTokenPaymasterApproveToCallDataStatic (static) | `Calibur7702Account.prependTokenPaymasterApproveToCallDataStatic(callData, tokenAddress, paymasterAddress, approveAmount)` | `string` |
+| [createInvalidateNonceMetaTransaction](#createinvalidatenoncemetatransaction) (static) | `Calibur7702Account.createInvalidateNonceMetaTransaction(newNonce)` | `SimpleMetaTransaction` |
+
+## Utility Methods
+
+### getNonce
+
+Gets the account nonce from the EntryPoint. Supports parallel nonce channels via the optional `sequenceKey` parameter.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+// Default nonce (sequence key = 0)
+const nonce = await smartAccount.getNonce(
+  "https://ethereum-sepolia-rpc.publicnode.com"
+);
+console.log("Nonce:", nonce);
+
+// Parallel nonce channel
+const parallelNonce = await smartAccount.getNonce(
+  "https://ethereum-sepolia-rpc.publicnode.com",
+  1 // sequence key
+);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={getNonceParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={getNonceReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+[getNonce](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L1235)
+
+### createAccountCallData
+
+Static method. Encodes calldata for `executeUserOp` with BatchedCall format. All transactions (even single ones) go through the same BatchedCall path.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { Calibur7702Account } from "abstractionkit";
+
+const transactions = [
+  { to: "0x...", value: 0n, data: "0x..." },
+  { to: "0x...", value: 1000000000000000000n, data: "0x" },
+];
+
+const callData = Calibur7702Account.createAccountCallData(transactions);
+
+// With revertOnFailure disabled (individual calls can fail without reverting the batch)
+const callDataNoRevert = Calibur7702Account.createAccountCallData(transactions, false);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createAccountCallDataParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createAccountCallDataReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+[createAccountCallData](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L311)
+
+### wrapSignature
+
+Static method. Wraps a raw ECDSA signature in Calibur's signature format: `abi.encode(bytes32 keyHash, bytes signature, bytes hookData)`. Use this when signing externally (e.g., with viem, hardware wallet, MPC) to avoid manually ABI-encoding the wrapped signature.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { Calibur7702Account } from "abstractionkit";
+
+// Root key hash (bytes32 zero) for the EOA's own key
+const ROOT_KEY_HASH = "0x0000000000000000000000000000000000000000000000000000000000000000";
+
+const rawEcdsaSignature = "0x..."; // 65-byte ECDSA signature
+
+// Wrap for root key
+const wrappedSignature = Calibur7702Account.wrapSignature(
+  ROOT_KEY_HASH,
+  rawEcdsaSignature,
+);
+
+// Wrap for a secondary key with hook data
+const wrappedWithHook = Calibur7702Account.wrapSignature(
+  "0x...secondary-key-hash",
+  rawEcdsaSignature,
+  "0x...hook-data",
+);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={wrapSignatureParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={wrapSignatureReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+[wrapSignature](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L177)
+
+### getUserOperationHash
+
+Computes the UserOperation hash for this account's EntryPoint. Convenience wrapper that automatically uses this account's EntryPoint address.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const userOpHash = smartAccount.getUserOperationHash(
+  userOperation,
+  11155111n // chain ID
+);
+
+console.log("UserOperation hash:", userOpHash);
+// Use this hash as the challenge for WebAuthn assertions
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={getUserOperationHashParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={getUserOperationHashReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+[getUserOperationHash](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L241)
+
+### prependTokenPaymasterApproveToCallData
+
+Prepends a token `approve` call to existing calldata for a token paymaster. Decodes the existing BatchedCall, prepends an ERC-20 approve transaction, and re-encodes.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+const callDataWithApproval = smartAccount.prependTokenPaymasterApproveToCallData(
+  userOperation.callData,
+  "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", // USDC token address (Ethereum mainnet)
+  "0x...", // paymaster address
+  1000000n // approve amount (1 USDC)
+);
+
+userOperation.callData = callDataWithApproval;
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={prependTokenPaymasterApproveToCallDataParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={prependTokenPaymasterApproveToCallDataReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+[prependTokenPaymasterApproveToCallData](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L1438)
+
+### createInvalidateNonceMetaTransaction
+
+Static method. Creates a meta-transaction to invalidate nonces up to a given value. All nonces below the specified value become invalid, preventing replay of previously signed but unsubmitted UserOperations.
+
+<Tabs>
+<TabItem value="example.ts" label="example.ts">
+
+```ts title="example.ts"
+import { Calibur7702Account } from "abstractionkit";
+
+// Invalidate all nonces below 100
+const invalidateTx = Calibur7702Account.createInvalidateNonceMetaTransaction(100n);
+
+const userOperation = await smartAccount.createUserOperation(
+  [invalidateTx],
+  nodeRpc,
+  bundlerRpc,
+);
+```
+
+</TabItem>
+
+<TabItem value="Param Types" label="Param Types">
+  <DataTable items={createInvalidateNonceMetaTransactionParam} />
+</TabItem>
+
+<TabItem value="Return Type" label="Return Type">
+  <DataTable items={createInvalidateNonceMetaTransactionReturn} />
+</TabItem>
+
+</Tabs>
+
+#### Source code
+[createInvalidateNonceMetaTransaction](https://github.com/candidelabs/abstractionkit/blob/v2.1.0/src/account/Calibur/Calibur7702Account.ts#L1205)
