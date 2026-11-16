@@ -171,7 +171,7 @@ const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
 const bundler: Bundler = new Bundler(bundlerRPC);
 
 // Use createUserOperation() to help you construct the userOp below
-const userOperation = smartAccount.createUserOperation(..)
+const userOperation = await smartAccount.createUserOperation(/* ... */);
 const entryPointAddress = "0x0000000071727De22E5E9d8BAf0edAc6f37da032";
 
 // highlight-start
@@ -228,7 +228,7 @@ const bundlerRPC = "https://api.candide.dev/public/v3/11155111";
 const bundler: Bundler = new Bundler(bundlerRPC);
 const entrypointAddress = "0x0000000071727De22E5E9d8BAf0edAc6f37da032";
 // Use createUserOperation() to help you construct the userOp below
-const userOperation = smartAccount.createUserOperation(..)
+const userOperation = await smartAccount.createUserOperation(/* ... */);
 
 // highlight-start
 const userOperationHash = await bundler.sendUserOperation(userOperation, entrypointAddress);
