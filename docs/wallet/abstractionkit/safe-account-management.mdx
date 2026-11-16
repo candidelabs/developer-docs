@@ -39,7 +39,7 @@ import {
 
 Every AbstractionKit Safe account class has these methods: [Safe Unified Account](/wallet/abstractionkit/safe-unified-account) (`SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`, the recommended classes), [Safe Account V3](/wallet/abstractionkit/safe-account-v3) (`SafeAccountV0_3_0`) and [Safe Account V2](/wallet/abstractionkit/safe-account-v2) (`SafeAccountV0_2_0`). Calldata, signing and sending methods are on [Safe Account Transactions and Signing](/wallet/abstractionkit/safe-account-signing).
 
-The examples import `SafeAccountV0_3_0 as SafeAccount`. Each method on this page is called the same way on `SafeMultiChainSigAccountV1`, `SafeMultiChainSigAccountV2` and `SafeAccountV0_2_0`: change the import to your class. Where a class differs (UserOperation type, default addresses, example output), the section says so.
+The examples import `SafeMultiChainSigAccountV1 as SafeAccount`, the recommended class for new Safes. Each method is called the same way on `SafeMultiChainSigAccountV2`, `SafeAccountV0_3_0` and `SafeAccountV0_2_0`: change the import to your class. Where a class differs (UserOperation type, default addresses, example output), the section says so.
 
 ## Methods at a Glance
 
@@ -64,7 +64,7 @@ WebAuthn owners are derived with the Passkey module defaults of the class the me
 
 ### isDeployed
 
-Static method that checks whether a Safe account is already deployed on-chain. Use it to decide between connecting to an existing account (`new SafeAccountV0_3_0(address)`) and initializing a counterfactual one (`SafeAccountV0_3_0.initializeNewAccount(owners)`). Once an account is deployed, the factory data carried by `initializeNewAccount` is no longer needed and including it would waste gas.
+Static method that checks whether a Safe account is already deployed on-chain. Use it to decide between connecting to an existing account (`new SafeMultiChainSigAccountV1(address)`) and initializing a counterfactual one (`SafeAccountV0_3_0.initializeNewAccount(owners)`). Once an account is deployed, the factory data carried by `initializeNewAccount` is no longer needed and including it would waste gas.
 
 The same static method exists on every Safe class, for example `SafeMultiChainSigAccountV1.isDeployed(...)`.
 
@@ -76,7 +76,7 @@ This only checks for non-empty bytecode at `accountAddress`. It does not verify 
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const accountAddress = "0x1a02592A3484c2077d2E5D24482497F85e1980C6";
 const nodeRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com";
@@ -114,7 +114,7 @@ In this example, we initiate a single owner account.
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const ownerPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
 const safeAddress = SafeAccount.createAccountAddress(
@@ -143,10 +143,10 @@ console.log("Account address (sender): " + safeAddress);
 <summary>Example Response</summary>
 
 ```terminal
-Account address (sender): 0xd785Bb8A95A6a08aCE0Aa2e54aeE5cF04694b1db
+Account address (sender): 0x75cFD34827377361f08652A6528A76614c693C89
 ```
 
-With `SafeAccountV0_2_0`, the same owner gives `0xb8741a449D50ed0Dcfe395287F85BE152884c8d9`.
+With `SafeAccountV0_3_0`, the same owner gives `0xd785Bb8A95A6a08aCE0Aa2e54aeE5cF04694b1db`, and with `SafeAccountV0_2_0`, `0xb8741a449D50ed0Dcfe395287F85BE152884c8d9`.
 
 </details>
 
@@ -169,7 +169,7 @@ Creates the initializer calldata
   <TabItem value="example" label="Example">
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const initializeCallData = SafeAccount.createInitializerCallData(
   [ownerPublicAddress], // owners
@@ -192,6 +192,12 @@ console.log("initializeCallData: " + initializeCallData);
 
 <details>
 <summary>Example Response</summary>
+
+```terminal
+initializeCallData: 0xb63e800d000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000010000000000000000000000002dd68b007b46fbe91b9a7c3eda5a7a1063cb5b47000000000000000000000000000000000000000000000000000000000000014000000000000000000000000022939e839e3c0f479b713eaf95e0df128554aead0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d3100000000000000000000000000000000000000000000000000000000000000648d0dc49f0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000022939e839e3c0f479b713eaf95e0df128554aead00000000000000000000000000000000000000000000000000000000
+```
+
+With `SafeAccountV0_3_0`:
 
 ```terminal
 initializeCallData: 0xb63e800d000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000010000000000000000000000002dd68b007b46fbe91b9a7c3eda5a7a1063cb5b47000000000000000000000000000000000000000000000000000000000000014000000000000000000000000075cf11467937ce3f2f357ce24ffc3dbf8fd5c2260000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000bdbc5fbc9ca8c3f514d073ec3de840ac84fc6d3100000000000000000000000000000000000000000000000000000000000000648d0dc49f0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000075cf11467937ce3f2f357ce24ffc3dbf8fd5c22600000000000000000000000000000000000000000000000000000000
@@ -218,7 +224,7 @@ Reads the Safe singleton version string via `VERSION()`, for example `"1.4.1"`.
 #### Usage
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const accountAddress = "0x1a02592A3484c2077d2E5D24482497F85e1980C6";
 const nodeRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com";
@@ -247,7 +253,7 @@ Reads the active ERC-4337 fallback handler (the 4337 module) currently set on th
 #### Usage
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const accountAddress = "0x1a02592A3484c2077d2E5D24482497F85e1980C6";
 const nodeRpcUrl = "https://ethereum-sepolia-rpc.publicnode.com";
@@ -309,7 +315,7 @@ Creates a meta-transaction to disable a module from the Safe account. The functi
 
 ### createAddOwnerWithThresholdMetaTransactions
 
-Builds the MetaTransactions needed to add a new owner (an ECDSA address or a WebAuthn public key) and set a new threshold. If the new owner is a WebAuthn signer whose verifier contract is not yet deployed, the returned list also contains a MetaTransaction that deploys the verifier, so it resolves to one or two MetaTransactions.
+Builds the MetaTransactions needed to add a new owner (an ECDSA address or a WebAuthn public key) and set a new threshold. If the new owner is a WebAuthn signer whose verifier contract is not yet deployed, the returned list starts with a MetaTransaction that deploys the verifier, followed by the add-owner call, so it resolves to one or two MetaTransactions.
 
 ```ts
 createAddOwnerWithThresholdMetaTransactions(

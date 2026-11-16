@@ -714,6 +714,21 @@ const sidebars = {
             },
             {
               type: "doc",
+              id: "wallet/abstractionkit/safe-unified-account-multichain",
+              label: "Unified Account Multichain Signing"
+            },
+            {
+              type: "doc",
+              id: "wallet/abstractionkit/safe-account-signing",
+              label: "Transactions and Signing"
+            },
+            {
+              type: "doc",
+              id: "wallet/abstractionkit/safe-account-management",
+              label: "Setup, Owners and Modules"
+            },
+            {
+              type: "doc",
               id: "wallet/abstractionkit/safe-account-v3",
               label: "Safe Account V3"
             },

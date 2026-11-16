@@ -28,7 +28,7 @@ import { userOperationParamV07, userOperationReceiptResultType } from "/src/data
 
 Every AbstractionKit Safe account class inherits these methods from the base `SafeAccount` class: [Safe Unified Account](/wallet/abstractionkit/safe-unified-account) (`SafeMultiChainSigAccountV1` and `SafeMultiChainSigAccountV2`, the recommended classes), [Safe Account V3](/wallet/abstractionkit/safe-account-v3) (`SafeAccountV0_3_0`) and [Safe Account V2](/wallet/abstractionkit/safe-account-v2) (`SafeAccountV0_2_0`). Building, estimating and signing with private keys are class-specific and documented on each class page. Owner, module and address methods are on [Safe Account Setup, Owners and Modules](/wallet/abstractionkit/safe-account-management).
 
-The examples import `SafeAccountV0_3_0 as SafeAccount`. Each method on this page is called the same way on `SafeMultiChainSigAccountV1`, `SafeMultiChainSigAccountV2` and `SafeAccountV0_2_0`: change the import to your class. Where a class differs (UserOperation type, default addresses, example output), the section says so.
+The examples import `SafeMultiChainSigAccountV1 as SafeAccount`, the recommended class for new Safes. Each method is called the same way on `SafeMultiChainSigAccountV2`, `SafeAccountV0_3_0` and `SafeAccountV0_2_0`: change the import to your class. Where a class differs (UserOperation type, default addresses, example output), the section says so.
 
 ## Methods at a Glance
 
@@ -216,7 +216,7 @@ In this example, we make a transfer of 1 wei to a random address.
 <TabItem value="example.ts" label="example.ts">
 
 ```ts title="example.ts"
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 
 const ownerPublicAddress = "0xBdbc5FBC9cA8C3F514D073eC3de840Ac84FC6D31";
 const smartAccount = SafeAccount.initializeNewAccount([ownerPublicAddress]);
@@ -270,7 +270,7 @@ In this example, we make a transfer to 2 different random addresses, 1 wei each.
 
 ```ts title="example.ts"
 import {
-  SafeAccountV0_3_0 as SafeAccount,
+  SafeMultiChainSigAccountV1 as SafeAccount,
   // highlight-start
   MetaTransaction,
   // highlight-end
@@ -333,11 +333,11 @@ Create a userOperation eip712 hash
 
 ```ts title="example"
 import {
-  SafeAccountV0_3_0 as SafeAccount,
-  UserOperationV7
+  SafeMultiChainSigAccountV1 as SafeAccount,
+  UserOperationV9
 } from "abstractionkit";
 
-const userOperation: UserOperationV7 = await smartAccount.createUserOperation(..)
+const userOperation: UserOperationV9 = await smartAccount.createUserOperation(..)
 
 // highlight-start
 const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(userOperation, chainId);
@@ -402,7 +402,7 @@ A static method to format a list of eip712 signatures to a userOperation signatu
 <TabItem value="ethers" label="ethers example">
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 import { Wallet } from "ethers";
 
 const ownerPrivateKey = process.env.PRIVATE_KEY as string;
@@ -416,7 +416,11 @@ let userOperation = ... // smartAccount.createUserOperation(..)
 const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(userOperation, chainId);
 const signature = signer.signingKey.sign(safeUserOpHash).serialized;
 
-const formatedSig = SafeAccount.formatEip712SignaturesToUseroperationSignature([ownerPublicAddress], [signature]);
+const formatedSig = SafeAccount.formatEip712SignaturesToUseroperationSignature(
+  [ownerPublicAddress],
+  [signature],
+  { isMultiChainSignature: true }, // required for SafeMultiChainSigAccountV1 and V2; omit for SafeAccountV0_3_0 and V0_2_0
+);
 userOperation.signature = formatedSig;
 ```
 
@@ -424,7 +428,7 @@ userOperation.signature = formatedSig;
 <TabItem value="viem" label="viem example">
 
 ```ts
-import { SafeAccountV0_3_0 as SafeAccount } from "abstractionkit";
+import { SafeMultiChainSigAccountV1 as SafeAccount } from "abstractionkit";
 import { privateKeyToAccount } from "viem/accounts";
 
 const ownerPrivateKey = process.env.PRIVATE_KEY as string;
@@ -443,7 +447,11 @@ const safeUserOpHash = SafeAccount.getUserOperationEip712Hash(
 
 const signature = await signer.sign({ hash: safeUserOpHash });
 
-const formatedSig = SafeAccount.formatEip712SignaturesToUseroperationSignature([ownerPublicAddress], [signature]);
+const formatedSig = SafeAccount.formatEip712SignaturesToUseroperationSignature(
+  [ownerPublicAddress],
+  [signature],
+  { isMultiChainSignature: true }, // required for SafeMultiChainSigAccountV1 and V2; omit for SafeAccountV0_3_0 and V0_2_0
+);
 userOperation.signature = formatedSig;
 ```
 
