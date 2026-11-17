@@ -1,16 +1,16 @@
 ---
-title: InstaGas Architecture | How Gas Policies enable Gas Sponsorship for any Wallet 
-description: InstaGas is a paymaster that enables gas sponsorship through customizable Gas Policies, supporting ERC-20 token payments as a fallback. It's future-ready, compatible with EIP-7702 and RIP-7560.
+title: How Gas Sponsorship Works | Paymaster and Gas Policy Architecture
+description: Candide's paymaster is an ERC-4337 paymaster that enables gas sponsorship through customizable Gas Policies, supporting ERC-20 token payments as a fallback. It's future-ready, compatible with EIP-7702 and RIP-7560.
 keywords: [gas sponsorship, paymaster, eip-7702, erc-4337, gas station, gas policies, gas abstraction]
 image: /img/posters/paymaster-meta.png
 ---
 
-# InstaGas Architecture
+# How Gas Sponsorship Works
 
 ## Universal
 ✅ ERC-4337 ✅ EIP-7702 ✅ RIP-7560
 
-InstaGas is an ERC-4337 compliant paymaster that works seamlessly with any Bundler or any Account Abstraction SDK. It supports gas sponsorship through customizable Gas Policies and can also handle gas payments in ERC-20 tokens as a fallback option. 
+Candide's paymaster is ERC-4337 compliant and works with any Bundler or any Account Abstraction SDK. It supports gas sponsorship through customizable Gas Policies and can also handle gas payments in ERC-20 tokens as a fallback option. 
 
 Future-ready, as it is compatible with [EIP-7702](/account-abstraction/7702/overview) - the proposal that extends Externally Owned Accounts (EOA) functionality to include features 
 from smart wallets, such as transaction batching and gas sponsorship. Furthermore, it is also compatible with 
@@ -39,7 +39,7 @@ The steps to set up a Gas Policy are as follows:
 
 User Operations are transactions specific to Smart Wallets. The smart wallet client constructs the User Operation based on calldata provided by the dApp, 
 either through the Ethereum browser provider, a WalletConnect connection, or an internally integrated dApp. The client then sends a request with 
-the User Operation to InstaGas API to determine if a matching gas policy exists. If a policy is found, the Paymaster returns a valid sponsorship signature. 
+the User Operation to Candide's Paymaster API to determine if a matching gas policy exists. If a policy is found, the Paymaster returns a valid sponsorship signature. 
 If no match is found, the client defaults to offering the end-user ERC-20 token options for paying gas.
 
 ## Paymaster Verifier

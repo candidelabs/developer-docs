@@ -1,24 +1,46 @@
 ---
-title: InstaGas Usecases | Gas Sponsorship for Dapps
-description: Real world applications and usecases of InstaGas Policies for Gas Sponsorship
-keywords: [gas sponsorship, paymaster, eip-7702, erc-4337, gas station, gas policies, gas abstraction]
+title: Public Gas Policies | Gas Sponsorship Funded by dApps
+description: Public gas policies are funded by dApps and protocols and apply to any wallet using Candide's paymaster, with no policy ID. Wallets get them with no setup; dApps create one to sponsor actions on their contracts. To sponsor your own users, use a private policy instead.
+keywords: [gas sponsorship, paymaster, public gas policy, erc-4337, erc-7677, gas policies, dapp sponsorship]
 image: /img/posters/paymaster-meta.png
 ---
 
-# Real-World Applications of InstaGas Policies
+# Public Gas Policies
 
-InstaGas policies enable diverse possibilities across sectors where onboarding, marketing, incentives, and privacy are critical.
-InstaGas offers use cases across multiple industries:
+A public gas policy pays for operations on a dApp's or protocol's contracts, for any user whose wallet gets sponsorship from Candide's paymaster. The dApp creates and funds the policy. Wallets pass no policy ID: when a sponsorship request comes without one, the paymaster checks the operation against the active public policies on that network.
 
-| Use Case | Description |
+A wallet that pays for its own users needs a private policy. See [Sponsor Your Users' Gas](/wallet/guides/send-gasless-tx/).
+
+## For Wallets
+
+A wallet gets public sponsorship by requesting paymaster data without a policy ID. Nothing has to be configured.
+
+If the wallet also has a private policy, request without the ID first, and fall back to the private policy when no public policy matches. In that order, operations that a dApp has agreed to pay for don't spend your funds. [Getting Paymaster Data](/wallet/guides/send-gasless-tx/#getting-paymaster-data) shows the code.
+
+## For dApps and Protocols
+
+1. Create a policy in the [Dashboard](https://dashboard.candide.dev) or with the [Gas Policy API](/platform/gas-policy-api).
+2. Set it to public in the [General Rules](/instagas/gas-policies/#general-rules).
+3. Add [Transaction Rules](/instagas/gas-policies/#transaction-rules) that limit it to your contracts and methods, and [Account Rules](/instagas/gas-policies/#account-rules) that cap each account's usage.
+4. Fund the policy and enable it.
+
+The paymaster sponsors any operation that matches the rules, whoever sends it. The transaction and account rules are what limit the spend.
+
+### Wallets That Use Another Paymaster
+
+A public policy only covers wallets that request sponsorship from Candide's paymaster. Some wallets let the dApp choose the paymaster through the `paymasterService` capability from [ERC-5792](https://eips.ethereum.org/EIPS/eip-5792) and [ERC-7677](https://eips.ethereum.org/EIPS/eip-7677). Few wallets support it today. [Batch and Sponsor Transactions](/instagas/batch-sponsor-transactions) shows how to request it with wagmi.
+
+## Examples
+
+| Sponsor | Sponsored actions |
 | --- | --- |
-| **DeFi Exchanges** | Cover gas fees for token swaps or liquidity provision. This is useful for marketing campaigns, new user onboarding, or high-volume traders. |
-| **NFT Drops** | Sponsor gas fees for fresh mints, even during high network congestion. This helps your collection find more participants and reduces all friction for collectors. |
-| **Lending Protocols** | Sponsor key actions such as loan creation, collateral adjustments, or repayments, by setting a minimum for deposits and withdrawals. |
-| **L2 Rollups and EVM Chains** | Sponsor bridging gas fees from the origin chain to your destination chain using your canonical bridge or third parties. |
-| **Liquid staking** | Liquid stacked tokens and their wrapped versions leave users without options to make a single transaction after staking all their native tokens. |
-| **Web3 Games** | Gas-free in-game transactions, allowing players to mint NFTs, transfer assets, or make a minimum purchase without needing to manage native tokens. |
-| **Charity and Donations** | Nonprofits can sponsor gas fees for donors. A minimum donation threshold can be set to apply for sponsorship. |
-| **DAO Governance Participation** | Sponsor gas fees for governance actions like voting, submitting proposals, or delegating tokens. |
-| **Subscription Services** | Any recurring actions, such as Dollar Cost Averaging (DCA), can automate and cover recurring transaction fees for users. |
-| **Private Actions** | By covering gas fees, users don't need to complete KYC to purchase ETH. It also enables ETH-less token withdrawals sent to stealth addresses. |
+| DeFi exchange | Swaps or liquidity deposits, for new users or during a campaign |
+| NFT drop | Mints |
+| Lending protocol | Opening a loan, adjusting collateral and repaying, above a minimum deposit |
+| L2 or EVM chain | Bridging to the chain through its canonical bridge |
+| Liquid staking protocol | The first transaction after a user stakes all their native tokens |
+| Game | In-game mints, transfers and small purchases |
+| Charity | Donations above a minimum amount |
+| DAO | Voting, proposals and delegation |
+| Recurring payments | Each scheduled transaction, such as a DCA purchase |
+| Privacy app | Withdrawals to stealth addresses, which hold no ETH for gas |
