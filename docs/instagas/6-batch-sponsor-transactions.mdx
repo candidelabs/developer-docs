@@ -134,14 +134,14 @@ Your app should fallback to sending normal transactions if the wallet doesn't su
 
 **Gas Sponsorship**
 
-InstaGas is a no-code solution for dApps, provided that the wallet natively uses Candide's [Paymaster API](/wallet/paymaster/rpc-methods/).
+A [public gas policy](/instagas/usecases/) needs no code in the dApp, provided that the wallet natively uses Candide's [Paymaster API](/wallet/paymaster/rpc-methods/).
 However, this integration is not a barrier for apps wishing to sponsor gas fees for wallets that do not natively support Candide.
 In this step, we demonstrate how to use [ERC-7677](https://eips.ethereum.org/EIPS/eip-7677), which is an extension to ERC-5792 that standardizes the communication of gas sponsorship
 between the app and the wallet.
 
 1. Create an App on [dashboard.candide.dev/api-keys](https://dashboard.candide.dev/api-keys)
 2. Copy the paymaster URL link with the API key and fill in the `paymasterUrl`
-3. [Setup a Gas Policy](/instagas/overview/#how-it-works) and customise it with [your rules](/instagas/gas-policies/)
+3. [Set up a public gas policy](/instagas/usecases/#for-dapps-and-protocols) and customise it with [your rules](/instagas/gas-policies/)
 
 
 ```ts

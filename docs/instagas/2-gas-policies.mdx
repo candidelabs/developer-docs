@@ -1,13 +1,13 @@
 ---
-title: InstaGas Gas Policies
+title: Gas Policy Rules
 description: Understand the general, account, access, and transaction rules available to Candide gas sponsorship policies.
 keywords: [InstaGas, gas policy, gas sponsorship, smart contracts, eip-7702]
 image: /img/posters/paymaster-meta.png
 ---
 
-# InstaGas Policy Rules Overview
+# Gas Policy Rules
 
-InstaGas provides customizable rules for gas policies. These rules are organized into four categories:
+Gas policies are built from customizable rules. These rules are organized into four categories:
 - [General Rules](/instagas/gas-policies/#general-rules)
 - [Account Rules](/instagas/gas-policies/#account-rules)
 - [Access Rules](/instagas/gas-policies/#access-rules)
@@ -147,7 +147,7 @@ For request validation, update semantics, and response fields, use the [Gas Poli
 | :--- | :--- | :--- |
 | `enabled` | `boolean` | Whether the policy is active. Disabled policies never sponsor, regardless of dates. |
 | `private` | `boolean` | Private policies require the wallet to pass the policy ID when requesting sponsorship. Public policies apply without one. |
-| `sponsorshipPolicyId` | `string` | Assigned by InstaGas at creation. Wallets reference it as the sponsorship policy ID for private policies. |
+| `sponsorshipPolicyId` | `string` | Assigned by Candide at creation. Wallets reference it as the sponsorship policy ID for private policies. |
 | `startDate` | `number` | Unix timestamp in milliseconds. Sponsorship starts at this time. The API rejects a new value more than one day in the past. |
 | `endDate` | `number` | Unix timestamp in milliseconds. Sponsorship stops at this time. |
 

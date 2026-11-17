@@ -1,54 +1,35 @@
 ---
-title: InstaGas Quickstart | Gas Sponsorship Policies
-description: Create gas policies from the Candide Dashboard or Platform API to sponsor Smart Wallet users securely.
-keywords: [gas sponsorship, paymaster, eip-7702, erc-4337, gas station, gas policies, gas abstraction]
+title: Create a Gas Policy | Gas Sponsorship Policies
+description: Create and fund a gas policy from the Candide Dashboard or the Platform API. Wallets and apps sponsor their own users with a private policy; dApps sponsor actions on their contracts with a public policy.
+keywords: [gas sponsorship, paymaster, erc-4337, gas station, gas policies, gas abstraction, InstaGas]
 image: /img/posters/paymaster-meta.png
 ---
 
-# InstaGas
+# Create a Gas Policy
 
-InstaGas lets you sponsor gas fees for end users with customized policies tailored to specific smart contracts and use cases. Configure policies interactively in the Dashboard or automate them with the [Platform API](/platform/overview).
-
-![candide-instagas-logo](/img/logo/instagas-logo.png)
+A gas policy is a set of rules that Candide's paymaster checks against each UserOperation. When an operation matches, the paymaster sponsors it, and the gas is paid from the funds held by the policy. Policies are created in the [Dashboard](https://dashboard.candide.dev) or with the [Platform API](/platform/overview).
 
 ## Who is This For?
 
-InstaGas is designed for apps that want to simplify user experience by abstracting gas costs **without complex wallet integration**.
-InstaGas is ideal for:
+Wallets, stablecoin apps and payment apps use a private policy to pay for their own users' transactions. Most policies are private. The wallet's backend sends the policy ID with each sponsorship request, and the paymaster checks only that policy. [Sponsor Your Users' Gas](/wallet/guides/send-gasless-tx/) has the code.
 
-* DeFi exchanges
-* Lending protocols
-* Web3 games
-* NFT collections and marketplaces
-* And more
+dApps and protocols use a public policy to pay for actions on their own contracts. A public policy has no ID to pass: the paymaster checks it for requests from any wallet that uses Candide's paymaster. See [Public Gas Policies](/instagas/usecases/).
 
-For more examples, visit our [Use Cases Categories](/instagas/usecases) page.
+## Create a Policy
 
-## How It Works
+1. Create a policy in the [Dashboard](https://dashboard.candide.dev) or with the [Gas Policy API](/platform/gas-policy-api).
+2. Set it to private or public in the General Rules.
+3. Add rules for what you want to sponsor. A transaction rule can limit sponsorship to calls on your contracts, and an account rule can cap how much each account uses.
+4. Top up your team balance and move funds to the policy.
 
-1. Set up a gas policy in the [Dashboard](https://dashboard.candide.dev) or with the [Gas Policy API](/platform/gas-policy-api)
-2. Make the policy `public` by toggling the privacy rule in General Rules settings
-3. Customize your policy with rules aligned with your app's needs
-4. Top up your team balance and transfer funds to the policy
+The policy sponsors operations while it is enabled, funded, and between its start and end dates. The Analytics and UserOperation tabs in the Dashboard show what it has sponsored.
 
-Once your policy is active:
+Keep a private policy's ID on your backend. Anyone who has the ID can get operations sponsored from the policy's funds, up to the limits its rules set.
 
-- It becomes discoverable by all wallets using Candide's [Paymaster API](/wallet/paymaster/rpc-methods/)
-- Any transaction matching the policy's rules will have gas fees sponsored
-- Monitor policy performance through the Analytics and UserOperation tabs
+## Rules
 
-## Rules Overview
-
-InstaGas provides customizable rules for gas policies, categorized into four sections:
-1. General Rules
-2. Account Rules
-3. Access Rules
-4. Transaction Rules
-
-Learn more about [Gas Policies and Rules](/instagas/gas-policies) on the next page.
-
-To create, update, or delete policies programmatically, follow the [Platform API quickstart](/platform/overview).
+Rules fall into four groups: general, account, access and transaction. [Policy Rules](/instagas/gas-policies) describes each rule. To manage policies from code, start with the [Platform API quickstart](/platform/overview).
 
 ## Support
 
-Have questions? We're here to help. [Get in touch](https://cal.com/candidelabs/30mins) with the founders for personalized guidance on setting up a gas policy.
+For help setting up a policy, [book a call](https://cal.com/candidelabs/30mins) with the founders.
