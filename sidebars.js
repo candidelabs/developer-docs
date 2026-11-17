@@ -71,6 +71,16 @@ const sidebars = {
           id: "wallet/api/public-endpoints",
           label: "Public Endpoints"
         },
+        {
+          type: "doc",
+          id: "wallet/pricing",
+          label: "Billing and Usage"
+        },
+        {
+          type: "doc",
+          id: "wallet/api/reliability",
+          label: "Reliability & Monitoring"
+        },
       ],
     },
     {
@@ -113,11 +123,6 @@ const sidebars = {
           id: "wallet/solana-paymaster/rpc-methods",
           label: "Solana RPC Methods",
           className: "sidebar-badge-new"
-        },
-        {
-          type: "doc",
-          id: "wallet/paymaster/tokens-supported",
-          label: "Supported Gas Tokens"
         },
       ],
     },
@@ -354,26 +359,6 @@ const sidebars = {
     },
     {
       type: "category",
-      label: "Platform API",
-      className: "category-not-collapsible",
-      collapsible: false,
-      collapsed: false,
-      items: [
-        {
-          type: "doc",
-          id: "platform/overview",
-          label: "Overview"
-        },
-        {
-          type: "doc",
-          id: "platform/gas-policy-api",
-          label: "Gas Policy API",
-          className: "sidebar-badge-new"
-        },
-      ],
-    },
-    {
-      type: "category",
       label: "Self-hosting",
       collapsed: true,
       items: [
@@ -391,19 +376,6 @@ const sidebars = {
     },
   ],
   pluginsSideBar: [
-    {
-      type: "category",
-      label: "Passkeys",
-      collapsible: false,
-      className: "category-not-collapsible",
-      items: [
-        {
-          type: "doc",
-          id: "wallet/plugins/passkeys",
-          label: "Passkeys"
-        },
-      ],
-    },
     {
       type: "category",
       label: "Account Recovery",
@@ -502,6 +474,19 @@ const sidebars = {
     },
     {
       type: "category",
+      label: "Passkeys",
+      collapsible: false,
+      className: "category-not-collapsible",
+      items: [
+        {
+          type: "doc",
+          id: "wallet/plugins/passkeys",
+          label: "Passkeys"
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "Allowance",
       collapsible: false,
       className: "category-not-collapsible",
@@ -569,29 +554,6 @@ const sidebars = {
       items: [
         {
           type: "doc",
-          id: "wallet/guides/send-gasless-tx",
-          label: "Sponsor Gas"
-        },
-        {
-          type: "category",
-          label: "Pay Gas in Tokens",
-          collapsed: false,
-          items: [
-            {
-              type: "doc",
-              id: "wallet/guides/pay-gas-in-erc20",
-              label: "EVM"
-            },
-            {
-              type: "doc",
-              id: "wallet/guides/pay-gas-in-usdt-solana",
-              label: "Solana",
-              className: "sidebar-badge-new"
-            },
-          ],
-        },
-        {
-          type: "doc",
           id: "wallet/guides/authentication",
           label: "Signers and Custody"
         },
@@ -637,55 +599,55 @@ const sidebars = {
           id: "wallet/guides/walkaway-guide",
           label: "Run Without Candide"
         },
+      ],
+    },
+    {
+      type: "category",
+      label: "Upgrade EOAs (EIP-7702)",
+      collapsible: false,
+      className: "category-not-collapsible",
+      items: [
         {
           type: "category",
-          label: "EIP-7702 Upgrades",
+          label: "Calibur Account",
           collapsed: true,
           items: [
             {
-              type: "category",
-              label: "Calibur Account",
-              className: "sidebar-badge-new",
-              collapsible: false,
-              items: [
-                {
-                  type: "doc",
-                  id: "wallet/guides/getting-started-calibur",
-                  label: "Quickstart"
-                },
-                {
-                  type: "doc",
-                  id: "wallet/guides/calibur-passkeys",
-                  label: "Passkeys"
-                },
-                {
-                  type: "doc",
-                  id: "wallet/guides/calibur-key-management",
-                  label: "Key Management"
-                },
-              ],
+              type: "doc",
+              id: "wallet/guides/getting-started-calibur",
+              label: "Quickstart"
             },
             {
-              type: "category",
-              label: "Simple Account",
-              collapsible: false,
-              items: [
-                {
-                  type: "doc",
-                  id: "wallet/guides/getting-started-eip-7702",
-                  label: "Quickstart"
-                },
-                {
-                  type: "doc",
-                  id: "wallet/guides/send-gasless-eip-7702",
-                  label: "Gasless Transactions"
-                },
-                {
-                  type: "doc",
-                  id: "wallet/guides/pay-gas-in-erc20-eip-7702",
-                  label: "Gas in ERC-20"
-                },
-              ],
+              type: "doc",
+              id: "wallet/guides/calibur-passkeys",
+              label: "Passkeys"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/calibur-key-management",
+              label: "Key Management"
+            },
+          ],
+        },
+        {
+          type: "category",
+          label: "Simple Account",
+          collapsed: true,
+          items: [
+            {
+              type: "doc",
+              id: "wallet/guides/getting-started-eip-7702",
+              label: "Quickstart"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/send-gasless-eip-7702",
+              label: "Gasless Transactions"
+            },
+            {
+              type: "doc",
+              id: "wallet/guides/pay-gas-in-erc20-eip-7702",
+              label: "Gas in ERC-20"
             },
           ],
         },
@@ -758,20 +720,22 @@ const sidebars = {
           ],
         },
         {
-          type: "doc",
-          id: "wallet/abstractionkit/calibur-account",
+          type: "category",
           label: "Calibur Account",
-          className: "sidebar-badge-new"
-        },
-        {
-          type: "doc",
-          id: "wallet/abstractionkit/calibur-account-keys",
-          label: "Calibur Key Management"
-        },
-        {
-          type: "doc",
-          id: "wallet/abstractionkit/calibur-account-utilities",
-          label: "Calibur Utility Methods"
+          collapsed: true,
+          link: { type: "doc", id: "wallet/abstractionkit/calibur-account" },
+          items: [
+            {
+              type: "doc",
+              id: "wallet/abstractionkit/calibur-account-keys",
+              label: "Key Management"
+            },
+            {
+              type: "doc",
+              id: "wallet/abstractionkit/calibur-account-utilities",
+              label: "Utility Methods"
+            },
+          ],
         },
         {
           type: "doc",
@@ -815,11 +779,6 @@ const sidebars = {
           id: "wallet/technical-reference/deployments",
           label: "Deployment Addresses"
         },
-        {
-          type: "doc",
-          id: "wallet/api/reliability",
-          label: "Reliability & Monitoring"
-        },
       ],
     },
   ],
@@ -853,22 +812,27 @@ const sidebars = {
       ],
     },
   ],
-  instaGasSidebar: [
+  gasSideBar: [
     {
       type: "category",
       collapsible: false,
       className: "category-not-collapsible",
-      label: "Quickstart",
+      label: "Sponsor Gas",
       items: [
         {
           type: "doc",
+          id: "wallet/guides/send-gasless-tx",
+          label: "Sponsor Your Users' Gas"
+        },
+        {
+          type: "doc",
           id: "instagas/overview",
-          label: "Quickstart"
+          label: "Create a Gas Policy"
         },
         {
           type: "doc",
           id: "instagas/gas-policies",
-          label: "Gas Policies"
+          label: "Policy Rules"
         },
       ],
     },
@@ -876,38 +840,64 @@ const sidebars = {
       type: "category",
       collapsible: false,
       className: "category-not-collapsible",
-      label: "Guides",
-      items: [{
-        type: "doc",
-        id: "instagas/batch-sponsor-transactions",
-        label: "Batch and Sponsor Transactions",
-      },
-      ],
-    },
-    {
-      type: "category",
-      collapsible: false,
-      className: "category-not-collapsible",
-      label: "Explainer",
+      label: "Pay Gas in Tokens",
       items: [
         {
           type: "doc",
-          id: "instagas/introduction",
-          label: "Why Gas Sponsorship"
+          id: "wallet/guides/pay-gas-in-erc20",
+          label: "EVM"
         },
         {
           type: "doc",
+          id: "wallet/guides/pay-gas-in-usdt-solana",
+          label: "Solana",
+          className: "sidebar-badge-new"
+        },
+        {
+          type: "doc",
+          id: "wallet/paymaster/tokens-supported",
+          label: "Supported Gas Tokens"
+        },
+      ],
+    },
+    {
+      type: "category",
+      collapsible: false,
+      className: "category-not-collapsible",
+      label: "Manage Policies by API",
+      items: [
+        {
+          type: "doc",
+          id: "platform/overview",
+          label: "Platform API Overview"
+        },
+        {
+          type: "doc",
+          id: "platform/gas-policy-api",
+          label: "Gas Policy API",
+          className: "sidebar-badge-new"
+        },
+      ],
+    },
+    {
+      type: "category",
+      collapsible: false,
+      className: "category-not-collapsible",
+      label: "More",
+      items: [
+        {
+          type: "doc",
           id: "instagas/usecases",
-          label: "Usecases"
+          label: "Public Gas Policies"
         },
         {
           type: "doc",
           id: "instagas/architecture",
-          label: "Architecture"
+          label: "How It Works"
         },
       ],
-    }
-  ]
+    },
+  ],
 };
 
 module.exports = sidebars;

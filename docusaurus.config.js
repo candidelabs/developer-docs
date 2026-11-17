@@ -234,7 +234,13 @@ const config = {
             type: 'docSidebar',
             sidebarId: 'walletSideBar',
             position: 'left',
-            label: 'Get Started',
+            label: 'Smart Accounts',
+          },
+          {
+            type: 'docSidebar',
+            sidebarId: 'gasSideBar',
+            position: 'left',
+            label: 'Gas',
           },
           {
             type: 'docSidebar',
