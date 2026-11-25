@@ -63,7 +63,7 @@ Guardians are encouraged to use fresh Ethereum addresses. This keeps their ident
 
 For a consumer wallet with a passkey owner, we recommend three guardians with a threshold of 2: the Candide email guardian, a guardian your wallet runs, and one recovery contact the user chooses. [Signers and Custody](/wallet/guides/authentication/#recommended-setup) shows the whole setup.
 
-Add the two service guardians when the account is created. Every account then has recovery from its first transaction, and the user configures nothing. At this stage a recovery needs both services. Ask the user for a recovery contact later, for example at their first deposit. Once the contact is added, any two of the three can recover the account, so recovery still works when one service is unavailable.
+Add the two service guardians when the account is created. The Candide guardian needs one step from the user: the owner signs the registration and the user confirms a code sent to their email (see [Enable Email / SMS Recovery](/wallet/plugins/add-candide-guardian/)). Once both guardians are installed, the account has recovery from its first transaction, and the user hasn't had to recruit anyone. At this stage a recovery needs both services. Ask the user for a recovery contact later, for example at their first deposit. Once the contact is added, any two of the three can recover the account, so recovery still works when one service is unavailable.
 
 Your guardian is a key your backend holds and signs with after your own check. Run it on your own infrastructure, not on Candide's recovery service. If Candide held both service keys, Candide could recover the account alone.
 
