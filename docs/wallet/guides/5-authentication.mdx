@@ -50,7 +50,7 @@ Passkeys have two tradeoffs:
 - A device-bound passkey never leaves the device, so it is lost with the device. A synced passkey survives a lost phone, because the platform copies it, end-to-end encrypted, to the user's other devices. Someone who takes over that platform account can then use it.
 - A passkey signs only for the domain that created it (the RP ID). If that domain goes away, so does the passkey's ability to sign.
 
-Both have the same answer: give the user a second way in, as in the [recommended setup](#recommended-setup). As [Vitalik Buterin puts it](https://vitalik.eth.limo/general/2024/12/03/wallets.html), passkeys are "a valuable security gain for ordinary users, but they alone are not strong enough to protect a user's life savings."
+Both have the same answer: give the user a second way in, as in the [recommended setup](#recommended-setup). Guardians cover a lost passkey: they can replace the owner, but they can't stop or reverse a transfer that someone holding the passkey has signed. As [Vitalik Buterin puts it](https://vitalik.eth.limo/general/2024/12/03/wallets.html), passkeys are "a valuable security gain for ordinary users, but they alone are not strong enough to protect a user's life savings."
 
 See a demo at [passkeys.candide.dev](https://passkeys.candide.dev), and follow the [Passkeys guide](/wallet/plugins/passkeys/) to set one up.
 
@@ -72,7 +72,7 @@ Some providers describe this setup as non-custodial because no single party hold
 A smart account can have several owners and a recovery module, so a key can play different roles in it. For a consumer wallet, we recommend a passkey as the account's single owner, and a [recovery module](/wallet/plugins/recovery-with-guardians/) with three guardians and a threshold of 2.
 
 <ThemedImage
-  alt="Every day, the user signs with a passkey, and only that passkey can move funds in the Safe. If the passkey is lost, any two of three guardians (Candide by email code, the wallet by SMS code, a recovery contact) approve a new passkey, followed by a waiting period the user can cancel. The drawing shows a synced passkey. For a device-bound passkey, the wallet's check is a PIN with a limit on guesses, or another factor the user knows."
+  alt="Every day, the user signs with a passkey, and only that passkey can move funds in the Safe. If the passkey is lost, any two of three guardians (Candide by email code, the wallet by SMS code, a recovery contact) approve a new passkey, followed by a waiting period that the current owner can cancel while they can still sign. The drawing shows a synced passkey. For a device-bound passkey, the wallet's check is a PIN with a limit on guesses, or another factor the user knows."
   sources={{
     light: useBaseUrl("/img/wallet/recommended-setup-light.png"),
     dark: useBaseUrl("/img/wallet/recommended-setup-dark.png"),
@@ -86,9 +86,9 @@ A smart account can have several owners and a recovery module, so a key can play
 | Wallet guardian | Your backend | Approve a recovery, after a second factor other than email | Move funds. Recover the account alone. |
 | Recovery contact | A person the user chooses | Approve a recovery, after confirming the request comes from the user | Move funds. Recover the account alone. |
 
-The two services together meet the threshold, so a user can get back in without asking anyone. Every recovery waits through a grace period, and an owner subscribed to [recovery alerts](/wallet/plugins/recovery-alerts-guide/) is notified and can cancel it. Once the contact is added, recovery still works when one service is unavailable, because the other service and the contact meet the threshold.
+The two services together meet the threshold, so a user can get back in without asking anyone. Every recovery waits through a grace period, and an owner subscribed to [recovery alerts](/wallet/plugins/recovery-alerts-guide/) is notified and can cancel it if they can still sign. Once the contact is added, recovery still works when one service is unavailable, because the other service and the contact meet the threshold.
 
-The role decides the answer to the test. A service-held key that is the account's only owner, or one of two owners, can move funds or stop the user. The same key as one guardian below the recovery threshold can do neither. The Trustless Manifesto puts it plainly: "Delegation may exist. Dependence must not." See [Set Up Multisig](/wallet/guides/multisig/) for owner thresholds.
+The role decides the answer to the test. A service-held key that is the account's only owner, or one of two owners, can move funds or stop the user. The same key as one guardian below the recovery threshold can do neither. It can withhold its approval, which blocks a recovery whenever the other two guardians aren't both available, as is the case before the contact is added. The Trustless Manifesto puts it plainly: "Delegation may exist. Dependence must not." See [Set Up Multisig](/wallet/guides/multisig/) for owner thresholds.
 
 [Recommended Setup for Consumer Wallets](/wallet/plugins/recovery-with-guardians/#recommended-setup-for-consumer-wallets) covers when to add each guardian, how to run your own, and which second factor to use.
 
@@ -96,7 +96,7 @@ The role decides the answer to the test. A service-held key that is the account'
 
 - [Passkeys](/wallet/plugins/passkeys/): create a passkey and use it as a Safe owner.
 - [External Signers](/wallet/abstractionkit/external-signers): sign with a browser wallet, a hardware wallet or a key your backend holds, through viem or ethers.
-- [Manual EIP-712 signing](/wallet/abstractionkit/safe-unified-account/#manual-eip-712-signing-for-a-single-useroperation): compute the hash and format the signature yourself.
+- [Manual EIP-712 signing](/wallet/abstractionkit/safe-unified-account/#manual-eip-712-signing-for-a-single-useroperation): build the typed data, sign it with `signTypedData` and format the signature yourself. To sign the raw hash with a local key, see [`getUserOperationEip712Hash`](/wallet/abstractionkit/safe-account-signing#getuseroperationeip712hash).
 
 ## Further Reading
 
