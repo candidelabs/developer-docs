@@ -63,11 +63,13 @@ Guardians are encouraged to use fresh Ethereum addresses. This keeps their ident
 
 For a consumer wallet with a passkey owner, we recommend three guardians with a threshold of 2: the Candide email guardian, a guardian your wallet runs, and one recovery contact the user chooses. [Signers and Custody](/wallet/guides/authentication/#recommended-setup) shows the whole setup.
 
-Add the two service guardians when the account is created. Every account then has recovery from its first transaction, and the user configures nothing. At this stage a recovery needs both services. Ask the user for a recovery contact later, for example at their first deposit. Once the contact is added, any two of the three can recover the account, and recovery no longer depends on either service being available.
+Add the two service guardians when the account is created. Every account then has recovery from its first transaction, and the user configures nothing. At this stage a recovery needs both services. Ask the user for a recovery contact later, for example at their first deposit. Once the contact is added, any two of the three can recover the account, so recovery still works when one service is unavailable.
 
 Your guardian is a key your backend holds and signs with after your own check. Run it on your own infrastructure, not on Candide's recovery service. If Candide held both service keys, Candide could recover the account alone.
 
-The two services together meet the threshold. That is what lets a user get back in without asking anyone. It also means the two companies acting together could start a recovery, so every recovery waits through the [grace period](#grace-period), and the owner is [alerted](/wallet/plugins/recovery-alerts-guide/) and can cancel it.
+The two services together meet the threshold. That is what lets a user get back in without asking anyone. It also means the two companies acting together could start a recovery, so every recovery waits through the [grace period](#grace-period), which gives the owner time to cancel it.
+
+The owner only learns of a recovery if they are subscribed to [recovery alerts](/wallet/plugins/recovery-alerts-guide/). Alerts are not sent by default: the owner signs a request that names the email address or phone number to notify. The grace period protects little without this step, so the setup needs it.
 
 The setup asks for one contact, and asks later, because a guardian the user has to recruit can't be added by default. A setup that depends on several of them leaves a new account without recovery until the user acts.
 
@@ -77,12 +79,12 @@ The check your guardian runs depends on what happens to the passkey when the pho
 
 | Passkey | When the phone is lost | Your guardian's check | Grace period |
 |---|---|---|---|
-| Synced | The platform restores the passkey on the new phone. No recovery is needed. | An SMS code | 7 days |
+| Synced | The platform can restore the passkey on another device. How, and how fast, depends on the platform. | An SMS code | 7 days |
 | Device-bound | The passkey is gone. Recovery is the way back in. | Something the user knows, such as a PIN, with a limit on guesses | 3 days |
 
-An email code and an SMS code can both be read from one stolen, unlocked phone. With a synced passkey, the owner can restore the passkey on another device and cancel the recovery. With a device-bound passkey they can't, so the second check has to be something the thief doesn't have.
+An email code and an SMS code can both be read from one stolen, unlocked phone. With a synced passkey, the owner can cancel the recovery after restoring the passkey: at once on another device already signed in to the platform account, or through the platform's own account recovery (see [Sync & Recovery](/wallet/plugins/passkeys/#sync--recovery)). That account recovery can itself depend on the user's phone number, so an owner whose only device was the stolen phone may need a replacement SIM first. With a device-bound passkey the owner can't cancel at all, so the second check has to be something the thief doesn't have.
 
-Recovery is rare with synced passkeys, so a longer grace period costs little and gives the owner more time to cancel. With a device-bound passkey, the user is locked out for the whole grace period after every lost phone, so the shortest one fits better.
+Recovery is rare with synced passkeys, so a longer grace period costs little and gives the owner more time to restore the passkey and cancel. With a device-bound passkey, the user is locked out for the whole grace period after every lost phone, so the shortest one fits better.
 
 Users protecting larger amounts can add more personal guardians and rely less on the services. See [Choosing Guardians](#choosing-guardians).
 
