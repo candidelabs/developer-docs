@@ -40,7 +40,7 @@ Recovery is only as strong as the guardian set. A good set is one where enough g
 | Institution | The institution | Its process for verifying the user |
 | [Email/SMS guardian](/wallet/plugins/add-candide-guardian/) | Candide | Candide's service, and whoever controls the user's email address or phone number |
 
-The email/SMS guardian is convenient: the user needs no other wallet and no one else to ask. It is also the one guardian whose key Candide holds. Use it as one guardian among several, never as the only one. In a 2-of-3 setup with two personal guardians, it can't recover the account alone, and the account can still be recovered without it.
+The email/SMS guardian is convenient: the user needs no other wallet and no one else to ask. It is also the one guardian whose key Candide holds. Use it as one guardian among several, never as the only one. In a 2-of-3 setup with two other guardians, such as your wallet's own guardian and a recovery contact, or two personal guardians, it can't recover the account alone, and the account can still be recovered without it.
 
 ### The Recovery Flow
 
@@ -59,9 +59,36 @@ The module offers grace periods of 3, 7 or 14 days, chosen by module address (se
 
 Guardians are encouraged to use fresh Ethereum addresses. This keeps their identity private and prevents malicious guardians from coordinating against the owner. Since guardians never need to hold funds or submit on-chain transactions during normal operation, fresh addresses have no cost.
 
+## Recommended Setup for Consumer Wallets
+
+For a consumer wallet with a passkey owner, we recommend three guardians with a threshold of 2: the Candide email guardian, a guardian your wallet runs, and one recovery contact the user chooses. [Signers and Custody](/wallet/guides/authentication/#recommended-setup) shows the whole setup.
+
+Add the two service guardians when the account is created. Every account then has recovery from its first transaction, and the user configures nothing. At this stage a recovery needs both services. Ask the user for a recovery contact later, for example at their first deposit. Once the contact is added, any two of the three can recover the account, and recovery no longer depends on either service being available.
+
+Your guardian is a key your backend holds and signs with after your own check. Run it on your own infrastructure, not on Candide's recovery service. If Candide held both service keys, Candide could recover the account alone.
+
+The two services together meet the threshold. That is what lets a user get back in without asking anyone. It also means the two companies acting together could start a recovery, so every recovery waits through the [grace period](#grace-period), and the owner is [alerted](/wallet/plugins/recovery-alerts-guide/) and can cancel it.
+
+The setup asks for one contact, and asks later, because a guardian the user has to recruit can't be added by default. A setup that depends on several of them leaves a new account without recovery until the user acts.
+
+### Choose the Second Factor by Passkey Type
+
+The check your guardian runs depends on what happens to the passkey when the phone is lost.
+
+| Passkey | When the phone is lost | Your guardian's check | Grace period |
+|---|---|---|---|
+| Synced | The platform restores the passkey on the new phone. No recovery is needed. | An SMS code | 7 days |
+| Device-bound | The passkey is gone. Recovery is the way back in. | Something the user knows, such as a PIN, with a limit on guesses | 3 days |
+
+An email code and an SMS code can both be read from one stolen, unlocked phone. With a synced passkey, the owner can restore the passkey on another device and cancel the recovery. With a device-bound passkey they can't, so the second check has to be something the thief doesn't have.
+
+Recovery is rare with synced passkeys, so a longer grace period costs little and gives the owner more time to cancel. With a device-bound passkey, the user is locked out for the whole grace period after every lost phone, so the shortest one fits better.
+
+Users protecting larger amounts can add more personal guardians and rely less on the services. See [Choosing Guardians](#choosing-guardians).
+
 ## Recovery Methods
 
-The two methods can be combined, and we recommend combining them: for example, a 2-of-3 setup with two personal guardians and email/SMS recovery as the third. Personal guardians alone also work. Email/SMS recovery alone makes Candide the only party that can recover the account, so we don't recommend it as the only method.
+The two methods can be combined, and we recommend combining them: for example, a 2-of-3 setup with email/SMS recovery as one guardian. The other two can be your wallet's own guardian and a recovery contact, as in the [recommended setup for consumer wallets](#recommended-setup-for-consumer-wallets), or two personal guardians. Personal guardians alone also work. Email/SMS recovery alone makes Candide the only party that can recover the account, so we don't recommend it as the only method.
 
 | | Personal Guardians | Email / SMS Recovery |
 |---|---|---|
