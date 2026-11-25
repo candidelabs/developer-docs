@@ -18,7 +18,7 @@ Only the user should be able to move the user's funds, and the user should be ab
 
 - **What we recommend:** onchain [passkeys](/wallet/plugins/passkeys/) as the main signer. The key stays on the user's device and the account contract verifies the signature, so no server takes part in signing, including ours.
 - **What we don't do:** Candide never holds the keys that own user accounts.
-- **Where Candide holds a key:** the [email/SMS guardian](/wallet/plugins/add-candide-guardian/) is a recovery guardian whose key Candide holds. It can't move funds. It can't recover the account alone as long as the threshold requires another guardian's approval, as in the recommended 2-of-3 setup with two personal guardians. Separately, every recovery waits through a grace period the owner can cancel: that delays finalization, but it doesn't replace another guardian's approval. We recommend it only in that role.
+- **Where Candide holds a key:** the [email/SMS guardian](/wallet/plugins/add-candide-guardian/) is a recovery guardian whose key Candide holds. It can't move funds. It can't recover the account alone as long as the threshold requires another guardian's approval, as in a 2-of-3 setup where the other two guardians are the wallet's own guardian and a recovery contact, or two personal guardians. Separately, every recovery waits through a grace period the owner can cancel: that delays finalization, but it doesn't replace another guardian's approval. We recommend it only in that role.
 
 [Signers and Custody](/wallet/guides/authentication/) explains how to apply this test to any signer setup.
 
