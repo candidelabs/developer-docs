@@ -72,7 +72,7 @@ Some providers describe this setup as non-custodial because no single party hold
 A smart account can have several owners and a recovery module, so a key can play different roles in it. For a consumer wallet, we recommend a passkey as the account's single owner, and a [recovery module](/wallet/plugins/recovery-with-guardians/) with three guardians and a threshold of 2.
 
 <ThemedImage
-  alt="Every day, the user signs with a passkey, and only that passkey can move funds in the Safe. If the passkey is lost, any two of three guardians (Candide by email code, the wallet by SMS code, a recovery contact) approve a new passkey, followed by a waiting period the user can cancel."
+  alt="Every day, the user signs with a passkey, and only that passkey can move funds in the Safe. If the passkey is lost, any two of three guardians (Candide by email code, the wallet by SMS code, a recovery contact) approve a new passkey, followed by a waiting period the user can cancel. The drawing shows a synced passkey. For a device-bound passkey, the wallet's check is a PIN with a limit on guesses, or another factor the user knows."
   sources={{
     light: useBaseUrl("/img/wallet/recommended-setup-light.png"),
     dark: useBaseUrl("/img/wallet/recommended-setup-dark.png"),
@@ -86,7 +86,7 @@ A smart account can have several owners and a recovery module, so a key can play
 | Wallet guardian | Your backend | Approve a recovery, after a second factor other than email | Move funds. Recover the account alone. |
 | Recovery contact | A person the user chooses | Approve a recovery, after confirming the request comes from the user | Move funds. Recover the account alone. |
 
-The two services together meet the threshold, so a user can get back in without asking anyone. Every recovery waits through a grace period, and the owner is alerted and can cancel it. Once the contact is added, recovery no longer depends on either service being available.
+The two services together meet the threshold, so a user can get back in without asking anyone. Every recovery waits through a grace period, and an owner subscribed to [recovery alerts](/wallet/plugins/recovery-alerts-guide/) is notified and can cancel it. Once the contact is added, recovery still works when one service is unavailable, because the other service and the contact meet the threshold.
 
 The role decides the answer to the test. A service-held key that is the account's only owner, or one of two owners, can move funds or stop the user. The same key as one guardian below the recovery threshold can do neither. The Trustless Manifesto puts it plainly: "Delegation may exist. Dependence must not." See [Set Up Multisig](/wallet/guides/multisig/) for owner thresholds.
 
