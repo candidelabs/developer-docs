@@ -1,0 +1,234 @@
+---
+title: Recovery Alerts API Reference
+description: Subscribe Safe account owners to email and SMS alerts for on-chain recovery activity with Candide's Safe Recovery Service. Create, activate, list, and remove alert subscriptions.
+keywords: [safe recovery, social recovery, smart wallet, recovery alerts, email alerts, sms alerts]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+# Recovery Alerts API
+
+Use these endpoints to notify a Safe's owners by email or SMS when recovery activity happens on-chain: guardian changes, executions, finalizations, and cancellations. The first alert for a recovery is sent when it is executed on-chain, not when the request is created. For a TypeScript walkthrough, see the [Recovery Alerts Guide](/wallet/plugins/recovery-alerts-guide/).
+
+Replace `https://yourcompany.recovery.candide.dev` with your service URL and send your credential as described in [Authentication](/wallet/recovery/ux-api/#authentication). The channels a network offers are listed as `alertChannels` by [`/v1/config/getNetworkConfig`](/wallet/recovery/ux-api/#get-network-configuration).
+
+## Endpoints at a Glance
+
+| Endpoint | Key params | Returns |
+|---|---|---|
+| [`POST /v1/alerts/subscribe`](#alerts-subscribe-to-recovery-requests) | `account`, `owner`, `chainId`, `channel`, `target`, `message`, `signature`, `verifiedTargetToken?` | `{ subscriptionId }`, with `active: true` when a token was sent |
+| [`POST /v1/alerts/activate`](#alerts-activate-subscription-to-recovery-requests) | `subscriptionId`, `challenge` | `{ success }` |
+| [`GET /v1/alerts/subscriptions`](#alerts-get-active-subscription) | `account`, `owner`, `chainId`, `message`, `signature` | `{ subscriptions: [{ id, owner, channel, target }] }` |
+| [`POST /v1/alerts/unsubscribe`](#alerts-unsubscribe) | `subscriptionId`, `owner`, `chainId`, `message`, `signature` | `{ success }` |
+
+## How Subscriptions Work
+
+Alert subscriptions are separate from email/SMS recovery registrations. Subscribing to alerts does not add a guardian or enable email/SMS recovery.
+
+Create a subscription, then activate it with the code sent to the selected channel. A subscription created with a [`verifiedTargetToken`](/wallet/recovery/auth-api/#verify-target) is active at once and needs no code. Subscriptions monitor the Safe account across supported chains with alerts enabled. The `chainId` identifies the network used to verify the signing owner. Every alert endpoint checks that `owner` is a current owner of the Safe on that chain, and a subscription belongs to the account, with `owner` recording who created it.
+
+A current owner manages its own subscriptions and those whose creator is no longer an owner, for example after a recovery or an owner swap, but not those of another current owner.
+
+The `owner` signs the SIWE message for subscription creation, lookup, and removal. See [SIWE signing](/wallet/recovery/signing/#how-to-sign-messages-siwe-eip-4361) and the [Recovery Alerts Guide](/wallet/plugins/recovery-alerts-guide/).
+
+A Safe that is not deployed yet can subscribe: wrap the owner's signature with ERC-6492 and the Safe's deployment data, as described in [Accounts that are not deployed yet](/wallet/recovery/signing/#accounts-that-are-not-deployed-yet-erc-6492). Without the wrapper, a request for an undeployed account fails with a 400.
+
+## Create an Alert Subscription {#alerts-subscribe-to-recovery-requests}
+
+### `POST /v1/alerts/subscribe`
+
+Create an inactive subscription and send a verification code to the target email address or phone number. Save the returned `subscriptionId` and activate it using `/v1/alerts/activate`.
+
+To skip the code, add a `verifiedTargetToken` issued for the same channel and target by [`/v1/auth/verification/submit`](/wallet/recovery/auth-api/#verify-target). The subscription is then created active and the response is `{ "subscriptionId": "...", "active": true }`. The owner's SIWE signature and the owner check are still required. The same token can also [register the target for email/SMS recovery](/wallet/recovery/auth-api/#email--sms), so the user enters one code for both.
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```bash
+curl -X POST \
+  https://yourcompany.recovery.candide.dev/v1/alerts/subscribe \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "account": "0x...",
+  "owner": "0x...",
+  "chainId": 1,
+  "channel": "email",
+  "target": "user@example.com",
+  "message": "siwe(chainId, statement(account, channel, target))",
+  "signature": "sign(message)"
+}'
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "subscriptionId": "unique-subscription-id"
+}
+```
+</TabItem>
+</Tabs>
+
+-   `account`: The Safe account to monitor.
+-   `owner`: The Safe owner authorizing the subscription and signing the SIWE message.
+-   `chainId`: The supported chain used to verify the owner and signature. Subscriptions cover all supported chains with alerts enabled.
+-   `channel`: Either `"email"` or `"sms"` (defines the delivery channel).
+-   `target`: The email address or phone number that receives alerts.
+-   `signature`: The signature from `owner` over the complete SIWE message.
+-   `verifiedTargetToken`: Optional. Creates the subscription active, with no code sent.
+-   `message`: The complete SIWE message containing this exact statement:
+
+```
+I agree to receive Social Recovery Module alert notifications for {{account}} on all supported chains sent to {{target}} (via {{channel}})
+```
+
+Replace `{{account}}` with the lowercase Safe address, `{{target}}` with the destination, and `{{channel}}` with `email` or `sms`.
+
+See [SIWE signing](/wallet/recovery/signing/#how-to-sign-messages-siwe-eip-4361) to construct the message and signature.
+
+## Activate an Alert Subscription {#alerts-activate-subscription-to-recovery-requests}
+
+### `POST /v1/alerts/activate`
+
+Submit the verification code sent during subscription creation. Alerts begin after activation.
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```bash
+curl -X POST \
+  https://yourcompany.recovery.candide.dev/v1/alerts/activate \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "subscriptionId": "unique-subscription-id",
+  "challenge": "123456"
+}'
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "success": true
+}
+```
+</TabItem>
+</Tabs>
+
+-   `subscriptionId`: The unique ID received in the subscription response.
+-   `challenge`: The code received via email/SMS.
+
+## List Active Alert Subscriptions {#alerts-get-active-subscription}
+
+Fetch the active subscriptions of the Safe account that the signing owner can manage: its own, and those created by addresses that are no longer owners. Each entry carries the `owner` that created it.
+
+### `GET /v1/alerts/subscriptions`
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```bash
+curl -G "https://yourcompany.recovery.candide.dev/v1/alerts/subscriptions" \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+   --data-urlencode "account=0x..." \
+   --data-urlencode "owner=0x..." \
+   --data-urlencode "chainId=1" \
+   --data-urlencode "message=siwe(chainId, statement)" \
+   --data-urlencode "signature=sign(message)"
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "subscriptions": [
+    {
+      "id": "unique-subscription-id",
+      "owner": "0x...",
+      "channel": "email",
+      "target": "user@example.com"
+    }
+  ]
+}
+```
+</TabItem>
+</Tabs>
+
+-   `account`: The Safe account being monitored.
+-   `owner`: A current owner of the Safe, who signs the SIWE message.
+-   `chainId`: The supported chain used to verify the owner and signature. Subscriptions cover all supported chains with alerts enabled.
+-   `signature`: The signature from `owner` over the complete SIWE message.
+-   `message`: The complete SIWE message containing this exact statement:
+
+```
+I request to retrieve all Social Recovery Module alert subscriptions linked to my account
+```
+
+See [SIWE signing](/wallet/recovery/signing/#how-to-sign-messages-siwe-eip-4361) to construct the message and signature.
+
+## Remove an Alert Subscription {#alerts-unsubscribe}
+
+Remove the subscription identified by `subscriptionId`. Include the SIWE message and signature of a current owner of the subscribed account. Removing a subscription created by another current owner is answered with `403 This subscription belongs to another owner of the account`.
+
+### `POST /v1/alerts/unsubscribe`
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```bash
+curl -X POST \
+  https://yourcompany.recovery.candide.dev/v1/alerts/unsubscribe \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "subscriptionId": "unique-subscription-id",
+  "owner": "0x...",
+  "chainId": 1,
+  "message": "siwe(chainId, statement)",
+  "signature": "sign(message)"
+}'
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "success": true
+}
+```
+</TabItem>
+</Tabs>
+
+- `subscriptionId`: The subscription to remove.
+- `owner`: The owner signing the request.
+- `chainId`: The supported chain used to verify the signature.
+- `message`: The complete SIWE message containing the statement below.
+- `signature`: The signature from `owner` over that message.
+
+```text
+I request to unsubscribe from all Social Recovery Module alert subscriptions linked to my account
+```
+
+Use this exact statement even when removing one subscription. The `subscriptionId` selects the subscription to remove.
+
+## Error Handling
+
+Use the HTTP status to determine whether a request succeeded. Service errors contain top-level `code` and `message` fields.
+
+| Code | Description |
+|------|-------------|
+| 400 | Bad Request - Invalid parameters, a channel the service does not offer, or an undeployed account whose signature is not wrapped with ERC-6492 |
+| 401 | Unauthorized - Invalid or missing Bearer token or API key |
+| 403 | Forbidden - SIWE signature verification failed, the signer is not an owner of the account, the code or `verifiedTargetToken` is invalid or expired, or the owner cannot manage the subscription |
+| 404 | Not Found - Subscription not found |
+| 409 | Conflict - The alert subscription already exists |
+| 429 | Too Many Requests - IP rate limit exceeded |
+
+If a code has expired, create a new alert subscription and verify its new code. For signature errors, see [Signing Requests](/wallet/recovery/signing/).

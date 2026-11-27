@@ -1,0 +1,178 @@
+---
+title: Find Accounts by Email or Phone
+description: List the Safe accounts registered with a verified email address or phone number, and store a label with each account so a user who lost their key can tell them apart.
+keywords: [safe recovery, social recovery, smart wallet, email-sms recovery, account lookup, account metadata]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+
+import {
+    postAuthAccounts,
+    postAuthAccountsResponse,
+    postAuthMetadata,
+    postAuthMetadataResponse,
+} from "/src/data/safeRecoveryService";
+
+# Find Accounts by Email or Phone
+
+A recovery starts from the account address. A user who lost their device often knows only the email address or phone number they registered. These endpoints of the [Email/SMS Recovery API](/wallet/recovery/auth-api/) close that gap:
+
+- **Account lookup** lists the accounts registered with an email address or phone number, after the user proves control of it.
+- **Account metadata** is a small object your app stores with an account at registration, such as the name the user gave it, and that the lookup returns.
+
+To find the recovery requests of an account you already know, see [Recovery Request Lookups](/wallet/recovery/account-lookups/) instead.
+
+## Flow
+
+1. [Verify the email address or phone number](/wallet/recovery/auth-api/#verify-target) to receive a `verifiedTargetToken`.
+2. Call [`/v1/auth/accounts`](#look-up-accounts) with the token.
+3. Let the user pick an account, then [request the recovery signature](/wallet/recovery/auth-api/#request-to-recover-an-account) for it. If the account has no code on-chain, see [Recover Accounts That Were Never Deployed](/wallet/recovery/undeployed-accounts/).
+
+## Look Up Accounts
+
+List the accounts registered with the token's target on its channel. No wallet signature is needed, since the owner key may be lost.
+
+### `POST /v1/auth/accounts`
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```bash
+curl -X POST \
+  https://yourcompany.recovery.candide.dev/v1/auth/accounts \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+   "verifiedTargetToken": "43-character-token"
+}'
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "accounts": [
+    {
+      "account": "0x1111111111111111111111111111111111111111",
+      "chainId": 11155111,
+      "registeredAt": "2026-11-20T10:00:00.000Z",
+      "metadata": { "label": "Savings" }
+    },
+    {
+      "account": "0x2222222222222222222222222222222222222222",
+      "chainId": 11155111,
+      "registeredAt": "2026-11-21T10:00:00.000Z",
+      "metadata": {}
+    }
+  ]
+}
+```
+
+</TabItem>
+<TabItem value="request" label="Request Body">
+    <DataTable items={postAuthAccounts} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={postAuthAccountsResponse} />
+</TabItem>
+</Tabs>
+
+- The list has one entry per account and chain, and can be empty. Alert subscriptions are not included.
+- `registeredAt` is the only hint for an account registered without metadata.
+- `metadata` is the same whichever of the account's targets the lookup is made with.
+- The registrations are read as stored, with no on-chain check. A Safe whose owner has since removed the guardian or the module is still listed until its registration is deleted. Check that the service's guardian is still a guardian of the account before starting a recovery.
+- The lookup can be called again while the token is valid.
+
+A token that is unknown or expired is answered with `403 Invalid or expired verifiedTargetToken`.
+
+## Account Metadata
+
+`metadata` is a JSON object of string keys to string values. It belongs to the account on a chain: one object shared by all the account's registrations there, email address and phone number alike.
+
+One key has a documented meaning: `label`, the name the user gave the account. Prefix your app's own keys, for example `myapp.profileId`. The service validates the object, stores it, and returns it. It never reads it: metadata does not authorize, select, or filter anything.
+
+### Write It
+
+- **At registration:** [`/v1/auth/register`](/wallet/recovery/auth-api/#email--sms) takes an optional `metadata`. When present, it replaces the account's object on that chain whole, and `{}` removes it. When omitted, the stored object is kept, so adding a phone number to an account keeps its label. A registration that waits for a code stores its metadata when the code is submitted.
+- **Later:** [`/v1/auth/metadata`](#update-account-metadata) replaces it.
+
+Both need the Safe's SIWE signature. A `verifiedTargetToken` alone never writes metadata.
+
+### Read It
+
+`/v1/auth/accounts` returns it in each entry, and [`/v1/auth/registrations`](/wallet/recovery/auth-api/#get-active-registration) returns it next to the registrations. It is deleted with the account's last registration on the chain.
+
+### Rules
+
+A request that breaks a rule is answered with a 400. The rules are checked in this order and the first one broken is answered.
+
+| Rule | Limit |
+|------|-------|
+| Type | A JSON object whose values are all strings. `{}` means none. |
+| Entries | At most 10. |
+| Reserved keys | No key starting with `_`. These are written by the service. |
+| Key | 1 to 32 characters of letters, digits, `_`, `.`, `:` or `-`, starting with a letter or a digit. |
+| Value | A non-empty string of at most 256 characters, with no control characters (tab and line breaks included) and at least one visible character. |
+| Whole object | At most 2048 bytes as compact JSON in UTF-8. |
+
+Nothing is trimmed or normalized, and key order is not kept.
+
+The service stores two reserved keys of its own, `_factory` and `_factoryData`, for an account that registered before it was deployed. See [Recover Accounts That Were Never Deployed](/wallet/recovery/undeployed-accounts/). Reads return them as part of the object, and writes keep them. Drop any key starting with `_` before writing an object back.
+
+### Update Account Metadata
+
+Replace the account's metadata on a chain, whole. `{}` removes it. The response is the object as stored.
+
+#### `POST /v1/auth/metadata`
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```bash
+curl -X POST \
+  https://yourcompany.recovery.candide.dev/v1/auth/metadata \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+   "account": "0x...",
+   "chainId": 1,
+   "metadata": { "label": "Savings" },
+   "message": "siwe(chainId, statement)",
+   "signature": "sign(message)"
+}'
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "metadata": { "label": "Savings" }
+}
+```
+
+</TabItem>
+<TabItem value="request" label="Request Body">
+    <DataTable items={postAuthMetadata} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={postAuthMetadataResponse} />
+</TabItem>
+</Tabs>
+
+The Safe signs a SIWE message with this exact statement:
+
+```
+I request to update the metadata stored for my account with Safe Recovery Service
+```
+
+See [SIWE signing](/wallet/recovery/signing/#how-to-sign-messages-siwe-eip-4361). An account without a registration on the chain is answered with `404 No registrations found for this account on this chainId`.
+
+### What to Store and How to Show It
+
+- **Untrusted text.** Whoever can sign for an account and verify a target chooses what its metadata says, and whoever proves that target later sees it. Render values as plain text, never as HTML or a link, truncate them, and present them as a name your app stored.
+- **Not a secret.** Everyone who controls a target registered for the account can read it, and the service stores it in plaintext. Never put a password, a recovery phrase, or anything that grants access in it. An opaque ID that only your app can resolve is the safest content.
+- **Not signed.** The SIWE message authorizes the request, not the object. The worst outcome of a tampered write is a wrong label.

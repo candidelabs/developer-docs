@@ -454,19 +454,46 @@ const sidebars = {
               label: "Overview"
             },
             {
-              type: "doc",
-              id: "wallet/recovery/ux-api",
-              label: "Recovery UX API"
-            },
-            {
-              type: "doc",
-              id: "wallet/recovery/account-lookups",
-              label: "Recovery Lookups by Account"
-            },
-            {
-              type: "doc",
-              id: "wallet/recovery/auth-api",
-              label: "Email / SMS Recovery API"
+              type: "category",
+              label: "API Reference",
+              collapsed: true,
+              items: [
+                {
+                  type: "doc",
+                  id: "wallet/recovery/ux-api",
+                  label: "Recovery Requests"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/recovery/account-lookups",
+                  label: "Recovery Request Lookups"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/recovery/alerts",
+                  label: "Alerts"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/recovery/auth-api",
+                  label: "Email / SMS Recovery"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/recovery/find-accounts",
+                  label: "Find Accounts by Email or Phone"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/recovery/undeployed-accounts",
+                  label: "Undeployed Accounts"
+                },
+                {
+                  type: "doc",
+                  id: "wallet/recovery/signing",
+                  label: "Signing Requests"
+                },
+              ],
             },
           ],
         },
