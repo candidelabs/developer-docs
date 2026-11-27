@@ -1,6 +1,6 @@
 ---
 title: Safe Recovery UX API Reference
-description: Start here for Candide's Safe Recovery Service API. The main recovery flow, getNetworkConfig then create, sign, execute, and finalize, with guardian signature aggregation, request tracking, gas-sponsored execution and finalization, and email/SMS alerts.
+description: Start here for Candide's Safe Recovery Service API. The main recovery flow, getNetworkConfig then create, sign, execute, and finalize, with guardian signature aggregation, request tracking, and gas-sponsored execution and finalization.
 keywords: [safe recovery, social recovery, smart wallet, email recovery, guardian recovery]
 ---
 
@@ -25,7 +25,7 @@ import {
 
 # Safe Recovery UX API
 
-Use the Recovery UX API to collect guardian signatures, submit recovery transactions, track requests, and manage email/SMS alerts for Safe accounts. It works with the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/) v0.1.0 and v0.2.0.
+Use the Recovery UX API to collect guardian signatures, submit recovery transactions, and track requests for Safe accounts. It works with the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/) v0.1.0 and v0.2.0.
 
 For email/SMS verification that produces a guardian signature, use the [Email/SMS Recovery API](/wallet/recovery/auth-api/). For an explanation of the full recovery process, see the [service overview](/wallet/recovery/overview/).
 
@@ -33,7 +33,7 @@ For email/SMS verification that produces a guardian signature, use the [Email/SM
 
 | Endpoint | Key params | Returns |
 |---|---|---|
-| [`GET /v1/config/getNetworkConfig`](#get-network-configuration) | `chainId` | `name`, `chainId`, default `moduleAddress`, `modules`, `sponsorships`, `alertChannels` |
+| [`GET /v1/config/getNetworkConfig`](#get-network-configuration) | `chainId` | `name`, `chainId`, `guardianAddress`, `counterfactualAccounts`, default `moduleAddress`, `modules`, `sponsorships`, `alertChannels` |
 | [`POST /v1/recoveries/create`](#create-recovery-request) | `account`, `newOwners`, `newThreshold`, `chainId`, `moduleAddress?`, `signer`, `signature` | Recovery request (`id`, `emoji`, `moduleAddress`, `recoveryHash`, `status`, ...) |
 | [`POST /v1/recoveries/sign`](#collect-a-guardian-signature) | `id`, `signer`, `signature` | `{ success }` |
 | [`POST /v1/recoveries/execute`](#execute-a-recovery-by-id) | `id` | `{ success }` |
@@ -41,12 +41,8 @@ For email/SMS verification that produces a guardian signature, use the [Email/SM
 | [`GET /v1/recoveries/fetchById`](#fetch-recovery-by-id) | `id` | Recovery request |
 | [`GET /v1/recoveries/fetchByAddress`](/wallet/recovery/account-lookups/#fetch-recovery-by-address) | `account`, `chainId`, `moduleAddress?`, `nonce` | Array of recovery requests |
 | [`GET /v1/recoveries/listByAddress`](/wallet/recovery/account-lookups/#list-all-recoveries-by-address) | `account`, `chainId`, `moduleAddress?`; optional filters `status`, `executed`, `finalized`, `nonce`, `createdAt`, `orderBy`, `order`, `limit`, `offset` | Array of recovery requests |
-| [`POST /v1/alerts/subscribe`](#alerts-subscribe-to-recovery-requests) | `account`, `owner`, `chainId`, `channel`, `target`, `message`, `signature` | `{ subscriptionId }` |
-| [`POST /v1/alerts/activate`](#alerts-activate-subscription-to-recovery-requests) | `subscriptionId`, `challenge` | `{ success }` |
-| [`GET /v1/alerts/subscriptions`](#alerts-get-active-subscription) | `account`, `owner`, `chainId`, `message`, `signature` | `{ subscriptions: [{ id, owner, channel, target }] }` |
-| [`POST /v1/alerts/unsubscribe`](#alerts-unsubscribe) | `subscriptionId`, `owner`, `chainId`, `message`, `signature` | `{ success }` |
 
-The main flow is `getNetworkConfig`, then `create`, `sign`, `execute`, and `finalize`, tracked with `fetchById`. The two account lookups, `fetchByAddress` and `listByAddress`, are documented on [Recovery Lookups by Account](/wallet/recovery/account-lookups/).
+The main flow is `getNetworkConfig`, then `create`, `sign`, `execute`, and `finalize`, tracked with `fetchById`. The two account lookups, `fetchByAddress` and `listByAddress`, are documented on [Recovery Request Lookups](/wallet/recovery/account-lookups/), and the alert endpoints on [Recovery Alerts API](/wallet/recovery/alerts/).
 
 ## Before You Start
 
@@ -64,7 +60,7 @@ The service is configured with one of two credentials, which you receive with yo
 - **Bearer token:** include `Authorization: Bearer YOUR_BEARER_TOKEN` in every request. A missing header is answered with `401 Bearer token required`, a wrong token with `401 Invalid bearer token`, both with a `WWW-Authenticate: Bearer` header. The examples on this page use this form.
 - **API key:** the key is the first path segment of every URL, as in `https://yourcompany.recovery.candide.dev/YOUR_API_KEY/v1/recoveries/create`. Any other first segment, including a request that leaves the key out, is answered with `401 Invalid API key`.
 
-Requests that create or approve a recovery also require a **guardian signature** over the recovery hash. Alert subscription management requires an **owner-signed SIWE message**. These signatures authorize the account action; the credential authenticates access to the API.
+Requests that create or approve a recovery also require a **guardian signature** over the recovery hash. The signature authorizes the account action; the credential authenticates access to the API.
 
 Examples use placeholder addresses, IDs, messages, and signatures. Replace them with values from your integration. Expressions such as `siwe(...)` and `sign(message)` describe values to generate in your application; they are not literal API inputs.
 
@@ -76,7 +72,21 @@ Examples use placeholder addresses, IDs, messages, and signatures. Replace them 
 4. **Execute:** Once the guardian threshold is met, call `/v1/recoveries/execute` to submit the request on-chain and start the grace period.
 5. **Finalize:** After the grace period, call `/v1/recoveries/finalize` to apply the new owners and signing threshold. The current owner can cancel the recovery during the grace period.
 
-The service sponsors gas for execution and finalization when configured, but it does not submit them on its own: your application must call both endpoints. Guardians can submit signatures off-chain without holding funds. Use the lookup endpoints to monitor progress; a successful submission does not by itself mean ownership has changed. See [request states](/wallet/recovery/overview/#recovery-request-states).
+The service sponsors gas for execution and finalization when configured, but it does not submit them on its own: your application must call both endpoints. Guardians can submit signatures off-chain without holding funds. Use the lookup endpoints to monitor progress; a successful submission does not by itself mean ownership has changed. See [request states](#recovery-request-states).
+
+### Recovery Request States
+
+The `status` field of a recovery request tracks its progress:
+
+| State | Description |
+|-------|-------------|
+| `PENDING` | The request is stored and has not yet been executed. Guardian signatures can be collected. |
+| `EXECUTION-IN-PROGRESS` | The guardian threshold is met and the execution transaction is being processed. |
+| `EXECUTED` | The request has been executed on-chain. The grace period must end before finalization. Ownership has not changed. |
+| `FINALIZATION-IN-PROGRESS` | The grace period has ended and the finalization transaction is being processed. |
+| `FINALIZED` | Recovery is complete. The new owners and signing threshold are in effect. |
+
+A failed execution transaction returns the request to `PENDING`, and a failed finalization returns it to `EXECUTED`, so both calls can be repeated.
 
 `newThreshold` is the signing threshold for the **new Safe owners** after recovery. The existing **guardian threshold** determines how many guardians must approve the recovery.
 
@@ -100,7 +110,7 @@ An empty signature (`0x`) is accepted on v0.2.0 modules only, where it is checke
 
 ### Get Network Configuration
 
-Read what the service offers on a network: the Social Recovery Modules it serves, whether it sponsors execution and finalization, and which alert channels it has. Call it once per network to choose the `moduleAddress` for a recovery flow.
+Read what the service offers on a network: the Social Recovery Modules it serves, its guardian address for email/SMS recovery, whether it sponsors execution and finalization, what it does for [accounts that are not deployed yet](/wallet/recovery/undeployed-accounts/), and which alert channels it has. Call it once per network to choose the `moduleAddress` for a recovery flow.
 
 #### `GET /v1/config/getNetworkConfig`
 
@@ -120,6 +130,8 @@ curl -G "https://yourcompany.recovery.candide.dev/v1/config/getNetworkConfig" \
 {
   "name": "sepolia",
   "chainId": 11155111,
+  "guardianAddress": "0x...",
+  "counterfactualAccounts": { "erc6492": true, "storeInitData": "never" },
   "moduleAddress": "0x38275826E1933303E508433dD5f289315Da2541c",
   "modules": [
     { "address": "0x38275826E1933303E508433dD5f289315Da2541c", "version": "0.1.0", "recoveryPeriod": 259200 },
@@ -129,7 +141,8 @@ curl -G "https://yourcompany.recovery.candide.dev/v1/config/getNetworkConfig" \
   ],
   "sponsorships": {
     "execution": { "enabled": true, "rateLimit": { "maxPerAccount": 5, "period": 2592000 } },
-    "finalization": { "enabled": true, "rateLimit": { "maxPerAccount": 5, "period": 2592000 } }
+    "finalization": { "enabled": true, "rateLimit": { "maxPerAccount": 5, "period": 2592000 } },
+    "deployment": { "enabled": false }
   },
   "alertChannels": ["email", "sms"]
 }
@@ -401,201 +414,11 @@ curl -G "https://yourcompany.recovery.candide.dev/v1/recoveries/fetchById" \
 
 ### Look up recoveries by account
 
-To find requests for a Safe account instead of by ID, use `/v1/recoveries/fetchByAddress` (one recovery nonce) or `/v1/recoveries/listByAddress` (filters, sorting, and pagination). Both are documented on [Recovery Lookups by Account](/wallet/recovery/account-lookups/).
+To find requests for a Safe account instead of by ID, use `/v1/recoveries/fetchByAddress` (one recovery nonce) or `/v1/recoveries/listByAddress` (filters, sorting, and pagination). Both are documented on [Recovery Request Lookups](/wallet/recovery/account-lookups/).
 
 ## Alerts
 
-Alert subscriptions are separate from email/SMS recovery registrations. Subscribing to alerts does not add a guardian or enable email/SMS recovery.
-
-Create a subscription, then activate it with the code sent to the selected channel. Subscriptions monitor the Safe account across supported chains with alerts enabled. The `chainId` identifies the network used to verify the signing owner. Every alert endpoint checks that `owner` is a current owner of the Safe on that chain, and a subscription belongs to the account, with `owner` recording who created it.
-
-A current owner manages its own subscriptions and those whose creator is no longer an owner, for example after a recovery or an owner swap, but not those of another current owner.
-
-The `owner` signs the SIWE message for subscription creation, lookup, and removal. See [SIWE signing](/wallet/recovery/auth-api/#how-to-sign-messages-siwe-eip-4361) and the [Recovery Alerts Guide](/wallet/plugins/recovery-alerts-guide/).
-
-A Safe that is not deployed yet can subscribe: wrap the owner's signature with ERC-6492 and the Safe's deployment data, as described in [Accounts that are not deployed yet](/wallet/recovery/auth-api/#accounts-that-are-not-deployed-yet-erc-6492). Without the wrapper, a request for an undeployed account fails with a 400.
-
-### Create an Alert Subscription {#alerts-subscribe-to-recovery-requests}
-
-#### `POST /v1/alerts/subscribe`
-
-Create an inactive subscription and send a verification code to the target email address or phone number. Save the returned `subscriptionId` and activate it using `/v1/alerts/activate`.
-
-<Tabs>
-<TabItem value="example-request" label="Example Request">
-
-```bash
-curl -X POST \
-  https://yourcompany.recovery.candide.dev/v1/alerts/subscribe \
-  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "account": "0x...",
-  "owner": "0x...",
-  "chainId": 1,
-  "channel": "email",
-  "target": "user@example.com",
-  "message": "siwe(chainId, statement(account, channel, target))",
-  "signature": "sign(message)"
-}'
-```
-
-</TabItem>
-<TabItem value="example-response" label="Example Response">
-
-```json
-{
-  "subscriptionId": "unique-subscription-id"
-}
-```
-</TabItem>
-</Tabs>
-
--   `account`: The Safe account to monitor.
--   `owner`: The Safe owner authorizing the subscription and signing the SIWE message.
--   `chainId`: The supported chain used to verify the owner and signature. Subscriptions cover all supported chains with alerts enabled.
--   `channel`: Either `"email"` or `"sms"` (defines the delivery channel).
--   `target`: The email address or phone number that receives alerts.
--   `signature`: The signature from `owner` over the complete SIWE message.
--   `message`: The complete SIWE message containing this exact statement:
-
-```
-I agree to receive Social Recovery Module alert notifications for {{account}} on all supported chains sent to {{target}} (via {{channel}})
-```
-
-Replace `{{account}}` with the lowercase Safe address, `{{target}}` with the destination, and `{{channel}}` with `email` or `sms`.
-
-See [SIWE signing](/wallet/recovery/auth-api/#how-to-sign-messages-siwe-eip-4361) to construct the message and signature.
-
-### Activate an Alert Subscription {#alerts-activate-subscription-to-recovery-requests}
-
-#### `POST /v1/alerts/activate`
-
-Submit the verification code sent during subscription creation. Alerts begin after activation.
-
-<Tabs>
-<TabItem value="example-request" label="Example Request">
-
-```bash
-curl -X POST \
-  https://yourcompany.recovery.candide.dev/v1/alerts/activate \
-  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "subscriptionId": "unique-subscription-id",
-  "challenge": "123456"
-}'
-```
-
-</TabItem>
-<TabItem value="example-response" label="Example Response">
-
-```json
-{
-  "success": true
-}
-```
-</TabItem>
-</Tabs>
-
--   `subscriptionId`: The unique ID received in the subscription response.
--   `challenge`: The code received via email/SMS.
-
-### List Active Alert Subscriptions {#alerts-get-active-subscription}
-
-Fetch the active subscriptions of the Safe account that the signing owner can manage: its own, and those created by addresses that are no longer owners. Each entry carries the `owner` that created it.
-
-#### `GET /v1/alerts/subscriptions`
-
-<Tabs>
-<TabItem value="example-request" label="Example Request">
-
-```bash
-curl -G "https://yourcompany.recovery.candide.dev/v1/alerts/subscriptions" \
-  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
-   --data-urlencode "account=0x..." \
-   --data-urlencode "owner=0x..." \
-   --data-urlencode "chainId=1" \
-   --data-urlencode "message=siwe(chainId, statement)" \
-   --data-urlencode "signature=sign(message)"
-```
-
-</TabItem>
-<TabItem value="example-response" label="Example Response">
-
-```json
-{
-  "subscriptions": [
-    {
-      "id": "unique-subscription-id",
-      "owner": "0x...",
-      "channel": "email",
-      "target": "user@example.com"
-    }
-  ]
-}
-```
-</TabItem>
-</Tabs>
-
--   `account`: The Safe account being monitored.
--   `owner`: A current owner of the Safe, who signs the SIWE message.
--   `chainId`: The supported chain used to verify the owner and signature. Subscriptions cover all supported chains with alerts enabled.
--   `signature`: The signature from `owner` over the complete SIWE message.
--   `message`: The complete SIWE message containing this exact statement:
-
-```
-I request to retrieve all Social Recovery Module alert subscriptions linked to my account
-```
-
-See [SIWE signing](/wallet/recovery/auth-api/#how-to-sign-messages-siwe-eip-4361) to construct the message and signature.
-
-### Remove an Alert Subscription {#alerts-unsubscribe}
-
-Remove the subscription identified by `subscriptionId`. Include the SIWE message and signature of a current owner of the subscribed account. Removing a subscription created by another current owner is answered with `403 This subscription belongs to another owner of the account`.
-
-#### `POST /v1/alerts/unsubscribe`
-
-<Tabs>
-<TabItem value="example-request" label="Example Request">
-
-```bash
-curl -X POST \
-  https://yourcompany.recovery.candide.dev/v1/alerts/unsubscribe \
-  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "subscriptionId": "unique-subscription-id",
-  "owner": "0x...",
-  "chainId": 1,
-  "message": "siwe(chainId, statement)",
-  "signature": "sign(message)"
-}'
-```
-
-</TabItem>
-<TabItem value="example-response" label="Example Response">
-
-```json
-{
-  "success": true
-}
-```
-</TabItem>
-</Tabs>
-
-- `subscriptionId`: The subscription to remove.
-- `owner`: The owner signing the request.
-- `chainId`: The supported chain used to verify the signature.
-- `message`: The complete SIWE message containing the statement below.
-- `signature`: The signature from `owner` over that message.
-
-```text
-I request to unsubscribe from all Social Recovery Module alert subscriptions linked to my account
-```
-
-Use this exact statement even when removing one subscription. The `subscriptionId` selects the subscription to remove.
-
+Email and SMS alerts for on-chain recovery activity have their own reference: [Recovery Alerts API](/wallet/recovery/alerts/).
 
 ## Error Handling
 
@@ -613,19 +436,17 @@ Use the HTTP status to determine whether a request succeeded. Service errors con
 | Code | Description |
 |------|-------------|
 | 200 | Success |
-| 400 | Bad Request - Invalid parameters, missing required fields, an invalid guardian signature, a `moduleAddress` the network does not serve, a module not enabled on the Safe or without guardians for it, or new owners the module cannot set |
+| 400 | Bad Request - Invalid parameters, missing required fields, an invalid guardian signature, an account that is not deployed (with `details.reason: "account-not-deployed"`, see [undeployed accounts](/wallet/recovery/undeployed-accounts/)), a `moduleAddress` the network does not serve, a module not enabled on the Safe or without guardians for it, or new owners the module cannot set |
 | 401 | Unauthorized - Invalid or missing Bearer token or API key |
-| 403 | Forbidden - SIWE signature verification failed, challenge invalid or expired, sponsorship not enabled for the network, the request is not ready to execute (wrong nonce or insufficient signatures) or finalize, a submission for it is already pending, or the owner cannot manage the subscription |
+| 403 | Forbidden - SIWE signature verification failed, challenge invalid or expired, sponsorship not enabled for the network, the request is not ready to execute (wrong nonce or insufficient signatures) or finalize, or a submission for it is already pending |
 | 404 | Not Found - Resource not found, or no pending recovery on-chain to finalize |
-| 409 | Conflict - The alert subscription already exists |
 | 429 | Too Many Requests - IP rate limit exceeded, a second request created for the account within 5 minutes, or the network's sponsorship limit reached for the account |
 | 503 | Service Unavailable - The request is not bound to a module yet; retry shortly. Only seen in the seconds after a service restart |
 | 500 | Internal Server Error - Something went wrong on the server |
 
 ### Troubleshooting
 
-- **Invalid signature:** Check the signing address, chain ID, and exact message or recovery data. A guardian signature must be over the recovery hash of the request's module; an error that names another module means the signature was made for that one, so pass it as `moduleAddress`. SIWE messages must use the statement for the requested action.
+- **Invalid signature:** Check the signing address, chain ID, and exact message or recovery data. A guardian signature must be over the recovery hash of the request's module; an error that names another module means the signature was made for that one, so pass it as `moduleAddress`. 
 - **Module not enabled or no guardians:** The Safe keeps its guardians on the module they were added to. Pass the `moduleAddress` of that module, as listed by `/v1/config/getNetworkConfig`.
-- **Invalid or expired code:** Verify that the code matches the challenge ID. If it has expired, create a new alert subscription and verify its new code.
 - **Missing resource:** Use the ID returned by the corresponding creation endpoint.
 - **Rate limit:** Wait before retrying the request.

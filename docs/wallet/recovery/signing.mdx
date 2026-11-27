@@ -1,0 +1,92 @@
+---
+title: Signing Requests (SIWE and ERC-6492)
+description: How to sign Safe Recovery Service requests with SIWE (EIP-4361), which account signs for each endpoint, the exact statements, and ERC-6492 signatures for Safe accounts that are not deployed yet.
+keywords: [safe recovery, SIWE, EIP-4361, ERC-6492, counterfactual account, safe signature]
+---
+
+# Signing Requests (SIWE and ERC-6492)
+
+The [Email/SMS Recovery API](/wallet/recovery/auth-api/) and the [Alerts API](/wallet/recovery/alerts/) authorize requests with a signed SIWE message. This page covers which account signs, the exact statements, and how a Safe that is not deployed yet signs with ERC-6492. Recovery requests are not signed this way: guardians sign the module's recovery hash, as described in the [Recovery Requests reference](/wallet/recovery/ux-api/#create-recovery-request).
+
+## How to Sign Messages (SIWE EIP-4361)
+
+SIWE (Sign-In with Ethereum) messages authorize registration and alert-management actions. Submit the complete prepared message in `message` and its corresponding signature in `signature`.
+
+### Choose the Signing Account
+
+| Endpoints | SIWE address and signature |
+|-----------|----------------------------|
+| `/v1/auth/register`, `/v1/auth/registrations`, `/v1/auth/delete`, `/v1/auth/metadata` | Use the **Safe account address** as the SIWE address. Produce a Safe-compatible signature that satisfies the account's owner threshold. |
+| `/v1/alerts/subscribe`, `/v1/alerts/subscriptions`, `/v1/alerts/unsubscribe` | Use the **`owner` address** as the SIWE address. Sign with that owner. Subscription creation checks that this address is an owner of the Safe. |
+
+For Safe accounts, follow the [registration signing example](/wallet/plugins/add-candide-guardian/#step-3-sign-and-submit-registration), which uses the Safe message-signing helpers and formats the owner signatures for verification. For alert subscriptions, follow the [Recovery Alerts Guide](/wallet/plugins/recovery-alerts-guide/).
+
+### Use the Exact Statement
+
+The service checks the statement against the requested action. Preserve its wording and punctuation, and substitute the values in braces.
+
+| Action | Statement |
+|--------|-----------|
+| Register a recovery method | `I authorize Safe Recovery Service to sign a recovery request for my account after I authenticate using {{target}} (via {{channel}})` |
+| List recovery methods | `I request to retrieve all authentication methods currently registered to my account with Safe Recovery Service` |
+| Delete a recovery method | `I request to remove the authentication method with registration ID {{id}} from my account on Safe Recovery Service` |
+| Update account metadata | `I request to update the metadata stored for my account with Safe Recovery Service` |
+
+Use the registration ID for `{{id}}`, the email address or phone number for `{{target}}`, and `email` or `sms` for `{{channel}}`. The [alert endpoints](/wallet/recovery/alerts/) list their own statements.
+
+### Prepare and Sign the Message
+
+1. Construct a SIWE message with the signing address above, the correct chain ID, the exact statement, a domain and URI, a fresh nonce, and an issued-at timestamp.
+2. Prepare the message with a SIWE library or the [Recovery Service SDK](/wallet/plugins/recovery-service-sdk-reference/).
+3. Sign that complete message using the appropriate signing account and submit both values unchanged.
+
+The statement alone is not the full SIWE message. The chain ID must match the request, or the registration's chain for deletion.
+
+A message is accepted for 5 minutes after its `issuedAt`. To allow more time, for example while the owners of a multisig Safe sign, set an `expirationTime`: the message is then accepted until that time, at most 24 hours after `issuedAt`. Each message can be used once: sending a message whose signature was already accepted fails with a 400, so generate a new message with a new nonce for every request, and when retrying an expired authorization.
+
+### Accounts That Are Not Deployed Yet (ERC-6492)
+
+A Safe can register recovery methods and subscribe to alerts before it is deployed. Wrap the `signature` with [ERC-6492](https://eips.ethereum.org/EIPS/eip-6492): ABI-encode `(address factory, bytes factoryCalldata, bytes signature)` and append the 32-byte magic suffix `0x6492649264926492649264926492649264926492649264926492649264926492`. `factory` and `factoryCalldata` are the call that deploys the Safe, which for a Safe is `SafeProxyFactory.createProxyWithNonce`. No other request field changes.
+
+The service runs the deployment in a simulated call, never on-chain, and checks the signature against the Safe in the state that call leaves:
+
+| Endpoints | What the wrapper carries |
+|-----------|--------------------------|
+| `/v1/auth/register`, `/v1/auth/registrations`, `/v1/auth/delete`, `/v1/auth/metadata` | Standard ERC-6492. The SIWE address is the Safe and the inner signature is the Safe signature a deployed Safe would give, so the Safe's owner threshold applies. |
+| `/v1/alerts/subscribe`, `/v1/alerts/subscriptions`, `/v1/alerts/unsubscribe` | The SIWE address is an owner and the inner signature is that owner's signature, as for a deployed Safe. The deployment data describes the **account**, not the signer. The service reads the simulated Safe's owners and requires the signer to be one of them. |
+
+The recovery endpoints do not accept wrapped signatures. The module checks guardian signatures on-chain, so `/v1/recoveries/*`, `/v1/auth/signature/request`, and `/v1/auth/signature/submit` need the Safe deployed with the module enabled and the service's guardian added. A registration made before deployment can be used once that is done. A user who lost the wallet before the Safe was deployed can have the service deploy it, when the service is configured for it: see [Recover Accounts That Were Never Deployed](/wallet/recovery/undeployed-accounts/).
+
+Rules:
+
+- A signature without the suffix is checked as a regular signature of a deployed account.
+- Once the account has code, the deployment data is ignored and the inner signature is checked against the deployed account, so a client may keep sending wrapped signatures after deployment.
+- Only the Safe's own deployment data can put code at its address. Deployment data for another account fails the request.
+- The inner signature is never unwrapped again, so an owner that is itself an undeployed contract is not supported.
+- Networks without a Multicall3 deployment reject wrapped signatures of undeployed accounts with a 400.
+
+Building the wrapper with AbstractionKit and ethers v5:
+
+```ts
+const [factory, factoryCalldata] = SafeAccount.createFactoryAddressAndData(owners, { threshold });
+// auth: `signature` is the Safe signature over the SIWE message, built as in the registration guide
+// alerts: `signature` is the owner's signMessage(siweMessage.prepareMessage())
+const wrapped = ethers.utils.hexConcat([
+  ethers.utils.defaultAbiCoder.encode(["address", "bytes", "bytes"], [factory, factoryCalldata, signature]),
+  "0x6492649264926492649264926492649264926492649264926492649264926492",
+]);
+```
+
+`/v1/auth/registrations` and `/v1/alerts/subscriptions` take `signature` in the query string. A wrapped signature for a two-owner Safe is about 2 KB of hex, well under the usual URL limits, but a Safe with a very large initializer may not fit.
+
+Errors specific to wrapped signatures:
+
+| Status | Message | When |
+|--------|---------|------|
+| 400 | `SIWE Message: malformed ERC-6492 signature` | The signature ends with the magic suffix but does not decode. |
+| 400 | `ERC-6492 signatures are not supported on this network (<chainId>): Multicall3 is not deployed at <address>` | The account is not deployed and the network has no Multicall3. |
+| 400 | `SIWE Message: the ERC-6492 deployment data does not deploy <account> on chain <chainId>` | Auth endpoints: the factory call reverts or leaves no code at the account. |
+| 403 | `SIWE Message: invalid signature, ...` | Auth endpoints: the simulated Safe rejects the signature, for example fewer owner signatures than its threshold. Alert endpoints: the inner signature is not the SIWE address's. |
+| 400 | `Unable to fetch owners for account '<account>' on chain <chainId>: the account is not deployed. Wrap the signature ...` | Alert endpoints: the account has no code and the signature is not wrapped. |
+| 400 | `Unable to fetch owners for account '<account>' on chain <chainId>: the ERC-6492 deployment data does not deploy it` | Alert endpoints: the factory call reverts, or the account gives no owners after it. |
+| 403 | `Owner must be a valid owner for the account provided` | Alert endpoints: the SIWE address is not an owner of the account. |

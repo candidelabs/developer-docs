@@ -9,6 +9,10 @@ import TabItem from "@theme/TabItem";
 import { DataTable } from "/src/components/Table";
 
 import {
+    postAuthVerificationRequest,
+    postAuthVerificationRequestResponse,
+    postAuthVerificationSubmit,
+    postAuthVerificationSubmitResponse,
     postAuthRegister,
     postAuthRegisterResponse,
     postAuthSubmit,
@@ -31,7 +35,7 @@ The signature counts as one guardian approval under the account's recovery thres
 
 ## Before You Start
 
-- Enable the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/) on the Safe account. Registration also works before the Safe is deployed, with an [ERC-6492 signature](#accounts-that-are-not-deployed-yet-erc-6492); requesting a recovery signature needs the Safe deployed with the module enabled and the service's guardian added.
+- Enable the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/) on the Safe account. Registration also works before the Safe is deployed, with an [ERC-6492 signature](/wallet/recovery/signing/#accounts-that-are-not-deployed-yet-erc-6492); requesting a recovery signature needs the Safe deployed with the module enabled and the service's guardian added.
 - [Request service access](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5) to obtain your service URL and credential.
 - Register the recovery method while the user still controls the account. Registrations are specific to an account and chain.
 
@@ -41,7 +45,7 @@ For a TypeScript walkthrough, see [Enable Email/SMS Recovery](/wallet/plugins/ad
 
 Replace `https://yourcompany.recovery.candide.dev` with your service URL. Every endpoint lives under the `/v1` prefix. The service is configured with either a Bearer token, sent as `Authorization: Bearer YOUR_BEARER_TOKEN` in every request, or an API key that is the first path segment of every URL. The examples use the Bearer token form; see [Authentication](/wallet/recovery/ux-api/#authentication) in the UX API reference for both.
 
-Registration, registration lookup, and deletion also require a **SIWE message signed by the Safe account**. During recovery, the user verifies codes sent to registered channels to authorize the service-managed guardian's signature. See [SIWE signing](#how-to-sign-messages-siwe-eip-4361).
+Registration, registration lookup, deletion, and metadata updates also require a **SIWE message signed by the Safe account**. Verifying an email address or phone number needs no wallet signature. During recovery, the user verifies codes sent to registered channels to authorize the service-managed guardian's signature. See [SIWE signing](/wallet/recovery/signing/#how-to-sign-messages-siwe-eip-4361).
 
 Examples use placeholder addresses, IDs, messages, and signatures. Replace them with values from your integration. Expressions such as `siwe(...)` and `sign(message)` describe values to generate in your application; they are not literal API inputs.
 
@@ -49,11 +53,15 @@ Examples use placeholder addresses, IDs, messages, and signatures. Replace them 
 
 **Set up recovery while the user has account access:**
 
-1. Call `/v1/auth/register` with a Safe-signed SIWE message to send a verification code.
-2. Submit the code to `/v1/auth/submit` to receive a `registrationId` and `guardianAddress`.
+1. Verify the email address or phone number: call `/v1/auth/verification/request`, then submit the code to `/v1/auth/verification/submit` to receive a `verifiedTargetToken`, valid for 10 minutes.
+2. Call `/v1/auth/register` with a Safe-signed SIWE message and the token. The registration is created at once and the response carries the `registrationId` and `guardianAddress`.
 3. Add that guardian address to the account's Social Recovery Module on-chain. Registration alone does not add the guardian.
 
+The user enters one code, and the same token registers the target on other chains and [subscribes it to alerts](/wallet/recovery/alerts/#alerts-subscribe-to-recovery-requests) while it is valid. The token is optional: without it, `/v1/auth/register` sends a code of its own and `/v1/auth/submit` completes the registration.
+
 **Recover the account after access is lost:**
+
+If the user does not know the account address, [find it from the email address or phone number](/wallet/recovery/find-accounts/) first. If the account was never deployed, see [Recover Accounts That Were Never Deployed](/wallet/recovery/undeployed-accounts/).
 
 1. Call `/v1/auth/signature/request` with the proposed new owners, their signing threshold, and the `moduleAddress` of the Social Recovery Module the guardian was added to. See [Recovery modules](/wallet/recovery/ux-api/#recovery-modules).
 2. Submit verification codes to `/v1/auth/signature/submit` until the response includes `signer` and `signature`.
@@ -71,18 +79,130 @@ There are three separate thresholds:
 
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
-| POST | `/v1/auth/register` | Request registration and send a verification code. |
-| POST | `/v1/auth/submit` | Verify the code and return the guardian address. |
-| GET | `/v1/auth/registrations` | List the account's registered methods on a chain. |
+| POST | `/v1/auth/verification/request` | Send a code to an email address or phone number. |
+| POST | `/v1/auth/verification/submit` | Verify the code and return a `verifiedTargetToken`. |
+| POST | `/v1/auth/register` | Register a recovery method: at once with a `verifiedTargetToken`, or by sending a verification code. |
+| POST | `/v1/auth/submit` | Verify a registration code and return the guardian address. Not needed with a token. |
+| GET | `/v1/auth/registrations` | List the account's registered methods and metadata on a chain. |
 | POST | `/v1/auth/delete` | Delete a registered method. |
+| POST | [`/v1/auth/accounts`](/wallet/recovery/find-accounts/#look-up-accounts) | List the accounts registered with a verified email address or phone number. |
+| POST | [`/v1/auth/metadata`](/wallet/recovery/find-accounts/#update-account-metadata) | Replace the metadata stored for an account. |
+| POST | [`/v1/auth/accounts/deploy`](/wallet/recovery/undeployed-accounts/#request-a-sponsored-deployment) | Ask the service to deploy an account that registered before deployment. |
+| GET | [`/v1/auth/accounts/deployment`](/wallet/recovery/undeployed-accounts/#check-a-sponsored-deployment) | Read the state of a sponsored deployment. |
 | POST | `/v1/auth/signature/request` | Request verification codes for a proposed recovery. |
 | POST | `/v1/auth/signature/submit` | Verify a code and return a guardian signature once enough verifications are collected. |
+
+## Verify an Email Address or Phone Number {#verify-target}
+
+Prove once that the user controls an email address or phone number and receive a short-lived `verifiedTargetToken`. The token replaces the code step of [registration](#email--sms) and of [alert subscription](/wallet/recovery/alerts/#alerts-subscribe-to-recovery-requests), [lists the accounts](/wallet/recovery/find-accounts/) registered with the target, and asks for a [sponsored deployment](/wallet/recovery/undeployed-accounts/). It proves control of the target, not of an account: registering and subscribing still need their wallet signature.
+
+### Request a Verification Code
+
+#### `POST /v1/auth/verification/request`
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```bash
+curl -X POST \
+  https://yourcompany.recovery.candide.dev/v1/auth/verification/request \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+   "channel": "email",
+   "target": "user@example.com"
+}'
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "challengeId": "unique-challenge-id"
+}
+```
+
+</TabItem>
+<TabItem value="request" label="Request Body">
+    <DataTable items={postAuthVerificationRequest} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={postAuthVerificationRequestResponse} />
+</TabItem>
+</Tabs>
+
+- Every valid target gets a code, registered or not, and the response is the same for all, so the endpoint does not reveal whether a target is registered.
+- The target is normalized: an email address is trimmed and lower-cased, a phone number becomes E.164.
+- A request within 60 seconds of the previous one for the same channel and target returns the same `challengeId` and sends no new code.
+- A target receives at most 10 codes in 24 hours. Past that, the request returns the latest `challengeId` and sends nothing. The response does not show this, so tell the user to wait when no code arrives.
+
+### Submit the Code
+
+#### `POST /v1/auth/verification/submit`
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```bash
+curl -X POST \
+  https://yourcompany.recovery.candide.dev/v1/auth/verification/submit \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+   "challengeId": "unique-challenge-id",
+   "challenge": "123456"
+}'
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "verifiedTargetToken": "43-character-token",
+  "verifiedTargetTokenExpiresAt": "2026-11-19T12:10:00.000Z"
+}
+```
+
+</TabItem>
+<TabItem value="request" label="Request Body">
+    <DataTable items={postAuthVerificationSubmit} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={postAuthVerificationSubmitResponse} />
+</TabItem>
+</Tabs>
+
+- A code is valid for 10 minutes and can be used once. A challenge is dead after 5 wrong codes, and every submit for a target is refused once it had 10 wrong codes in 24 hours.
+- The token is valid for 10 minutes and can be used several times until then, for example to register the target on two chains and subscribe it to alerts.
+- The token is a bearer secret. Keep it in memory, never in a URL, a log, or storage.
+
+| Status | Message | When |
+|--------|---------|------|
+| 400 | `Target channel '<channel>' is not supported` | `request`: the service has no such channel configured. |
+| 403 | `Target is not compatible with the '<channel>' channel` | `request`: the email address or phone number is invalid. |
+| 404 | `challengeId not found` | `submit`: no such challenge. |
+| 400 | `challengeId already verified` | `submit`: the challenge was already used. |
+| 403 | `challengeId has been expired` | `submit`: the code is more than 10 minutes old. |
+| 403 | `Invalid challenge` | `submit`: wrong code. |
+| 403 | `Too many invalid challenges, request a new code` | `submit`: 5 wrong codes on this challenge. |
+| 403 | `Too many invalid challenges for this target, try again later` | `submit`: 10 wrong codes for the target in 24 hours. |
+
+Wherever the token is then used, these two answers apply:
+
+| Status | Message | When |
+|--------|---------|------|
+| 400 | `"verifiedTargetToken" must be a valid token` | The value is not 43 base64url characters. |
+| 403 | `Invalid or expired verifiedTargetToken` | The token is unknown, expired, or issued for another channel or target. |
+
+The token is never accepted by the recovery endpoints. `/v1/auth/signature/request` always sends codes of its own, and a token cannot delete a registration or a subscription.
 
 ## Register and Manage Recovery Methods {#auth-registration}
 
 ### Register an Email Address or Phone Number {#email--sms}
 
-Send a verification code to the selected email address or phone number. Save the returned `challengeId` for `/v1/auth/submit`.
+Register the target as a recovery method for the account on a chain. With a `verifiedTargetToken` issued for the same channel and target, the registration is created at once. Without one, the service sends a verification code and returns a `challengeId` for `/v1/auth/submit`.
 
 #### `POST /v1/auth/register`
 
@@ -100,12 +220,25 @@ curl -X POST \
    "channel":"email",
    "target":"user@example.com",
    "message": "siwe(chainId, statement(channel, target))",
-   "signature": "sign(message)"
+   "signature": "sign(message)",
+   "verifiedTargetToken": "43-character-token",
+   "metadata": { "label": "Savings" }
 }'
 ```
 
 </TabItem>
 <TabItem value="example-response" label="Example Response">
+
+With a `verifiedTargetToken`:
+
+```json
+{
+  "registrationId": "unique-registration-id",
+  "guardianAddress": "0x..."
+}
+```
+
+Without one, a code is sent to the target:
 
 ```json
 {
@@ -126,18 +259,25 @@ curl -X POST \
 -   `chainId`: The chain where the Safe is or will be deployed. Register separately for each chain.
 -   `channel`: Either `"email"` or `"sms"` (defines the authentication type).
 -   `target`: The email or phone number for authentication.
--   `signature`: A signature valid for the Safe account over the complete SIWE message. For a Safe that is not deployed yet, wrap it as described in [Accounts that are not deployed yet](#accounts-that-are-not-deployed-yet-erc-6492).
+-   `signature`: A signature valid for the Safe account over the complete SIWE message. For a Safe that is not deployed yet, wrap it as described in [Accounts that are not deployed yet](/wallet/recovery/signing/#accounts-that-are-not-deployed-yet-erc-6492).
 -   `message`: The complete SIWE message containing this exact statement:
 
 ```
 I authorize Safe Recovery Service to sign a recovery request for my account after I authenticate using {{target}} (via {{channel}})
 ```
 
-See [SIWE signing](#how-to-sign-messages-siwe-eip-4361) for the exact statement and signing requirements.
+See [SIWE signing](/wallet/recovery/signing/#how-to-sign-messages-siwe-eip-4361) for the exact statement and signing requirements.
+
+-   `verifiedTargetToken`: Optional. The token from [`/v1/auth/verification/submit`](#verify-target). The Safe's SIWE signature is still required, with the same statement.
+-   `metadata`: Optional. A small object of strings stored with the account on this chain, such as the name the user gave it. The [account lookup](/wallet/recovery/find-accounts/) returns it. See [Account metadata](/wallet/recovery/find-accounts/#account-metadata) for the rules.
+
+The service checks the token before the SIWE message, so a refused token leaves the message unused: send the same signed message again without the token to get a code instead. The token must still be valid when the request arrives. When collecting the signature takes long, for example from the owners of a multisig Safe, sign first and verify the target last.
+
+A target that is already registered for the account on the chain is answered with a 409.
 
 ### Verify Registration {#submit-confirmation-using-otp}
 
-Submit the code to confirm ownership of the email address or phone number. The response returns the guardian address to add to the Social Recovery Module on-chain.
+Only for a registration made without a `verifiedTargetToken`. Submit the code to confirm ownership of the email address or phone number. The response returns the guardian address to add to the Social Recovery Module on-chain. Submitting the same valid code again returns the same registration.
 
 #### `POST /v1/auth/submit`
 
@@ -174,7 +314,7 @@ curl -X POST \
 
 ### List Registered Recovery Methods {#get-active-registration}
 
-List the registered recovery methods for the specified Safe account and chain. The response contains an empty array if no methods are registered.
+List the registered recovery methods for the specified Safe account and chain, with the account's [metadata](/wallet/recovery/find-accounts/#account-metadata). The response contains an empty array if no methods are registered.
 
 #### `GET /v1/auth/registrations`
 
@@ -201,7 +341,8 @@ curl -G "https://yourcompany.recovery.candide.dev/v1/auth/registrations" \
       "channel": "email",
       "target": "user@example.com"
     }
-  ]
+  ],
+  "metadata": { "label": "Savings" }
 }
 ```
 </TabItem>
@@ -213,11 +354,11 @@ curl -G "https://yourcompany.recovery.candide.dev/v1/auth/registrations" \
 </TabItem>
 </Tabs>
 
-See [SIWE signing](#how-to-sign-messages-siwe-eip-4361) for the exact statement and signing requirements.
+See [SIWE signing](/wallet/recovery/signing/#how-to-sign-messages-siwe-eip-4361) for the exact statement and signing requirements.
 
 ### Delete a Recovery Method {#delete}
 
-Delete the registration identified by `registrationId`, using a SIWE message signed by the Safe account. This removes the service registration; it does not revoke the guardian on-chain.
+Delete the registration identified by `registrationId`, using a SIWE message signed by the Safe account. This removes the service registration; it does not revoke the guardian on-chain. Deleting the account's last registration on a chain also deletes its metadata there.
 
 #### `POST /v1/auth/delete`
 
@@ -253,7 +394,7 @@ curl -X POST \
 </TabItem>
 </Tabs>
 
-See [SIWE signing](#how-to-sign-messages-siwe-eip-4361) for the exact statement and signing requirements.
+See [SIWE signing](/wallet/recovery/signing/#how-to-sign-messages-siwe-eip-4361) for the exact statement and signing requirements.
 
 ## Obtain a Recovery Signature {#auth-recovery}
 
@@ -262,6 +403,18 @@ See [SIWE signing](#how-to-sign-messages-siwe-eip-4361) for the exact statement 
 Propose new Safe owners and their signing threshold on the module named by `moduleAddress`. The service checks that the module is enabled on the Safe, that its guardian is one of the Safe's guardians on it, and that the module can set the proposed owners (see [Recovery modules](/wallet/recovery/ux-api/#recovery-modules)). It then sends verification codes to the registered channels and returns a `requestId`, the required number of verifications, and the available challenges. The request is bound to that module: the signature returned later is over that module's recovery hash at the account's current nonce on it.
 
 `requiredVerifications` is a majority of the account's registered methods: one for one method, two for two or three, three for four or five, and so on.
+
+An account that is not deployed yet is answered with a 400 that carries `details`:
+
+```json
+{
+  "code": 400,
+  "message": "Account 0x... is not deployed on this network (11155111)",
+  "details": { "reason": "account-not-deployed", "sponsoredDeployment": true }
+}
+```
+
+`sponsoredDeployment` says whether the service can deploy the account. See [Recover Accounts That Were Never Deployed](/wallet/recovery/undeployed-accounts/). [`/v1/recoveries/create`](/wallet/recovery/ux-api/#create-recovery-request) answers the same error.
 
 #### `POST /v1/auth/signature/request`
 
@@ -359,85 +512,11 @@ Continue with another challenge from the same request until `signer` and `signat
 
 ## How to Sign Messages (SIWE EIP-4361)
 
-SIWE (Sign-In with Ethereum) messages authorize registration and alert-management actions. Submit the complete prepared message in `message` and its corresponding signature in `signature`.
-
-### Choose the Signing Account
-
-| Endpoints | SIWE address and signature |
-|-----------|----------------------------|
-| `/v1/auth/register`, `/v1/auth/registrations`, `/v1/auth/delete` | Use the **Safe account address** as the SIWE address. Produce a Safe-compatible signature that satisfies the account's owner threshold. |
-| `/v1/alerts/subscribe`, `/v1/alerts/subscriptions`, `/v1/alerts/unsubscribe` | Use the **`owner` address** as the SIWE address. Sign with that owner. Subscription creation checks that this address is an owner of the Safe. |
-
-For Safe accounts, follow the [registration signing example](/wallet/plugins/add-candide-guardian/#step-3-sign-and-submit-registration), which uses the Safe message-signing helpers and formats the owner signatures for verification. For alert subscriptions, follow the [Recovery Alerts Guide](/wallet/plugins/recovery-alerts-guide/).
-
-### Use the Exact Statement
-
-The service checks the statement against the requested action. Preserve its wording and punctuation, and substitute the values in braces.
-
-| Action | Statement |
-|--------|-----------|
-| Register a recovery method | `I authorize Safe Recovery Service to sign a recovery request for my account after I authenticate using {{target}} (via {{channel}})` |
-| List recovery methods | `I request to retrieve all authentication methods currently registered to my account with Safe Recovery Service` |
-| Delete a recovery method | `I request to remove the authentication method with registration ID {{id}} from my account on Safe Recovery Service` |
-
-Use the registration ID for `{{id}}`, the email address or phone number for `{{target}}`, and `email` or `sms` for `{{channel}}`. The [alert endpoints](/wallet/recovery/ux-api/#alerts) list their own statements.
-
-### Prepare and Sign the Message
-
-1. Construct a SIWE message with the signing address above, the correct chain ID, the exact statement, a domain and URI, a fresh nonce, and an issued-at timestamp.
-2. Prepare the message with a SIWE library or the [Recovery Service SDK](/wallet/plugins/recovery-service-sdk-reference/).
-3. Sign that complete message using the appropriate signing account and submit both values unchanged.
-
-The statement alone is not the full SIWE message. The chain ID must match the request, or the registration's chain for deletion.
-
-A message is accepted for 5 minutes after its `issuedAt`. To allow more time, for example while the owners of a multisig Safe sign, set an `expirationTime`: the message is then accepted until that time, at most 24 hours after `issuedAt`. Each message can be used once: sending a message whose signature was already accepted fails with a 400, so generate a new message with a new nonce for every request, and when retrying an expired authorization.
+Registration, registration lookup, deletion, and metadata updates are authorized by a SIWE message signed by the Safe account. The signing account, the exact statements, and the validity window are on [Signing Requests](/wallet/recovery/signing/).
 
 ### Accounts That Are Not Deployed Yet (ERC-6492)
 
-A Safe can register recovery methods and subscribe to alerts before it is deployed. Wrap the `signature` with [ERC-6492](https://eips.ethereum.org/EIPS/eip-6492): ABI-encode `(address factory, bytes factoryCalldata, bytes signature)` and append the 32-byte magic suffix `0x6492649264926492649264926492649264926492649264926492649264926492`. `factory` and `factoryCalldata` are the call that deploys the Safe, which for a Safe is `SafeProxyFactory.createProxyWithNonce`. No other request field changes.
-
-The service runs the deployment in a simulated call, never on-chain, and checks the signature against the Safe in the state that call leaves:
-
-| Endpoints | What the wrapper carries |
-|-----------|--------------------------|
-| `/v1/auth/register`, `/v1/auth/registrations`, `/v1/auth/delete` | Standard ERC-6492. The SIWE address is the Safe and the inner signature is the Safe signature a deployed Safe would give, so the Safe's owner threshold applies. |
-| `/v1/alerts/subscribe`, `/v1/alerts/subscriptions`, `/v1/alerts/unsubscribe` | The SIWE address is an owner and the inner signature is that owner's signature, as for a deployed Safe. The deployment data describes the **account**, not the signer. The service reads the simulated Safe's owners and requires the signer to be one of them. |
-
-The recovery endpoints do not accept wrapped signatures. The module checks guardian signatures on-chain, so `/v1/recoveries/*`, `/v1/auth/signature/request`, and `/v1/auth/signature/submit` need the Safe deployed with the module enabled and the service's guardian added. A registration made before deployment can be used once that is done.
-
-Rules:
-
-- A signature without the suffix is checked as before.
-- Once the account has code, the deployment data is ignored and the inner signature is checked against the deployed account, so a client may keep sending wrapped signatures after deployment.
-- Only the Safe's own deployment data can put code at its address. Deployment data for another account fails the request.
-- The inner signature is never unwrapped again, so an owner that is itself an undeployed contract is not supported.
-- Networks without a Multicall3 deployment reject wrapped signatures of undeployed accounts with a 400.
-
-Building the wrapper with AbstractionKit and ethers v5:
-
-```ts
-const [factory, factoryCalldata] = SafeAccount.createFactoryAddressAndData(owners, { threshold });
-// auth: `signature` is the Safe signature over the SIWE message, built as in the registration guide
-// alerts: `signature` is the owner's signMessage(siweMessage.prepareMessage())
-const wrapped = ethers.utils.hexConcat([
-  ethers.utils.defaultAbiCoder.encode(["address", "bytes", "bytes"], [factory, factoryCalldata, signature]),
-  "0x6492649264926492649264926492649264926492649264926492649264926492",
-]);
-```
-
-`/v1/auth/registrations` and `/v1/alerts/subscriptions` take `signature` in the query string. A wrapped signature for a two-owner Safe is about 2 KB of hex, well under the usual URL limits, but a Safe with a very large initializer may not fit.
-
-Errors specific to wrapped signatures:
-
-| Status | Message | When |
-|--------|---------|------|
-| 400 | `SIWE Message: malformed ERC-6492 signature` | The signature ends with the magic suffix but does not decode. |
-| 400 | `ERC-6492 signatures are not supported on this network (<chainId>): Multicall3 is not deployed at <address>` | The account is not deployed and the network has no Multicall3. |
-| 400 | `SIWE Message: the ERC-6492 deployment data does not deploy <account> on chain <chainId>` | Auth endpoints: the factory call reverts or leaves no code at the account. |
-| 403 | `SIWE Message: invalid signature, ...` | Auth endpoints: the simulated Safe rejects the signature, for example fewer owner signatures than its threshold. Alert endpoints: the inner signature is not the SIWE address's. |
-| 400 | `Unable to fetch owners for account '<account>' on chain <chainId>: the account is not deployed. Wrap the signature ...` | Alert endpoints: the account has no code and the signature is not wrapped. |
-| 400 | `Unable to fetch owners for account '<account>' on chain <chainId>: the ERC-6492 deployment data does not deploy it` | Alert endpoints: the factory call reverts, or the account gives no owners after it. |
-| 403 | `Owner must be a valid owner for the account provided` | Alert endpoints: the SIWE address is not an owner of the account. |
+A Safe can register before it is deployed by wrapping its signature with ERC-6492. See [Signing Requests](/wallet/recovery/signing/#accounts-that-are-not-deployed-yet-erc-6492).
 
 ## Error Handling
 
@@ -450,6 +529,8 @@ Use the HTTP status to determine whether a request succeeded. Service errors con
 }
 ```
 
+Errors a client is expected to act on also carry `details`, an object with at least `reason`: the [not-deployed error](#request-to-recover-an-account) and the refusals of a [sponsored deployment](/wallet/recovery/undeployed-accounts/#request-a-sponsored-deployment). Tell them apart by `details.reason`, not by the message.
+
 ### HTTP Status Codes
 
 | Code | Description |
@@ -457,7 +538,7 @@ Use the HTTP status to determine whether a request succeeded. Service errors con
 | 200 | Success |
 | 400 | Bad Request - Invalid parameters or missing required fields, email/SMS recovery not enabled on the network, no registration for the account on the chain, the service's guardian not added on the module, a `moduleAddress` the network does not serve, or new owners the module cannot set |
 | 401 | Unauthorized - Invalid or missing Bearer token or API key |
-| 403 | Forbidden - Signature verification failed, challenge invalid or expired, or action not permitted |
+| 403 | Forbidden - Signature verification failed, challenge invalid or expired, `verifiedTargetToken` invalid or expired, or action not permitted |
 | 404 | Not Found - Resource not found |
 | 409 | Conflict - The recovery method is already registered |
 | 429 | Too Many Requests - Rate limit exceeded |

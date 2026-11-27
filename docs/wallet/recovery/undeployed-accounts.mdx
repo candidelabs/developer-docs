@@ -1,0 +1,224 @@
+---
+title: Recover Accounts That Were Never Deployed
+description: How Candide's Safe Recovery Service keeps the deployment call of a Safe that registered before deployment and sponsors its deployment, so a user who lost the wallet before the first transaction can still recover.
+keywords: [safe recovery, social recovery, counterfactual account, ERC-6492, sponsored deployment, email-sms recovery]
+---
+
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import { DataTable } from "/src/components/Table";
+
+import {
+    postAuthAccountsDeploy,
+    postAuthAccountsDeployResponse,
+    getAuthAccountsDeployment,
+    getAuthAccountsDeploymentResponse,
+} from "/src/data/safeRecoveryService";
+
+# Recover Accounts That Were Never Deployed
+
+A Safe has an address before it exists on-chain: it is deployed with its first transaction. A user can create a wallet, [register an email address](/wallet/recovery/signing/#accounts-that-are-not-deployed-yet-erc-6492), receive funds, and lose the device before ever transacting. Two things then block recovery:
+
+- The Social Recovery Module is a contract enabled on the Safe. With no Safe on-chain, there is nothing to recover.
+- The call that deploys the Safe at that address (which factory, with which data) existed only in the lost wallet.
+
+The service closes both gaps with two options of the [Email/SMS Recovery API](/wallet/recovery/auth-api/):
+
+| Option | What the service does |
+|--------|-----------------------|
+| Init data storage | Keeps the deployment call of an undeployed account when it registers, and returns it in the [account lookup](/wallet/recovery/find-accounts/). |
+| Sponsored deployment | Pays to deploy the account from that stored call, for a user who verified a registered email address or phone number. |
+
+Both are off unless your service is configured for them. [Contact us](https://app.formbricks.com/s/brdzlw0t897cz3mxl3ausfb5) to enable them, and read what a network offers from [`/v1/config/getNetworkConfig`](#read-what-the-network-offers).
+
+## Requirement: The Deployment Installs the Guardian
+
+A recovery needs the service's guardian on the Safe's Social Recovery Module. For an account to be recoverable before it is deployed, its initializer must install that guardian itself: enable the module and add the guardian during Safe's `setup()`, through its delegate call to a contract that does both for `address(this)`.
+
+An account whose initializer does not install the guardian still registers, but deploying it leaves a Safe without the guardian.
+
+- Read the guardian's address from `guardianAddress` in `/v1/config/getNetworkConfig` before creating the account. It becomes part of the account's address.
+- An account has the same address on two networks only if its initializer is the same on both, so both networks must use the same guardian.
+
+## Read What the Network Offers
+
+[`/v1/config/getNetworkConfig`](/wallet/recovery/ux-api/#get-network-configuration) returns:
+
+```json
+{
+  "guardianAddress": "0x...",
+  "counterfactualAccounts": { "erc6492": true, "storeInitData": "with-guardian" },
+  "sponsorships": {
+    "deployment": {
+      "enabled": true,
+      "factories": ["0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67"],
+      "requireGuardian": true,
+      "rateLimit": { "maxPerTarget": 2, "maxTotal": 50, "period": 86400 }
+    }
+  }
+}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `counterfactualAccounts.erc6492` | Whether undeployed accounts can register and subscribe with [ERC-6492 signatures](/wallet/recovery/signing/#accounts-that-are-not-deployed-yet-erc-6492). |
+| `counterfactualAccounts.storeInitData` | `never`: nothing is kept. `with-guardian`: the deployment call is kept only when deploying installs the service's guardian. `always`: it is kept either way. |
+| `sponsorships.deployment.enabled` | Whether the service pays for deployments on this network. |
+| `sponsorships.deployment.factories` | The factories the service pays for. Init data with another factory is never deployed by the service, so read this before choosing a factory. |
+| `sponsorships.deployment.requireGuardian` | Whether the deployment must install the service's guardian to be sponsored. |
+| `sponsorships.deployment.rateLimit` | `maxPerTarget` deployments per verified email address or phone number and `maxTotal` on the network, over `period` seconds. Absent without a limit. |
+
+## What the Service Keeps
+
+When `storeInitData` allows it, [`/v1/auth/register`](/wallet/recovery/auth-api/#email--sms) keeps the deployment call it verified in simulation: the `factory` and `factoryCalldata` of the ERC-6492 wrapper. They are stored as two reserved keys of the account's [metadata](/wallet/recovery/find-accounts/#account-metadata):
+
+| Key | Value |
+|-----|-------|
+| `_factory` | The factory address, checksummed. |
+| `_factoryData` | The calldata of the factory call, as lower-case hex. |
+
+Calling `_factory` with `_factoryData` deploys the account. For a Safe it is a `SafeProxyFactory.createProxyWithNonce` call, which also fits a UserOperation's `factory` and `factoryData`.
+
+- No request field is added and the registration is accepted whether or not the data is kept. To see whether it was kept, read `metadata._factory` in [`/v1/auth/registrations`](/wallet/recovery/auth-api/#get-active-registration).
+- The guardian check for `with-guardian` runs on the simulated deployment: one of the network's modules must be enabled on the account and hold the service's guardian for it.
+- Deployment data over 16384 bytes is not kept.
+- A later registration of the account, still undeployed, replaces both keys. They stay after the account is deployed and are deleted with the account's last registration on the chain.
+
+Before using the keys in your wallet:
+
+- Read `eth_getCode` first and ignore the keys once the account has code.
+- Match `_factory` against the factories you know before calling it. The data can only deploy the registrant's own account, but the factory is the registrant's choice.
+- The init data shows the owner set, or a passkey's public key, before it is on-chain, to whoever proves a registered target.
+
+## Recovery Flow
+
+1. [Verify the email address or phone number](/wallet/recovery/auth-api/#verify-target) for a `verifiedTargetToken`.
+2. [Look the account up](/wallet/recovery/find-accounts/#look-up-accounts). Its `metadata` carries `_factory` and `_factoryData` when the init data was kept.
+3. If `eth_getCode` of the account is empty, deploy it: send the stored call yourself, or ask the service with [`/v1/auth/accounts/deploy`](#request-a-sponsored-deployment). The not-deployed error of [`/v1/auth/signature/request`](/wallet/recovery/auth-api/#request-to-recover-an-account) says in `details.sponsoredDeployment` whether the service will do it.
+4. Poll [`/v1/auth/accounts/deployment`](#check-a-sponsored-deployment) until `status` is `deployed`. A pending deployment can take minutes on a congested chain.
+5. Recover as for any deployed account: `/v1/auth/signature/request` with the new owners, the codes to `/v1/auth/signature/submit`, then the [recovery request](/wallet/recovery/ux-api/#create-recovery-request).
+
+## Request a Sponsored Deployment
+
+The service sends the stored `_factory` call and pays for it. The request needs a `verifiedTargetToken` whose target is registered for the account on the chain. No wallet signature is needed, since the owner key may be lost. The service deploys exactly the stored call, so the account gets what that call installs.
+
+### `POST /v1/auth/accounts/deploy`
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```bash
+curl -X POST \
+  https://yourcompany.recovery.candide.dev/v1/auth/accounts/deploy \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+   "account": "0x...",
+   "chainId": 11155111,
+   "verifiedTargetToken": "43-character-token"
+}'
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+`202` while the deployment is queued or pending:
+
+```json
+{
+  "account": "0x...",
+  "chainId": 11155111,
+  "status": "pending"
+}
+```
+
+`200` once the account has code:
+
+```json
+{
+  "account": "0x...",
+  "chainId": 11155111,
+  "status": "deployed",
+  "transactionHash": "0x..."
+}
+```
+
+</TabItem>
+<TabItem value="request" label="Request Body">
+    <DataTable items={postAuthAccountsDeploy} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={postAuthAccountsDeployResponse} />
+</TabItem>
+</Tabs>
+
+- Calling the endpoint again while a deployment is pending answers `pending` and sends nothing. Calling it after a failure starts the next attempt.
+- An account is not tried again on a chain after three attempts that were mined and failed, or after ten attempts in all.
+- The limits count accounts, failed attempts included. Retrying the same account does not count twice.
+
+Refusals carry `details.reason`. Nothing is sent on a refusal.
+
+| Status | `details.reason` | When |
+|--------|------------------|------|
+| 403 | `sponsorship-disabled` | The network does not sponsor deployments. |
+| 403 | (none) | `Invalid or expired verifiedTargetToken`. |
+| 403 | `not-registered` | The token's target is not registered for the account on this chain. |
+| 409 | `attempts-exhausted` | Three attempts were mined and failed, or ten attempts were made in all. |
+| 409 | `no-init-data` | No `_factory` and `_factoryData` are stored for the account on this chain. |
+| 403 | `factory-not-sponsored` | The account's `_factory` is not in `sponsorships.deployment.factories`. |
+| 429 | `limit-target` | The token's target reached `maxPerTarget`. |
+| 429 | `limit-total` | The network reached `maxTotal`. Try again later. |
+| 409 | `deployment-would-fail` | In simulation, the stored call does not deploy a Safe at the account. |
+| 403 | `no-guardian` | `requireGuardian` is set and the deployment does not install the service's guardian. |
+| 403 | `gas-limit` | The deployment needs more gas than the network sponsors. |
+| 409 or 503 | `sponsorship-unavailable` | Sponsored deployments are temporarily unavailable on the network. Try again later. |
+
+## Check a Sponsored Deployment
+
+Read the state of the latest sponsored deployment of an account. The `verifiedTargetToken` lives 10 minutes and a deployment can take longer, so this endpoint takes no token.
+
+### `GET /v1/auth/accounts/deployment`
+
+<Tabs>
+<TabItem value="example-request" label="Example Request">
+
+```bash
+curl -G "https://yourcompany.recovery.candide.dev/v1/auth/accounts/deployment" \
+  -H 'Authorization: Bearer YOUR_BEARER_TOKEN' \
+  --data-urlencode "account=0x..." \
+  --data-urlencode "chainId=11155111"
+```
+
+</TabItem>
+<TabItem value="example-response" label="Example Response">
+
+```json
+{
+  "account": "0x...",
+  "chainId": 11155111,
+  "status": "failed",
+  "failureReason": "would-revert",
+  "attempts": 1,
+  "requestedAt": "2026-11-25T10:00:00.000Z"
+}
+```
+
+</TabItem>
+<TabItem value="request" label="Query Parameters">
+    <DataTable items={getAuthAccountsDeployment} />
+</TabItem>
+<TabItem value="response" label="Response Body">
+    <DataTable items={getAuthAccountsDeploymentResponse} />
+</TabItem>
+</Tabs>
+
+An account with no sponsored deployment is answered with `404 No sponsored deployment was requested for this account on this chain`.
+
+| `failureReason` | Meaning |
+|-----------------|---------|
+| `would-revert`, `gas-limit-exceeded`, `retries-exhausted`, `expired`, `interrupted` | The transaction was never mined. Ask again with the `POST`. |
+| `reverted` | The transaction was mined and reverted, for example because someone else deployed the account first. Counts toward the three mined failures. |
+| `no-code` | The transaction was mined without reverting but left no code at the account. Counts toward the three mined failures. |
+| `unconfirmed` | The transaction was mined but the account's code could not be read. Ask again: the service reads the code first and answers `deployed` when it is there. |
+
+Anyone who knows the address and can call the service can read this state. A new attempt always goes through the `POST`, with a token.

@@ -4,74 +4,22 @@ description: Learn how Candide's Safe Recovery Service coordinates guardian reco
 keywords: [safe recovery, social recovery, smart wallet, email recovery, guardian recovery]
 ---
 
-Candide's Safe Recovery Service helps wallets recover Safe accounts when users lose access to their signing keys. It works with the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/), which lets trusted guardians approve new account owners through a signature threshold and a time delay.
+Candide's Safe Recovery Service helps wallets recover Safe accounts when users lose their signing keys. It works with the [Social Recovery Module](/wallet/plugins/recovery-with-guardians/), a contract on the Safe that lets guardians approve new owners through a signature threshold and a time delay.
 
-The module enforces recovery rules on-chain. The service coordinates the process: collecting guardian signatures, submitting transactions, and notifying account owners.
+The module enforces the rules on-chain. The service does the coordination around it: collecting guardian signatures, submitting transactions, verifying emails and phone numbers, and notifying owners.
 
-The service supports Social Recovery Module v0.1.0 and v0.2.0 side by side. Each recovery flow is bound to one module, chosen with `moduleAddress` when the flow starts, and the service indexes and alerts on both versions. See [Recovery modules](/wallet/recovery/ux-api/#recovery-modules).
+## What It Gives Your Users
 
-## Who is this for
+| Capability | What happens |
+|------------|--------------|
+| [Guardian approvals](/wallet/recovery/ux-api/) | Guardians sign a recovery request off-chain, without holding funds. The service stores the signatures until the threshold is met. Each request has an emoji sequence the guardian can check with the owner before signing. |
+| [Email or SMS as a guardian](/wallet/recovery/auth-api/) | The user registers an email address or phone number. A guardian run by the service signs a recovery after the user confirms a one-time code. |
+| [Alerts](/wallet/recovery/alerts/) | Owners get an email or SMS when a recovery is executed or their guardians change, whether it went through the service or directly on-chain. |
+| [Paid gas](/wallet/recovery/ux-api/#execute-a-recovery-by-id) | The service can pay for the two recovery transactions, so neither guardians nor a user with a new key need funds. |
+| [Find an account by email or phone](/wallet/recovery/find-accounts/) | A user who lost the device and does not know the account address verifies their email address and gets the list of their accounts. |
+| [Recover an account that was never deployed](/wallet/recovery/undeployed-accounts/) | Optional. The service keeps what is needed to deploy a Safe that registered before its first transaction, and pays to deploy it when the user needs to recover. |
 
-Wallet developers integrating the Social Recovery Module who want to automate recovery or offer email/SMS as a recovery method.
-
-The service provides two APIs:
-
-| API | Purpose |
-|-----|---------|
-| [Recovery UX API](#recovery-ux-api) | Coordinate recovery requests, collect signatures, sponsor transactions, and send alerts. |
-| [Email/SMS Recovery API](#emailsms-recovery-api) | Let users authorize a service-managed guardian through email or phone verification. |
-
-## Recovery UX API
-
-Use this API to manage recovery requests approved by guardians, such as trusted contacts or hardware wallets.
-
-### Signature Aggregation and Storage
-
-The service collects and stores guardian signatures off-chain until the account's recovery threshold is met. For example, a 2-of-3 threshold requires approval from any two of the three guardians.
-
-### Gas-Sponsored Execution and Finalization {#automatic-execution}
-
-When enabled in the service configuration, the service submits and pays for two on-chain transactions on request:
-
-1. **Execution:** Submit the approved recovery request once the guardian signature threshold is met. This starts the grace period.
-2. **Finalization:** Complete the ownership change after the grace period ends.
-
-Your application triggers each step by calling `/v1/recoveries/execute` and `/v1/recoveries/finalize`. The service does not submit them on its own. The gas sponsorship relayer covers the transaction costs, so guardians do not need to hold funds.
-
-### Social Engineering Protection
-
-Each recovery request has an emoji sequence that guardians can check with the account owner through a trusted communication channel before signing. This helps guardians identify the intended request and reduces the risk of approving a fraudulent one.
-
-### Alerts and Notifications
-
-Account owners can subscribe to email or SMS alerts for on-chain recovery activity. The service monitors Social Recovery Module events on every module it serves, so it detects guardian changes, executions, finalizations, and cancellations whether they were submitted through the service or directly on-chain. Alerts are not sent when a request is created off-chain; the first alert is sent once the request is executed on-chain.
-
-Owners can subscribe before the Safe is deployed by wrapping their signature with ERC-6492. See [Accounts that are not deployed yet](/wallet/recovery/auth-api/#accounts-that-are-not-deployed-yet-erc-6492).
-
-See the [Recovery UX API reference](/wallet/recovery/ux-api/) for endpoints and request formats.
-
-## Email/SMS Recovery API
-
-Use this API to add a service-managed guardian that signs recovery requests after the user verifies their email address or phone number.
-
-1. **Set up recovery:** While the user still has access to the account, register their email address or phone number, verify it with a one-time code, and add the returned guardian address to the Social Recovery Module. Registration works before the Safe is deployed, with an ERC-6492 signature.
-2. **Authorize a recovery:** When the user needs to recover the account, verify a new one-time code to obtain the service-managed guardian's signature for the recovery request on the module the guardian was added to.
-
-The service-managed guardian is a key Candide holds, so we recommend it as one guardian in a larger setup, for example 2-of-3 with your wallet's own guardian and a recovery contact, or with two personal guardians. It can also be the only guardian, but then Candide is the only party that can recover the account. The account's guardian threshold determines how many approvals are needed. See [Choosing Guardians](/wallet/plugins/recovery-with-guardians/#choosing-guardians).
-
-The service also supports multi-factor authentication across channels, such as email and SMS. Contact us to request additional channels such as WhatsApp or Telegram.
-
-See the [Email/SMS Recovery API reference](/wallet/recovery/auth-api/) for registration and recovery endpoints.
-
-## How it works
-
-Once guardians are configured, a successful recovery follows these steps:
-
-1. **Create a request.** A guardian submits a signed recovery request specifying the module, the proposed new owners, and their signing threshold. The service stores the request off-chain.
-2. **Collect approvals.** Guardians verify the request and submit signatures until the guardian threshold is met.
-3. **Execute the request.** Your application submits the approved request on-chain through `/v1/recoveries/execute`, starting the module's grace period. Subscribed account owners are alerted at this point.
-4. **Wait through the grace period.** The current owner can cancel an unauthorized recovery if they still control the account.
-5. **Finalize recovery.** After the grace period, your application calls `/v1/recoveries/finalize`. Finalization replaces the account's owners and applies the new signing threshold.
+## How a Recovery Goes
 
 ```mermaid
 flowchart TD
@@ -82,21 +30,20 @@ flowchart TD
     D -->|Current owner cancels| F[Recovery cancelled]
 ```
 
-The service sponsors gas for execution and finalization when enabled in its configuration, but your application must trigger each step. **New owners gain control only after finalization.**
+1. **Create.** A guardian signs a request naming the new owners. The service stores it off-chain.
+2. **Approve.** Other guardians sign until the account's guardian threshold is met.
+3. **Execute.** Your application asks the service to submit the request on-chain. The grace period starts and subscribed owners are alerted.
+4. **Wait.** During the grace period, an owner who still controls the account can cancel.
+5. **Finalize.** Your application asks the service to finalize. The new owners take control only at this point.
 
-## Recovery Request States
+The service never submits a step on its own. Your application triggers execution and finalization.
 
-The API's `status` field tracks progress through a successful recovery:
+## What You Trust Candide With
 
-| State | Description |
-|-------|-------------|
-| `PENDING` | The request is stored and has not yet been executed. Guardian signatures can be collected. |
-| `EXECUTION-IN-PROGRESS` | The guardian threshold is met and the execution transaction is being processed. |
-| `EXECUTED` | The request has been executed on-chain. The grace period must end before finalization. Ownership has not changed. |
-| `FINALIZATION-IN-PROGRESS` | The grace period has ended and the finalization transaction is being processed. |
-| `FINALIZED` | Recovery is complete. The new owners and signing threshold are in effect. |
-
-A failed execution transaction returns the request to `PENDING`, and a failed finalization returns it to `EXECUTED`, so both calls can be repeated.
+- **One guardian key, if you use email/SMS recovery.** The guardian that signs after an email or SMS code is a key Candide holds. We recommend it as one guardian among several, for example 2-of-3 with your wallet's own guardian and a recovery contact. It can be the only guardian, but then Candide alone can recover the account. See [Choosing Guardians](/wallet/plugins/recovery-with-guardians/#choosing-guardians).
+- **No access to funds.** A guardian cannot move assets or sign transactions for the account. It can only approve new owners, and that takes effect after the grace period.
+- **A window to react.** The grace period, with alerts, gives an owner who still has the key time to cancel a recovery they did not ask for.
+- **Coordination, not control.** With personal guardians, the service only stores signatures and submits transactions. The same recovery can be carried out on the module directly.
 
 ## Get Started
 

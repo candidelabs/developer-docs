@@ -333,6 +333,27 @@ export const getConfigNetworkConfigResponse = [
         description: "The requested chainId",
     },
     {
+        key: "guardianAddress",
+        type: "string",
+        description: "The service-managed guardian address on this network, the one email/SMS registrations return. Absent when the network has no email/SMS recovery",
+    },
+    {
+        key: "counterfactualAccounts",
+        type: [
+            {
+                key: "erc6492",
+                type: "boolean",
+                description: "Whether the service accepts ERC-6492 signatures of accounts that are not deployed yet on this network",
+            },
+            {
+                key: "storeInitData",
+                type: "string",
+                description: "Whether a registration of an undeployed account keeps its deployment call: 'never', 'with-guardian' (only when the deployment installs the service's guardian) or 'always'",
+            },
+        ],
+        description: "What the service does with accounts that are not deployed yet",
+    },
+    {
         key: "moduleAddress",
         type: "string",
         description: "The default Social Recovery Module, used by requests that omit moduleAddress. Absent when the network has no default; such a network requires moduleAddress",
@@ -370,6 +391,11 @@ export const getConfigNetworkConfigResponse = [
                 key: "finalization",
                 type: "json",
                 description: "{ enabled, rateLimit? }: whether the service sponsors /v1/recoveries/finalize, and its per-account limit",
+            },
+            {
+                key: "deployment",
+                type: "json",
+                description: "{ enabled, factories?, requireGuardian?, rateLimit? }: whether the service sponsors /v1/auth/accounts/deploy, the factories it pays for, whether the deployment must install the service's guardian, and its limits (maxPerTarget, maxTotal, period in seconds)",
             },
         ],
         description: "Gas sponsorship settings for this network",
@@ -414,13 +440,33 @@ export const postAuthRegister = [
         type: "string",
         description: "Signature proving the request is initiated from the account",
     },
+    {
+        key: "verifiedTargetToken",
+        type: "string",
+        description: "(Optional) A token from /v1/auth/verification/submit issued for the same channel and target. The registration is created at once, with no code sent, and the response is the one /v1/auth/submit gives",
+    },
+    {
+        key: "metadata",
+        type: "json",
+        description: "(Optional) An object of string keys to string values stored with the account on this chain, such as { label: 'Savings' }. Replaces the stored object whole; {} removes it; when omitted, the stored object is kept",
+    },
 ];
 
 export const postAuthRegisterResponse = [
     {
         key: "challengeId",
         type: "string",
-        description: "Unique challenge ID for the registration, used in /v1/auth/submit",
+        description: "Unique challenge ID for the registration, used in /v1/auth/submit. Returned when the request carries no verifiedTargetToken",
+    },
+    {
+        key: "registrationId",
+        type: "string",
+        description: "Returned instead of challengeId when the request carries a verifiedTargetToken: the registration's ID",
+    },
+    {
+        key: "guardianAddress",
+        type: "string",
+        description: "Returned with registrationId: the service-managed guardian address to add to the Social Recovery Module on-chain",
     },
 ];
 
@@ -478,6 +524,223 @@ export const getAuthRegistrationsResponse = [
         key: "registrations",
         type: "array",
         description: "List of active registrations",
+    },
+    {
+        key: "metadata",
+        type: "json",
+        description: "The metadata stored for the account on this chain; {} when there is none",
+    },
+];
+
+export const postAuthMetadata = [
+    {
+        key: "account",
+        type: "string",
+        description: "The Safe account address",
+    },
+    {
+        key: "chainId",
+        type: "number",
+        description: "The chain ID of the account's registration",
+    },
+    {
+        key: "metadata",
+        type: "json",
+        description: "An object of string keys to string values. Replaces the stored object whole; {} removes it",
+    },
+    {
+        key: "message",
+        type: "string",
+        description: "SIWE message signed by the account",
+    },
+    {
+        key: "signature",
+        type: "string",
+        description: "Signature proving the request",
+    },
+];
+
+export const postAuthMetadataResponse = [
+    {
+        key: "metadata",
+        type: "json",
+        description: "The object as stored after the write",
+    },
+];
+
+export const postAuthVerificationRequest = [
+    {
+        key: "channel",
+        type: "string",
+        description: "'email' or 'sms'",
+    },
+    {
+        key: "target",
+        type: "string",
+        description: "The email address or phone number to verify",
+    },
+];
+
+export const postAuthVerificationRequestResponse = [
+    {
+        key: "challengeId",
+        type: "string",
+        description: "Unique challenge ID for the verification, used in /v1/auth/verification/submit",
+    },
+];
+
+export const postAuthVerificationSubmit = [
+    {
+        key: "challengeId",
+        type: "string",
+        description: "The challenge ID received from /v1/auth/verification/request",
+    },
+    {
+        key: "challenge",
+        type: "string",
+        description: "The OTP code received via email/SMS",
+    },
+];
+
+export const postAuthVerificationSubmitResponse = [
+    {
+        key: "verifiedTargetToken",
+        type: "string",
+        description: "A 43-character bearer token proving control of the channel and target. Reusable until it expires",
+    },
+    {
+        key: "verifiedTargetTokenExpiresAt",
+        type: "datetime",
+        description: "When the token expires, 10 minutes after it is issued",
+    },
+];
+
+export const postAuthAccounts = [
+    {
+        key: "verifiedTargetToken",
+        type: "string",
+        description: "The token from /v1/auth/verification/submit",
+    },
+];
+
+export const postAuthAccountsDeploy = [
+    {
+        key: "account",
+        type: "string",
+        description: "The account to deploy",
+    },
+    {
+        key: "chainId",
+        type: "number",
+        description: "The chain to deploy it on",
+    },
+    {
+        key: "verifiedTargetToken",
+        type: "string",
+        description: "A token from /v1/auth/verification/submit whose target is registered for the account on this chain",
+    },
+];
+
+export const postAuthAccountsDeployResponse = [
+    {
+        key: "account",
+        type: "string",
+        description: "The account address, lower-cased",
+    },
+    {
+        key: "chainId",
+        type: "number",
+        description: "The requested chainId",
+    },
+    {
+        key: "status",
+        type: "string",
+        description: "'pending' (HTTP 202) or 'deployed' (HTTP 200)",
+    },
+    {
+        key: "transactionHash",
+        type: "string",
+        description: "Present when the service's transaction deployed the account. Absent when the account was deployed some other way",
+    },
+];
+
+export const getAuthAccountsDeployment = [
+    {
+        key: "account",
+        type: "string",
+        description: "The account address",
+    },
+    {
+        key: "chainId",
+        type: "number",
+        description: "The chain of the deployment",
+    },
+];
+
+export const getAuthAccountsDeploymentResponse = [
+    {
+        key: "account",
+        type: "string",
+        description: "The account address, lower-cased",
+    },
+    {
+        key: "chainId",
+        type: "number",
+        description: "The requested chainId",
+    },
+    {
+        key: "status",
+        type: "string",
+        description: "'pending', 'deployed' or 'failed'",
+    },
+    {
+        key: "transactionHash",
+        type: "string",
+        description: "Present once a transaction was mined, also for a failed one",
+    },
+    {
+        key: "failureReason",
+        type: "string",
+        description: "For a failed deployment: would-revert, retries-exhausted, expired, reverted, gas-limit-exceeded, interrupted, no-code or unconfirmed",
+    },
+    {
+        key: "attempts",
+        type: "number",
+        description: "The number of attempts so far",
+    },
+    {
+        key: "requestedAt",
+        type: "datetime",
+        description: "When the deployment was requested",
+    },
+];
+
+export const postAuthAccountsResponse = [
+    {
+        key: "accounts",
+        type: [
+            {
+                key: "account",
+                type: "string",
+                description: "The Safe account address, lower-cased",
+            },
+            {
+                key: "chainId",
+                type: "number",
+                description: "The chain of the registration",
+            },
+            {
+                key: "registeredAt",
+                type: "datetime",
+                description: "When the token's target was registered for the account on that chain",
+            },
+            {
+                key: "metadata",
+                type: "json",
+                description: "The metadata stored for the account on that chain; {} when there is none",
+            },
+        ],
+        description: "The accounts registered with the token's target on its channel, one entry per account and chain, sorted by account then chainId. Can be empty",
     },
 ];
 

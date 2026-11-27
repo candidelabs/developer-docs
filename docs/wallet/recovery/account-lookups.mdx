@@ -1,5 +1,5 @@
 ---
-title: Safe Recovery Lookups by Account
+title: Safe Recovery Request Lookups by Account
 description: Look up a Safe account's recovery requests with fetchByAddress and listByAddress, by recovery nonce or with filters and pagination. For the main recovery flow (create, sign, execute, finalize) start with the Safe Recovery UX API reference.
 keywords: [safe recovery, social recovery, smart wallet, email recovery, guardian recovery, recovery history]
 ---
@@ -15,7 +15,7 @@ import {
     getRecoveriesListByAddressResponse,
 } from "/src/data/safeRecoveryService";
 
-# Safe Recovery Lookups by Account
+# Recovery Request Lookups by Account
 
 These two endpoints of the [Recovery UX API](/wallet/recovery/ux-api/) find a Safe account's recovery requests by account address instead of by request ID. Start with the [UX API reference](/wallet/recovery/ux-api/) for the main flow, [authentication](/wallet/recovery/ux-api/#authentication), and how [`moduleAddress`](/wallet/recovery/ux-api/#recovery-modules) selects the Social Recovery Module. To fetch one request by its ID, use [`/v1/recoveries/fetchById`](/wallet/recovery/ux-api/#fetch-recovery-by-id).
 
