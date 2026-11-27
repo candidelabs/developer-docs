@@ -95,7 +95,7 @@ Before using the keys in your wallet:
 1. [Verify the email address or phone number](/wallet/recovery/auth-api/#verify-target) for a `verifiedTargetToken`.
 2. [Look the account up](/wallet/recovery/find-accounts/#look-up-accounts). Its `metadata` carries `_factory` and `_factoryData` when the init data was kept.
 3. If `eth_getCode` of the account is empty, deploy it: send the stored call yourself, or ask the service with [`/v1/auth/accounts/deploy`](#request-a-sponsored-deployment). The not-deployed error of [`/v1/auth/signature/request`](/wallet/recovery/auth-api/#request-to-recover-an-account) says in `details.sponsoredDeployment` whether the service will do it.
-4. Poll [`/v1/auth/accounts/deployment`](#check-a-sponsored-deployment) until `status` is `deployed`. A pending deployment can take minutes on a congested chain.
+4. Wait for the account to have code. After sending the call yourself, poll `eth_getCode`. After asking the service, poll [`/v1/auth/accounts/deployment`](#check-a-sponsored-deployment) until `status` is `deployed`: it reports only deployments requested through the service. A pending deployment can take minutes on a congested chain.
 5. Recover as for any deployed account: `/v1/auth/signature/request` with the new owners, the codes to `/v1/auth/signature/submit`, then the [recovery request](/wallet/recovery/ux-api/#create-recovery-request).
 
 ## Request a Sponsored Deployment
